@@ -1,15 +1,16 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
-
-import { Collapsible } from '@/components/ui/collapsible';
 import { ExternalLink } from '@/components/external-link';
 import ParallaxScrollView from '@/components/parallax-scroll-view';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { Collapsible } from '@/components/ui/collapsible';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Fonts } from '@/constants/theme';
+import { useChangeTheme } from '@/hooks/user-change-theme';
+import { Image } from 'expo-image';
+import { Platform, StyleSheet } from 'react-native';
 
 export default function TabTwoScreen() {
+  const { toggleTheme } = useChangeTheme()
   return (
     <ParallaxScrollView
       headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
@@ -24,6 +25,7 @@ export default function TabTwoScreen() {
       <ThemedView style={styles.titleContainer}>
         <ThemedText
           type="title"
+          onPress={toggleTheme}
           style={{
             fontFamily: Fonts.rounded,
           }}>

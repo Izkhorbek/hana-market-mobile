@@ -1,0 +1,14 @@
+{
+  "en": {
+    "name": "English",
+    "nativeName": "English"
+  },
+  "ru": {
+    "name": "Russian",
+    "nativeName": "Русский"
+  },
+  "uz": {
+    "name": "Uzbek",
+    "nativeName": "O'zbek"
+  }
+}
