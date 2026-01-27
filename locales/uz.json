@@ -1,36 +1,31 @@
 {
-  "common": {
-    "welcome": "Xush kelibsiz!",
-    "home": "Bosh sahifa",
-    "explore": "O'rganish",
-    "settings": "Sozlamalar",
-    "profile": "Profil"
-  },
-  "home": {
-    "title": "Xush kelibsiz!",
-    "step1": {
-      "title": "1-qadam: Sinab ko'ring",
-      "description": "O'zgarishlarni ko'rish uchun {{file}} ni tahrirlang. Ishlab chiquvchi vositalarini ochish uchun {{shortcut}} tugmasini bosing."
-    },
-    "step2": {
-      "title": "2-qadam: O'rganing",
-      "description": "Ushbu boshlang'ich ilovada nima borligini bilish uchun O'rganish varaqasini bosing."
-    },
-    "step3": {
-      "title": "3-qadam: Yangi boshlang",
-      "description": "Tayyor bo'lganingizda, yangi {{directory}} katalogini olish uchun {{command}} ni ishga tushiring. Joriy {{directory}} {{exampleDirectory}} ga ko'chiriladi."
-    }
-  },
-  "modal": {
-    "title": "Modal",
-    "description": "Bu modal ekran"
-  },
-  "auth": {
-    "login": "Kirish",
-    "logout": "Chiqish",
-    "register": "Ro'yxatdan o'tish",
-    "email": "Elektron pochta",
-    "password": "Parol",
-    "forgotPassword": "Parolni unutdingizmi?"
-  }
+	"common": {
+		"welcome": "Xush kelibsiz!",
+		"home": "Bosh sahifa",
+		"explore": "O'rganish",
+		"settings": "Sozlamalar",
+		"profile": "Profil"
+	},
+	"home": {
+		"create": "Joylash"
+	},
+	"modal": {
+		"title": "Modal",
+		"description": "Bu modal ekran"
+	},
+	"auth": {
+		"welcome_page": {
+			"title": "Hana Market ga xush kelibsiz",
+			"description": "Qo'shnilar bilan ishonchli va erkin savdo qiling",
+			"get_started": "Boshlash",
+			"already_have_account": "Akkauntingiz bormi?",
+			"login_link": "Kirish"
+		}
+	},
+	"tabs": {
+		"home": "Uy",
+		"map": "Xarita",
+		"chat": "Suhbat",
+		"profile": "Sahifa"
+	}
 }
