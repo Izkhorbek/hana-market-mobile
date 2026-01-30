@@ -1,31 +1,31 @@
 import { HapticTab } from '@/components/haptic-tab';
 import HomeHeader from '@/components/headers/HomeHeader';
 import TabIcon from '@/components/shared/TabIcon';
-import { Colors } from '@/constants/theme';
+import { useThemeColors } from '@/hooks/use-theme-colors';
 import { useTranslations } from '@/hooks/use-translation';
 import { Tabs } from 'expo-router';
 import { House, Map, MessageSquare, UserRound } from 'lucide-react-native';
 import React from 'react';
-import { Platform, useColorScheme } from 'react-native';
+import { Platform } from 'react-native';
 
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
+  const colors = useThemeColors();
   const { t } = useTranslations();
 
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors.light.tabIconSelected,
-        tabBarInactiveTintColor: Colors.light.tabIconDefault,
+        tabBarActiveTintColor: colors.tabIconSelected,
+        tabBarInactiveTintColor: colors.tabIconDefault,
         headerShown: false,
         tabBarButton: HapticTab,
         tabBarStyle: {
           paddingTop: 15,
-          backgroundColor: Colors.light.taBarBg,
-          height: Platform.OS === 'ios' ? 90 : 120,
+          backgroundColor: colors.taBarBg,
+          height: Platform.OS === 'ios' ? 100 : 110,
           borderTopWidth: 1,
-          borderTopColor: Colors.light.borderColor,
+          borderTopColor: colors.borderColor,
           boxShadow: "none",
           justifyContent: 'center',
           alignItems: 'center',

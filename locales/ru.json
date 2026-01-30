@@ -27,5 +27,17 @@
 		"map": "Карта",
 		"chat": "Чат",
 		"profile": "Профиль"
+	},
+	"post": {
+		"create_ad": "Разместить объявление",
+		"select_type": "Выберите тип объявления",
+		"things": "Вещи",
+		"cars": "Автомобили",
+		"works": "Работы"
+	},
+	"form_elements": {
+		"select": {
+			"no_framework_found": "Нет данных"
+		}
 	}
 }

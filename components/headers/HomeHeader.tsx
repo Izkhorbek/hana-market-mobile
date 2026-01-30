@@ -1,26 +1,27 @@
-import { Colors } from '@/constants/theme';
+import { useThemeColors } from '@/hooks/use-theme-colors';
 import Feather from '@expo/vector-icons/Feather';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Search } from 'lucide-react-native';
 import React from 'react';
-import { StyleSheet, TouchableOpacity } from 'react-native';
+import { Platform, StyleSheet, TouchableOpacity } from 'react-native';
 import { ThemedText } from '../themed-text';
 import { ThemedView } from '../themed-view';
 
 
 const HomeHeader = () => {
+  const colors = useThemeColors()
   return (
-    <ThemedView style={styles.container}>
-      <ThemedText style={styles.currentCity}>Toshkent</ThemedText>
+    <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
+      <ThemedText style={[styles.currentCity, { color: colors.blackIcon }]}>Toshkent</ThemedText>
       <ThemedView style={styles.searchContainer}>
         <TouchableOpacity>
-          <Feather name='menu' size={25} color={Colors.light.blackIcon} />
+          <Feather name='menu' size={25} color={colors.blackIcon} />
         </TouchableOpacity>
         <TouchableOpacity>
-          <Search size={25} color={Colors.light.blackIcon} />
+          <Search size={25} color={colors.blackIcon} />
         </TouchableOpacity>
         <TouchableOpacity>
-          <Ionicons name='notifications-outline' size={25} color={Colors.light.blackIcon} />
+          <Ionicons name='notifications-outline' size={25} color={colors.blackIcon} />
         </TouchableOpacity>
       </ThemedView>
     </ThemedView>
@@ -29,27 +30,22 @@ const HomeHeader = () => {
 
 const styles = StyleSheet.create({
   container: {
-    height: 90,
+    height: Platform.OS === 'ios' ? 90 : 75,
     display: "flex",
     flexDirection: "row",
     alignItems: 'flex-end',
     justifyContent: 'space-between',
-    paddingBottom: 5,
+    paddingBottom: 8,
     paddingHorizontal: 14,
-    // borderBottomWidth: 1,
-    // borderBottomColor: Colors.light.borderColor,
-    backgroundColor: Colors.light.background,
   },
   currentCity: {
     fontSize: 24,
     fontWeight: '600',
-    color: Colors.light.text,
   },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 20,
-    backgroundColor: Colors.light.background, 
   },
 })
 

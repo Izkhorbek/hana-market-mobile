@@ -27,5 +27,17 @@
 		"map": "Xarita",
 		"chat": "Suhbat",
 		"profile": "Sahifa"
+	},
+	"post": {
+		"create_ad": "Elon joylash",
+		"select_type": "E'lon turini tanlang",
+		"things": "Narsalar",
+		"cars": "Avtomobillar",
+		"works": "Ishlar"
+	},
+	"form_elements": {
+		"select": {
+			"no_framework_found": "Ma'lumot topilmadi"
+		}
 	}
 }

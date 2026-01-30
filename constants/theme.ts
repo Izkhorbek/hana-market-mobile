@@ -11,33 +11,49 @@ const tintColorDark = '#fff'
 export const Colors = {
 	light: {
 		text: '#11181C',
-		background: '#fff',
-		tint: tintColorLight,
-		icon: '#A9ABB0',
-		tabIconDefault: '#687076',
-		tabIconSelected: tintColorLight,
-		mainColor: '#02A348',
-		buttonTextColor: '#fff',
+		secondaryColor: '#fff',
 		subText: '#939496',
+
+		background: '#fff',
 		taBarBg: '#fff',
+
+		// tab icons related colors
 		tabIconBackground: '#E6F7ED',
-		borderColor: '#F3F4F6',
+		tabIconDefault: '#687076',
+		tabIconSelected: '#02A348',
+
+		// main colors
+		primaryColor: '#02A348',
+
+		// icons related colors
+		icon: '#A9ABB0',
 		blackIcon: '#000000',
+
+		tint: '#02A348',
+		borderColor: '#F3F4F6',
 	},
 	dark: {
 		text: '#ECEDEE',
-		background: '#1e242dff',
-		taBarBg: '#1e242dff',
-		tint: tintColorDark,
-		icon: '#c0c2c7ff',
-		tabIconDefault: '#9BA1A6',
-		tabIconSelected: tintColorDark,
-		mainColor: '#02A348',
-		buttonTextColor: '#fff',
 		subText: '#939496',
-		tabIconBackground: '#1e242dff',
-		borderColor: '#2a3139ff',
+
+		background: '#1D1D24',
+		taBarBg: '#1D1D24',
+
+		// tab icons related colors
+		tabIconBackground: '#343441',
+		tabIconDefault: '#5D5D74',
+		tabIconSelected: '#A4A4B6',
+
+		// main colors
+		primaryColor: '#02A348',
+		secondaryColor: '#fff',
+
+		// icons related colors
+		icon: '#c0c2c7ff',
 		blackIcon: '#ffffff',
+
+		tint: '#fff',
+		borderColor: '#49495B',
 	},
 }
 

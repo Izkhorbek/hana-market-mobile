@@ -12,10 +12,10 @@
 			"supportsTablet": true
 		},
 		"androidStatusBar": {
-			"translucent": true
+			"translucent": false
 		},
 		"androidNavigationBar": {
-			"visible": "leanback",
+			"visible": "immersive",
 			"barStyle": "dark-content",
 			"enforceContrast": false
 		},

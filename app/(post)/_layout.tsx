@@ -1,11 +1,19 @@
-import { Stack } from 'expo-router'
-import React from 'react'
+import CreateHeader from '@/components/headers/CreateHeader';
+import { useColorScheme } from '@/hooks/use-color-scheme';
+import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { Stack } from 'expo-router';
+import React from 'react';
+import { StatusBar } from 'react-native';
 
 const PostLayout = () => {
+  const colorScheme = useColorScheme();
   return (
-    <Stack>
-      <Stack.Screen name="create" options={{ headerShown: false }} />
-    </Stack>
+    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+      <Stack>
+        <Stack.Screen name="create" options={{ headerShown: true, header: () => <CreateHeader /> }} />
+      </Stack>
+      <StatusBar barStyle={colorScheme === 'dark' ? 'light-content' : 'dark-content'} />
+    </ThemeProvider>
   )
 }
 

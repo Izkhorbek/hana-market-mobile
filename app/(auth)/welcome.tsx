@@ -100,7 +100,7 @@ const styles = StyleSheet.create({
     paddingTop: 40,
   },
   getStartedButton: {
-    backgroundColor: Colors.light.mainColor,
+    backgroundColor: Colors.light.primaryColor,
     paddingVertical: 16,
     paddingHorizontal: 32,
     borderRadius: 12,
@@ -125,7 +125,7 @@ const styles = StyleSheet.create({
   loginLink: {
     fontSize: 14,
     fontWeight: '600',
-    color: Colors.light.mainColor,
+    color: Colors.light.primaryColor,
   },
   logo: {
     width: 200,

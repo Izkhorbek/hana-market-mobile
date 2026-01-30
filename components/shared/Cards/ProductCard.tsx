@@ -1,4 +1,5 @@
 import { Colors } from '@/constants/theme'
+import { useThemeColors } from '@/hooks/use-theme-colors'
 import Ionicons from '@expo/vector-icons/Ionicons'
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
@@ -30,7 +31,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
   onDotsPress,
   onHeartPress,
 }) => {
-  const colors = Colors.light
+  const colors = useThemeColors()
 
   return (
     <TouchableOpacity
@@ -109,7 +110,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: 'row',  
+    flexDirection: 'row',
     borderBottomWidth: 1,
     overflow: 'hidden',
     borderColor: Colors.light.borderColor,

@@ -27,5 +27,17 @@
 		"map": "Map",
 		"chat": "Chat",
 		"profile": "Profile"
+	},
+	"post": {
+		"create_ad": "Create Ad",
+		"select_type": "Select ad Type",
+		"things": "Things",
+		"cars": "Cars",
+		"works": "Works"
+	},
+	"form_elements": {
+		"select": {
+			"no_framework_found": "No data found"
+		}
 	}
 }

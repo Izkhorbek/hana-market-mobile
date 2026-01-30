@@ -3,7 +3,7 @@ import { languageResources } from '@/constants/localization';
 import { useTranslations } from '@/hooks/use-translation';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-const LANGUAGE_NAMES: Record<string, string> = {
+const languages: Record<string, string> = {
   en: '🇺🇸 English',
   ru: '🇷🇺 Русский',
   uz: '🇺🇿 O\'zbekcha',
@@ -30,7 +30,7 @@ export default function LanguageSwitcher() {
                 locale === lang && styles.languageTextActive,
               ]}
             >
-              {LANGUAGE_NAMES[lang]}
+              {languages[lang]}
             </Text>
             {locale === lang && (
               <Text style={styles.checkmark}>✓</Text>

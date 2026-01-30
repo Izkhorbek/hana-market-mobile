@@ -1,26 +1,27 @@
 
 import ProductsList from '@/components/Lists/ProductsList';
-import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Colors } from '@/constants/theme';
-import { useTranslations } from '@/hooks/use-translation';
+import { useThemeColors } from '@/hooks/use-theme-colors';
 import Feather from '@expo/vector-icons/Feather';
 import { Link } from 'expo-router';
-import { StyleSheet, TouchableOpacity } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
+import { StyleSheet, TouchableOpacity, useColorScheme } from 'react-native';
 
 export default function HomeScreen() {
-  const { t } = useTranslations();
+  const colors = useThemeColors()
+  const colorScheme = useColorScheme();
   return (
-    <ThemedView style={styles.container}>
+    <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
       <ProductsList />
       <ThemedView style={styles.buttonContainer}>
-        <Link href="/(post)/create">
+        <Link href="/(post)/create" asChild>
           <TouchableOpacity style={styles.createButton} activeOpacity={0.7}>
             <Feather name="plus" size={32} color="white" />
-            <ThemedText style={styles.createButtonText}>{t('home.create')}</ThemedText>
           </TouchableOpacity>
         </Link>
       </ThemedView>
+      <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
     </ThemedView>
   );
 }
@@ -56,12 +57,10 @@ const styles = StyleSheet.create({
     right: 24,
   },
   createButton: {
-    width: 'auto',
+    width: 60,
     height: 60,
-    backgroundColor: Colors.light.mainColor,
+    backgroundColor: Colors.light.primaryColor,
     borderRadius: 30,
-    gap: 8,
-    paddingHorizontal: 16,
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
