@@ -11,7 +11,7 @@ import { ThemedView } from '../themed-view';
 const HomeHeader = () => {
   const colors = useThemeColors()
   return (
-    <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
+    <ThemedView style={[styles.container, { backgroundColor: colors.background, borderBottomColor: colors.borderColor }]}>
       <ThemedText style={[styles.currentCity, { color: colors.blackIcon }]}>Toshkent</ThemedText>
       <ThemedView style={styles.searchContainer}>
         <TouchableOpacity>
@@ -37,6 +37,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingBottom: 8,
     paddingHorizontal: 14,
+    borderWidth: 1,
   },
   currentCity: {
     fontSize: 24,

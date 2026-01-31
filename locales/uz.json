@@ -33,7 +33,26 @@
 		"select_type": "E'lon turini tanlang",
 		"things": "Narsalar",
 		"cars": "Avtomobillar",
-		"works": "Ishlar"
+		"works": "Ishlar",
+		"images": "Rasmlar",
+		"item_details": "Mahsulot ma'lumotlari",
+		"selling_methods": "Sotish usullari",
+		"meeting": "Uchrashuv",
+		"title": "Sarlavha",
+		"category": "Kategoriya",
+		"description": "Tavsif",
+		"for_sale": "Sotish uchun",
+		"free": "Bepul",
+		"price": "Narx",
+		"can_deal": "Kelishish mumkin",
+		"location": "Manzil",
+		"extra_info": "Qo'shimcha ma'lumot",
+		"post_button": "E'lon joylashtirish",
+		"title_placeholder": "Masalan, iPhone 15 Pro Max",
+		"description_placeholder": "Tavsifni kiriting...",
+		"price_placeholder": "Narxni kiriting",
+		"location_placeholder": "Manzilni kiriting",
+		"extra_info_placeholder": "Qo'shimcha ma'lumot kiriting"
 	},
 	"form_elements": {
 		"select": {

@@ -1,5 +1,4 @@
-import FormInput from '@/components/FormElements/FormInput'
-import FormSelect from '@/components/FormElements/FormSelect'
+import CreateThingForm from '@/components/Forms/CreateThingForm'
 import ThemedScrollView from '@/components/themed-scrollview'
 import { ThemedText } from '@/components/themed-text'
 import { ThemedView } from '@/components/themed-view'
@@ -32,6 +31,17 @@ const CreatePost = () => {
     value: category.id,
     label: t(category.labelKey),
   }))
+
+  // In your component
+  const categoryOptions = [
+    { value: 'electronics', label: 'Electronics' },
+    { value: 'furniture', label: 'Furniture' },
+    // ... more categories
+  ];
+  const handleFormSubmit = (data: any) => {
+    console.log('Form submitted:', data);
+    // Handle form submission
+  };
 
   return (
     <ThemedScrollView style={styles.container}>
@@ -75,8 +85,10 @@ const CreatePost = () => {
         })}
       </ThemedView>
 
-      <FormSelect options={options} control={form.control} name='category' placeholder='Select Category' />
-      <FormInput control={form.control} name='title' placeholder='Title' />
+      <CreateThingForm
+        categoryOptions={categoryOptions}
+        onSubmit={handleFormSubmit}
+      />
     </ThemedScrollView>
   )
 }
@@ -95,6 +107,7 @@ const styles = StyleSheet.create({
   categoriesContainer: {
     flexDirection: 'row',
     gap: 12,
+    marginBottom: 16,
   },
   categoryCard: {
     flex: 1,

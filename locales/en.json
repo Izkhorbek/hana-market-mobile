@@ -33,7 +33,26 @@
 		"select_type": "Select ad Type",
 		"things": "Things",
 		"cars": "Cars",
-		"works": "Works"
+		"works": "Works",
+		"images": "Images",
+		"item_details": "Item Details",
+		"selling_methods": "Selling Methods",
+		"meeting": "Meeting",
+		"title": "Title",
+		"category": "Category",
+		"description": "Description",
+		"for_sale": "For Sale",
+		"free": "Free",
+		"price": "Price",
+		"can_deal": "Can Deal",
+		"location": "Location",
+		"extra_info": "Extra Info",
+		"post_button": "Post Ad",
+		"title_placeholder": "e.g., iPhone 15 Pro Max",
+		"description_placeholder": "Enter description...",
+		"price_placeholder": "Enter price",
+		"location_placeholder": "Enter location",
+		"extra_info_placeholder": "Enter additional information"
 	},
 	"form_elements": {
 		"select": {

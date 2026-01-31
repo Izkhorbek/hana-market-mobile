@@ -33,7 +33,26 @@
 		"select_type": "Выберите тип объявления",
 		"things": "Вещи",
 		"cars": "Автомобили",
-		"works": "Работы"
+		"works": "Работы",
+		"images": "Изображения",
+		"item_details": "Детали товара",
+		"selling_methods": "Способы продажи",
+		"meeting": "Встреча",
+		"title": "Название",
+		"category": "Категория",
+		"description": "Описание",
+		"for_sale": "Продается",
+		"free": "Бесплатно",
+		"price": "Цена",
+		"can_deal": "Можно договориться",
+		"location": "Местоположение",
+		"extra_info": "Доп. информация",
+		"post_button": "Разместить объявление",
+		"title_placeholder": "напр., iPhone 15 Pro Max",
+		"description_placeholder": "Введите описание...",
+		"price_placeholder": "Введите цену",
+		"location_placeholder": "Введите местоположение",
+		"extra_info_placeholder": "Введите дополнительную информацию"
 	},
 	"form_elements": {
 		"select": {

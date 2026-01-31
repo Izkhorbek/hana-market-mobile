@@ -114,7 +114,8 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     overflow: 'hidden',
     borderColor: Colors.light.borderColor,
-    marginVertical: 6,
+    marginVertical: 0,
+    paddingVertical: 14,
     marginHorizontal: 12,
   },
   image: {
