@@ -24,6 +24,7 @@ interface FormSelectProps {
   inputPlaceholder?: string;
   label?: string;
   required?: boolean;
+  rules?: any;
 }
 
 const FormSelect = ({
@@ -34,6 +35,7 @@ const FormSelect = ({
   name = 'category',
   label,
   required = false,
+  rules,
 }: FormSelectProps) => {
   const { t } = useTranslations();
   const colors = useThemeColors()
@@ -52,29 +54,37 @@ const FormSelect = ({
       <Controller
         name={name!}
         control={control}
-        render={({ field }) => (
-          <Combobox value={field.value} onValueChange={field.onChange}>
-            <ComboboxTrigger style={[
-              styles.trigger,
-              {
-                backgroundColor: backgroundColor,
-                borderColor: colors.borderColor,
-              }
-            ]}>
-              <ComboboxValue placeholder={placeholder} style={styles.valueText} />
-            </ComboboxTrigger>
-            <ComboboxContent  maxHeight={300}>
-              {inputPlaceholder && <ComboboxInput placeholder={inputPlaceholder} />}
-              <ComboboxList style={styles.list}>
-               {options.length === 0 && <ComboboxEmpty>{t('form_elements.select.no_framework_found')}</ComboboxEmpty>}
-                {options.map((option) => (
-                  <ComboboxItem key={option.value} value={option.value}>
-                    {option.label}
-                  </ComboboxItem>
-                ))}
-              </ComboboxList>
-            </ComboboxContent>
-          </Combobox>
+        rules={rules}
+        render={({ field, fieldState: { error } }) => (
+          <>
+            <Combobox value={field.value} onValueChange={field.onChange}>
+              <ComboboxTrigger style={[
+                styles.trigger,
+                {
+                  backgroundColor: backgroundColor,
+                  borderColor: error ? destructiveColor : colors.borderColor,
+                }
+              ]}>
+                <ComboboxValue placeholder={placeholder} style={styles.valueText} />
+              </ComboboxTrigger>
+              <ComboboxContent maxHeight={300}>
+                {inputPlaceholder && <ComboboxInput placeholder={inputPlaceholder} />}
+                <ComboboxList style={styles.list}>
+                  {options.length === 0 && <ComboboxEmpty>{t('form_elements.select.no_framework_found')}</ComboboxEmpty>}
+                  {options.map((option) => (
+                    <ComboboxItem key={option.value} value={option.value}>
+                      {option.label}
+                    </ComboboxItem>
+                  ))}
+                </ComboboxList>
+              </ComboboxContent>
+            </Combobox>
+            {error?.message && (
+              <Text style={[styles.errorText, { color: destructiveColor }]}>
+                {error.message}
+              </Text>
+            )}
+          </>
         )}
       />
     </View>
@@ -110,6 +120,11 @@ const styles = StyleSheet.create({
   list: {
     overflow: 'hidden',
     // borderRadius: 12,
+  },
+  errorText: {
+    fontSize: 12,
+    marginTop: 4,
+    marginLeft: 4,
   },
 })
 

@@ -13,6 +13,7 @@ interface ImageUploaderProps {
   label?: string;
   required?: boolean;
   maxImages?: number;
+  rules?: any;
 }
 
 const ImageUploader = ({
@@ -21,6 +22,7 @@ const ImageUploader = ({
   label,
   required = false,
   maxImages = 5,
+  rules,
 }: ImageUploaderProps) => {
   const colors = useThemeColors();
   const textColor = useColor('text');
@@ -79,54 +81,62 @@ const ImageUploader = ({
       <Controller
         name={name!}
         control={control}
-        render={({ field: { onChange, value = [] } }) => (
-          <ThemedScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.scrollContent}
-          >
-            {/* Add Image Button */}
-            <TouchableOpacity
-              style={[
-                styles.addButton,
-                { 
-                  borderColor: colors.borderColor,
-                },
-                value.length >= maxImages && styles.addButtonDisabled,
-              ]}
-              onPress={() => pickImage(value, onChange)}
-              disabled={value.length >= maxImages}
-              activeOpacity={0.7}
+        rules={rules}
+        render={({ field: { onChange, value = [] }, fieldState: { error } }) => (
+          <>
+            <ThemedScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.scrollContent}
             >
-              <ImagePlus
-                size={32}
-                color={value.length >= maxImages ? borderColor : primaryColor}
-                strokeWidth={1.5}
-              />
-              <Text
+              {/* Add Image Button */}
+              <TouchableOpacity
                 style={[
-                  styles.addButtonText,
-                  { color: value.length >= maxImages ? borderColor : textColor }
+                  styles.addButton,
+                  {
+                    borderColor: colors.borderColor,
+                  },
+                  value.length >= maxImages && styles.addButtonDisabled,
                 ]}
+                onPress={() => pickImage(value, onChange)}
+                disabled={value.length >= maxImages}
+                activeOpacity={0.7}
               >
-                {value.length}/{maxImages}
-              </Text>
-            </TouchableOpacity>
-
-            {/* Display Selected Images */}
-            {value.map((uri: string, index: number) => (
-              <View key={index} style={styles.imageContainer}>
-                <Image source={{ uri }} style={styles.image} />
-                <TouchableOpacity
-                  style={[styles.removeButton, { backgroundColor: destructiveColor }]}
-                  onPress={() => removeImage(index, value, onChange)}
-                  activeOpacity={0.8}
+                <ImagePlus
+                  size={32}
+                  color={value.length >= maxImages ? borderColor : primaryColor}
+                  strokeWidth={1.5}
+                />
+                <Text
+                  style={[
+                    styles.addButtonText,
+                    { color: value.length >= maxImages ? borderColor : textColor }
+                  ]}
                 >
-                  <X size={16} color="#fff" strokeWidth={3} />
-                </TouchableOpacity>
-              </View>
-            ))}
-          </ThemedScrollView>
+                  {value.length}/{maxImages}
+                </Text>
+              </TouchableOpacity>
+
+              {/* Display Selected Images */}
+              {value.map((uri: string, index: number) => (
+                <View key={index} style={styles.imageContainer}>
+                  <Image source={{ uri }} style={styles.image} />
+                  <TouchableOpacity
+                    style={[styles.removeButton, { backgroundColor: destructiveColor }]}
+                    onPress={() => removeImage(index, value, onChange)}
+                    activeOpacity={0.8}
+                  >
+                    <X size={16} color="#fff" strokeWidth={3} />
+                  </TouchableOpacity>
+                </View>
+              ))}
+            </ThemedScrollView>
+            {error?.message && (
+              <Text style={[styles.errorText, { color: destructiveColor }]}>
+                {error.message}
+              </Text>
+            )}
+          </>
         )}
       />
     </View>
@@ -190,6 +200,11 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  errorText: {
+    fontSize: 12,
+    marginTop: 4,
+    marginLeft: 4,
   },
 });
 

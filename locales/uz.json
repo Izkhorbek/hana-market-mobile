@@ -52,11 +52,63 @@
 		"description_placeholder": "Tavsifni kiriting...",
 		"price_placeholder": "Narxni kiriting",
 		"location_placeholder": "Manzilni kiriting",
-		"extra_info_placeholder": "Qo'shimcha ma'lumot kiriting"
+		"extra_info_placeholder": "Qo'shimcha ma'lumot kiriting",
+		"errors": {
+			"title": "Sarlavha kiriting",
+			"category": "Kategoriya kiriting",
+			"description": "Tavsif kiriting",
+			"price": "Narx kiriting",
+			"location": "Manzil kiriting",
+			"images": "Kamida bitta rasm kerak"
+		}
 	},
 	"form_elements": {
 		"select": {
 			"no_framework_found": "Ma'lumot topilmadi"
+		}
+	},
+	"car": {
+		"upload_images": "Rasmlarni yuklash",
+		"car_information": "Avtomobil ma'lumotlari",
+		"car_brand": "Avtomobil markasi",
+		"car_brand_placeholder": "Masalan, Toyota",
+		"car_model": "Avtomobil modeli",
+		"car_model_placeholder": "Masalan, Camry",
+		"year": "Yil",
+		"year_placeholder": "2018",
+		"mileage": "Yurgan masofa",
+		"mileage_placeholder": "120000 km",
+		"fuel_type": "Yoqilg'i turi",
+		"petrol": "Benzin",
+		"gas": "Gaz",
+		"hybrid": "Gibrid",
+		"electric": "Elektr",
+		"transmission": "Uzatmalar qutisi",
+		"automatic": "Avtomat",
+		"manual": "Mexanika",
+		"selling_details": "Sotish tafsilotlari",
+		"price": "Narx",
+		"price_placeholder": "0",
+		"negotiable": "Kelishish mumkin",
+		"condition": "Holati",
+		"new": "Yangi",
+		"used": "Ishlatilgan",
+		"needs_repair": "Ta'mir talab",
+		"location": "Manzil",
+		"location_placeholder": "Uchrashuv joyini tanlang",
+		"landmark": "Mo'ljal",
+		"landmark_placeholder": "Masalan, Amir Temur maydoni yonida",
+		"additional_notes": "Qo'shimcha izohlar",
+		"additional_notes_placeholder": "Har qanday baxtsiz hodisalar, ta'mirlash, maxsus xususiyatlar yoki boshqa tafsilotlar",
+		"post_car": "Avtomobilni joylashtirish",
+		"errors": {
+			"brand": "Avtomobil markasi kiriting",
+			"model": "Avtomobil modeli kiriting",
+			"year": "Yilni kiriting",
+			"mileage": "Yurgan masofani kiriting",
+			"price": "Narxni kiriting",
+			"location": "Manzilni kiriting",
+			"images": "Kamida bitta rasm kerak"
 		}
 	}
 }

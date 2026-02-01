@@ -52,11 +52,63 @@
 		"description_placeholder": "Введите описание...",
 		"price_placeholder": "Введите цену",
 		"location_placeholder": "Введите местоположение",
-		"extra_info_placeholder": "Введите дополнительную информацию"
+		"extra_info_placeholder": "Введите дополнительную информацию",
+		"errors": {
+			"title": "Название обязательно",
+			"category": "Категория обязательно",
+			"description": "Описание обязательно",
+			"price": "Цена обязательно",
+			"location": "Местоположение обязательно",
+			"images": "Требуется хотя бы одно изображение"
+		}
 	},
 	"form_elements": {
 		"select": {
 			"no_framework_found": "Нет данных"
+		}
+	},
+	"car": {
+		"upload_images": "Загрузить изображения",
+		"car_information": "Информация об автомобиле",
+		"car_brand": "Марка автомобиля",
+		"car_brand_placeholder": "напр., Toyota",
+		"car_model": "Модель автомобиля",
+		"car_model_placeholder": "напр., Camry",
+		"year": "Год",
+		"year_placeholder": "2018",
+		"mileage": "Пробег",
+		"mileage_placeholder": "120000 км",
+		"fuel_type": "Тип топлива",
+		"petrol": "Бензин",
+		"gas": "Газ",
+		"hybrid": "Гибрид",
+		"electric": "Электро",
+		"transmission": "Коробка передач",
+		"automatic": "Автомат",
+		"manual": "Механика",
+		"selling_details": "Детали продажи",
+		"price": "Цена",
+		"price_placeholder": "0",
+		"negotiable": "Торг",
+		"condition": "Состояние",
+		"new": "Новый",
+		"used": "Б/у",
+		"needs_repair": "Требует ремонта",
+		"location": "Местоположение",
+		"location_placeholder": "Выберите место встречи",
+		"landmark": "Ориентир",
+		"landmark_placeholder": "напр., Возле площади Амира Темура",
+		"additional_notes": "Дополнительные примечания",
+		"additional_notes_placeholder": "Любые аварии, ремонты, особенности или другие детали",
+		"post_car": "Разместить автомобиль",
+		"errors": {
+			"brand": "Марка автомобиля обязательна",
+			"model": "Модель автомобиля обязательна",
+			"year": "Год обязателен",
+			"mileage": "Пробег обязателен",
+			"price": "Цена обязательна",
+			"location": "Местоположение обязательно",
+			"images": "Требуется хотя бы одно изображение"
 		}
 	}
 }

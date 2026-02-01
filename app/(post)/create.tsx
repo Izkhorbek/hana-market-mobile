@@ -1,3 +1,4 @@
+import CreateCarForm from '@/components/Forms/CreateCarForm'
 import CreateThingForm from '@/components/Forms/CreateThingForm'
 import ThemedScrollView from '@/components/themed-scrollview'
 import { ThemedText } from '@/components/themed-text'
@@ -44,7 +45,7 @@ const CreatePost = () => {
   };
 
   return (
-    <ThemedScrollView style={styles.container}>
+    <ThemedScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       <ThemedText style={[styles.sectionTitle, { color: colors.text }]}>
         {t('post.select_type')}
       </ThemedText>
@@ -85,10 +86,14 @@ const CreatePost = () => {
         })}
       </ThemedView>
 
-      <CreateThingForm
+      {selectedCategory === 'cars' && <CreateCarForm />}
+      {selectedCategory === 'things' && <CreateThingForm
+        categoryOptions={categoryOptions}
+      />}
+      {/* {selectedCategory === 'works' && <CreateWorkForm
         categoryOptions={categoryOptions}
         onSubmit={handleFormSubmit}
-      />
+      />} */}
     </ThemedScrollView>
   )
 }

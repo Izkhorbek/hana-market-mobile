@@ -12,6 +12,7 @@ interface FormInputProps extends TextInputProps {
   error?: string;
   type?: 'input' | 'textarea';
   rows?: number;
+  rules?: any;
 }
 
 const FormInput = ({
@@ -23,6 +24,7 @@ const FormInput = ({
   placeholder,
   type = 'input',
   rows = 4,
+  rules,
   ...props
 }: FormInputProps) => {
   const colors = useThemeColors();
@@ -44,31 +46,36 @@ const FormInput = ({
       <Controller
         name={name!}
         control={control}
-        render={({ field: { onChange, onBlur, value } }) => (
-          <TextInput
-            style={[
-              isTextarea ? styles.textarea : styles.input,
-              {
-                backgroundColor: backgroundColor,
-                borderColor: error ? destructiveColor : colors.borderColor,
-                color: textColor,
-              },
-            ]}
-            placeholder={placeholder}
-            placeholderTextColor={placeholderColor}
-            onChangeText={onChange}
-            onBlur={onBlur}
-            value={value}
-            multiline={isTextarea}
-            numberOfLines={isTextarea ? rows : undefined}
-            textAlignVertical={isTextarea ? 'top' : 'center'}
-            {...props}
-          />
+        rules={rules}
+        render={({ field: { onChange, onBlur, value }, fieldState: { error: fieldError } }) => (
+          <>
+            <TextInput
+              style={[
+                isTextarea ? styles.textarea : styles.input,
+                {
+                  backgroundColor: backgroundColor,
+                  borderColor: (error || fieldError) ? destructiveColor : colors.borderColor,
+                  color: textColor,
+                },
+              ]}
+              placeholder={placeholder}
+              placeholderTextColor={placeholderColor}
+              onChangeText={onChange}
+              onBlur={onBlur}
+              value={value}
+              multiline={isTextarea}
+              numberOfLines={isTextarea ? rows : undefined}
+              textAlignVertical={isTextarea ? 'top' : 'center'}
+              {...props}
+            />
+            {(error || fieldError?.message) && (
+              <Text style={[styles.errorText, { color: destructiveColor }]}>
+                {error || fieldError?.message}
+              </Text>
+            )}
+          </>
         )}
       />
-      {error && (
-        <Text style={[styles.errorText, { color: destructiveColor }]}>{error}</Text>
-      )}
     </View>
   );
 };

@@ -52,11 +52,63 @@
 		"description_placeholder": "Enter description...",
 		"price_placeholder": "Enter price",
 		"location_placeholder": "Enter location",
-		"extra_info_placeholder": "Enter additional information"
+		"extra_info_placeholder": "Enter additional information",
+		"errors": {
+			"title": "Title is required",
+			"category": "Category is required",
+			"description": "Description is required",
+			"price": "Price is required",
+			"location": "Location is required",
+			"images": "At least one image is required"
+		}
 	},
 	"form_elements": {
 		"select": {
 			"no_framework_found": "No data found"
+		}
+	},
+	"car": {
+		"upload_images": "Upload Images",
+		"car_information": "Car Information",
+		"car_brand": "Car Brand",
+		"car_brand_placeholder": "e.g., Toyota",
+		"car_model": "Car Model",
+		"car_model_placeholder": "e.g., Camry",
+		"year": "Year",
+		"year_placeholder": "2018",
+		"mileage": "Mileage",
+		"mileage_placeholder": "120000 km",
+		"fuel_type": "Fuel Type",
+		"petrol": "Petrol",
+		"gas": "Gas",
+		"hybrid": "Hybrid",
+		"electric": "Electric",
+		"transmission": "Transmission",
+		"automatic": "Automatic",
+		"manual": "Manual",
+		"selling_details": "Selling Details",
+		"price": "Price",
+		"price_placeholder": "0",
+		"negotiable": "Negotiable",
+		"condition": "Condition",
+		"new": "New",
+		"used": "Used",
+		"needs_repair": "Needs Repair",
+		"location": "Location",
+		"location_placeholder": "Select meeting location",
+		"landmark": "Landmark",
+		"landmark_placeholder": "e.g., Near Amir Temur Square",
+		"additional_notes": "Additional Notes",
+		"additional_notes_placeholder": "Any accidents, repairs, special features, or other details",
+		"post_car": "Post Car",
+		"errors": {
+			"brand": "Car brand is required",
+			"model": "Car model is required",
+			"year": "Year is required",
+			"mileage": "Mileage is required",
+			"price": "Price is required",
+			"location": "Location is required",
+			"images": "At least one image is required"
 		}
 	}
 }

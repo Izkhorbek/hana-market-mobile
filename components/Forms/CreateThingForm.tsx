@@ -13,12 +13,10 @@ import RadioButtonGroup, { RadioOption } from '../FormElements/RadioButtonGroup'
 
 interface CreateThingFormProps {
   categoryOptions?: OptionType[];
-  onSubmit?: (data: any) => void;
 }
 
 const CreateThingForm = ({
   categoryOptions = [],
-  onSubmit,
 }: CreateThingFormProps) => {
   const { t } = useTranslations();
   const primaryColor = useColor('primaryColor');
@@ -35,10 +33,10 @@ const CreateThingForm = ({
       currency: 'SUM',
       canDeal: false,
       location: '',
-      extraInfo: '',
     },
   });
 
+  const { formState: { errors } } = form;
   const sellingMethod = form.watch('sellingMethod');
   const currency = form.watch('currency');
 
@@ -55,7 +53,7 @@ const CreateThingForm = ({
 
   const handleSubmit = form.handleSubmit((data) => {
     console.log('Form Data:', data);
-    onSubmit?.(data);
+    // TODO: Submit data to API
   });
 
   const handleOpenMap = () => {
@@ -75,6 +73,9 @@ const CreateThingForm = ({
             control={form.control}
             name="images"
             maxImages={5}
+            rules={{
+              validate: (value: string[]) => value.length > 0 || t('post.errors.images'),
+            }}
           />
         </View>
 
@@ -90,6 +91,9 @@ const CreateThingForm = ({
             label={t('post.title')}
             placeholder={t('post.title_placeholder')}
             required
+            rules={{
+              required: t('post.errors.title'),
+            }}
           />
 
           <FormSelect
@@ -99,6 +103,9 @@ const CreateThingForm = ({
             placeholder={t('post.category')}
             options={categoryOptions}
             required
+            rules={{
+              required: t('post.errors.category'),
+            }}
           />
 
           <FormInput
@@ -108,7 +115,6 @@ const CreateThingForm = ({
             placeholder={t('post.description_placeholder')}
             type="textarea"
             rows={5}
-            required
           />
         </View>
 
@@ -135,6 +141,9 @@ const CreateThingForm = ({
                     placeholder={t('post.price_placeholder')}
                     keyboardType="numeric"
                     required
+                    rules={{
+                      required: t('post.errors.price'),
+                    }}
                   />
                 </View>
                 <View style={styles.currencyButtons}>
@@ -195,6 +204,9 @@ const CreateThingForm = ({
                 label={t('post.location')}
                 placeholder={t('post.location_placeholder')}
                 required
+                rules={{
+                  required: t('post.errors.location'),
+                }}
               />
             </View>
             <TouchableOpacity
@@ -205,15 +217,6 @@ const CreateThingForm = ({
               <MapPin size={24} color="#fff" strokeWidth={2} />
             </TouchableOpacity>
           </View>
-
-          <FormInput
-            control={form.control}
-            name="extraInfo"
-            label={t('post.extra_info')}
-            placeholder={t('post.extra_info_placeholder')}
-            type="textarea"
-            rows={3}
-          />
         </View>
       </View>
 
