@@ -37,7 +37,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingBottom: 8,
     paddingHorizontal: 14,
-    borderWidth: 1,
+    borderBottomWidth: 1,
   },
   currentCity: {
     fontSize: 24,

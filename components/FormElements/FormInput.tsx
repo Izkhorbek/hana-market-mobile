@@ -55,7 +55,7 @@ const FormInput = ({
                 {
                   backgroundColor: backgroundColor,
                   borderColor: (error || fieldError) ? destructiveColor : colors.borderColor,
-                  color: textColor,
+                  color: textColor, 
                 },
               ]}
               placeholder={placeholder}
@@ -82,7 +82,7 @@ const FormInput = ({
 
 const styles = StyleSheet.create({
   container: {
-    marginVertical: 8,
+    marginVertical: 0,
   },
   labelContainer: {
     flexDirection: 'row',

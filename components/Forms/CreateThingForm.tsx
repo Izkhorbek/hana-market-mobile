@@ -8,6 +8,7 @@ import { MapPin } from 'lucide-react-native';
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import FormRow from '../FormElements/FormRow';
 import ImageUploader from '../FormElements/ImageUploader';
 import RadioButtonGroup, { RadioOption } from '../FormElements/RadioButtonGroup';
 
@@ -132,7 +133,7 @@ const CreateThingForm = ({
 
           {sellingMethod === 'for_sale' && (
             <>
-              <View style={styles.priceInputContainer}>
+              <FormRow>
                 <View style={styles.priceInputWrapper}>
                   <FormInput
                     control={form.control}
@@ -180,7 +181,7 @@ const CreateThingForm = ({
                     ]}>USD</Text>
                   </TouchableOpacity>
                 </View>
-              </View>
+              </FormRow>
               <FormCheckbox
                 control={form.control}
                 name="canDeal"
@@ -196,7 +197,7 @@ const CreateThingForm = ({
             {t('post.meeting')}
           </Text>
 
-          <View style={styles.locationInputContainer}>
+          <FormRow>
             <View style={styles.locationInputWrapper}>
               <FormInput
                 control={form.control}
@@ -216,7 +217,7 @@ const CreateThingForm = ({
             >
               <MapPin size={24} color="#fff" strokeWidth={2} />
             </TouchableOpacity>
-          </View>
+          </FormRow>
         </View>
       </View>
 

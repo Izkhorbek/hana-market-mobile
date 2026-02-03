@@ -1,5 +1,6 @@
 import CreateCarForm from '@/components/Forms/CreateCarForm'
 import CreateThingForm from '@/components/Forms/CreateThingForm'
+import CreateWorksForm from '@/components/Forms/CreateWorksForm'
 import ThemedScrollView from '@/components/themed-scrollview'
 import { ThemedText } from '@/components/themed-text'
 import { ThemedView } from '@/components/themed-view'
@@ -90,10 +91,7 @@ const CreatePost = () => {
       {selectedCategory === 'things' && <CreateThingForm
         categoryOptions={categoryOptions}
       />}
-      {/* {selectedCategory === 'works' && <CreateWorkForm
-        categoryOptions={categoryOptions}
-        onSubmit={handleFormSubmit}
-      />} */}
+      {selectedCategory === 'works' && <CreateWorksForm />}
     </ThemedScrollView>
   )
 }

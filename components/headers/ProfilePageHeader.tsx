@@ -1,0 +1,45 @@
+import { useThemeColors } from '@/hooks/use-theme-colors';
+import { useTranslations } from '@/hooks/use-translation';
+import { Platform, StyleSheet } from 'react-native';
+import { ThemedText } from '../themed-text';
+import { ThemedView } from '../themed-view';
+
+const ProfilePageHeader = () => {
+  const { t } = useTranslations();
+  const colors = useThemeColors();
+
+  return (
+    <ThemedView
+      style={[
+        styles.container,
+        {
+          backgroundColor: colors.background,
+          borderBottomColor: colors.borderColor,
+        },
+      ]}
+    >
+      <ThemedText style={[styles.title, { color: colors.blackIcon }]}>
+        {t('profile.title')}
+      </ThemedText>
+    </ThemedView>
+  );
+};
+
+export default ProfilePageHeader;
+
+const styles = StyleSheet.create({
+  container: {
+    height: Platform.OS === 'ios' ? 90 : 75,
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
+    paddingBottom: 8,
+    paddingHorizontal: 20,
+    borderBottomWidth: 1,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: '700',
+  },
+});

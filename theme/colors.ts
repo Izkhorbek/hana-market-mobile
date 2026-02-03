@@ -6,6 +6,8 @@ const lightColors = {
 	card: '#F2F2F7',
 	cardForeground: '#000000',
 
+	profileCard: '#ffffffff',
+
 	// Popover colors
 	popover: '#F2F2F7',
 	popoverForeground: '#000000',
@@ -73,6 +75,7 @@ const lightColors = {
 	subText: '#939496',
 
 	background: '#fff',
+	profileBackground:"#f7f9fa",
 	taBarBg: '#fff',
 
 	// tab icons related colors
@@ -98,6 +101,8 @@ const darkColors = {
 	// Card colors
 	card: '#1C1C1E',
 	cardForeground: '#FFFFFF',
+
+	profileCard: '#252528ff',
 
 	// Popover colors
 	popover: '#18181b',
@@ -162,6 +167,7 @@ const darkColors = {
 	subText: '#939496',
 
 	background: '#1D1D24',
+	profileBackground:"#1D1D24",
 	taBarBg: '#1D1D24',
 
 	// tab icons related colors

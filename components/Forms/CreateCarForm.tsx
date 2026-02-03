@@ -6,6 +6,7 @@ import { MapPin } from 'lucide-react-native';
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import FormRow from '../FormElements/FormRow';
 import ImageUploader from '../FormElements/ImageUploader';
 import RadioButtonGroup, { RadioOption } from '../FormElements/RadioButtonGroup';
 
@@ -145,7 +146,7 @@ const CreateCarForm = () => {
             }}
           />
 
-          <View style={styles.rowInputs}>
+          <FormRow>
             <View style={styles.halfInput}>
               <FormInput
                 control={form.control}
@@ -172,7 +173,7 @@ const CreateCarForm = () => {
                 }}
               />
             </View>
-          </View>
+          </FormRow>
 
           <View style={styles.radioSection}>
             <Text style={[styles.radioLabel, { color: textColor }]}>
@@ -203,7 +204,7 @@ const CreateCarForm = () => {
             {t('car.selling_details')}
           </Text>
 
-          <View style={styles.priceInputContainer}>
+          <FormRow>
             <View style={styles.priceInputWrapper}>
               <FormInput
                 control={form.control}
@@ -251,7 +252,7 @@ const CreateCarForm = () => {
                 ]}>USD</Text>
               </TouchableOpacity>
             </View>
-          </View>
+          </FormRow>
 
           <FormCheckbox
             control={form.control}
@@ -270,7 +271,7 @@ const CreateCarForm = () => {
             />
           </View>
 
-          <View style={styles.locationInputContainer}>
+          <FormRow>
             <View style={styles.locationInputWrapper}>
               <FormInput
                 control={form.control}
@@ -290,7 +291,7 @@ const CreateCarForm = () => {
             >
               <MapPin size={24} color="#fff" strokeWidth={2} />
             </TouchableOpacity>
-          </View>
+          </FormRow>
 
           <FormInput
             control={form.control}
@@ -371,7 +372,6 @@ const styles = StyleSheet.create({
   currencyButtons: {
     flexDirection: 'column',
     gap: 6,
-    marginTop: 30, // Align with input (label height + margin)
   },
   currencyButton: {
     width: 52,
