@@ -10,6 +10,7 @@ interface ProfileMenuItemProps {
   badge?: string;
   onPress?: () => void;
   showChevron?: boolean;
+  rightContent?: React.ReactNode;
 }
 
 const ProfileMenuItem = ({
@@ -19,11 +20,11 @@ const ProfileMenuItem = ({
   badge,
   onPress,
   showChevron = true,
+  rightContent,
 }: ProfileMenuItemProps) => {
   const cardColor = useColor('profileCard');
   const textColor = useColor('text');
-  const mutedTextColor = useColor('textMuted');
-  const mutedColor = useColor('muted');
+  const mutedTextColor = useColor('textMuted'); 
 
   return (
     <TouchableOpacity
@@ -52,8 +53,12 @@ const ProfileMenuItem = ({
         </View>
       )}
 
-      {showChevron && (
-        <ChevronRight size={20} color={mutedTextColor} strokeWidth={2} />
+      {rightContent ? (
+        rightContent
+      ) : (
+        showChevron && (
+          <ChevronRight size={20} color={mutedTextColor} strokeWidth={2} />
+          )
       )}
     </TouchableOpacity>
   );

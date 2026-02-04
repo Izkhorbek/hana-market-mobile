@@ -1,36 +1,52 @@
 import ProfilePageHeader from '@/components/headers/ProfilePageHeader';
+import { LanguageSelector } from '@/components/Settings/LanguageSelector';
+import { Switch } from '@/components/ui/switch';
 import { useThemeColors } from '@/hooks/use-theme-colors';
 import { useTranslations } from '@/hooks/use-translation';
 import { useColor } from '@/hooks/useColor';
+import { useModeToggle } from '@/hooks/useModeToggle';
 import ProfileHeader from '@/modules/Profile/ProfileHeader';
 import ProfileMenuItem from '@/modules/Profile/ProfileMenuItem';
 import ProfileSection from '@/modules/Profile/ProfileSection';
 import {
   Bell,
   FileText,
+  Globe,
   Heart,
   HelpCircle,
   Home,
   MapPin,
   MessageCircle,
   MessageSquare,
+  Moon,
   Package,
   Settings,
   ShieldCheck,
   Sparkles,
 } from 'lucide-react-native';
-import React from 'react';
+import React, { useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 const ProfilePage = () => {
-  const { t } = useTranslations();
-  const colors = useThemeColors()
+  const { t, locale } = useTranslations();
+  const colors = useThemeColors();
   const backgroundColor = useColor('background');
   const mutedTextColor = useColor('textMuted');
+  const { isDark, setMode } = useModeToggle();
+  const [isLanguageModalVisible, setIsLanguageModalVisible] = useState(false);
 
   const handleNavigation = (route: string) => {
     console.log('Navigate to:', route);
     // TODO: Add navigation logic
+  };
+
+  const getLanguageName = (code: string) => {
+    const languages: Record<string, string> = {
+      en: 'English',
+      uz: 'O\'zbekcha',
+      ru: 'Русский',
+    };
+    return languages[code] || code;
   };
 
   return (
@@ -104,6 +120,27 @@ const ProfilePage = () => {
           />
         </ProfileSection>
 
+        {/* Appearance Section */}
+        <ProfileSection title={t('profile.appearance')}>
+          <ProfileMenuItem
+            icon={Globe}
+            title={t('profile.language')}
+            subtitle={getLanguageName(locale)}
+            onPress={() => setIsLanguageModalVisible(true)}
+          />
+          <ProfileMenuItem
+            icon={Moon}
+            title={t('profile.theme')}
+            showChevron={false}
+            rightContent={
+              <Switch
+                value={isDark}
+                onValueChange={(value) => setMode(value ? 'dark' : 'light')}
+              />
+            }
+          />
+        </ProfileSection>
+
         {/* Support & Information Section */}
         <ProfileSection title={t('profile.support_information')}>
           <ProfileMenuItem
@@ -138,6 +175,12 @@ const ProfilePage = () => {
           {t('profile.app_version')}
         </Text>
       </ScrollView>
+
+      {/* Language Selector Modal */}
+      <LanguageSelector
+        isVisible={isLanguageModalVisible}
+        onClose={() => setIsLanguageModalVisible(false)}
+      />
     </View>
   );
 };
