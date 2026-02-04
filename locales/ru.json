@@ -177,7 +177,7 @@
 		}
 	},
 	"profile": {
-		"title": "Мой Небр",
+		"title": "Хана Маркет",
 		"active": "Активен",
 		"my_activity": "МОЯ АКТИВНОСТЬ",
 		"listings": "Объявления",
@@ -197,8 +197,18 @@
 		"contact_us": "Связаться с нами",
 		"whats_new": "Что нового",
 		"feedback": "Обратная связь",
-		"about": "О Небр",
+		"about": "О Хана Маркет",
 		"terms_policies": "Условия и политика",
-		"app_version": "Nebr Market v1.0.0"
+		"app_version": "Hana Market v1.0.0"
+	},
+	"chat": {
+		"title": "Чаты",
+		"filter_all": "Все",
+		"filter_selling": "Продажа",
+		"filter_buying": "Покупка",
+		"filter_unread": "Непрочитанные",
+		"notification_banner": "НОВИНКА! Теперь вы можете сохранять сообщения.",
+		"empty_state": "Пока нет чатов",
+		"empty_state_description": "Начните разговор, чтобы увидеть его здесь"
 	}
 }

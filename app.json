@@ -48,8 +48,12 @@
 					}
 				}
 			],
-			"expo-localization"
+			"expo-localization",
+			"./plugins/withYandexMaps"
 		],
+		"extra": {
+			"mapKitApiKey": "24ebf5ac-ba8e-47a7-b146-603f38894d2d"
+		},
 		"experiments": {
 			"typedRoutes": true,
 			"reactCompiler": true

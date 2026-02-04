@@ -177,7 +177,7 @@
 		}
 	},
 	"profile": {
-		"title": "My Nebr",
+		"title": "Hana Market",
 		"active": "Active",
 		"my_activity": "MY ACTIVITY",
 		"listings": "Listings",
@@ -197,8 +197,18 @@
 		"contact_us": "Contact us",
 		"whats_new": "What's new",
 		"feedback": "Feedback",
-		"about": "About Nebr",
+		"about": "About Hana Market",
 		"terms_policies": "Terms and policies",
-		"app_version": "Nebr Market v1.0.0"
+		"app_version": "Hana Market v1.0.0"
+	},
+	"chat": {
+		"title": "Chats",
+		"filter_all": "All",
+		"filter_selling": "Selling",
+		"filter_buying": "Buying",
+		"filter_unread": "Unread",
+		"notification_banner": "NEW! You can now save messages.",
+		"empty_state": "No chats yet",
+		"empty_state_description": "Start a conversation to see it here"
 	}
 }

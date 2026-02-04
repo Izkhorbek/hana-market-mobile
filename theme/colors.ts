@@ -102,7 +102,7 @@ const darkColors = {
 	card: '#1C1C1E',
 	cardForeground: '#FFFFFF',
 
-	profileCard: '#252528ff',
+	profileCard: '#33333dff',
 
 	// Popover colors
 	popover: '#18181b',

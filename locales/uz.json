@@ -177,7 +177,7 @@
 		}
 	},
 	"profile": {
-		"title": "Mening Nebr",
+		"title": "Hana Market",
 		"active": "Faol",
 		"my_activity": "MENING FAOLIYATIM",
 		"listings": "E'lonlar",
@@ -197,8 +197,18 @@
 		"contact_us": "Biz bilan bog'lanish",
 		"whats_new": "Yangiliklar",
 		"feedback": "Fikr-mulohaza",
-		"about": "Nebr haqida",
+		"about": "Hana Market haqida",
 		"terms_policies": "Shartlar va siyosat",
-		"app_version": "Nebr Market v1.0.0"
+		"app_version": "Hana Market v1.0.0"
+	},
+	"chat": {
+		"title": "Chatlar",
+		"filter_all": "Hammasi",
+		"filter_selling": "Sotish",
+		"filter_buying": "Sotib olish",
+		"filter_unread": "O'qilmagan",
+		"notification_banner": "YANGILIK! Endi siz xabarlarni saqlashingiz mumkin.",
+		"empty_state": "Hali chatlar yo'q",
+		"empty_state_description": "Suhbatni boshlang va bu yerda ko'ring"
 	}
 }
