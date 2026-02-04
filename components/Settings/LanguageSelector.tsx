@@ -38,6 +38,7 @@ export function LanguageSelector({ isVisible, onClose }: LanguageSelectorProps) 
       isVisible={isVisible}
       onClose={onClose}
       snapPoints={[0.4]}
+      style={{ backgroundColor: colors.background }}
       enableBackdropDismiss={true}
       // title={t('profile.select_language')}
     >
@@ -51,7 +52,7 @@ export function LanguageSelector({ isVisible, onClose }: LanguageSelectorProps) 
               style={[
                 styles.languageItem,
                 { 
-                  backgroundColor: colors.card,
+                  backgroundColor: 'transparent',
                   borderColor: isSelected ? colors.primaryColor : colors.muted,
                 },
               ]}

@@ -23,6 +23,7 @@ export function MarkerDetailModal({ marker, isVisible, onClose }: MarkerDetailMo
       isVisible={isVisible}
       onClose={onClose}
       snapPoints={[0.4]}
+      style={{ backgroundColor: colors.background }}
       enableBackdropDismiss={true}
       disablePanGesture={false}
     >
