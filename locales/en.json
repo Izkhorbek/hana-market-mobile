@@ -232,6 +232,24 @@
 		"success": "Success",
 		"preferences_saved": "Your neighborhood preferences have been saved"
 	},
+	"my_listings": {
+		"title": "My Listings",
+		"tab_active": "Active",
+		"tab_sold": "Sold",
+		"tab_hidden": "Hidden",
+		"views": "Views",
+		"likes": "Likes",
+		"sold_badge": "SOLD",
+		"empty_state": "No listings yet",
+		"actions": {
+			"edit": "Edit",
+			"delete": "Delete",
+			"hide": "Hide",
+			"unhide": "Unhide",
+			"mark_sold": "Mark as Sold",
+			"mark_active": "Mark as Active"
+		}
+	},
 	"edit_profile": {
 		"title": "Edit Profile",
 		"profile_photo": "Profile Photo",

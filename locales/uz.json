@@ -232,6 +232,24 @@
 		"success": "Muvaffaqiyatli",
 		"preferences_saved": "Mahalla sozlamalaringiz saqlandi"
 	},
+	"my_listings": {
+		"title": "Mening e'lonlarim",
+		"tab_active": "Faol",
+		"tab_sold": "Sotilgan",
+		"tab_hidden": "Yashirin",
+		"views": "Ko'rishlar",
+		"likes": "Yoqtirishlar",
+		"sold_badge": "SOTILDI",
+		"empty_state": "Hali e'lonlar yo'q",
+		"actions": {
+			"edit": "Tahrirlash",
+			"delete": "O'chirish",
+			"hide": "Yashirish",
+			"unhide": "Ko'rsatish",
+			"mark_sold": "Sotilgan deb belgilash",
+			"mark_active": "Faol deb belgilash"
+		}
+	},
 	"edit_profile": {
 		"title": "Profilni tahrirlash",
 		"profile_photo": "Profil rasmi",

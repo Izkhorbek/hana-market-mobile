@@ -178,7 +178,7 @@ const darkColors = {
 	// tab icons related colors
 	tabIconBackground: '#343441',
 	tabIconDefault: '#5D5D74',
-	tabIconSelected: '#A4A4B6',
+	tabIconSelected: '#02A348',
 
 	// main colors
 	primaryColor: '#02A348',

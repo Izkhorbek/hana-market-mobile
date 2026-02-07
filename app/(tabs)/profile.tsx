@@ -41,6 +41,8 @@ const ProfilePage = () => {
 			router.push('/(settings)/manage')
 		} else if (route === 'edit-profile') {
 			router.push('/(settings)/edit-profile')
+		} else if (route === 'listings') {
+			router.push('/(settings)/my-listings')
 		} else {
 			console.log('Navigate to:', route)
 			// TODO: Add navigation logic for other routes
