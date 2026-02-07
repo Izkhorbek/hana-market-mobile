@@ -231,5 +231,38 @@
 		"save_error": "Could not save your preferences",
 		"success": "Success",
 		"preferences_saved": "Your neighborhood preferences have been saved"
+	},
+	"edit_profile": {
+		"title": "Edit Profile",
+		"profile_photo": "Profile Photo",
+		"photo_hint": "Click the camera icon to upload a new photo",
+		"personal_info": "Personal Information",
+		"first_name": "First Name",
+		"first_name_placeholder": "Enter your first name",
+		"last_name": "Last Name",
+		"last_name_placeholder": "Enter your last name",
+		"note_title": "Note:",
+		"note_text": "Your profile information helps build trust with other users in your community. Make sure your name is accurate.",
+		"save_changes": "Save Changes",
+		"saving": "Saving...",
+		"permission_denied": "Permission Denied",
+		"photo_permission_message": "Please allow access to your photos to upload a profile picture",
+		"error": "Error",
+		"name_required": "First name and last name are required",
+		"save_error": "Could not save your profile",
+		"success": "Success",
+		"profile_saved": "Your profile has been updated",
+		"unsaved_changes": "Unsaved Changes",
+		"unsaved_changes_message": "You have unsaved changes. Are you sure you want to discard them?",
+		"cancel": "Cancel",
+		"discard": "Discard",
+		"errors": {
+			"first_name_required": "First name is required",
+			"first_name_min": "First name must be at least 2 characters",
+			"first_name_max": "First name must be less than 50 characters",
+			"last_name_required": "Last name is required",
+			"last_name_min": "Last name must be at least 2 characters",
+			"last_name_max": "Last name must be less than 50 characters"
+		}
 	}
 }

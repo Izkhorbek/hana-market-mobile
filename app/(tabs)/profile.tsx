@@ -39,6 +39,8 @@ const ProfilePage = () => {
 	const handleNavigation = (route: string) => {
 		if (route === 'manage-neighborhood') {
 			router.push('/(settings)/manage')
+		} else if (route === 'edit-profile') {
+			router.push('/(settings)/edit-profile')
 		} else {
 			console.log('Navigate to:', route)
 			// TODO: Add navigation logic for other routes
@@ -68,7 +70,7 @@ const ProfilePage = () => {
 					name='John Doe'
 					status={t('profile.active')}
 					temperature='36.3°C'
-					onPress={() => handleNavigation('profile-details')}
+					onPress={() => handleNavigation('edit-profile')}
 				/>
 
 				{/* My Activity Section */}

@@ -92,6 +92,11 @@ const lightColors = {
 
 	tint: '#02A348',
 	borderColor: '#eeeeeeff',
+
+	// Info/Note card colors
+	infoCardBg: '#EFF6FF',
+	infoCardBorder: '#DBEAFE',
+	infoCardText: '#1E40AF',
 }
 
 const darkColors = {
@@ -185,6 +190,11 @@ const darkColors = {
 
 	tint: '#fff',
 	borderColor: '#49495B',
+
+	// Info/Note card colors (dark mode)
+	infoCardBg: '#1E3A5F',
+	infoCardBorder: '#2D4A6F',
+	infoCardText: '#93C5FD',
 }
 
 export const Colors = {

@@ -1,10 +1,11 @@
-import { Stack } from 'expo-router';
-import React from 'react';
+import { Stack } from 'expo-router'
+import React from 'react'
 
-export default function NeighborhoodLayout() {
-  return (
-    <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="manage" />
-    </Stack>
-  );
+export default function SettingsLayout() {
+	return (
+		<Stack screenOptions={{ headerShown: false }}>
+			<Stack.Screen name='manage' options={{ headerShown: false }} />
+			<Stack.Screen name='edit-profile' options={{ headerShown: false }} />
+		</Stack>
+	)
 }

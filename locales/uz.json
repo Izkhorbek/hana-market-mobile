@@ -231,5 +231,38 @@
 		"save_error": "Sozlamalaringizni saqlab bo'lmadi",
 		"success": "Muvaffaqiyatli",
 		"preferences_saved": "Mahalla sozlamalaringiz saqlandi"
+	},
+	"edit_profile": {
+		"title": "Profilni tahrirlash",
+		"profile_photo": "Profil rasmi",
+		"photo_hint": "Yangi rasm yuklash uchun kamera belgisini bosing",
+		"personal_info": "Shaxsiy ma'lumotlar",
+		"first_name": "Ism",
+		"first_name_placeholder": "Ismingizni kiriting",
+		"last_name": "Familiya",
+		"last_name_placeholder": "Familiyangizni kiriting",
+		"note_title": "Eslatma:",
+		"note_text": "Profil ma'lumotlaringiz jamiyatingizdagi boshqa foydalanuvchilar bilan ishonchni mustahkamlashga yordam beradi. Ismingiz to'g'ri ekanligiga ishonch hosil qiling.",
+		"save_changes": "O'zgarishlarni saqlash",
+		"saving": "Saqlanmoqda...",
+		"permission_denied": "Ruxsat berilmadi",
+		"photo_permission_message": "Profil rasmini yuklash uchun rasmlaringizga kirishga ruxsat bering",
+		"error": "Xatolik",
+		"name_required": "Ism va familiya talab qilinadi",
+		"save_error": "Profilingizni saqlab bo'lmadi",
+		"success": "Muvaffaqiyatli",
+		"profile_saved": "Profilingiz yangilandi",
+		"unsaved_changes": "Saqlanmagan o'zgarishlar",
+		"unsaved_changes_message": "Sizda saqlanmagan o'zgarishlar bor. Ularni bekor qilmoqchimisiz?",
+		"cancel": "Bekor qilish",
+		"discard": "Tashlab yuborish",
+		"errors": {
+			"first_name_required": "Ism talab qilinadi",
+			"first_name_min": "Ism kamida 2 ta belgidan iborat bo'lishi kerak",
+			"first_name_max": "Ism 50 ta belgidan kam bo'lishi kerak",
+			"last_name_required": "Familiya talab qilinadi",
+			"last_name_min": "Familiya kamida 2 ta belgidan iborat bo'lishi kerak",
+			"last_name_max": "Familiya 50 ta belgidan kam bo'lishi kerak"
+		}
 	}
 }
