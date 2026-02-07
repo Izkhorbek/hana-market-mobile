@@ -214,5 +214,22 @@
 		"notification_banner": "YANGILIK! Endi siz xabarlarni saqlashingiz mumkin.",
 		"empty_state": "Hali chatlar yo'q",
 		"empty_state_description": "Suhbatni boshlang va bu yerda ko'ring"
+	},
+	"neighborhood": {
+		"title": "Mahallani boshqarish",
+		"current_neighborhood": "Joriy mahalla",
+		"search_radius": "Qidiruv radiusi",
+		"km": "km",
+		"description": "Afzal masofangiz ichidagi e'lonlarni ko'rish uchun radiusni sozlang",
+		"save_preferences": "Sozlamalarni saqlash",
+		"saving": "Saqlanmoqda...",
+		"loading": "Yuklanmoqda...",
+		"permission_denied": "Ruxsat berilmadi",
+		"permission_message": "Ushbu funksiyadan foydalanish uchun joylashuv xizmatlarini yoqing",
+		"error": "Xatolik",
+		"location_error": "Joriy joylashuvingizni aniqlab bo'lmadi",
+		"save_error": "Sozlamalaringizni saqlab bo'lmadi",
+		"success": "Muvaffaqiyatli",
+		"preferences_saved": "Mahalla sozlamalaringiz saqlandi"
 	}
 }

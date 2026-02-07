@@ -75,7 +75,7 @@ const lightColors = {
 	subText: '#939496',
 
 	background: '#fff',
-	profileBackground:"#f7f9fa",
+	profileBackground: '#f7f9fa',
 	taBarBg: '#fff',
 
 	// tab icons related colors
@@ -167,7 +167,7 @@ const darkColors = {
 	subText: '#939496',
 
 	background: '#1D1D24',
-	profileBackground:"#1D1D24",
+	profileBackground: '#1D1D24',
 	taBarBg: '#1D1D24',
 
 	// tab icons related colors

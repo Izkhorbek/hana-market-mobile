@@ -214,5 +214,22 @@
 		"notification_banner": "NEW! You can now save messages.",
 		"empty_state": "No chats yet",
 		"empty_state_description": "Start a conversation to see it here"
+	},
+	"neighborhood": {
+		"title": "Manage Neighborhood",
+		"current_neighborhood": "Current Neighborhood",
+		"search_radius": "Search Radius",
+		"km": "km",
+		"description": "Adjust the radius to see listings within your preferred distance",
+		"save_preferences": "Save Preferences",
+		"saving": "Saving...",
+		"loading": "Loading...",
+		"permission_denied": "Permission Denied",
+		"permission_message": "Please enable location services to use this feature",
+		"error": "Error",
+		"location_error": "Could not get your current location",
+		"save_error": "Could not save your preferences",
+		"success": "Success",
+		"preferences_saved": "Your neighborhood preferences have been saved"
 	}
 }
