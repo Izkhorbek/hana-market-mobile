@@ -48,7 +48,7 @@ const HomeHeader = () => {
 
 const styles = StyleSheet.create({
 	container: {
-		height: Platform.OS === 'ios' ? 90 : 75,
+		height: Platform.OS === 'ios' ? 100 : 80,
 		display: 'flex',
 		flexDirection: 'row',
 		alignItems: 'flex-end',
