@@ -75,7 +75,10 @@ const ProductCard: React.FC<ProductCardProps> = ({
 				</View>
 					{/* Price and Likes Row */}
 					<View style={styles.footer}>
-						<Text style={[styles.price, { color: colors.text }]}>{price}</Text>
+						<View style={{ flexDirection: 'row', alignItems: 'center', gap: 4}}>
+							<Text style={{color: 'white',  backgroundColor : 'green', paddingHorizontal: 6 , paddingVertical:  2, borderRadius:  4 }}>{"Reserved"}</Text>
+							<Text style={[styles.price, { color: colors.text }]}>{price}</Text>
+						</View>
 						<TouchableOpacity onPress={onHeartPress} style={styles.likesContainer}>
 							<Ionicons name='heart' size={18} color={colors.subText} />
 							<Text style={[styles.likesText, { color: colors.subText }]}>{likes}</Text>
