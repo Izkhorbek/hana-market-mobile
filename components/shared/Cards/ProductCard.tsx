@@ -73,17 +73,17 @@ const ProductCard: React.FC<ProductCardProps> = ({
 						{address}
 					</Text>
 				</View>
-					{/* Price and Likes Row */}
-					<View style={styles.footer}>
-						<View style={{ flexDirection: 'row', alignItems: 'center', gap: 4}}>
-							<Text style={{color: 'white',  backgroundColor : 'green', paddingHorizontal: 6 , paddingVertical:  2, borderRadius:  4 }}>{"Reserved"}</Text>
-							<Text style={[styles.price, { color: colors.text }]}>{price}</Text>
-						</View>
-						<TouchableOpacity onPress={onHeartPress} style={styles.likesContainer}>
-							<Ionicons name='heart' size={18} color={colors.subText} />
-							<Text style={[styles.likesText, { color: colors.subText }]}>{likes}</Text>
-						</TouchableOpacity>
+				{/* Price and Likes Row */}
+				<View style={styles.footer}>
+					<View style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
+						{/* <Text style={{color: 'white',  backgroundColor : 'green', paddingHorizontal: 6 , paddingVertical:  2, borderRadius:  4 }}>{"Reserved"}</Text> */}
+						<Text style={[styles.price, { color: colors.text }]}>{price}</Text>
 					</View>
+					<TouchableOpacity onPress={onHeartPress} style={styles.likesContainer}>
+						<Ionicons name='heart' size={18} color={colors.subText} />
+						<Text style={[styles.likesText, { color: colors.subText }]}>{likes}</Text>
+					</TouchableOpacity>
+				</View>
 			</View>
 		</TouchableOpacity>
 	)
@@ -106,9 +106,8 @@ const styles = StyleSheet.create({
 	},
 	content: {
 		flex: 1,
-		// padding: 12,
 		paddingLeft: 10,
-    	paddingVertical: 2,
+		paddingVertical: 2,
 		justifyContent: 'space-between',
 	},
 	header: {
@@ -144,13 +143,12 @@ const styles = StyleSheet.create({
 	address: {
 		fontSize: 14,
 		fontWeight: '400',
-		marginTop: 2,
+		marginTop: 5,
 	},
 	footer: {
 		flexDirection: 'row',
 		justifyContent: 'space-between',
 		alignItems: 'center',
-		marginTop: 4,
 	},
 	price: {
 		fontSize: 15,

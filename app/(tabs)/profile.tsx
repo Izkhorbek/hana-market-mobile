@@ -40,9 +40,23 @@ const ProfilePage = () => {
 		if (route === 'manage-neighborhood') {
 			router.push('/(settings)/manage')
 		} else if (route === 'edit-profile') {
-			router.push('/(settings)/edit-profile')
+			router.push('/(settings)/my-profile')
 		} else if (route === 'listings') {
 			router.push('/(settings)/my-listings')
+		} else if (route === 'verification') {
+			router.push('/(settings)/verification')
+		} else if (route === 'settings') {
+			router.push('/(settings)/settings')
+		} else if (route === 'contact') {
+			router.push('/(settings)/contact')
+		} else if (route === 'whats-new') {
+			router.push('/(settings)/whats-new')
+		} else if (route === 'feedback') {
+			router.push('/(settings)/feedback')
+		} else if (route === 'about') {
+			router.push('/(settings)/about')
+		} else if (route === 'terms') {
+			router.push('/(settings)/terms')
 		} else {
 			console.log('Navigate to:', route)
 			// TODO: Add navigation logic for other routes
