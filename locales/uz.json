@@ -232,6 +232,30 @@
 		"success": "Muvaffaqiyatli",
 		"preferences_saved": "Mahalla sozlamalaringiz saqlandi"
 	},
+	"search_page": {
+		"title": "Qidiruv",
+		"placeholder": "Qidiruv",
+		"recent_searches": "Oxirgi qidiruvlar",
+		"search_results": "Qidiruv natijalari",
+		"categories": {
+			"cars": "Avto",
+			"real_estate": "Ko'chmas mulk",
+			"jobs": "Ishlar",
+			"electronics": "Elektronika",
+			"furniture": "Mebel"
+		}
+	},
+	"categories_page": {
+		"title": "Kategoriyalar",
+		"items": {
+			"electronics": "Elektronika",
+			"fashion": "Moda",
+			"home_garden": "Uy va bog'",
+			"sports": "Sport",
+			"toys_hobbies": "O'yinchoqlar va hobbi",
+			"health_beauty": "Salomatlik va go'zallik"
+		}
+	},
 	"about": {
 		"title": "Hana haqida",
 		"version": "Versiya",
@@ -455,5 +479,23 @@
 			"last_name_min": "Familiya kamida 2 ta belgidan iborat bo'lishi kerak",
 			"last_name_max": "Familiya 50 ta belgidan kam bo'lishi kerak"
 		}
+	},
+	"product_detail": {
+		"price_negotiable": "Narx kelishiladi",
+		"description": "Tavsif",
+		"meeting_location": "Uchrashuv joyi",
+		"tap_to_view_map": "Xaritada ko'rish uchun bosing",
+		"likes": "yoqtirish",
+		"views": "ko'rish",
+		"more_from_seller": "Ushbu sotuvchidan yana",
+		"similar_listings": "O'xshash e'lonlar",
+		"see_all": "Hammasini ko'rish",
+		"chat_with_seller": "Sotuvchiga yozish"
+	},
+	"chat_room": {
+		"sold": "Sotildi",
+		"safety_message": "Bu yerda xavfsiz suhbatlashishingiz va kelishuvni muvofiqlashtira olasiz.",
+		"reserved_notice": "Bu mahsulot boshqa xaridor bilan band qilingan.",
+		"type_message": "Xabar yozing"
 	}
 }

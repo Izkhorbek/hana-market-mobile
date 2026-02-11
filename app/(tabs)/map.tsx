@@ -1,11 +1,31 @@
 import GoogleMap, { MarkerData } from '@/components/Maps/GoogleMap';
 import { MarkerDetailModal } from '@/components/Maps/MarkerDetailModal';
+import { useLocalSearchParams } from 'expo-router';
 import React, { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 const MapPage = () => {
+  const params = useLocalSearchParams<{
+    latitude?: string;
+    longitude?: string;
+    markerTitle?: string;
+  }>();
   const [selectedMarker, setSelectedMarker] = useState<MarkerData | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
+
+  const latitudeParam = Number(params.latitude);
+  const longitudeParam = Number(params.longitude);
+  const hasLocationParams = Number.isFinite(latitudeParam) && Number.isFinite(longitudeParam);
+
+  const highlightedMarker: MarkerData | null = hasLocationParams
+    ? {
+        id: 'target-location',
+        latitude: latitudeParam,
+        longitude: longitudeParam,
+        title: params.markerTitle || 'Selected location',
+        description: 'Opened from product detail',
+      }
+    : null;
 
   // Sample markers with rich data
   const sampleMarkers: MarkerData[] = [
@@ -81,10 +101,24 @@ const MapPage = () => {
     setSelectedMarker(null);
   };
 
+  const allMarkers = highlightedMarker
+    ? [highlightedMarker, ...sampleMarkers.filter(marker => marker.id !== 'target-location')]
+    : sampleMarkers;
+
   return (
     <View style={styles.container}>
       <GoogleMap
-        markers={sampleMarkers}
+        markers={allMarkers}
+        initialRegion={
+          hasLocationParams
+            ? {
+                latitude: latitudeParam,
+                longitude: longitudeParam,
+                latitudeDelta: 0.02,
+                longitudeDelta: 0.02,
+              }
+            : undefined
+        }
         showControls={true}
         onMarkerPress={handleMarkerPress}
         onMapPress={(coordinate) => console.log('Map pressed:', coordinate)}

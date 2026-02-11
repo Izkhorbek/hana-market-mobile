@@ -8,6 +8,7 @@ import {
   FilterTabType,
   NotificationBanner,
 } from '@/modules/Chat';
+import { router } from 'expo-router';
 import React, { useState } from 'react';
 import { FlatList, StyleSheet, Text, View } from 'react-native';
 
@@ -94,8 +95,7 @@ const ChatPage = () => {
   ];
 
   const handleChatPress = (chatId: string) => {
-    console.log('Open chat:', chatId);
-    // TODO: Navigate to chat detail screen
+    router.push(`/chat/${chatId}`);
   };
 
   const handleFilterPress = () => {

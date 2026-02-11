@@ -97,6 +97,10 @@ const lightColors = {
 	infoCardBg: '#EFF6FF',
 	infoCardBorder: '#DBEAFE',
 	infoCardText: '#1E40AF',
+
+	// Notification banner colors
+	notificationBannerBg: '#E8F5E9',
+	notificationBannerText: '#1B5E20',
 }
 
 const darkColors = {
@@ -195,6 +199,10 @@ const darkColors = {
 	infoCardBg: '#1E3A5F',
 	infoCardBorder: '#2D4A6F',
 	infoCardText: '#93C5FD',
+
+	// Notification banner colors (dark mode)
+	notificationBannerBg: '#334155',
+	notificationBannerText: '#E2E8F0',
 }
 
 export const Colors = {

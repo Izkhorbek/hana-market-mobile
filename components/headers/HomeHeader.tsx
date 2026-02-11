@@ -15,6 +15,14 @@ const HomeHeader = () => {
 		router.push('/(settings)/manage')
 	}
 
+	const handleSearchPress = () => {
+		router.push('/search')
+	}
+
+	const handleCategoriesPress = () => {
+		router.push('/categories')
+	}
+
 	return (
 		<ThemedView
 			style={[
@@ -32,10 +40,10 @@ const HomeHeader = () => {
 				<ChevronDown size={18} color={colors.textMuted} />
 			</TouchableOpacity>
 			<ThemedView style={styles.searchContainer}>
-				<TouchableOpacity>
+				<TouchableOpacity onPress={handleCategoriesPress} activeOpacity={0.7}>
 					<Feather name='menu' size={25} color={colors.blackIcon} />
 				</TouchableOpacity>
-				<TouchableOpacity>
+				<TouchableOpacity onPress={handleSearchPress} activeOpacity={0.7}>
 					<Search size={25} color={colors.blackIcon} />
 				</TouchableOpacity>
 				<TouchableOpacity>

@@ -22,6 +22,10 @@ export default function RootLayout() {
 				<Stack.Screen name='(auth)' options={{ headerShown: false }} />
 				<Stack.Screen name='(post)' options={{ headerShown: false }} />
 				<Stack.Screen name='(settings)' options={{ headerShown: false }} />
+				<Stack.Screen name='search' options={{ headerShown: false }} />
+				<Stack.Screen name='categories' options={{ headerShown: false }} />
+				<Stack.Screen name='product/[id]' options={{ headerShown: false }} />
+				<Stack.Screen name='chat/[id]' options={{ headerShown: false }} />
 			</Stack>
 			<StatusBar barStyle={colorScheme === 'dark' ? 'light-content' : 'dark-content'} />
 			<View

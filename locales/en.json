@@ -232,6 +232,30 @@
 		"success": "Success",
 		"preferences_saved": "Your neighborhood preferences have been saved"
 	},
+	"search_page": {
+		"title": "Search",
+		"placeholder": "Search",
+		"recent_searches": "Recent Searches",
+		"search_results": "Search Results",
+		"categories": {
+			"cars": "Cars",
+			"real_estate": "Real Estate",
+			"jobs": "Jobs",
+			"electronics": "Electronics",
+			"furniture": "Furniture"
+		}
+	},
+	"categories_page": {
+		"title": "Categories",
+		"items": {
+			"electronics": "Electronics",
+			"fashion": "Fashion",
+			"home_garden": "Home & Garden",
+			"sports": "Sports",
+			"toys_hobbies": "Toys & Hobbies",
+			"health_beauty": "Health & Beauty"
+		}
+	},
 	"about": {
 		"title": "About Hana",
 		"version": "Version",
@@ -455,5 +479,23 @@
 			"last_name_min": "Last name must be at least 2 characters",
 			"last_name_max": "Last name must be less than 50 characters"
 		}
+	},
+	"product_detail": {
+		"price_negotiable": "Price negotiable",
+		"description": "Description",
+		"meeting_location": "Meeting Location",
+		"tap_to_view_map": "Tap to view on map",
+		"likes": "likes",
+		"views": "views",
+		"more_from_seller": "More from this seller",
+		"similar_listings": "Similar Listings",
+		"see_all": "See all",
+		"chat_with_seller": "Chat with seller"
+	},
+	"chat_room": {
+		"sold": "Sold",
+		"safety_message": "You can safely chat and coordinate the deal here.",
+		"reserved_notice": "This item is reserved with another buyer.",
+		"type_message": "Type a message"
 	}
 }

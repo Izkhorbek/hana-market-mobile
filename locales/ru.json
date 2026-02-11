@@ -232,6 +232,30 @@
 		"success": "Успешно",
 		"preferences_saved": "Ваши настройки района были сохранены"
 	},
+	"search_page": {
+		"title": "Поиск",
+		"placeholder": "Поиск",
+		"recent_searches": "Недавние запросы",
+		"search_results": "Результаты поиска",
+		"categories": {
+			"cars": "Авто",
+			"real_estate": "Недвижимость",
+			"jobs": "Работа",
+			"electronics": "Электроника",
+			"furniture": "Мебель"
+		}
+	},
+	"categories_page": {
+		"title": "Категории",
+		"items": {
+			"electronics": "Электроника",
+			"fashion": "Мода",
+			"home_garden": "Дом и сад",
+			"sports": "Спорт",
+			"toys_hobbies": "Игрушки и хобби",
+			"health_beauty": "Здоровье и красота"
+		}
+	},
 	"about": {
 		"title": "О Hana",
 		"version": "Версия",
@@ -455,5 +479,23 @@
 			"last_name_min": "Фамилия должна содержать не менее 2 символов",
 			"last_name_max": "Фамилия должна содержать не более 50 символов"
 		}
+	},
+	"product_detail": {
+		"price_negotiable": "Цена договорная",
+		"description": "Описание",
+		"meeting_location": "Место встречи",
+		"tap_to_view_map": "Нажмите для просмотра на карте",
+		"likes": "лайков",
+		"views": "просмотров",
+		"more_from_seller": "Ещё от этого продавца",
+		"similar_listings": "Похожие объявления",
+		"see_all": "Смотреть все",
+		"chat_with_seller": "Написать продавцу"
+	},
+	"chat_room": {
+		"sold": "Продано",
+		"safety_message": "Вы можете безопасно общаться и договариваться о сделке здесь.",
+		"reserved_notice": "Этот товар зарезервирован другим покупателем.",
+		"type_message": "Введите сообщение"
 	}
 }

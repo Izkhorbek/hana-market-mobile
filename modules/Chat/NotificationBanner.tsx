@@ -9,14 +9,15 @@ interface NotificationBannerProps {
 }
 
 const NotificationBanner = ({ message, onClose }: NotificationBannerProps) => {
-  const textColor = useColor('text');
+  const bannerBgColor = useColor('notificationBannerBg');
+  const bannerTextColor = useColor('notificationBannerText');
 
   return (
-    <View style={styles.container}>
-      <Text style={[styles.message, { color: textColor }]}>{message}</Text>
+    <View style={[styles.container, { backgroundColor: bannerBgColor }]}>
+      <Text style={[styles.message, { color: bannerTextColor }]}>{message}</Text>
       {onClose && (
         <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-          <X size={20} color={textColor} strokeWidth={2} />
+          <X size={20} color={bannerTextColor} strokeWidth={2} />
         </TouchableOpacity>
       )}
     </View>
@@ -30,7 +31,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#334155',
     paddingVertical: 12,
     paddingHorizontal: 20,
     marginHorizontal: 16,
@@ -41,7 +41,6 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 14,
     fontWeight: '500',
-    color: '#fff',
   },
   closeButton: {
     marginLeft: 12,
