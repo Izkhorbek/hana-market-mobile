@@ -7,7 +7,15 @@
 		"profile": "Профиль"
 	},
 	"home": {
-		"create": "Почта"
+		"create": "Почта",
+		"filters": {
+			"all": "Все",
+			"cars": "Авто",
+			"real_estate": "Недвижимость",
+			"jobs": "Работа",
+			"electronics": "Электроника",
+			"furniture": "Мебель"
+		}
 	},
 	"modal": {
 		"title": "Модальное окно",
@@ -20,6 +28,32 @@
 			"get_started": "Начать",
 			"already_have_account": "Уже есть аккаунт?",
 			"login_link": "Войти"
+		},
+		"verification": {
+			"title": "Введите код\nподтверждения",
+			"phone_placeholder": "00 000 00 00",
+			"code_placeholder": "Введите код",
+			"resend_code": "Отправить снова",
+			"done": "Готово",
+			"error_title": "Ошибка входа",
+			"error_generic": "Что-то пошло не так. Попробуйте снова."
+		},
+		"register": {
+			"title": "Создать аккаунт",
+			"description": "Этот номер телефона ещё не зарегистрирован. Нажмите кнопку ниже, чтобы создать аккаунт.",
+			"button": "Зарегистрироваться",
+			"error_title": "Ошибка регистрации",
+			"error_generic": "Что-то пошло не так. Попробуйте снова."
+		},
+		"location": {
+			"title": "Поделитесь местоположением",
+			"description": "Разрешите Hana Market доступ к вашему местоположению, чтобы показывать товары рядом с вами.",
+			"allow_button": "Разрешить доступ",
+			"skip_button": "Пропустить",
+			"permission_denied_title": "Доступ запрещён",
+			"permission_denied_message": "Доступ к местоположению отклонён. Вы можете включить его позже в настройках.",
+			"error_title": "Ошибка местоположения",
+			"error_generic": "Не удалось обновить местоположение. Попробуйте снова."
 		}
 	},
 	"tabs": {
@@ -203,7 +237,11 @@
 		"feedback": "Обратная связь",
 		"about": "О Хана Маркет",
 		"terms_policies": "Условия и политика",
-		"app_version": "Hana Market v1.0.0"
+		"app_version": "Hana Market v1.0.0",
+		"logout": "Выйти",
+		"logout_confirm_title": "Выход",
+		"logout_confirm_message": "Вы уверены, что хотите выйти?",
+		"logout_cancel": "Отмена"
 	},
 	"chat": {
 		"title": "Чаты",

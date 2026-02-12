@@ -36,7 +36,7 @@ const ChatPageHeader = ({
       </ThemedText>
 
       <ThemedView style={styles.iconsContainer}>
-        <TouchableOpacity onPress={onFilterPress} style={styles.iconButton}>
+        <TouchableOpacity  onPress={onFilterPress} style={styles.iconButton}>
           <SlidersHorizontal size={24} color={colors.blackIcon} strokeWidth={2} />
         </TouchableOpacity>
 

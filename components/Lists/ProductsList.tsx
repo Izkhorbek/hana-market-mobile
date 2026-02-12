@@ -3,6 +3,7 @@ import { router } from 'expo-router'
 import React from 'react'
 import { FlatList, StyleSheet } from 'react-native'
 import ProductCard from '../shared/Cards/ProductCard'
+import FilterButtons from './FilterButtons'
 
 const ProductsList = () => {
   return (
@@ -10,6 +11,7 @@ const ProductsList = () => {
       showsVerticalScrollIndicator={false}
       style={styles.container}
       data={fakeProducts}
+      ListHeaderComponent={<FilterButtons />}
       renderItem={({ item, index }) => (
         <ProductCard
           {...item}

@@ -7,7 +7,15 @@
 		"profile": "Profile"
 	},
 	"home": {
-		"create": "Post"
+		"create": "Post",
+		"filters": {
+			"all": "All",
+			"cars": "Cars",
+			"real_estate": "Real Estate",
+			"jobs": "Jobs",
+			"electronics": "Electronics",
+			"furniture": "Furniture"
+		}
 	},
 	"modal": {
 		"title": "Modal",
@@ -20,6 +28,32 @@
 			"get_started": "Get Started",
 			"already_have_account": "Already have an account?",
 			"login_link": "Log In"
+		},
+		"verification": {
+			"title": "Enter your\nverification code",
+			"phone_placeholder": "00 000 00 00",
+			"code_placeholder": "Enter code",
+			"resend_code": "Resend code",
+			"done": "Done",
+			"error_title": "Login Error",
+			"error_generic": "Something went wrong. Please try again."
+		},
+		"register": {
+			"title": "Create Account",
+			"description": "This phone number is not registered yet. Tap the button below to create your account.",
+			"button": "Register",
+			"error_title": "Registration Error",
+			"error_generic": "Something went wrong. Please try again."
+		},
+		"location": {
+			"title": "Share Your Location",
+			"description": "Allow Hana Market to access your location so we can show you nearby products and neighbors.",
+			"allow_button": "Allow Location",
+			"skip_button": "Skip for now",
+			"permission_denied_title": "Permission Denied",
+			"permission_denied_message": "Location access was denied. You can enable it later in Settings.",
+			"error_title": "Location Error",
+			"error_generic": "Could not update your location. Please try again."
 		}
 	},
 	"tabs": {
@@ -203,7 +237,11 @@
 		"feedback": "Feedback",
 		"about": "About Hana Market",
 		"terms_policies": "Terms and policies",
-		"app_version": "Hana Market v1.0.0"
+		"app_version": "Hana Market v1.0.0",
+		"logout": "Log Out",
+		"logout_confirm_title": "Log Out",
+		"logout_confirm_message": "Are you sure you want to log out?",
+		"logout_cancel": "Cancel"
 	},
 	"chat": {
 		"title": "Chats",

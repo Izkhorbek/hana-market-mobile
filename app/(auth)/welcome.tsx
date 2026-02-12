@@ -36,11 +36,10 @@ const WelcomePage = () => {
         <TouchableOpacity
           style={styles.getStartedButton}
           activeOpacity={0.8}
+          onPress={() => router.push('/(auth)/auth')}
         >
           <ThemedText type='default' style={styles.getStartedText}>
-            <Link href={'/(tabs)/home'}>
-              {t('auth.welcome_page.get_started')}
-            </Link>
+            {t('auth.welcome_page.get_started')}
           </ThemedText>
         </TouchableOpacity>
 

@@ -5,6 +5,7 @@ import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
 import { useColor } from '@/hooks/useColor'
 import { useModeToggle } from '@/hooks/useModeToggle'
+import { useAuthStore } from '@/modules/Auth/auth-store'
 import ProfileHeader from '@/modules/Profile/ProfileHeader'
 import ProfileMenuItem from '@/modules/Profile/ProfileMenuItem'
 import ProfileSection from '@/modules/Profile/ProfileSection'
@@ -16,6 +17,7 @@ import {
 	Heart,
 	HelpCircle,
 	Home,
+	LogOut,
 	MapPin,
 	MessageCircle,
 	MessageSquare,
@@ -26,7 +28,7 @@ import {
 	Sparkles,
 } from 'lucide-react-native'
 import React, { useState } from 'react'
-import { ScrollView, StyleSheet, Text, View } from 'react-native'
+import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native'
 
 const ProfilePage = () => {
 	const { t, locale } = useTranslations()
@@ -35,6 +37,25 @@ const ProfilePage = () => {
 	const mutedTextColor = useColor('textMuted')
 	const { isDark, setMode } = useModeToggle()
 	const [isLanguageModalVisible, setIsLanguageModalVisible] = useState(false)
+	const logout = useAuthStore((s) => s.logout)
+
+	const handleLogout = () => {
+		Alert.alert(
+			t('profile.logout_confirm_title'),
+			t('profile.logout_confirm_message'),
+			[
+				{ text: t('profile.logout_cancel'), style: 'cancel' },
+				{
+					text: t('profile.logout'),
+					style: 'destructive',
+					onPress: () => {
+						logout()
+						router.replace('/(auth)/welcome')
+					},
+				},
+			],
+		)
+	}
 
 	const handleNavigation = (route: string) => {
 		if (route === 'manage-neighborhood') {
@@ -187,6 +208,16 @@ const ProfilePage = () => {
 						icon={FileText}
 						title={t('profile.terms_policies')}
 						onPress={() => handleNavigation('terms')}
+					/>
+				</ProfileSection>
+
+				{/* Logout */}
+				<ProfileSection title="">
+					<ProfileMenuItem
+						icon={LogOut}
+						title={t('profile.logout')}
+						showChevron={false}
+						onPress={handleLogout}
 					/>
 				</ProfileSection>
 

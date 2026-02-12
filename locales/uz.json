@@ -7,7 +7,15 @@
 		"profile": "Profil"
 	},
 	"home": {
-		"create": "Joylash"
+		"create": "Joylash",
+		"filters": {
+			"all": "Hammasi",
+			"cars": "Avtomobillar",
+			"real_estate": "Ko'chmas mulk",
+			"jobs": "Ishlar",
+			"electronics": "Elektronika",
+			"furniture": "Mebel"
+		}
 	},
 	"modal": {
 		"title": "Modal",
@@ -20,6 +28,32 @@
 			"get_started": "Boshlash",
 			"already_have_account": "Akkauntingiz bormi?",
 			"login_link": "Kirish"
+		},
+		"verification": {
+			"title": "Tasdiqlash kodingizni\nkiriting",
+			"phone_placeholder": "00 000 00 00",
+			"code_placeholder": "Kodni kiriting",
+			"resend_code": "Kodni qayta yuborish",
+			"done": "Tayyor",
+			"error_title": "Kirish xatosi",
+			"error_generic": "Nimadir noto'g'ri ketdi. Qayta urinib ko'ring."
+		},
+		"register": {
+			"title": "Hisob yaratish",
+			"description": "Bu telefon raqami hali ro'yxatdan o'tmagan. Hisobingizni yaratish uchun quyidagi tugmani bosing.",
+			"button": "Ro'yxatdan o'tish",
+			"error_title": "Ro'yxatdan o'tish xatosi",
+			"error_generic": "Nimadir noto'g'ri ketdi. Qayta urinib ko'ring."
+		},
+		"location": {
+			"title": "Joylashuvingizni ulashing",
+			"description": "Yaqin-atrofdagi mahsulotlarni ko'rsatish uchun Hana Market ga joylashuvingizga ruxsat bering.",
+			"allow_button": "Joylashuvga ruxsat berish",
+			"skip_button": "Hozircha o'tkazib yuborish",
+			"permission_denied_title": "Ruxsat berilmadi",
+			"permission_denied_message": "Joylashuvga ruxsat berilmadi. Sozlamalardan yoqishingiz mumkin.",
+			"error_title": "Joylashuv xatosi",
+			"error_generic": "Joylashuvingizni yangilab bo'lmadi. Qayta urinib ko'ring."
 		}
 	},
 	"tabs": {
@@ -203,7 +237,11 @@
 		"feedback": "Fikr-mulohaza",
 		"about": "Hana Market haqida",
 		"terms_policies": "Shartlar va siyosat",
-		"app_version": "Hana Market v1.0.0"
+		"app_version": "Hana Market v1.0.0",
+		"logout": "Chiqish",
+		"logout_confirm_title": "Chiqish",
+		"logout_confirm_message": "Haqiqatan ham chiqmoqchimisiz?",
+		"logout_cancel": "Bekor qilish"
 	},
 	"chat": {
 		"title": "Chatlar",
