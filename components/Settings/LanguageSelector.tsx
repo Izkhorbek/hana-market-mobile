@@ -19,7 +19,6 @@ interface LanguageOption {
 }
 
 const languages: LanguageOption[] = [
-  { code: 'en', name: 'English', nativeName: 'English' },
   { code: 'uz', name: 'Uzbek', nativeName: 'O\'zbekcha' },
   { code: 'ru', name: 'Russian', nativeName: 'Русский' },
 ];
@@ -37,7 +36,7 @@ export function LanguageSelector({ isVisible, onClose }: LanguageSelectorProps) 
     <BottomSheet
       isVisible={isVisible}
       onClose={onClose}
-      snapPoints={[0.4]}
+      snapPoints={[0.3]}
       style={{ backgroundColor: colors.background }}
       enableBackdropDismiss={true}
       // title={t('profile.select_language')}

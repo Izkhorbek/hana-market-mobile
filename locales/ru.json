@@ -4,7 +4,22 @@
 		"home": "Главная",
 		"explore": "Обзор",
 		"settings": "Настройки",
-		"profile": "Профиль"
+		"profile": "Профиль",
+		"close": "Закрыть",
+		"ok": "ОК",
+		"cancel": "Отмена",
+		"error": "Ошибка"
+	},
+	"map": {
+		"select_location": "Выбрать местоположение",
+		"view_location": "Посмотреть местоположение",
+		"get_my_location": "Мое местоположение",
+		"confirm_location": "Подтвердить",
+		"navigate_to": "Открыть в Google Maps",
+		"tap_to_select": "Нажмите на карту чтобы выбрать",
+		"location_selected": "Местоположение выбрано",
+		"permission_denied": "Доступ запрещен",
+		"enable_location": "Пожалуйста, включите геолокацию в настройках"
 	},
 	"home": {
 		"create": "Почта",

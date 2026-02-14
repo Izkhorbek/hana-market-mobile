@@ -1,22 +1,29 @@
+import { useCreateProductMutation } from '@/api/hooks';
+import { ECurrencyType, EPaymentType, EProductType, EWorkerType, EWorkSalaryType } from '@/api/types';
 import FormDatePicker from '@/components/FormElements/FormDatePicker';
 import FormInput from '@/components/FormElements/FormInput';
 import FormSelect from '@/components/FormElements/FormSelect';
 import { OptionType } from '@/components/ui/combobox';
 import { useTranslations } from '@/hooks/use-translation';
 import { useColor } from '@/hooks/useColor';
+import { useRouter } from 'expo-router';
 import { MapPin } from 'lucide-react-native';
-import React from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import FormRow from '../FormElements/FormRow';
 import ImageUploader from '../FormElements/ImageUploader';
 import RadioButtonGroup, { RadioOption } from '../FormElements/RadioButtonGroup';
+import MapModal from '../MapModal';
 
 
 const CreateWorksForm = () => {
   const { t } = useTranslations();
   const primaryColor = useColor('primaryColor');
   const textColor = useColor('text');
+  const router = useRouter();
+  const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [isMapModalVisible, setIsMapModalVisible] = useState(false);
 
   const form = useForm({
     defaultValues: {
@@ -45,6 +52,26 @@ const CreateWorksForm = () => {
   const jobDeadline = form.watch('jobDeadline');
   const salaryType = form.watch('salaryType');
   const currency = form.watch('currency');
+
+  const { mutate: createProduct, isPending } = useCreateProductMutation({
+    onSuccess: () => {
+      Alert.alert(
+        t('post.success'),
+        t('post.product_created_successfully'),
+        [
+          {
+            text: t('common.ok'),
+            onPress: () => router.back(),
+          },
+        ]
+      );
+      form.reset();
+    },
+    onError: (error: any) => {
+      const message = error?.response?.data?.message || error?.message || t('post.error_creating_product');
+      Alert.alert(t('post.error'), message);
+    },
+  });
 
   const workerTypeOptions: RadioOption[] = [
     {
@@ -99,13 +126,96 @@ const CreateWorksForm = () => {
   ];
 
   const handleOpenMap = () => {
-    // TODO: Open map modal
-    console.log('Open map modal');
+    setIsMapModalVisible(true);
+  };
+
+  const handleLocationSelect = (selectedLocation: { latitude: number; longitude: number }) => {
+    setLocation(selectedLocation);
+    setIsMapModalVisible(false);
   };
 
   const handleSubmit = form.handleSubmit((data) => {
-    console.log('Work Form Data:', data);
-    // TODO: Submit data to API
+    if (!location) {
+      Alert.alert(t('post.error'), t('post.please_select_location'));
+      return;
+    }
+
+    const formData = new FormData();
+
+    // Add product type
+    formData.append('product_type', EProductType.WORK.toString());
+
+    // Add basic fields
+    formData.append('title', data.jobTitle);
+    formData.append('description', data.jobDescription || '');
+    formData.append('work_category', data.jobType || '');
+    formData.append('work_condition', data.jobDeadline || '');
+
+    // Map worker type to enum
+    const workerTypeMap: Record<string, EWorkerType> = {
+      working_together: EWorkerType.BOTH,
+      assistant: EWorkerType.OFFERING,
+      teacher: EWorkerType.SEEKING,
+    };
+    formData.append('work_data.worker_type', workerTypeMap[data.workerType].toString());
+
+    // Map salary type to enum
+    const salaryTypeMap: Record<string, EWorkSalaryType> = {
+      hourly: EWorkSalaryType.HOURLY,
+      daily: EWorkSalaryType.DAILY,
+      per_task: EWorkSalaryType.CONTRACT,
+    };
+    formData.append('work_data.salary_type', salaryTypeMap[data.salaryType].toString());
+    formData.append('work_data.salary_amount', data.salaryAmount);
+
+    // Add payment type
+    const paymentTypeMap: Record<string, EPaymentType> = {
+      immediately: EPaymentType.CASH,
+      weekly: EPaymentType.BANK_TRANSFER,
+      monthly: EPaymentType.BANK_TRANSFER,
+      after_completion: EPaymentType.BOTH,
+    };
+    formData.append('work_data.payment_type', paymentTypeMap[data.paymentTime]?.toString() || EPaymentType.BOTH.toString());
+
+    // Add currency
+    const currencyType = data.currency === 'USD' ? ECurrencyType.USD : ECurrencyType.UZS;
+    formData.append('currency_type', currencyType.toString());
+    const priceField = data.currency === 'USD' ? 'price_usd' : 'price_uzs';
+    formData.append(priceField, data.salaryAmount);
+    formData.append('is_free', 'false');
+
+    // Add work details
+    formData.append('work_data.employer_information', data.employerName || '');
+    formData.append('work_data.workplace_information', data.workplaceInfo || '');
+    formData.append('work_data.phone_number', data.phoneNumber || '');
+    formData.append('work_data.work_ethics', data.webLinks || '');
+
+    if (data.meetingDateTime) {
+      formData.append('work_data.working_days_hours', data.meetingDateTime.toISOString());
+    }
+
+    // Add location
+    formData.append('latitude', location.latitude.toString());
+    formData.append('longitude', location.longitude.toString());
+    formData.append('moljal', data.location || '');
+
+    // Add images
+    data.images.forEach((imageUri: string, index: number) => {
+      const imageFile = {
+        uri: imageUri,
+        type: 'image/jpeg',
+        name: `image_${index}.jpg`,
+      } as any;
+
+      if (index === 0) {
+        formData.append('main_image_url', imageFile);
+      }
+
+      formData.append(`images[${index}].image_url`, imageFile);
+      formData.append(`images[${index}].sort_order`, index.toString());
+    });
+
+    createProduct(formData);
   });
 
   return (
@@ -368,13 +478,33 @@ const CreateWorksForm = () => {
       {/* Fixed Bottom Post Button */}
       <View style={styles.buttonContainer}>
         <TouchableOpacity
-          style={[styles.postButton, { backgroundColor: primaryColor }]}
+          style={[
+            styles.postButton,
+            {
+              backgroundColor: isPending ? primaryColor + '80' : primaryColor,
+              opacity: isPending ? 0.7 : 1,
+            }
+          ]}
           onPress={handleSubmit}
+          disabled={isPending}
           activeOpacity={0.8}
         >
-          <Text style={styles.postButtonText}>{t('work.post_job')}</Text>
+          {isPending ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+              <Text style={styles.postButtonText}>{t('work.post_job')}</Text>
+          )}
         </TouchableOpacity>
       </View>
+
+      {/* Map Modal */}
+      <MapModal
+        visible={isMapModalVisible}
+        mode="SELECT"
+        initialLocation={location || undefined}
+        onClose={() => setIsMapModalVisible(false)}
+        onLocationSelect={handleLocationSelect}
+      />
     </View>
   );
 };

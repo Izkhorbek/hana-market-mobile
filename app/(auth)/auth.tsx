@@ -9,6 +9,8 @@ import React, { useCallback, useEffect, useRef, useState } from 'react'
 import {
   ActivityIndicator,
   Alert,
+  KeyboardAvoidingView,
+  Platform,
   StyleSheet,
   Text,
   TextInput,
@@ -147,106 +149,112 @@ const AuthPage = () => {
   const isDoneEnabled = phoneNumber.length === 9 && !isLoading
 
   return (
-    <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
-      {/* Top Section */}
-      <View style={styles.topSection}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => router.back()}
-          activeOpacity={0.7}
-        >
-          <Ionicons name="arrow-back" size={24} color={colors.text} />
-        </TouchableOpacity>
-
-        <ThemedText type="title" style={styles.title}>
-          {t('auth.verification.title')}
-        </ThemedText>
-
-        {/* Phone Input */}
-        <View style={[styles.inputContainer, { borderColor: colors.borderColor }]}>
-          <Text style={[styles.phonePrefix, { color: colors.text }]}>+998</Text>
-          <TextInput
-            ref={phoneInputRef}
-            style={[styles.phoneNumber, { color: colors.text }]}
-            value={formatPhone(phoneNumber)}
-            onChangeText={handlePhoneChange}
-            placeholder={t('auth.verification.phone_placeholder')}
-            placeholderTextColor={colors.subText}
-            keyboardType="phone-pad"
-            maxLength={12} // Adjusted for spaces in formatted phone
-          />
-        </View>
-
-        {/* Code Input */}
-        <View style={[styles.inputContainer, { borderColor: colors.borderColor }]}>
-          <TextInput
-            ref={codeInputRef}
-            style={[styles.codeText, { color: colors.text }]}
-            value={code}
-            onChangeText={handleCodeChange}
-            placeholder={t('auth.verification.code_placeholder')}
-            placeholderTextColor={colors.subText}
-            keyboardType="number-pad"
-            maxLength={CODE_LENGTH}
-          />
-          <Text style={[styles.timerText, { color: colors.subText }]}>
-            {formattedTimer}
-          </Text>
-        </View>
-
-        {/* Resend Code */}
-        <TouchableOpacity
-          style={[
-            styles.resendButton,
-            {
-              borderColor: isTimerActive ? colors.borderColor : colors.subText,
-            },
-          ]}
-          onPress={handleResendCode}
-          disabled={isTimerActive}
-          activeOpacity={0.7}
-        >
-          <Text
-            style={[
-              styles.resendText,
-              { color: isTimerActive ? colors.subText : colors.text },
-            ]}
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+    >
+      <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
+        {/* Top Section */}
+        <View style={styles.topSection}>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => router.back()}
+            activeOpacity={0.7}
           >
-            {t('auth.verification.resend_code')}
-          </Text>
-        </TouchableOpacity>
-      </View>
+            <Ionicons name="arrow-back" size={24} color={colors.text} />
+          </TouchableOpacity>
 
-      {/* Done Button */}
-      <View style={styles.doneButtonWrapper}>
-        <TouchableOpacity
-          style={[
-            styles.doneButton,
-            {
-              backgroundColor: isDoneEnabled
-                ? colors.primaryColor
-                : colors.borderColor,
-            },
-          ]}
-          onPress={handleDone}
-          disabled={!isDoneEnabled}
-          activeOpacity={0.8}
-        >
-          {isLoading ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
+          <ThemedText type="title" style={styles.title}>
+            {t('auth.verification.title')}
+          </ThemedText>
+
+          {/* Phone Input */}
+          <View style={[styles.inputContainer, { borderColor: colors.borderColor }]}>
+            <Text style={[styles.phonePrefix, { color: colors.text }]}>+998</Text>
+            <TextInput
+              ref={phoneInputRef}
+              style={[styles.phoneNumber, { color: colors.text }]}
+              value={formatPhone(phoneNumber)}
+              onChangeText={handlePhoneChange}
+              placeholder={t('auth.verification.phone_placeholder')}
+              placeholderTextColor={colors.subText}
+              keyboardType="phone-pad"
+              maxLength={12} // Adjusted for spaces in formatted phone
+            />
+          </View>
+
+          {/* Code Input */}
+          <View style={[styles.inputContainer, { borderColor: colors.borderColor }]}>
+            <TextInput
+              ref={codeInputRef}
+              style={[styles.codeText, { color: colors.text }]}
+              value={code}
+              onChangeText={handleCodeChange}
+              placeholder={t('auth.verification.code_placeholder')}
+              placeholderTextColor={colors.subText}
+              keyboardType="number-pad"
+              maxLength={CODE_LENGTH}
+            />
+            <Text style={[styles.timerText, { color: colors.subText }]}>
+              {formattedTimer}
+            </Text>
+          </View>
+
+          {/* Resend Code */}
+          <TouchableOpacity
+            style={[
+              styles.resendButton,
+              {
+                borderColor: isTimerActive ? colors.borderColor : colors.subText,
+              },
+            ]}
+            onPress={handleResendCode}
+            disabled={isTimerActive}
+            activeOpacity={0.7}
+          >
             <Text
               style={[
-                styles.doneButtonText,
-                { color: isDoneEnabled ? '#fff' : colors.subText },
+                styles.resendText,
+                { color: isTimerActive ? colors.subText : colors.text },
               ]}
             >
-              {t('auth.verification.done')}
+              {t('auth.verification.resend_code')}
             </Text>
-          )}
-        </TouchableOpacity>
-      </View>
-    </ThemedView>
+          </TouchableOpacity>
+        </View>
+
+        {/* Done Button */}
+        <View style={styles.doneButtonWrapper}>
+          <TouchableOpacity
+            style={[
+              styles.doneButton,
+              {
+                backgroundColor: isDoneEnabled
+                  ? colors.primaryColor
+                  : colors.borderColor,
+              },
+            ]}
+            onPress={handleDone}
+            disabled={!isDoneEnabled}
+            activeOpacity={0.8}
+          >
+            {isLoading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text
+                style={[
+                  styles.doneButtonText,
+                  { color: isDoneEnabled ? '#fff' : colors.subText },
+                ]}
+              >
+                {t('auth.verification.done')}
+              </Text>
+            )}
+          </TouchableOpacity>
+        </View>
+      </ThemedView>
+    </KeyboardAvoidingView>
   )
 }
 

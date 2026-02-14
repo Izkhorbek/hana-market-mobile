@@ -4,7 +4,22 @@
 		"home": "Bosh sahifa",
 		"explore": "O'rganish",
 		"settings": "Sozlamalar",
-		"profile": "Profil"
+		"profile": "Profil",
+		"close": "Yopish",
+		"ok": "OK",
+		"cancel": "Bekor qilish",
+		"error": "Xato"
+	},
+	"map": {
+		"select_location": "Joylashuvni tanlash",
+		"view_location": "Joylashuvni ko'rish",
+		"get_my_location": "Mening joylashuvim",
+		"confirm_location": "Joylashuvni tasdiqlash",
+		"navigate_to": "Google Xaritaga o'tish",
+		"tap_to_select": "Tanlash uchun xaritaga bosing",
+		"location_selected": "Joylashuv tanlandi",
+		"permission_denied": "Ruxsat etilmadi",
+		"enable_location": "Iltimos, sozlamalar orqali joylashuvni yoqing"
 	},
 	"home": {
 		"create": "Joylash",

@@ -4,7 +4,22 @@
 		"home": "Home",
 		"explore": "Explore",
 		"settings": "Settings",
-		"profile": "Profile"
+		"profile": "Profile",
+		"close": "Close",
+		"ok": "OK",
+		"cancel": "Cancel",
+		"error": "Error"
+	},
+	"map": {
+		"select_location": "Select Location",
+		"view_location": "View Location",
+		"get_my_location": "Get My Location",
+		"confirm_location": "Confirm Location",
+		"navigate_to": "Navigate to Google Maps",
+		"tap_to_select": "Tap on map to select location",
+		"location_selected": "Location selected",
+		"permission_denied": "Location Permission Denied",
+		"enable_location": "Please enable location services in Settings"
 	},
 	"home": {
 		"create": "Post",
@@ -87,6 +102,11 @@
 		"price_placeholder": "Enter price",
 		"location_placeholder": "Enter location",
 		"extra_info_placeholder": "Enter additional information",
+		"success": "Success",
+		"product_created_successfully": "Product created successfully!",
+		"error": "Error",
+		"error_creating_product": "Failed to create product. Please try again.",
+		"please_select_location": "Please select a location on the map",
 		"errors": {
 			"title": "Title is required",
 			"category": "Category is required",

@@ -1,5 +1,5 @@
+import ThemedScrollView from '@/components/themed-scrollview'
 import { ThemedText } from '@/components/themed-text'
-import { ThemedView } from '@/components/themed-view'
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
 import { useAuthStore } from '@/modules/Auth/auth-store'
@@ -9,11 +9,15 @@ import React, { useCallback, useState } from 'react'
 import {
   ActivityIndicator,
   Alert,
+  KeyboardAvoidingView,
+  Platform,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native'
+// Safe Area uchun hookni import qilamiz
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 const RegisterPage = () => {
   const router = useRouter()
@@ -21,6 +25,7 @@ const RegisterPage = () => {
   const { t } = useTranslations()
   const params = useLocalSearchParams<{ phone?: string }>()
   const register = useAuthStore((s) => s.register)
+  const insets = useSafeAreaInsets() // Safe Area o'lchamlari
 
   const [phoneNumber] = useState(params.phone ?? '')
   const [isLoading, setIsLoading] = useState(false)
@@ -54,74 +59,89 @@ const RegisterPage = () => {
   }, [phoneNumber, register, router, t])
 
   return (
-    <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={styles.topSection}>
-        {/* Back */}
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => router.back()}
-          activeOpacity={0.7}
-        >
-          <Ionicons name="arrow-back" size={24} color={colors.text} />
-        </TouchableOpacity>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
+    >
+      <ThemedScrollView
+        style={[styles.container, { backgroundColor: colors.background }]}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
+        contentContainerStyle={{ flexGrow: 1 }}
+      >
+        <View style={styles.topSection}>
+          {/* Back */}
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => router.back()}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="arrow-back" size={24} color={colors.text} />
+          </TouchableOpacity>
 
-        {/* Title */}
-        <ThemedText type="title" style={styles.title}>
-          {t('auth.register.title')}
-        </ThemedText>
+          {/* Title */}
+          <ThemedText type="title" style={styles.title}>
+            {t('auth.register.title')}
+          </ThemedText>
 
-        {/* Description */}
-        <Text style={[styles.description, { color: colors.subText }]}>
-          {t('auth.register.description')}
-        </Text>
-
-        {/* Phone Display */}
-        <View style={[styles.phoneContainer, { borderColor: colors.borderColor }]}>
-          <Text style={[styles.phonePrefix, { color: colors.text }]}>+998</Text>
-          <Text style={[styles.phoneNumber, { color: colors.text }]}>
-            {formatPhone(phoneNumber)}
+          {/* Description */}
+          <Text style={[styles.description, { color: colors.subText }]}>
+            {t('auth.register.description')}
           </Text>
-        </View>
-      </View>
 
-      {/* Register Button */}
-      <View style={styles.bottomSection}>
-        <TouchableOpacity
-          style={[
-            styles.registerButton,
-            {
-              backgroundColor:
-                phoneNumber.length >= 9 ? colors.primaryColor : colors.borderColor,
-            },
-          ]}
-          onPress={handleRegister}
-          disabled={isLoading || phoneNumber.length < 9}
-          activeOpacity={0.8}
-        >
-          {isLoading ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text
-              style={[
-                styles.registerButtonText,
-                { color: phoneNumber.length >= 9 ? '#fff' : colors.subText },
-              ]}
-            >
-              {t('auth.register.button')}
+          {/* Phone Display */}
+          <View style={[styles.phoneContainer, { borderColor: colors.borderColor }]}>
+            <Text style={[styles.phonePrefix, { color: colors.text }]}>+998</Text>
+            <Text style={[styles.phoneNumber, { color: colors.text }]}>
+              {formatPhone(phoneNumber)}
             </Text>
-          )}
-        </TouchableOpacity>
-      </View>
-    </ThemedView>
+          </View>
+        </View>
+
+        {/* Register Button */}
+        <View
+          style={[
+            styles.bottomSection,
+            { paddingBottom: Math.max(insets.bottom, 20) + 20 } // Safe Area hisobga olindi
+          ]}
+        >
+          <TouchableOpacity
+            style={[
+              styles.registerButton,
+              {
+                backgroundColor:
+                  phoneNumber.length >= 9 ? colors.primaryColor : colors.borderColor,
+              },
+            ]}
+            onPress={handleRegister}
+            disabled={isLoading || phoneNumber.length < 9}
+            activeOpacity={0.8}
+          >
+            {isLoading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text
+                style={[
+                  styles.registerButtonText,
+                  { color: phoneNumber.length >= 9 ? '#fff' : colors.subText },
+                ]}
+              >
+                {t('auth.register.button')}
+              </Text>
+            )}
+          </TouchableOpacity>
+        </View>
+      </ThemedScrollView>
+    </KeyboardAvoidingView>
   )
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1, 
+    flex: 1,
   },
   topSection: {
-    flex: 1,
+    flex: 1, // Bu kontentni va buttonni ikkiga ajratib turadi
     paddingHorizontal: 24,
     paddingTop: 56,
   },
@@ -162,7 +182,7 @@ const styles = StyleSheet.create({
   },
   bottomSection: {
     paddingHorizontal: 24,
-    paddingBottom: 40,
+    // paddingBottom stylesda olib tashlandi va inline style da insets bilan berildi
   },
   registerButton: {
     width: '100%',
