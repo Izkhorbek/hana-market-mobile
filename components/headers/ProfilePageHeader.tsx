@@ -29,7 +29,7 @@ export default ProfilePageHeader;
 
 const styles = StyleSheet.create({
   container: {
-    height: Platform.OS === 'ios' ? 90 : 75,
+    height: Platform.OS === 'ios' ? 90 : 100,
     display: 'flex',
     flexDirection: 'row',
     alignItems: 'flex-end',

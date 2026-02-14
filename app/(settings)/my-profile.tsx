@@ -1,5 +1,6 @@
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
+import { useAuthStore } from '@/modules/Auth/auth-store'
 import { router } from 'expo-router'
 import { ArrowLeft, Pencil, User } from 'lucide-react-native'
 import React from 'react'
@@ -140,6 +141,7 @@ const StatItem: React.FC<StatItemProps> = ({ value, label }) => {
 const MyProfilePage: React.FC = () => {
 	const { t } = useTranslations()
 	const colors = useThemeColors()
+	const { user: realUser, token } = useAuthStore()
 
 	// In real app, fetch user data from context/API
 	const user = mockUserProfile
@@ -151,6 +153,9 @@ const MyProfilePage: React.FC = () => {
 	const handleEditProfile = () => {
 		router.push('/(settings)/edit-profile')
 	}
+
+	console.log(realUser)
+	console.log(token)
 
 	return (
 		<View style={[styles.container, { backgroundColor: colors.profileBackground }]}>
@@ -218,7 +223,7 @@ const MyProfilePage: React.FC = () => {
 						{t('my_profile.account_information')}
 					</Text>
 
-					<InfoRow label={t('my_profile.phone_number')} value={user.phoneNumber} />
+					<InfoRow label={t('my_profile.phone_number')} value={realUser?.phone_number!} />
 					<InfoRow label={t('my_profile.member_since')} value={user.memberSince} />
 				</View>
 

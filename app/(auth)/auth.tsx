@@ -18,50 +18,21 @@ import {
   View,
 } from 'react-native'
 
-const INITIAL_TIMER = 273 // 4:33
-const CODE_LENGTH = 6
-
 const AuthPage = () => {
   const router = useRouter()
   const colors = useThemeColors()
   const { t } = useTranslations()
-  const login = useAuthStore((s) => s.login)
+
+  const { register, login } = useAuthStore()
 
   const [phoneNumber, setPhoneNumber] = useState('')
-  const [code, setCode] = useState('')
-  const [timer, setTimer] = useState(INITIAL_TIMER)
-  const [isTimerActive, setIsTimerActive] = useState(true)
   const [isLoading, setIsLoading] = useState(false)
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
-
   const phoneInputRef = useRef<TextInput>(null)
-  const codeInputRef = useRef<TextInput>(null)
-
-  // ── Timer Logic ──
-  useEffect(() => {
-    if (isTimerActive && timer > 0) {
-      timerRef.current = setInterval(() => {
-        setTimer((prev) => {
-          if (prev <= 1) {
-            clearInterval(timerRef.current!)
-            setIsTimerActive(false)
-            return 0
-          }
-          return prev - 1
-        })
-      }, 1000)
-    }
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current)
-    }
-  }, [isTimerActive, timer])
 
   // Focus phone input on mount
   useEffect(() => {
     setTimeout(() => phoneInputRef.current?.focus(), 100)
   }, [])
-
-  const formattedTimer = `${String(Math.floor(timer / 60)).padStart(2, '0')}:${String(timer % 60).padStart(2, '0')}`
 
   const formatPhone = (raw: string): string => {
     const digits = raw.replace(/\D/g, '')
@@ -76,75 +47,40 @@ const AuthPage = () => {
     const digits = text.replace(/\D/g, '')
     if (digits.length <= 9) {
       setPhoneNumber(digits)
-      if (digits.length === 9) {
-        codeInputRef.current?.focus()
-      }
-    }
-  }
-
-  const handleCodeChange = (text: string) => {
-    const digits = text.replace(/\D/g, '')
-    if (digits.length <= CODE_LENGTH) {
-      setCode(digits)
     }
   }
 
   const handleDone = useCallback(async () => {
     if (phoneNumber.length !== 9 || isLoading) return
 
-    // ── Testing Bypass ──
-    if (code === '111111') {
-      useAuthStore.setState({
-        token: 'test-token',
-        isAuthenticated: true,
-        user: {
-          id: 0,
-          username: 'Test User',
-          first_name: 'Test',
-          last_name: 'User',
-          bio: 'Testing mode',
-          phone_number: `+998${phoneNumber}`,
-          profile_image_url: null,
-        },
-      })
-      router.replace('/(tabs)/home')
-      return
-    }
-
     setIsLoading(true)
     try {
       const fullPhone = `+998${phoneNumber}`
-      await login(fullPhone)
-      // Login success -> go to location permission
-      router.replace('/(auth)/location-permission')
+      await register(fullPhone)
+      router.replace('/(tabs)/home')
     } catch (error: any) {
-      const status = error?.response?.status
-      if (status === 404 || status === 400) {
-        // User not found -> navigate to register
-        router.push({
-          pathname: '/(auth)/register',
-          params: { phone: phoneNumber },
-        })
-      } else {
-        const message =
-          error?.response?.data?.message ||
-          error?.message ||
-          t('auth.verification.error_generic')
-        Alert.alert(t('auth.verification.error_title'), message)
+      const message = error?.response?.data?.errors?.[0] ||
+        error?.message ||
+        t('auth.verification.error_generic')
+
+      if (
+        message.toLowerCase().includes('already') ||
+        message.toLowerCase().includes('exists')
+      ) {
+        try {
+          await login(`+998${phoneNumber}`)
+          router.replace('/(tabs)/home')
+          return
+        } catch (loginError) {
+          console.error('Auto-login failed:', loginError)
+        }
       }
+
+      Alert.alert(t('auth.verification.error_title'), message)
     } finally {
       setIsLoading(false)
     }
-  }, [phoneNumber, code, isLoading, login, router, t])
-
-  const handleResendCode = () => {
-    if (!isTimerActive) {
-      setTimer(INITIAL_TIMER)
-      setIsTimerActive(true)
-      setCode('')
-      codeInputRef.current?.focus()
-    }
-  }
+  }, [phoneNumber, isLoading, register, router, t])
 
   const isDoneEnabled = phoneNumber.length === 9 && !isLoading
 
@@ -184,44 +120,16 @@ const AuthPage = () => {
             />
           </View>
 
-          {/* Code Input */}
+          {/* OTP Section Disabled Temporarily */}
+          {/* 
           <View style={[styles.inputContainer, { borderColor: colors.borderColor }]}>
             <TextInput
-              ref={codeInputRef}
-              style={[styles.codeText, { color: colors.text }]}
-              value={code}
-              onChangeText={handleCodeChange}
-              placeholder={t('auth.verification.code_placeholder')}
-              placeholderTextColor={colors.subText}
-              keyboardType="number-pad"
-              maxLength={CODE_LENGTH}
+              // ... code input logic ...
             />
-            <Text style={[styles.timerText, { color: colors.subText }]}>
-              {formattedTimer}
-            </Text>
+             ... timer ... 
           </View>
-
-          {/* Resend Code */}
-          <TouchableOpacity
-            style={[
-              styles.resendButton,
-              {
-                borderColor: isTimerActive ? colors.borderColor : colors.subText,
-              },
-            ]}
-            onPress={handleResendCode}
-            disabled={isTimerActive}
-            activeOpacity={0.7}
-          >
-            <Text
-              style={[
-                styles.resendText,
-                { color: isTimerActive ? colors.subText : colors.text },
-              ]}
-            >
-              {t('auth.verification.resend_code')}
-            </Text>
-          </TouchableOpacity>
+           ... resend button ... 
+          */}
         </View>
 
         {/* Done Button */}
@@ -300,10 +208,11 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 0, // Reset default padding
   },
+  // OTP Styles (unused temporarily)
   codeText: {
     fontSize: 16,
     flex: 1,
-    padding: 0, // Reset default padding
+    padding: 0, 
   },
   timerText: {
     fontSize: 16,

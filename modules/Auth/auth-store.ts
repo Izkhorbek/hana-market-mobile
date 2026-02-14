@@ -1,7 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
-import { authApi, userApi } from './api'
+ 
+import { authApi as localAuthApi, userApi as localUserApi } from './api'
 
 // ── Types ──
 
@@ -53,30 +54,51 @@ export const useAuthStore = create<AuthState>()(
       setHydrated: (hydrated) => set({ isHydrated: hydrated }),
 
       register: async (phoneNumber) => {
-        const response = await authApi.register(phoneNumber)
-        const { token, user } = response.data
+        const response = await localAuthApi.register(phoneNumber)
+ 
+        const token = response.headers['x-access-token']
 
-        set({
-          token: token ?? null,
-          user: user ?? null,
-          isAuthenticated: !!token,
-        })
+        if (token) {
+          set({
+             token: token,
+             isAuthenticated: true,
+             user: {
+               id: 0, // Placeholder
+               username: null,
+               first_name: null,
+               last_name: null,
+               bio: null,
+               phone_number: phoneNumber,
+               profile_image_url: null,
+             }
+           })
+        }
       },
 
       login: async (phoneNumber) => {
-        const response = await authApi.login(phoneNumber)
-        const { token, user } = response.data
+        const response = await localAuthApi.login(phoneNumber)
+        const token = response.headers['x-access-token']
 
-        set({
-          token: token ?? null,
-          user: user ?? null,
-          isAuthenticated: !!token,
-        })
+        if (token) {
+          set({
+            token: token,
+            isAuthenticated: true,
+            user: {
+              id: 0, // Placeholder
+              username: null,
+              first_name: null,
+              last_name: null,
+              bio: null,
+              phone_number: phoneNumber,
+              profile_image_url: null,
+            }
+          })
+        }
       },
 
       fetchUser: async () => {
         try {
-          const response = await userApi.getUser()
+          const response = await localUserApi.getUser()
           set({ user: response.data })
         } catch {
           // Token may be expired — log out
@@ -85,7 +107,7 @@ export const useAuthStore = create<AuthState>()(
       },
 
       updateLocation: async (latitude, longitude, searchRadiusKm, addressName) => {
-        await userApi.updateLocation({
+        await localUserApi.updateLocation({
           latitude,
           longitude,
           search_radius_km: searchRadiusKm,

@@ -17,6 +17,7 @@ import MapModal from '../MapModal';
 
 
 
+
 const CreateThingForm = () => {
   const { t, locale } = useTranslations();
   const primaryColor = useColor('primaryColor');
@@ -164,9 +165,9 @@ const CreateThingForm = () => {
       // console.log('FormData:', JSON.stringify((formData as any)._parts));
 
       createProduct(formData);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Image upload failed:', error);
-      Alert.alert(t('post.error'), t('post.error_uploading_images'));
+      Alert.alert(t('post.error'), error?.response?.data?.message || error?.message || t('post.error_uploading_images'));
     }
   });
 
