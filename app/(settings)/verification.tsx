@@ -1,3 +1,4 @@
+import { HEADER_PADDING_TOP } from '@/constants/appLimits'
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
 import { router } from 'expo-router'
@@ -249,7 +250,7 @@ const styles = StyleSheet.create({
 		flexDirection: 'row',
 		alignItems: 'center',
 		justifyContent: 'space-between',
-		paddingTop: Platform.OS === 'ios' ? 60 : 40,
+		paddingTop: HEADER_PADDING_TOP,
 		paddingBottom: 16,
 		paddingHorizontal: 16,
 		borderBottomWidth: 1,

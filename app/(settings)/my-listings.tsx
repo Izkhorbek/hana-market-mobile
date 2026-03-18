@@ -1,16 +1,22 @@
+import { useMyProductsQuery } from '@/api/hooks'
 import MyListingCard, { ListingStatus, MyListingCardProps } from '@/components/shared/Cards/MyListingCard'
+import { HEADER_PADDING_TOP } from '@/constants/appLimits'
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
+import { MyProductDto } from '@/types'
+import { resolveImageUrl } from '@/utils/imageUrl'
 import { router } from 'expo-router'
 import { ArrowLeft } from 'lucide-react-native'
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import {
+	ActivityIndicator,
 	FlatList,
 	Platform,
+	RefreshControl,
 	StyleSheet,
 	Text,
 	TouchableOpacity,
-	View,
+	View
 } from 'react-native'
 
 type TabType = 'active' | 'sold' | 'hidden'
@@ -20,64 +26,41 @@ interface TabItem {
 	label: string
 }
 
-// Mock data for demonstration
-const mockListings: MyListingCardProps[] = [
-	{
-		id: '1',
-		image: 'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=200',
-		title: 'Vintage Film Camera',
-		price: '$85',
-		views: 24,
-		likes: 5,
-		timeAgo: '2 days ago',
-		status: 'active',
-	},
-	{
-		id: '2',
-		image: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=200',
-		title: 'Modern Office Chair',
-		price: '$120',
-		views: 18,
-		likes: 3,
-		timeAgo: '4 days ago',
-		status: 'active',
-	},
-	{
-		id: '3',
-		image: 'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=200',
-		title: 'Polaroid Camera',
-		price: '$45',
-		views: 31,
-		likes: 7,
-		timeAgo: '1 day ago',
-		status: 'active',
-	},
-	{
-		id: '4',
-		image: 'https://images.unsplash.com/photo-1485965120184-e220f721d03e?w=200',
-		title: 'Mountain Bike',
-		price: '$200',
-		views: 42,
-		likes: 8,
-		timeAgo: '1 week ago',
-		status: 'sold',
-	},
-	{
-		id: '5',
-		image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=200',
-		title: 'Nike Air Sneakers',
-		price: '$65',
-		views: 12,
-		likes: 2,
-		timeAgo: '3 days ago',
-		status: 'hidden',
-	},
-]
+
+// Helper to convert API product to card props
+const mapProductToCardProps = (product: MyProductDto): MyListingCardProps => ({
+	id: String(product.id),
+	image: resolveImageUrl(product.main_image_url) || '',
+	title: product.title || '',
+	price: product.price || '',
+	views: product.views_count,
+	likes: product.likes_count,
+	timeAgo: product.created_at,
+	status: product.status as ListingStatus,
+})
 
 const MyListingsPage = () => {
 	const { t } = useTranslations()
 	const colors = useThemeColors()
 	const [activeTab, setActiveTab] = useState<TabType>('active')
+
+	// Fetch my products from API
+	const { data: myProductsResponse, isLoading, refetch, isRefetching } = useMyProductsQuery({})
+
+	// Get products array from response
+	const allProducts = myProductsResponse?.data?.data || []
+
+	console.log('Fetched my products:', allProducts) // Debug log to check API response
+
+	// Filter products by status based on active tab
+	const filteredProducts = useMemo(() => {
+		return allProducts.filter((product: MyProductDto) => product.status === activeTab)
+	}, [allProducts, activeTab])
+
+	// Map filtered products to card props
+	const filteredListings = useMemo(() => {
+		return filteredProducts.map(mapProductToCardProps)
+	}, [filteredProducts])
 
 	const tabs: TabItem[] = [
 		{ key: 'active', label: t('my_listings.tab_active') },
@@ -90,17 +73,14 @@ const MyListingsPage = () => {
 	}
 
 	const handleListingPress = (listing: MyListingCardProps) => {
-		console.log('Listing pressed:', listing.id)
-		// TODO: Navigate to listing detail
+		// Navigate to edit page
+		router.push(`/(post)/edit/${listing.id}` as any)
 	}
 
 	const handleMenuPress = (listing: MyListingCardProps) => {
 		console.log('Menu pressed for:', listing.id)
 		// TODO: Show action sheet with options (edit, delete, hide, mark as sold, etc.)
 	}
-
-	// Filter listings based on active tab
-	const filteredListings = mockListings.filter(listing => listing.status === activeTab)
 
 	const renderListingItem = ({ item }: { item: MyListingCardProps }) => (
 		<MyListingCard
@@ -113,9 +93,13 @@ const MyListingsPage = () => {
 
 	const renderEmptyState = () => (
 		<View style={styles.emptyContainer}>
-			<Text style={[styles.emptyText, { color: colors.textMuted }]}>
-				{t('my_listings.empty_state')}
-			</Text>
+			{isLoading ? (
+				<ActivityIndicator size="large" color={colors.primaryColor} />
+			) : (
+				<Text style={[styles.emptyText, { color: colors.textMuted }]}>
+					{t('my_listings.empty_state')}
+				</Text>
+			)}
 		</View>
 	)
 
@@ -176,6 +160,14 @@ const MyListingsPage = () => {
 				contentContainerStyle={styles.listContent}
 				showsVerticalScrollIndicator={false}
 				ListEmptyComponent={renderEmptyState}
+				refreshControl={
+					<RefreshControl
+						refreshing={isRefetching}
+						onRefresh={refetch}
+						tintColor={colors.primaryColor}
+						colors={[colors.primaryColor]}
+					/>
+				}
 			/>
 		</View>
 	)
@@ -191,7 +183,7 @@ const styles = StyleSheet.create({
 		flexDirection: 'row',
 		alignItems: 'center',
 		justifyContent: 'space-between',
-		paddingTop: Platform.OS === 'ios' ? 60 : 40,
+		paddingTop: HEADER_PADDING_TOP,
 		paddingBottom: 16,
 		paddingHorizontal: 16,
 		borderBottomWidth: 0,

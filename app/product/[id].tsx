@@ -1,44 +1,40 @@
+import { useCreateChatMutation, useProductQuery, useToggleLikeMutation } from '@/api/hooks'
 import LocationMapPreview from '@/components/ProductDetail/LocationMapPreview'
+import ProductImageGallery from '@/components/ProductDetail/ProductImageGallery'
 import SimilarProductCard, { SimilarProduct } from '@/components/ProductDetail/SimilarProductCard'
+import RemoteImage from '@/components/shared/RemoteImage'
+import { AppLimits } from '@/constants/appLimits'
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
+import { useAuthStore } from '@/modules/Auth/auth-store'
 import { router, useLocalSearchParams } from 'expo-router'
 import {
 	ArrowLeft,
 	ChevronRight,
 	Clock3,
 	Heart,
-	MapPin,
 	MessageCircle,
-	Share2,
+	Share2
 } from 'lucide-react-native'
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import {
-	Dimensions,
-	Image,
-	NativeScrollEvent,
-	NativeSyntheticEvent,
 	Platform,
+	Share,
 	StyleSheet,
 	Text,
 	TouchableOpacity,
-	View,
+	View
 } from 'react-native'
 import Animated, {
 	Easing,
 	interpolate,
 	SharedValue,
+	useAnimatedScrollHandler,
 	useAnimatedStyle,
 	useSharedValue,
 	withDelay,
-	withSpring,
-	withTiming,
+	withTiming
 } from 'react-native-reanimated'
-
-const { width: SCREEN_WIDTH } = Dimensions.get('window')
-const STICKY_HEADER_HEIGHT = 80
-const HERO_HEIGHT = 320
-const STICKY_THRESHOLD = HERO_HEIGHT - STICKY_HEADER_HEIGHT - 20
 
 const mockSellerProducts: SimilarProduct[] = [
 	{
@@ -88,13 +84,6 @@ const mockSimilarProducts: SimilarProduct[] = [
 	},
 ]
 
-// Product data (mock)
-const productData = {
-	title: 'Modern Renovated 3-Room Apartment',
-	price: '500,000 $',
-	image:
-		'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=1200&q=80',
-}
 
 // Animation configuration
 const ANIMATION_CONFIG = {
@@ -110,15 +99,66 @@ const AnimatedScrollView = Animated.ScrollView
 
 const ProductDetailPage: React.FC = () => {
 	const { id } = useLocalSearchParams<{ id?: string }>()
+	const productId = id ? parseInt(id, 10) : 0
 	const colors = useThemeColors()
 	const { t } = useTranslations()
-	const [showStickyHeader, setShowStickyHeader] = useState(false)
+	const [isLiked, setIsLiked] = useState(false)
+	const isLikedRef = useRef(false)
+	const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
 
-	// Animation values
-	const imageScale = useSharedValue(ANIMATION_CONFIG.imageScale.initial)
-	const imageOpacity = useSharedValue(0)
+	// ── Real product data ────────────────────────────────────────────────────
+	const { data: productRes, isLoading: productLoading } = useProductQuery({
+		id: productId,
+		querySettings: { enabled: productId > 0 },
+	})
+
+	const product = productRes?.data?.data
+
+	// Derived display values
+	const productTitle = product?.title ?? ''
+	const productPrice = product?.is_free ? t('home.free') : (product?.price ?? '')
+	const productMainImage = product?.main_image_url ?? null
+	const productImages = product?.images ?? []
+	const productDesc = product?.description ?? ''
+	const productMoljal = product?.moljal ?? ''
+	const productLat = product?.latitude ?? 41.309
+	const productLng = product?.longitude ?? 69.241
+	const productViews = product?.views_count ?? 0
+	const productLikes = product?.likes_count ?? 0
+	const productCategory = product?.category_name_uz ?? ''
+	const productCreated = product?.created_ago ?? ''
+	const isNegotiable = product?.is_negotiable ?? false
+	const productWorkType = product?.work_type ?? null
+	const productStatus = product?.status ?? 'sold'
+	const productIsLiked = product?.is_liked ?? false
+
+	// prepare images for gallery component
+	const imagesGalleryImages = productImages?.map((image: string) => ({ image_url: image }));
+
+	// Sync like state from API once product loads
+	useEffect(() => {
+		setIsLiked(productIsLiked)
+		isLikedRef.current = productIsLiked
+	}, [productIsLiked])
+
+	// Seller info (using mock data for now)
+	const productSellerId = product?.user_id ?? 0
+	const productSellerUserName = product?.seller?.username ?? 'unknown'
+	const productSellerLocation = product?.seller?.address_name ?? 'unknown'
+	const productSellerProfileImage = product?.seller?.profile_image_url ?? null
+
+	// ── Animations ───────────────────────────────────────────────────────────
+	// Scroll position drives ALL scroll-based animations on the UI thread
+	const scrollY = useSharedValue(0)
+	const scrollHandler = useAnimatedScrollHandler({
+		onScroll: (event) => {
+			'worklet'
+			scrollY.value = event.contentOffset.y
+		},
+	})
+
+	// Entry animations
 	const headerButtonsOpacity = useSharedValue(0)
-	const stickyHeaderOpacity = useSharedValue(0)
 
 	// Content section animations (staggered from top to bottom)
 	const sellerRowAnim = useSharedValue(0)
@@ -132,16 +172,8 @@ const ProductDetailPage: React.FC = () => {
 	const similarProductsAnim = useSharedValue(0)
 	const bottomBarAnim = useSharedValue(0)
 
-	// Start animations on mount
+	// Start entry animations on mount
 	useEffect(() => {
-		// Hero image scale animation
-		imageOpacity.value = withTiming(1, { duration: 200 })
-		imageScale.value = withSpring(ANIMATION_CONFIG.imageScale.final, {
-			damping: 15,
-			stiffness: 100,
-		})
-
-		// Header buttons fade in
 		headerButtonsOpacity.value = withDelay(200, withTiming(1, { duration: 300 }))
 
 		// Content sections flow in from top to bottom with stagger
@@ -168,30 +200,43 @@ const ProductDetailPage: React.FC = () => {
 		bottomBarAnim.value = withDelay(baseDelay + stagger * 9, withTiming(1, { duration, easing }))
 	}, [])
 
-	// Handle scroll for sticky header
-	const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-		const offsetY = event.nativeEvent.contentOffset.y
-		const shouldShow = offsetY > STICKY_THRESHOLD
+	// ── Scroll-driven animated styles (run on UI thread, zero setState) ──────
+	// Parallax hero: image moves up at PARALLAX_FACTOR speed; scales up on pull-down
+	const heroImageParallaxStyle = useAnimatedStyle(() => {
+		const translateY = interpolate(
+			scrollY.value,
+			[0, AppLimits.HERO_HEIGHT],
+			[0, AppLimits.HERO_HEIGHT * AppLimits.PARALLAX_FACTOR],
+			'clamp',
+		)
+		const scale = interpolate(
+			scrollY.value,
+			[-AppLimits.PARALLAX_EXTRA, 0],
+			[1 + AppLimits.PARALLAX_EXTRA / AppLimits.HERO_HEIGHT, 1],
+			'clamp',
+		)
+		return { transform: [{ scale }, { translateY }] }
+	})
 
-		if (shouldShow !== showStickyHeader) {
-			setShowStickyHeader(shouldShow)
-			stickyHeaderOpacity.value = withTiming(shouldShow ? 1 : 0, { duration: 200 })
-		}
-	}
-
-	// Animated styles
-	const heroImageStyle = useAnimatedStyle(() => ({
-		transform: [{ scale: imageScale.value }],
-		opacity: imageOpacity.value,
-	}))
+	// Sticky header: slides down from behind status bar and fades in
+	const stickyHeaderStyle = useAnimatedStyle(() => {
+		const opacity = interpolate(
+			scrollY.value,
+			[AppLimits.STICKY_THRESHOLD, AppLimits.STICKY_THRESHOLD + 40],
+			[0, 1],
+			'clamp',
+		)
+		const translateY = interpolate(
+			scrollY.value,
+			[AppLimits.STICKY_THRESHOLD, AppLimits.STICKY_THRESHOLD + 40],
+			[-AppLimits.STICKY_HEADER_HEIGHT, 0],
+			'clamp',
+		)
+		return { opacity, transform: [{ translateY }] }
+	})
 
 	const headerButtonsStyle = useAnimatedStyle(() => ({
 		opacity: headerButtonsOpacity.value,
-	}))
-
-	const stickyHeaderStyle = useAnimatedStyle(() => ({
-		opacity: stickyHeaderOpacity.value,
-		transform: [{ translateY: interpolate(stickyHeaderOpacity.value, [0, 1], [-20, 0]) }],
 	}))
 
 	// Helper to create slide-up + fade-in animation style
@@ -215,83 +260,134 @@ const ProductDetailPage: React.FC = () => {
 		transform: [{ translateY: interpolate(bottomBarAnim.value, [0, 1], [50, 0]) }],
 	}))
 
-	const latitude = 41.309
-	const longitude = 69.241
-	const locationText = 'Chilonzor, Tashkent'
-
-	const handleMapPress = () => {
+	const handleMapPress = useCallback(() => {
 		router.push({
 			pathname: '/(tabs)/map',
 			params: {
-				latitude: String(latitude),
-				longitude: String(longitude),
-				markerTitle: 'Meeting location',
+				latitude: String(productLat),
+				longitude: String(productLng),
+				markerTitle: productMoljal || productTitle,
 			},
 		})
-	}
+	}, [productLat, productLng, productMoljal, productTitle])
 
-	const handleOpenProduct = (productId: string) => {
-		router.push(`/product/${productId}`)
-	}
+	const { mutate: toggleLike, isPending: likePending } = useToggleLikeMutation()
+	const { mutate: createChat, isPending: chatPending } = useCreateChatMutation()
+
+	const handleLike = useCallback(() => {
+		if (!isAuthenticated) { router.push('/(auth)/auth'); return }
+		const next = !isLikedRef.current
+		isLikedRef.current = next
+		setIsLiked(next)
+		toggleLike(
+			{ id: productId, data: { is_liked: next } },
+			{ onError: () => { isLikedRef.current = !next; setIsLiked(!next) } },
+		)
+	}, [isAuthenticated, productId, toggleLike])
+
+	const handleChat = useCallback(() => {
+		if (!isAuthenticated) { router.push('/(auth)/auth'); return }
+		if (!productSellerId) return
+		createChat(
+			{ seller_id: productSellerId, product_id: productId },
+			{
+				onSuccess: (res) => {
+					// API response is wrapped: { data: ChatRoomDto, message, code }
+					const chatRoomId = res.data?.data?.id
+					if (chatRoomId) {
+						router.push(`/chat/${chatRoomId}`)
+					}
+				}
+			},
+		)
+	}, [isAuthenticated, productSellerId, productId, createChat])
+
+	const handleShare = useCallback(async () => {
+		try {
+			await Share.share({
+				title: productTitle,
+				message: productTitle
+					? `${productTitle}\nhttps://hanamarket.uz/product/${productId}`
+					: `https://hanamarket.uz/product/${productId}`,
+				url: Platform.select({
+					ios: `https://hanamarket.uz/product/${productId}`,
+					android: `https://hanamarket.uz/product/${productId}`,
+				}),
+			})
+		} catch (e) {
+			// user dismissed or error — no-op
+		}
+	}, [productTitle, productId])
+
+	const handleOpenProduct = useCallback((id: string) => {
+		router.push(`/product/${id}`)
+	}, [])
+
+
+	//---Seller products section ------------------------------
+	const { data: sellerProductsRes } = useProductQuery({
+		id: productSellerId,
+		querySettings: { enabled: !!productSellerId },
+	})
+
 
 	return (
 		<View style={[styles.container, { backgroundColor: colors.profileBackground }]}>
-			{/* Sticky Header - appears on scroll */}
-			{showStickyHeader && (
-				<Animated.View
-					style={[
-						styles.stickyHeader,
-						{ backgroundColor: colors.background, borderBottomColor: colors.borderColor },
-						stickyHeaderStyle,
-					]}
+			{/* Sticky Header — always present, driven by scrollY */}
+			<Animated.View style={[
+				styles.stickyHeader,
+				{ backgroundColor: colors.background, borderBottomColor: colors.borderColor },
+				stickyHeaderStyle,
+			]}
+				pointerEvents='box-none'
+			>
+				{/* Back Button */}
+				<TouchableOpacity
+					style={[styles.stickyBackButton, { backgroundColor: colors.profileBackground }]}
+					onPress={() => router.back()}
 				>
-					{/* Back Button */}
-					<TouchableOpacity
-						style={[styles.stickyBackButton, { backgroundColor: colors.profileBackground }]}
-						onPress={() => router.back()}
-					>
-						<ArrowLeft size={20} color={colors.text} />
-					</TouchableOpacity>
+					<ArrowLeft size={20} color={colors.text} />
+				</TouchableOpacity>
 
-					{/* Square Image */}
-					<Image
-						source={{ uri: productData.image }}
-						style={styles.stickyImage}
-						resizeMode='cover'
-					/>
+				{/* Square Image */}
+				<RemoteImage
+					src={productMainImage ?? (productImages.length > 0 ? productImages[0].image_url : null)}
+					style={styles.stickyImage}
+					resizeMode='cover'
+				/>
 
-					{/* Product Info */}
-					<View style={styles.stickyInfo}>
-						<Text style={[styles.stickyTitle, { color: colors.text }]} numberOfLines={1}>
-							{productData.title}
-						</Text>
-						<Text style={[styles.stickyPrice, { color: colors.primaryColor }]}>
-							{productData.price}
-						</Text>
-					</View>
+				{/* Product Info */}
+				<View style={styles.stickyInfo}>
+					<Text style={[styles.stickyTitle, { color: colors.text }]} numberOfLines={1}>
+						{productTitle}
+					</Text>
+					<Text style={[styles.stickyPrice, { color: colors.primaryColor }]}>
+						{productPrice}
+					</Text>
+				</View>
 
-					{/* Share Button */}
-					<TouchableOpacity
-						style={[styles.stickyShareButton, { backgroundColor: colors.profileBackground }]}
-						onPress={() => console.log('Share')}
-					>
-						<Share2 size={18} color={colors.text} />
-					</TouchableOpacity>
-				</Animated.View>
-			)}
+				{/* Share Button */}
+				<TouchableOpacity
+					style={[styles.stickyShareButton, { backgroundColor: colors.profileBackground }]}
+					onPress={handleShare}
+				>
+					<Share2 size={18} color={colors.text} />
+				</TouchableOpacity>
+			</Animated.View>
 
+			{/*  Main images Section */}
 			<AnimatedScrollView
 				showsVerticalScrollIndicator={false}
-				onScroll={handleScroll}
+				onScroll={scrollHandler}
 				scrollEventThrottle={16}
 			>
-				{/* Hero Section with Scale Animation */}
+				{/* Hero — overflow:hidden clips the parallax container */}
 				<View style={styles.hero}>
-					<Animated.View style={[styles.heroImageContainer, heroImageStyle]}>
-						<Image
-							source={{ uri: productData.image }}
-							style={styles.heroImage}
-							resizeMode='cover'
+					{/* Parallax container: taller than hero to allow translateY travel */}
+					<Animated.View style={[styles.heroParallaxContainer, heroImageParallaxStyle]}>
+						<ProductImageGallery
+							mainImage={null}
+							images={imagesGalleryImages}
 						/>
 					</Animated.View>
 					<Animated.View style={[styles.heroTopRow, headerButtonsStyle]}>
@@ -301,7 +397,7 @@ const ProductDetailPage: React.FC = () => {
 						>
 							<ArrowLeft size={18} color={colors.text} />
 						</TouchableOpacity>
-						<TouchableOpacity style={[styles.circleButton, { backgroundColor: colors.background }]}>
+						<TouchableOpacity style={[styles.circleButton, { backgroundColor: colors.background }]} onPress={handleShare}>
 							<Share2 size={18} color={colors.text} />
 						</TouchableOpacity>
 					</Animated.View>
@@ -313,13 +409,19 @@ const ProductDetailPage: React.FC = () => {
 						style={[styles.sellerRow, { borderBottomColor: colors.borderColor }, sellerRowStyle]}
 					>
 						<View style={styles.sellerInfo}>
-							<View style={[styles.avatar, { backgroundColor: colors.primaryColor }]}>
-								<Text style={styles.avatarText}>A</Text>
-							</View>
+							{productSellerProfileImage ? (
+								<RemoteImage
+									style={[styles.avatar]}
+									src={productSellerProfileImage}
+									resizeMode='cover'
+								/>
+							) : (
+								<Text style={styles.avatarText}>{productSellerUserName.charAt(0).toUpperCase()}</Text>
+							)}
 							<View>
-								<Text style={[styles.sellerName, { color: colors.text }]}>Aziz Rahimov</Text>
+								<Text style={[styles.sellerName, { color: colors.text }]}>{productSellerUserName}</Text>
 								<Text style={[styles.sellerMeta, { color: colors.textMuted }]}>
-									Chilonzor, Tashkent
+									{productMoljal ? productMoljal : productSellerLocation}
 								</Text>
 							</View>
 						</View>
@@ -328,63 +430,84 @@ const ProductDetailPage: React.FC = () => {
 
 					{/* Title & Price */}
 					<Animated.View style={titleStyle}>
-						<Text style={[styles.title, { color: colors.text }]}>{productData.title}</Text>
+						<View style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
+							{(productStatus === 'reserved' || productStatus === 'sold') &&
+								<Text style={[styles.title, {
+									color: productStatus === 'sold' ? colors.statusSold : colors.statusReserved,
+									backgroundColor: 'rgb(235, 235, 235)',
+									paddingHorizontal: 4,
+									paddingVertical: 1,
+									marginRight: 6,
+									borderRadius: 4
+								}]}>
+									{productStatus}</Text>
+							}
+							<Text style={[styles.title, { color: colors.text }]}>{productTitle}</Text>
+						</View>
 					</Animated.View>
 					<Animated.View style={priceStyle}>
-						<Text style={[styles.price, { color: colors.primaryColor }]}>{productData.price}</Text>
-						<Text style={[styles.negotiable, { color: colors.textMuted }]}>
-							{t('product_detail.price_negotiable')}
-						</Text>
+						<Text style={[styles.price, { color: colors.primaryColor }]}>{productPrice}</Text>
+						{isNegotiable && (
+							<Text style={[styles.negotiable, { color: colors.textMuted }]}>
+								{t('product_detail.price_negotiable')}
+							</Text>
+						)}
 					</Animated.View>
 
-					{/* Meta Row */}
+					{/* Category and Created_ago Meta Row */}
 					<Animated.View style={[styles.metaRow, metaStyle]}>
-						<View style={styles.metaItem}>
-							<MapPin size={14} color={colors.textMuted} />
-							<Text style={[styles.metaText, { color: colors.textMuted }]}>Real Estate</Text>
-						</View>
-						<View style={styles.metaItem}>
-							<Clock3 size={14} color={colors.textMuted} />
-							<Text style={[styles.metaText, { color: colors.textMuted }]}>2 hours ago</Text>
-						</View>
+						{productCategory ? (
+							<View style={styles.metaItem}>
+								<Text style={[styles.metaText, { color: colors.textMuted, textDecorationLine: 'underline' }]}>{productCategory}</Text>
+							</View>
+						) : null}
+						{productCreated ? (
+							<View style={styles.metaItem}>
+								<Clock3 size={14} color={colors.textMuted} />
+								<Text style={[styles.metaText, { color: colors.textMuted }]}>{productCreated}</Text>
+							</View>
+						) : null}
 					</Animated.View>
 
 					<View style={[styles.separator, { backgroundColor: colors.borderColor }]} />
 
 					{/* Description */}
-					<Animated.View style={descriptionStyle}>
-						<Text style={[styles.sectionTitle, { color: colors.text }]}>
-							{t('product_detail.description')}
-						</Text>
-						<Text style={[styles.description, { color: colors.textMuted }]}>
-							Located in Chilonzor district, this newly renovated 3-room apartment is for sale.
-							Total area is 85 sq.m. 5th floor out of 9. All utilities available: water, gas,
-							electricity. The apartment is fully furnished, with clean stairways and elevator.
-							Nearby schools, kindergartens, shops and public transport stops are available.
-						</Text>
-					</Animated.View>
+					{productDesc ? (
+						<Animated.View style={descriptionStyle}>
+							<Text style={[styles.sectionTitle, { color: colors.text }]}>
+								{t('product_detail.description')}
+							</Text>
+							<Text style={[styles.description, { color: colors.textMuted }]}>
+								{productDesc}
+							</Text>
+						</Animated.View>
+					) : null}
 
 					{/* Meeting Location */}
-					<Animated.View style={locationStyle}>
-						<Text style={[styles.sectionTitle, { color: colors.text, marginTop: 18 }]}>
-							{t('product_detail.meeting_location')}
-						</Text>
-						<LocationMapPreview
-							title={locationText}
-							subtitle={t('product_detail.tap_to_view_map')}
-							onPress={handleMapPress}
-						/>
-					</Animated.View>
+					{(productLat && productLng) ? (
+						<Animated.View style={locationStyle}>
+							<Text style={[styles.sectionTitle, { color: colors.text, marginTop: 18 }]}>
+								{t('product_detail.meeting_location')} {productMoljal ? `- ${productMoljal}` : ''}
+							</Text>
+							<LocationMapPreview
+								title={productMoljal || t('product_detail.meeting_location')}
+								subtitle={t('product_detail.tap_to_view_map')}
+								latitude={productLat}
+								longitude={productLng}
+								onPress={handleMapPress}
+							/>
+						</Animated.View>
+					) : null}
 
 					<View style={[styles.separator, { backgroundColor: colors.borderColor }]} />
 
 					{/* Stats */}
 					<Animated.View style={[styles.statsRow, statsStyle]}>
 						<Text style={[styles.statText, { color: colors.textMuted }]}>
-							1,234 {t('product_detail.likes')}
+							{productLikes.toLocaleString()} {t('product_detail.likes')}
 						</Text>
 						<Text style={[styles.statText, { color: colors.textMuted }]}>
-							5,678 {t('product_detail.views')}
+							{productViews.toLocaleString()} {t('product_detail.views')}
 						</Text>
 					</Animated.View>
 
@@ -440,10 +563,25 @@ const ProductDetailPage: React.FC = () => {
 					bottomBarStyle,
 				]}
 			>
-				<TouchableOpacity style={[styles.likeButton, { borderColor: colors.borderColor }]}>
-					<Heart size={22} color={colors.textMuted} />
+				<TouchableOpacity
+					style={[
+						styles.likeButton,
+						{ borderColor: isLiked ? colors.primaryColor : colors.borderColor },
+					]}
+					onPress={handleLike}
+					disabled={likePending}
+				>
+					<Heart
+						size={22}
+						color={isLiked ? colors.primaryColor : colors.textMuted}
+						fill={isLiked ? colors.primaryColor : 'transparent'}
+					/>
 				</TouchableOpacity>
-				<TouchableOpacity style={[styles.chatButton, { backgroundColor: colors.primaryColor }]}>
+				<TouchableOpacity
+					style={[styles.chatButton, { backgroundColor: colors.primaryColor, opacity: chatPending ? 0.7 : 1 }]}
+					onPress={handleChat}
+					disabled={chatPending}
+				>
 					<MessageCircle size={20} color='#fff' />
 					<Text style={styles.chatButtonText}>{t('product_detail.chat_with_seller')}</Text>
 				</TouchableOpacity>
@@ -466,8 +604,8 @@ const styles = StyleSheet.create({
 		zIndex: 100,
 		flexDirection: 'row',
 		alignItems: 'center',
-		paddingTop: Platform.OS === 'ios' ? 50 : 10,
-		paddingBottom: 10,
+		paddingTop: AppLimits.STATUS_BAR_HEIGHT,
+		height: AppLimits.STICKY_HEADER_HEIGHT,
 		paddingHorizontal: 12,
 		borderBottomWidth: 1,
 		gap: 10,
@@ -506,12 +644,18 @@ const styles = StyleSheet.create({
 	},
 
 	// Hero Section
-	hero: { height: HERO_HEIGHT, position: 'relative', overflow: 'hidden' },
-	heroImageContainer: { width: '100%', height: '100%' },
-	heroImage: { width: '100%', height: '100%' },
+	hero: { height: AppLimits.HERO_HEIGHT, position: 'relative', overflow: 'hidden' },
+	// Extends below clip area to allow parallax translateY without revealing empty space
+	heroParallaxContainer: {
+		position: 'absolute',
+		top: 0,
+		left: 0,
+		right: 0,
+		bottom: -AppLimits.PARALLAX_EXTRA,
+	},
 	heroTopRow: {
 		position: 'absolute',
-		top: Platform.OS === 'ios' ? 54 : 14,
+		top: AppLimits.STATUS_BAR_HEIGHT + 10,
 		left: 14,
 		right: 14,
 		flexDirection: 'row',
@@ -554,7 +698,7 @@ const styles = StyleSheet.create({
 	negotiable: { fontSize: 13, marginTop: 4 },
 	metaRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 12 },
 	metaItem: { flexDirection: 'row', alignItems: 'center', gap: 5 },
-	metaText: { fontSize: 12 },
+	metaText: { fontSize: 14 },
 	separator: { height: 1, marginVertical: 14 },
 	sectionTitle: { fontSize: 18, fontWeight: '700', marginBottom: 10 },
 	description: { marginTop: 10, fontSize: 14, lineHeight: 22 },

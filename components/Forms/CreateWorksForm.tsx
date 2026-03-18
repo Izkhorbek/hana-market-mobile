@@ -1,18 +1,19 @@
 import { useCreateProductMutation } from '@/api/hooks';
-import { ECurrencyType, EPaymentType, EProductType, EWorkerType, EWorkSalaryType } from '@/api/types';
 import FormDatePicker from '@/components/FormElements/FormDatePicker';
 import FormInput from '@/components/FormElements/FormInput';
 import FormSelect from '@/components/FormElements/FormSelect';
 import { OptionType } from '@/components/ui/combobox';
+import { ECategoryType, ECurrencyType, EPaymentTimeType, EPaymentType, EProductType, EWorkCondition, EWorkerType, EWorkSalaryType, EWorkType } from '@/constants/enums';
 import { useTranslations } from '@/hooks/use-translation';
 import { useColor } from '@/hooks/useColor';
+import { resolveEnum } from '@/utils/enumHelpers';
 import { useRouter } from 'expo-router';
 import { MapPin } from 'lucide-react-native';
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { ActivityIndicator, Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import FormRow from '../FormElements/FormRow';
-import ImageUploader from '../FormElements/ImageUploader';
+import ImageUploader, { DraftImageItem } from '../FormElements/ImageUploader';
 import RadioButtonGroup, { RadioOption } from '../FormElements/RadioButtonGroup';
 import MapModal from '../MapModal';
 
@@ -22,61 +23,15 @@ const CreateWorksForm = () => {
   const primaryColor = useColor('primaryColor');
   const textColor = useColor('text');
   const router = useRouter();
-  const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>(null);
+  // const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>({ latitude: 41.311081, longitude: 69.240562 }); // Default to Tashkent for testing
+  const [location, setLocation] = useState<{ latitude: number; longitude: number }>({ latitude: 41.311081, longitude: 69.240562 }); // Default to Tashkent for testing
   const [isMapModalVisible, setIsMapModalVisible] = useState(false);
 
-  const form = useForm({
-    defaultValues: {
-      images: [],
-      workerType: 'working_together',
-      jobTitle: '',
-      jobType: '',
-      jobDeadline: 'temporary',
-      meetingDateTime: undefined as Date | undefined,
-      salaryType: 'hourly',
-      salaryAmount: '',
-      currency: 'UZS',
-      paymentTime: '',
-      jobDescription: '',
-      employerName: '',
-      workplaceInfo: '',
-      location: '',
-      phoneNumber: '',
-      webLinks: '',
-    },
-  });
-
-  const { formState: { errors } } = form;
-
-  const workerType = form.watch('workerType');
-  const jobDeadline = form.watch('jobDeadline');
-  const salaryType = form.watch('salaryType');
-  const currency = form.watch('currency');
-
-  const { mutate: createProduct, isPending } = useCreateProductMutation({
-    onSuccess: () => {
-      Alert.alert(
-        t('post.success'),
-        t('post.product_created_successfully'),
-        [
-          {
-            text: t('common.ok'),
-            onPress: () => router.back(),
-          },
-        ]
-      );
-      form.reset();
-    },
-    onError: (error: any) => {
-      const message = error?.response?.data?.message || error?.message || t('post.error_creating_product');
-      Alert.alert(t('post.error'), message);
-    },
-  });
-
-  const workerTypeOptions: RadioOption[] = [
+  // Options for radio buttons and selects
+ const workerTypeOptions: RadioOption[] = [
     {
-      value: 'working_together',
-      label: t('work.working_together'),
+      value: 'employee',
+      label: t('work.employee'),
     },
     {
       value: 'assistant',
@@ -88,14 +43,14 @@ const CreateWorksForm = () => {
     },
   ];
 
-  const jobDeadlineOptions: RadioOption[] = [
+  const workConditionOptions: RadioOption[] = [
     {
       value: 'temporary',
       label: t('work.temporary'),
     },
     {
-      value: 'month',
-      label: t('work.month'),
+      value: 'one_month',
+      label: t('work.one_month'),
     },
     {
       value: 'long_term',
@@ -118,12 +73,82 @@ const CreateWorksForm = () => {
     },
   ];
 
+    // Ish turlari uchun options 
+  const workTypeOptions: OptionType[] = [
+    { value: 'full_time', label: t('work.full_time') },
+    { value: 'part_time', label: t('work.part_time') },
+    { value: 'contract',   label: t('work.contract') },
+    { value: 'freelancer', label: t('work.freelancer') },
+  ];
+
+  // Payment time options for select
   const paymentTimeOptions: OptionType[] = [
     { value: 'immediately', label: t('work.payment_immediately') },
     { value: 'weekly', label: t('work.payment_weekly') },
     { value: 'monthly', label: t('work.payment_monthly') },
     { value: 'after_completion', label: t('work.payment_after_completion') },
   ];
+
+  // Payment type options for select
+  const paymentTypeOptions: OptionType[] = [
+    { value: 'cash', label: t('work.payment_cash') },
+    { value: 'bank_transfer', label: t('work.payment_bank_transfer') },
+    { value: 'mobile_payment', label: t('work.payment_mobile_payment') },
+  ];
+
+  // Initialize form with react-hook-form
+  const form = useForm({
+    defaultValues: {
+      images: [],
+      workerType: workerTypeOptions[0].value,
+      workType: workTypeOptions[0].value,
+      workTitle: 'sample work title',
+      workCondition: workConditionOptions[0].value,
+      workingStartDateTime: new Date(), //undefined as Date | undefined ,
+      salaryType: salaryTypeOptions[0].value,
+      salaryAmount: '452000',
+      currency:  ECurrencyType[ECurrencyType.UZS],
+      paymentType: paymentTypeOptions[0].value,
+      paymentTime: paymentTimeOptions[0].value,
+      jobDescription: 'sample job description',
+      employerName: 'sample employer name',
+      workplaceInfo: 'sample workplace info',
+      location: 'sample location',
+      landmark: 'sample landmark',
+      employerPhone: '+998901234567',
+      webLinks: '',
+    },
+  });
+
+  const { formState: { errors } } = form;
+
+  const workerType = form.watch('workerType');
+  const jobDeadline = form.watch('workCondition');
+  const salaryType = form.watch('salaryType');
+  const currency = form.watch('currency');
+
+  const { mutate: createProduct, isPending } = useCreateProductMutation({
+    onSuccess: () => {
+      Alert.alert(
+        t('post.success'),
+        t('post.product_created_successfully'),
+        [
+          {
+            text: t('common.ok'),
+            onPress: () => router.back(),
+          },
+        ]
+      );
+      form.reset();
+    },
+    onError: (error: any) => {
+      console.error('Error creating product:', error);
+      const message = error?.response?.data?.message || error?.message || t('post.error_creating_product');
+      Alert.alert(t('post.error'), message);
+    },
+  });
+
+ 
 
   const handleOpenMap = () => {
     setIsMapModalVisible(true);
@@ -134,87 +159,84 @@ const CreateWorksForm = () => {
     setIsMapModalVisible(false);
   };
 
+
   const handleSubmit = form.handleSubmit((data) => {
-    if (!location) {
-      Alert.alert(t('post.error'), t('post.please_select_location'));
+
+    if (data.landmark.trim() === '') {
+      Alert.alert(t('post.error'), t('post.please_enter_landmark'));
       return;
     }
 
-    const formData = new FormData();
-
-    // Add product type
-    formData.append('product_type', EProductType.WORK.toString());
-
-    // Add basic fields
-    formData.append('title', data.jobTitle);
-    formData.append('description', data.jobDescription || '');
-    formData.append('work_category', data.jobType || '');
-    formData.append('work_condition', data.jobDeadline || '');
-
-    // Map worker type to enum
-    const workerTypeMap: Record<string, EWorkerType> = {
-      working_together: EWorkerType.BOTH,
-      assistant: EWorkerType.OFFERING,
-      teacher: EWorkerType.SEEKING,
-    };
-    formData.append('work_data.worker_type', workerTypeMap[data.workerType].toString());
-
-    // Map salary type to enum
-    const salaryTypeMap: Record<string, EWorkSalaryType> = {
-      hourly: EWorkSalaryType.HOURLY,
-      daily: EWorkSalaryType.DAILY,
-      per_task: EWorkSalaryType.CONTRACT,
-    };
-    formData.append('work_data.salary_type', salaryTypeMap[data.salaryType].toString());
-    formData.append('work_data.salary_amount', data.salaryAmount);
-
-    // Add payment type
-    const paymentTypeMap: Record<string, EPaymentType> = {
-      immediately: EPaymentType.CASH,
-      weekly: EPaymentType.BANK_TRANSFER,
-      monthly: EPaymentType.BANK_TRANSFER,
-      after_completion: EPaymentType.BOTH,
-    };
-    formData.append('work_data.payment_type', paymentTypeMap[data.paymentTime]?.toString() || EPaymentType.BOTH.toString());
-
-    // Add currency
-    const currencyType = data.currency === 'USD' ? ECurrencyType.USD : ECurrencyType.UZS;
-    formData.append('currency_type', currencyType.toString());
-    const priceField = data.currency === 'USD' ? 'price_usd' : 'price_uzs';
-    formData.append(priceField, data.salaryAmount);
-    formData.append('is_free', 'false');
-
-    // Add work details
-    formData.append('work_data.employer_information', data.employerName || '');
-    formData.append('work_data.workplace_information', data.workplaceInfo || '');
-    formData.append('work_data.phone_number', data.phoneNumber || '');
-    formData.append('work_data.work_ethics', data.webLinks || '');
-
-    if (data.meetingDateTime) {
-      formData.append('work_data.working_days_hours', data.meetingDateTime.toISOString());
+    if (data.workingStartDateTime === undefined || isNaN(data.workingStartDateTime.getTime())) {
+      Alert.alert(t('post.error'), t('post.please_select_job_period_date_time'));
+      return;
     }
 
-    // Add location
-    formData.append('latitude', location.latitude.toString());
+    // ── Enum resolution (lowercase form value → numeric enum) ──
+    const workerTypeValue    = resolveEnum(EWorkerType,      data.workerType);
+    const workTypeValue      = resolveEnum(EWorkType,        data.workType);
+    const workConditionValue = resolveEnum(EWorkCondition,   data.workCondition);
+    const salaryTypeValue    = resolveEnum(EWorkSalaryType,  data.salaryType);
+    const paymentTypeValue   = resolveEnum(EPaymentType,     data.paymentType);
+    const paymentTimeValue   = resolveEnum(EPaymentTimeType, data.paymentTime);
+    const currencyValue      = resolveEnum(ECurrencyType,    data.currency) ?? ECurrencyType.UZS;
+
+    // Validate all required enum fields
+    if (workerTypeValue === undefined)    { Alert.alert(t('post.error'), t('work.errors.worker_type'));   return; }
+    if (workTypeValue === undefined)      { Alert.alert(t('post.error'), t('work.errors.work_type'));     return; }
+    if (workConditionValue === undefined) { Alert.alert(t('post.error'), t('work.errors.work_condition')); return; }
+    if (salaryTypeValue === undefined)    { Alert.alert(t('post.error'), t('work.errors.salary_type'));   return; }
+    if (paymentTypeValue === undefined)   { Alert.alert(t('post.error'), t('work.errors.payment_type'));  return; }
+    if (paymentTimeValue === undefined)   { Alert.alert(t('post.error'), t('work.errors.payment_time'));  return; }
+
+    const formData = new FormData();
+
+    // Product type & category
+    formData.append('product_type', EProductType.WORK.toString());
+    formData.append('category_id',  ECategoryType.WORKS.toString());
+
+    // Basic fields
+    formData.append('title',          data.workTitle);
+    formData.append('description',    data.jobDescription || '');
+    formData.append('work_type',      workTypeValue.toString());
+    formData.append('work_condition', workConditionValue.toString());
+
+    // Work data
+    formData.append('work_data.worker_type',           workerTypeValue.toString());
+    formData.append('work_data.salary_type',           salaryTypeValue.toString());
+    formData.append('work_data.salary_amount',         data.salaryAmount);
+    formData.append('work_data.payment_type',          paymentTypeValue.toString());
+    formData.append('work_data.payment_time',          paymentTimeValue.toString());
+    formData.append('work_data.employer_information',  data.employerName || '');
+    formData.append('work_data.workplace_information', data.workplaceInfo || '');
+    formData.append('work_data.phone_number',          data.employerPhone || '');
+    formData.append('work_data.work_ethics',           data.webLinks || '');
+
+    // Working start date
+    if (data.workingStartDateTime) {
+      formData.append('work_data.working_start_date', data.workingStartDateTime.toISOString());
+    }
+
+    // Currency & price
+    formData.append('currency_type', currencyValue.toString());
+    formData.append(currencyValue === ECurrencyType.USD ? 'price_usd' : 'price_uzs', data.salaryAmount);
+    formData.append('is_free', 'false');
+
+    // Location
+    formData.append('latitude',  location.latitude.toString());
     formData.append('longitude', location.longitude.toString());
-    formData.append('moljal', data.location || '');
+    formData.append('moljal',    data.landmark || '');
 
-    // Add images
-    data.images.forEach((imageUri: string, index: number) => {
-      const imageFile = {
-        uri: imageUri,
-        type: 'image/jpeg',
-        name: `image_${index}.jpg`,
-      } as any;
+    // Images
+    const images: DraftImageItem[] = data.images;
+    const draft_images = images.map((img, index) => ({
+      draft_uuid:      img.draft_uuid,
+      draft_image_url: img.draft_image_url,
+      sort_order:      index,
+    }));
+    formData.append('images_json', JSON.stringify(draft_images));
 
-      if (index === 0) {
-        formData.append('main_image_url', imageFile);
-      }
-
-      formData.append(`images[${index}].image_url`, imageFile);
-      formData.append(`images[${index}].sort_order`, index.toString());
-    });
-
+    console.log('Work form data to submit:', formData);
     createProduct(formData);
   });
 
@@ -256,7 +278,7 @@ const CreateWorksForm = () => {
 
           <FormInput
             control={form.control}
-            name="jobTitle"
+            name="workTitle"
             label={t('work.job_title')}
             placeholder={t('work.job_title_placeholder')}
             required
@@ -267,15 +289,10 @@ const CreateWorksForm = () => {
 
           <FormSelect
             control={form.control}
-            name="jobType"
+            name="workType"
             label={t('work.job_type')}
             placeholder={t('work.job_type_select')}
-            options={[
-              { value: 'full_time', label: t('work.full_time') },
-              { value: 'part_time', label: t('work.part_time') },
-              { value: 'contract', label: t('work.contract') },
-              { value: 'freelance', label: t('work.freelance') },
-            ]}
+            options={workTypeOptions}
             required
             rules={{
               required: t('work.errors.job_type'),
@@ -288,21 +305,21 @@ const CreateWorksForm = () => {
             </Text>
             <RadioButtonGroup
               control={form.control}
-              name="jobDeadline"
-              options={jobDeadlineOptions}
+              name="workCondition"
+              options={workConditionOptions}
             />
           </View>
 
           <FormDatePicker
             control={form.control}
-            name="meetingDateTime"
+            name='workingStartDateTime'
             mode="datetime"
-            label={t('work.meeting_date_time')}
-            placeholder={t('work.meeting_date_time_placeholder')}
+            label={t('work.job_period_date_time')}
+            placeholder={t('work.job_period_date_time_placeholder')}
             minimumDate={new Date()}
             required
             rules={{
-              required: t('work.errors.meeting_date_time'),
+              required: t('work.errors.job_period_date_time'),
             }}
           />
         </View>
@@ -385,6 +402,19 @@ const CreateWorksForm = () => {
               required: t('work.errors.payment_time'),
             }}
           />
+
+          <FormSelect
+            control={form.control}
+            name="paymentType"
+            label={t('work.payment_type')}
+            placeholder={t('work.payment_type_placeholder')}
+            options={paymentTypeOptions}
+            required
+            rules={{
+              required: t('work.errors.payment_type'),
+            }}
+          />
+
         </View>
 
         {/* Section 5: Job Description */}
@@ -412,6 +442,7 @@ const CreateWorksForm = () => {
             {t('work.employer_information')}
           </Text>
 
+          {/* Ish beruvchi nomi yoki kompaniya nomi */}
           <FormInput
             control={form.control}
             name="employerName"
@@ -423,16 +454,30 @@ const CreateWorksForm = () => {
             }}
           />
 
+          {/* Ish beruvchining telefon raqami */}
+          <View style={styles.phoneInputWrapper}>
+            <FormInput
+              control={form.control}
+              name="employerPhone"
+              label={t('work.employer_phone')}
+              placeholder={t('work.employer_phone_placeholder')}
+              required
+              keyboardType="phone-pad"
+              rules={{
+                required: t('work.errors.employer_phone'),
+              }}
+            />
+          </View>
           <FormRow>
             <View style={styles.locationInputWrapper}>
               <FormInput
                 control={form.control}
-                name="location"
-                label={t('work.location')}
-                placeholder={t('work.location_placeholder')}
+                name="landmark"
+                label={t('work.landmark')}
+                placeholder={t('work.landmark_placeholder')}
                 required
                 rules={{
-                  required: t('work.errors.location'),
+                  required: t('work.errors.landmark'),
                 }}
               />
             </View>
@@ -462,7 +507,8 @@ const CreateWorksForm = () => {
             }}
           />
 
-          <FormRow>
+          {/* Telegram yoki boshqa ijtimoiy tarmoqlardagi havolalar, ixtiyoriy */}
+          <View style={styles.socialMediaInputWrapper}>
             <FormInput
               control={form.control}
               name="webLinks"
@@ -471,7 +517,7 @@ const CreateWorksForm = () => {
               type="textarea"
               rows={3}
             />
-          </FormRow>
+          </View>
         </View>
       </View>
 
@@ -558,6 +604,9 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
   },
+  phoneInputWrapper: {
+    marginTop: 10,
+  },
   locationContainer: {
     flexDirection: 'row',
     alignItems: 'flex-end',
@@ -565,6 +614,9 @@ const styles = StyleSheet.create({
   },
   locationInputWrapper: {
     flex: 1,
+  },
+  socialMediaInputWrapper: {
+    marginTop: 10,
   },
   mapButton: {
     width: 52,

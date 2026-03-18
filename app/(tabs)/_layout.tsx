@@ -1,12 +1,12 @@
 import { HapticTab } from '@/components/haptic-tab';
 import HomeHeader from '@/components/headers/HomeHeader';
 import TabIcon from '@/components/shared/TabIcon';
+import { TAB_FOOTER_HEIGHT } from '@/constants/appLimits';
 import { useThemeColors } from '@/hooks/use-theme-colors';
 import { useTranslations } from '@/hooks/use-translation';
 import { Tabs } from 'expo-router';
 import { House, Map, MessageSquare, UserRound } from 'lucide-react-native';
 import React from 'react';
-import { Platform } from 'react-native';
 
 
 export default function TabLayout() {
@@ -23,7 +23,7 @@ export default function TabLayout() {
         tabBarStyle: {
           paddingTop: 15,
           backgroundColor: colors.taBarBg,
-          height: Platform.OS === 'ios' ? 100 : 120,
+          height: TAB_FOOTER_HEIGHT,
           borderTopWidth: 1,
           borderTopColor: colors.borderColor,
           boxShadow: "none",

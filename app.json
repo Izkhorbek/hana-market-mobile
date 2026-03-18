@@ -9,7 +9,10 @@
 		"userInterfaceStyle": "automatic",
 		"newArchEnabled": true,
 		"ios": {
-			"supportsTablet": true
+			"supportsTablet": true,
+			"config": {
+				"googleMapsApiKey": "YOUR_GOOGLE_MAPS_IOS_API_KEY"
+			}
 		},
 		"androidStatusBar": {
 			"translucent": false,
@@ -22,6 +25,11 @@
 		},
 		"jsEngine": "hermes",
 		"android": {
+			"config": {
+				"googleMaps": {
+					"apiKey": "YOUR_GOOGLE_MAPS_ANDROID_API_KEY"
+				}
+			},
 			"adaptiveIcon": {
 				"backgroundColor": "#E6F4FE",
 				"foregroundImage": "./assets/images/android-icon-foreground.png",

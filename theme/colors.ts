@@ -84,7 +84,8 @@ const lightColors = {
 	tabIconSelected: '#02A348',
 
 	// main colors
-	primaryColor: '#02A348',
+	primaryColor: '#02A348', 
+	//'#2E7D32'
 
 	// icons related colors
 	icon: '#A9ABB0',
@@ -101,6 +102,10 @@ const lightColors = {
 	// Notification banner colors
 	notificationBannerBg: '#E8F5E9',
 	notificationBannerText: '#1B5E20',
+
+	// status colors
+	statusSold: '#99A1AF',
+	statusReserved: '#02A348',
 }
 
 const darkColors = {
@@ -203,6 +208,10 @@ const darkColors = {
 	// Notification banner colors (dark mode)
 	notificationBannerBg: '#334155',
 	notificationBannerText: '#E2E8F0',
+
+	// status colors
+	statusSold: '#FF4400',
+	statusReserved: '#02A348',
 }
 
 export const Colors = {

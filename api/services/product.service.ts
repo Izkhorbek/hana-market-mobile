@@ -1,30 +1,21 @@
-import axiosInstance from '../api';
 import type {
-    DeleteProductImagesRequestDto,
-    ProductLikeDto,
-    ProductListParams,
-} from '../types';
+  ApiResponse,
+  DraftImageDto,
+  PaginatedResponse,
+  ProductImageDto,
+  ProductLikeDto,
+  ProductListParams,
+} from '../../types';
+import axiosInstance from '../api';
+import ENDPOINT from '../endpoints';
 
 export const productService = {
-  /**
-   * Create a new product
-   * POST /api/product/create
-   * Note: This endpoint expects multipart/form-data
-   */
-  create: (data: FormData) => {
-    return axiosInstance.post('/product/create', data, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
-  },
-
   /**
    * Get all products with filters
    * GET /api/product/all
    */
   getAll: (params: ProductListParams) => {
-    return axiosInstance.get('/product/all', { params });
+    return axiosInstance.get<ApiResponse<PaginatedResponse<any>>>(ENDPOINT.PRODUCT.ALL, { params });
   },
 
   /**
@@ -32,20 +23,26 @@ export const productService = {
    * GET /api/product/{id}
    */
   getById: (id: number) => {
-    return axiosInstance.get(`/product/${id}`);
+    return axiosInstance.get<ApiResponse<any>>(ENDPOINT.PRODUCT.BY_ID(id));
+  },
+
+  /**
+   * Create a new product
+   * POST /api/product/create
+   * Note: Expects multipart/form-data
+   */
+  create: (data: FormData) => {
+    return axiosInstance.post<ApiResponse<{}>>(ENDPOINT.PRODUCT.CREATE, data, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
   },
 
   /**
    * Update product
    * PUT /api/product/{id}
-   * Note: This endpoint expects multipart/form-data
    */
-  update: (id: number, data: FormData) => {
-    return axiosInstance.put(`/product/${id}`, data, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
+  update: (id: number, data: object) => {
+    return axiosInstance.put<ApiResponse<{}>>(ENDPOINT.PRODUCT.UPDATE(id), data);
   },
 
   /**
@@ -53,35 +50,41 @@ export const productService = {
    * DELETE /api/product/{id}
    */
   delete: (id: number) => {
-    return axiosInstance.delete(`/product/${id}`);
+    return axiosInstance.delete<ApiResponse<{}>>(ENDPOINT.PRODUCT.DELETE(id));
   },
 
   /**
-   * Toggle product like
-   * PUT /api/product/{id}/like
+   * Get product images
+   * GET /api/product/{id}/images
+   */
+  getImages: (id: number) => {
+    return axiosInstance.get<ApiResponse<ProductImageDto[]>>(ENDPOINT.PRODUCT.IMAGES(id));
+  },
+
+  /**
+   * Like or unlike a product
+   * POST /api/product/{id}/likes
    */
   toggleLike: (id: number, data: ProductLikeDto) => {
-    return axiosInstance.put(`/product/${id}/like`, data);
+    return axiosInstance.post<ApiResponse<{}>>(ENDPOINT.PRODUCT.LIKE(id), data);
   },
 
   /**
-   * Upload product image
-   * POST /api/product/upload-image
-   * Note: This endpoint expects multipart/form-data
+   * Upload draft images before creating a product
+   * POST /api/product/images/upload-draft
+   * Note: Expects multipart/form-data
    */
-  uploadImage: (data: FormData) => {
-    return axiosInstance.post('/product/upload-image', data, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
+  uploadDraftImages: (data: FormData) => {
+    return axiosInstance.post<ApiResponse<DraftImageDto[]>>(ENDPOINT.PRODUCT.UPLOAD_DRAFT, data, {
+      headers: { 'Content-Type': 'multipart/form-data' },
     });
   },
 
   /**
-   * Delete product images
-   * POST /api/product/delete-images
+   * Delete a draft image by UUID
+   * DELETE /api/product/images/delete-draft/{draftUuid}
    */
-  deleteImages: (data: DeleteProductImagesRequestDto) => {
-    return axiosInstance.post('/product/delete-images', data);
+  deleteDraftImage: (draftUuid: string) => {
+    return axiosInstance.delete(ENDPOINT.PRODUCT.DELETE_DRAFT(draftUuid));
   },
 };

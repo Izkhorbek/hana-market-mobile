@@ -1,10 +1,10 @@
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
-  Keyboard,
-  Platform,
   Dimensions,
-  KeyboardEvent,
   EmitterSubscription,
+  Keyboard,
+  KeyboardEvent,
+  Platform,
 } from 'react-native';
 
 interface UseKeyboardHeightReturn {

@@ -39,6 +39,8 @@ const ProfilePage = () => {
 	const [isLanguageModalVisible, setIsLanguageModalVisible] = useState(false)
 	const logout = useAuthStore((s) => s.logout)
 
+	const { isAuthenticated, user } = useAuthStore()
+
 	const handleLogout = () => {
 		Alert.alert(
 			t('profile.logout_confirm_title'),
@@ -85,11 +87,13 @@ const ProfilePage = () => {
 	}
 
 	const getLanguageName = (code: string) => {
+
 		const languages: Record<string, string> = {
 			en: 'English',
 			uz: "O'zbekcha",
 			ru: 'Русский',
 		}
+
 		return languages[code] || code
 	}
 
@@ -104,9 +108,11 @@ const ProfilePage = () => {
 			>
 				{/* Profile Header */}
 				<ProfileHeader
-					name='John Doe'
+					name={user?.username || t('profile.guest')}
 					status={t('profile.active')}
-					temperature='36.3°C'
+					// temperature='0.0°C'
+					temperature='0.0°C'
+					profile_image={user?.profile_image_url ?? ""}
 					onPress={() => handleNavigation('edit-profile')}
 				/>
 

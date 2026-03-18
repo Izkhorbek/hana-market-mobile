@@ -1,3 +1,4 @@
+import { HEADER_PADDING_TOP } from '@/constants/appLimits';
 import { useTranslations } from '@/hooks/use-translation';
 import { useColor } from '@/hooks/useColor';
 import * as Location from 'expo-location';
@@ -52,7 +53,7 @@ const MapModal: React.FC<MapModalProps> = ({
 
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
   const [isConfirming, setIsConfirming] = useState(false);
-  
+
   useEffect(() => {
     if (initialLocation) {
       setSelectedLocation({
@@ -343,7 +344,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingTop: Platform.OS === 'ios' ? 50 : 20,
+    paddingTop: HEADER_PADDING_TOP,
     paddingBottom: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#e0e0e0',

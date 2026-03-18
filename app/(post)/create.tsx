@@ -6,14 +6,20 @@ import { ThemedText } from '@/components/themed-text'
 import { ThemedView } from '@/components/themed-view'
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
+import { useLocalSearchParams } from 'expo-router'
 import { Briefcase, Car, Package } from 'lucide-react-native'
 import React, { useState } from 'react'
 import { KeyboardAvoidingView, Platform, StyleSheet, TouchableOpacity } from 'react-native'
 
 type CategoryType = 'things' | 'cars' | 'works'
 
+const VALID_TYPES: CategoryType[] = ['things', 'cars', 'works']
+
 const CreatePost = () => {
-  const [selectedCategory, setSelectedCategory] = useState<CategoryType>('things')
+  const { type } = useLocalSearchParams<{ type?: string }>()
+  const initialType: CategoryType =
+    type && VALID_TYPES.includes(type as CategoryType) ? (type as CategoryType) : 'things'
+  const [selectedCategory, setSelectedCategory] = useState<CategoryType>(initialType)
   const colors = useThemeColors()
   const { t } = useTranslations()
 
@@ -70,8 +76,8 @@ const CreatePost = () => {
           })}
         </ThemedView>
 
-        {selectedCategory === 'cars' && <CreateCarForm />}
         {selectedCategory === 'things' && <CreateThingForm />}
+        {selectedCategory === 'cars' && <CreateCarForm />}
         {selectedCategory === 'works' && <CreateWorksForm />}
       </ThemedScrollView>
     </KeyboardAvoidingView>

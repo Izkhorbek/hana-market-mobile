@@ -1,14 +1,16 @@
-import axiosInstance from '../api';
 import type {
-    ChatListParams,
-    ChatListResponse,
-    ChatMessagesParams,
-    ChatMessagesResponse,
-    ChatRoomDto,
-    CreateChatRoomRequest,
-    MarkAsReadRequest,
-    UnreadCountResponse,
-} from '../types';
+  ApiResponse,
+  ChatListParams,
+  ChatListResponse,
+  ChatMessagesParams,
+  ChatMessagesResponse,
+  ChatRoomDto,
+  CreateChatRoomRequest,
+  MarkAsReadRequest,
+  UnreadCountResponse,
+} from '../../types';
+import axiosInstance from '../api';
+import ENDPOINT from '../endpoints';
 
 export const chatService = {
   /**
@@ -16,7 +18,7 @@ export const chatService = {
    * GET /api/chats/my-chats
    */
   getMyChats: (params: ChatListParams = {}) => {
-    return axiosInstance.get<ChatListResponse>('/chats/my-chats', { params });
+    return axiosInstance.get<ApiResponse<ChatListResponse>>(ENDPOINT.CHAT.MY_CHATS, { params });
   },
 
   /**
@@ -24,7 +26,7 @@ export const chatService = {
    * POST /api/chats/create-or-get
    */
   createOrGetChat: (data: CreateChatRoomRequest) => {
-    return axiosInstance.post<ChatRoomDto>('/chats/create-or-get', data);
+    return axiosInstance.post<ApiResponse<ChatRoomDto>>(ENDPOINT.CHAT.CREATE_OR_GET, data);
   },
 
   /**
@@ -32,7 +34,7 @@ export const chatService = {
    * GET /api/chats/{chatRoomId}/messages
    */
   getChatMessages: (chatRoomId: number, params: ChatMessagesParams = {}) => {
-    return axiosInstance.get<ChatMessagesResponse>(`/chats/${chatRoomId}/messages`, { params });
+    return axiosInstance.get<ApiResponse<ChatMessagesResponse>>(ENDPOINT.CHAT.MESSAGES(chatRoomId), { params });
   },
 
   /**
@@ -40,7 +42,7 @@ export const chatService = {
    * GET /api/chats/unread-count
    */
   getUnreadCount: () => {
-    return axiosInstance.get<UnreadCountResponse>('/chats/unread-count');
+    return axiosInstance.get<ApiResponse<UnreadCountResponse>>(ENDPOINT.CHAT.UNREAD_COUNT);
   },
 
   /**
@@ -48,7 +50,7 @@ export const chatService = {
    * POST /api/chats/mark-as-read
    */
   markAsRead: (data: MarkAsReadRequest) => {
-    return axiosInstance.post('/chats/mark-as-read', data);
+    return axiosInstance.post(ENDPOINT.CHAT.MARK_AS_READ, data);
   },
 
   /**
@@ -56,7 +58,7 @@ export const chatService = {
    * GET /api/chats/user-status/{userId}
    */
   getUserStatus: (userId: number) => {
-    return axiosInstance.get(`/chats/user-status/${userId}`);
+    return axiosInstance.get(ENDPOINT.CHAT.USER_STATUS(userId));
   },
 
   /**
@@ -64,6 +66,6 @@ export const chatService = {
    * GET /api/chats/health
    */
   health: () => {
-    return axiosInstance.get('/chats/health');
+    return axiosInstance.get(ENDPOINT.CHAT.HEALTH);
   },
 };

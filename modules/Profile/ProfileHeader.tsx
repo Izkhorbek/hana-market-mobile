@@ -1,5 +1,6 @@
+import RemoteImage from '@/components/shared/RemoteImage';
 import { useColor } from '@/hooks/useColor';
-import { ChevronRight, User } from 'lucide-react-native';
+import { ChevronRight } from 'lucide-react-native';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
@@ -7,10 +8,11 @@ interface ProfileHeaderProps {
   name: string;
   status: string;
   temperature: string;
+  profile_image?: string;
   onPress?: () => void;
 }
 
-const ProfileHeader = ({ name, status, temperature, onPress }: ProfileHeaderProps) => {
+const ProfileHeader = ({ name, status, temperature, profile_image, onPress }: ProfileHeaderProps) => {
   const cardColor = useColor('profileCard');
   const primaryColor = useColor('primary');
   const textColor = useColor('text');
@@ -24,7 +26,9 @@ const ProfileHeader = ({ name, status, temperature, onPress }: ProfileHeaderProp
     >
       <View style={styles.avatarContainer}>
         <View style={[styles.avatar, { backgroundColor: primaryColor }]}>
-          <User size={28} color="#fff" strokeWidth={2} />
+          <RemoteImage
+            src={profile_image}
+            style={styles.avatar} />
         </View>
         <View style={styles.statusDot} />
       </View>

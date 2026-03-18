@@ -1,0 +1,80 @@
+export const  ENDPOINT = {
+  // Health
+  HEALTH: 'health',
+
+  // Auth
+  AUTH: {
+    REGISTER: 'auth/register',
+    LOGIN: 'auth/login',
+    LOGOUT: 'auth/logout',
+  },
+
+  USER: {
+    MY: 'user/my',
+    UPDATE_PROFILE: 'user/update',
+    DELETE: 'user/delete',
+    UPLOAD_PROFILE_IMAGE: 'user/upload/profile-image',
+    UPDATE_LOCATION: 'user/update/location',
+    SELLER_INFO: (sellerId: string | number) => `user/seller/${sellerId}`,
+  },
+
+  // Chat
+  CHAT: {
+    MY_CHATS: 'chats/my-chats',
+    CREATE_OR_GET: 'chats/create-or-get',
+    MESSAGES: (chatRoomId: string | number) => `chats/${chatRoomId}/messages`,
+    UNREAD_COUNT: 'chats/unread-count',
+    MARK_AS_READ: 'chats/mark-as-read',
+    USER_STATUS: (userId: string | number) => `chats/user-status/${userId}`,
+    HEALTH: 'chats/health',
+  },
+
+  // Product
+  PRODUCT: {
+    CREATE: 'product/create',
+    ALL: 'product/all',
+    BY_ID: (id: string | number) => `product/${id}`,
+    UPDATE: (id: string | number) => `product/${id}`,
+    DELETE: (id: string | number) => `product/${id}`,
+    IMAGES: (id: string | number) => `product/${id}/images`,
+    LIKE: (id: string | number) => `product/${id}/likes`,
+    LIKES: 'product/likes',
+    MY: 'product/my',
+    UPLOAD_DRAFT: 'product/images/upload-draft',
+    DELETE_IMAGES_BATCH: (id: string | number) => `product/${id}/images/batch`,
+    DELETE_DRAFT: (draftUuid: string | number) => `product/images/delete-draft/${draftUuid}`,
+  },
+
+  // Categories
+  CATEGORY: {
+    ALL: 'product/categories',
+    TREE: 'product/categories/tree',
+    BY_ID: (categoryId: string | number) => `product/categories/${categoryId}`,
+    PRODUCTS: (categoryId: string | number) => `product/categories/${categoryId}/products`,
+    SUBCATEGORIES: (parentId: string | number) => `product/categories/${parentId}/subcategories`,
+  },
+
+  // Complaints
+  COMPLAINT: {
+    CREATE: 'complaint/create',
+    MY: 'complaint/my',
+    BY_ID: (id: string | number) => `complaint/${id}`,
+  },
+
+  // Contact
+  CONTACT: {
+    SEND: 'contact/send',
+    FEEDBACK: 'contact/feedback',
+    MESSAGES: 'contact/messages',
+    GET_FEEDBACK: 'contact/feedbacks',
+  },
+  CONTENT: {
+    ABOUT_US: 'content/about-us',
+    TERMS: 'content/terms',
+    PRIVACY: 'content/privacy',
+    NEWS: 'content/news',
+    NEWS_BY_ID: (id: string | number) => `content/news/${id}`,
+  }
+}
+
+export default ENDPOINT

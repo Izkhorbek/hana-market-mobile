@@ -1,21 +1,25 @@
-import { useMutation, UseMutationOptions, useQuery, UseQueryOptions } from '@tanstack/react-query';
+import { useInfiniteQuery, useMutation, UseMutationOptions, useQuery, UseQueryOptions } from '@tanstack/react-query';
 import { AxiosResponse } from 'axios';
-import { productService } from '../services';
 import type {
-  DeleteProductImagesRequestDto,
+  ApiResponse,
+  DraftImageDto,
+  PaginatedResponse,
+  ProductImageDto,
   ProductLikeDto,
   ProductListParams,
-} from '../types';
+  ProductUpdateRequest,
+} from '../../types';
+import { productService } from '../services';
 
 /**
  * Hook to query products list
  */
-export const useProductsQuery = ({ 
-  params, 
-  querySettings = {} 
-}: { 
-  params: ProductListParams; 
-  querySettings?: Omit<UseQueryOptions<AxiosResponse<any>>, 'queryKey' | 'queryFn'>;
+export const useProductsQuery = ({
+  params,
+  querySettings = {}
+}: {
+  params: ProductListParams;
+  querySettings?: Omit<UseQueryOptions<AxiosResponse<ApiResponse<PaginatedResponse<any>>>>, 'queryKey' | 'queryFn'>;
 }) => {
   return useQuery({
     queryKey: ['PRODUCTS', params],
@@ -27,12 +31,12 @@ export const useProductsQuery = ({
 /**
  * Hook to query single product
  */
-export const useProductQuery = ({ 
-  id, 
-  querySettings = {} 
-}: { 
+export const useProductQuery = ({
+  id,
+  querySettings = {}
+}: {
   id: number;
-  querySettings?: Omit<UseQueryOptions<AxiosResponse<any>>, 'queryKey' | 'queryFn'>;
+  querySettings?: Omit<UseQueryOptions<AxiosResponse<ApiResponse<any>>>, 'queryKey' | 'queryFn'>;
 }) => {
   return useQuery({
     queryKey: ['PRODUCT', id],
@@ -43,12 +47,30 @@ export const useProductQuery = ({
 };
 
 /**
+ * Hook to query product images
+ */
+export const useProductImagesQuery = ({
+  id,
+  querySettings = {}
+}: {
+  id: number;
+  querySettings?: Omit<UseQueryOptions<AxiosResponse<ApiResponse<ProductImageDto[]>>>, 'queryKey' | 'queryFn'>;
+}) => {
+  return useQuery({
+    queryKey: ['PRODUCT_IMAGES', id],
+    queryFn: () => productService.getImages(id),
+    enabled: !!id,
+    ...querySettings,
+  });
+};
+
+/**
  * Hook to create product
  */
 export const useCreateProductMutation = (
-  options?: UseMutationOptions<AxiosResponse<any>, Error, FormData>
+  options?: UseMutationOptions<AxiosResponse<ApiResponse<{}>>, Error, FormData>
 ) => {
-  return useMutation<AxiosResponse<any>, Error, FormData>({
+  return useMutation<AxiosResponse<ApiResponse<{}>>, Error, FormData>({
     mutationFn: (data) => productService.create(data),
     ...options,
   });
@@ -58,9 +80,9 @@ export const useCreateProductMutation = (
  * Hook to update product
  */
 export const useUpdateProductMutation = (
-  options?: UseMutationOptions<AxiosResponse<any>, Error, { id: number; data: FormData }>
+  options?: UseMutationOptions<AxiosResponse<ApiResponse<{}>>, Error, { id: number; data: ProductUpdateRequest }>
 ) => {
-  return useMutation<AxiosResponse<any>, Error, { id: number; data: FormData }>({
+  return useMutation<AxiosResponse<ApiResponse<{}>>, Error, { id: number; data: ProductUpdateRequest }>({
     mutationFn: ({ id, data }) => productService.update(id, data),
     ...options,
   });
@@ -70,9 +92,9 @@ export const useUpdateProductMutation = (
  * Hook to delete product
  */
 export const useDeleteProductMutation = (
-  options?: UseMutationOptions<AxiosResponse<any>, Error, number>
+  options?: UseMutationOptions<AxiosResponse<ApiResponse<{}>>, Error, number>
 ) => {
-  return useMutation<AxiosResponse<any>, Error, number>({
+  return useMutation<AxiosResponse<ApiResponse<{}>>, Error, number>({
     mutationFn: (id) => productService.delete(id),
     ...options,
   });
@@ -82,35 +104,48 @@ export const useDeleteProductMutation = (
  * Hook to toggle product like
  */
 export const useToggleLikeMutation = (
-  options?: UseMutationOptions<AxiosResponse<any>, Error, { id: number; data: ProductLikeDto }>
+  options?: UseMutationOptions<AxiosResponse<ApiResponse<{}>>, Error, { id: number}>
 ) => {
-  return useMutation<AxiosResponse<any>, Error, { id: number; data: ProductLikeDto }>({
+  return useMutation<AxiosResponse<ApiResponse<{}>>, Error, { id: number; data: ProductLikeDto }>({
     mutationFn: ({ id, data }) => productService.toggleLike(id, data),
     ...options,
   });
 };
 
 /**
- * Hook to upload product image
+ * Hook to upload draft images before creating a product
  */
-export const useUploadImageMutation = (
-  options?: UseMutationOptions<AxiosResponse<any>, Error, FormData>
+export const useUploadDraftImagesMutation = (
+  options?: UseMutationOptions<AxiosResponse<ApiResponse<DraftImageDto[]>>, Error, FormData>
 ) => {
-  return useMutation<AxiosResponse<any>, Error, FormData>({
-    mutationKey: ['UPLOAD_IMAGE'],
-    mutationFn: (data) => productService.uploadImage(data),
+  return useMutation<AxiosResponse<ApiResponse<DraftImageDto[]>>, Error, FormData>({
+    mutationKey: ['UPLOAD_DRAFT_IMAGES'],
+    mutationFn: (data) => productService.uploadDraftImages(data),
     ...options,
   });
 };
 
 /**
- * Hook to delete product images
+ * Hook to fetch products with infinite scroll / pagination
  */
-export const useDeleteImagesMutation = (
-  options?: UseMutationOptions<AxiosResponse<any>, Error, DeleteProductImagesRequestDto>
-) => {
-  return useMutation<AxiosResponse<any>, Error, DeleteProductImagesRequestDto>({
-    mutationFn: (data) => productService.deleteImages(data),
-    ...options,
+export const useInfiniteProductsQuery = ({
+  params,
+  querySettings = {},
+}: {
+  params: Omit<ProductListParams, 'current_page'>;
+  querySettings?: Record<string, any>;
+}) => {
+  return useInfiniteQuery({
+    queryKey: ['PRODUCTS_INFINITE', params],
+    queryFn: ({ pageParam }: { pageParam: number }) =>
+      productService.getAll({ ...params, current_page: pageParam }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage: AxiosResponse<ApiResponse<PaginatedResponse<any>>>) => {
+      const paged = lastPage.data?.data;
+      if (!paged) return undefined;
+      const totalPages = Math.ceil(paged.total_records / paged.page_size);
+      return paged.current_page < totalPages ? paged.current_page + 1 : undefined;
+    },
+    ...querySettings,
   });
 };

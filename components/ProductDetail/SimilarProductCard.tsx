@@ -1,6 +1,7 @@
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import React from 'react'
-import { Image, Pressable, StyleSheet, Text, View } from 'react-native'
+import { Pressable, StyleSheet, Text, View } from 'react-native'
+import RemoteImage from '../shared/RemoteImage'
 
 export interface SimilarProduct {
 	id: string
@@ -22,7 +23,7 @@ const SimilarProductCard: React.FC<SimilarProductCardProps> = ({ item, onPress }
 			style={[styles.container, { backgroundColor: colors.background, borderColor: colors.borderColor }]}
 			onPress={() => onPress?.(item.id)}
 		>
-			<Image source={{ uri: item.image }} style={styles.image} resizeMode='cover' />
+			<RemoteImage src={item.image} style={styles.image} resizeMode='cover' />
 			<View style={styles.content}>
 				<Text style={[styles.title, { color: colors.text }]} numberOfLines={1}>
 					{item.title}
@@ -39,14 +40,14 @@ export default SimilarProductCard
 
 const styles = StyleSheet.create({
 	container: {
-		width: 125,
-		borderRadius: 10,
+		width: '50%',
+		borderRadius: 8,
 		borderWidth: 1,
 		overflow: 'hidden',
 	},
 	image: {
 		width: '100%',
-		height: 76,
+		height: 90,
 	},
 	content: {
 		padding: 8,

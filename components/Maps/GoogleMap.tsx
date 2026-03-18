@@ -1,10 +1,11 @@
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useThemeColors } from '@/hooks/use-theme-colors';
 import * as Location from 'expo-location';
-import { Home, MapPin, Minus, Plus } from 'lucide-react-native';
+import { Home, Minus, Plus } from 'lucide-react-native';
 import React, { useEffect, useRef, useState } from 'react';
-import { Alert, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Alert, Platform, StyleSheet, TouchableOpacity, View } from 'react-native';
 import MapView, { Marker, Region } from 'react-native-maps';
+import LocationPinIcon from './LocationPinIcon';
 
 // Dark mode map style
 const darkMapStyle = [
@@ -16,20 +17,15 @@ const darkMapStyle = [
     elementType: 'labels.text.fill',
     stylers: [{ color: '#d59563' }],
   },
+  // Hide all POIs (business icons, landmarks, etc.)
   {
     featureType: 'poi',
-    elementType: 'labels.text.fill',
-    stylers: [{ color: '#d59563' }],
+    stylers: [{ visibility: 'off' }],
   },
   {
     featureType: 'poi.park',
     elementType: 'geometry',
-    stylers: [{ color: '#263c3f' }],
-  },
-  {
-    featureType: 'poi.park',
-    elementType: 'labels.text.fill',
-    stylers: [{ color: '#6b9a76' }],
+    stylers: [{ visibility: 'on' }, { color: '#263c3f' }],
   },
   {
     featureType: 'road',
@@ -109,6 +105,7 @@ interface GoogleMapProps {
   initialRegion?: Region;
   showUserLocation?: boolean;
   showControls?: boolean;
+  autoLocate?: boolean;
   onMarkerPress?: (marker: MarkerData) => void;
   onMapPress?: (coordinate: { latitude: number; longitude: number }) => void;
   height?: number | string;
@@ -124,10 +121,14 @@ const GoogleMap = ({
   },
   showUserLocation = true,
   showControls = true,
+  autoLocate = false,
   onMarkerPress,
   onMapPress,
   height = '100%',
 }: GoogleMapProps) => {
+
+  console.log('GoogleMap rendered with props:');
+
   const mapRef = useRef<MapView>(null);
   const colors = useThemeColors();
   const colorScheme = useColorScheme();
@@ -136,10 +137,10 @@ const GoogleMap = ({
   const mapStyle = colorScheme === 'dark' ? darkMapStyle : lightMapStyle;
 
   useEffect(() => {
-    requestLocationPermission();
+    initializeLocation();
   }, []);
 
-  const requestLocationPermission = async () => {
+  const initializeLocation = async () => {
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
@@ -147,9 +148,23 @@ const GoogleMap = ({
           'Location Permission',
           'Please enable location services to see your position on the map.'
         );
+        return;
+      }
+
+      // Auto-locate to user's current position if enabled and no custom initialRegion
+      if (autoLocate) {
+        const location = await Location.getCurrentPositionAsync({});
+        setTimeout(() => {
+          mapRef.current?.animateToRegion({
+            latitude: location.coords.latitude,
+            longitude: location.coords.longitude,
+            latitudeDelta: 0.01,
+            longitudeDelta: 0.01,
+          }, 500);
+        }, 300);
       }
     } catch (error) {
-      console.error('Error requesting location permission:', error);
+      console.error('Error initializing location:', error);
     }
   };
 
@@ -185,13 +200,17 @@ const GoogleMap = ({
         return;
       }
 
-      const location = await Location.getCurrentPositionAsync({});
+      const location = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.Balanced,
+      })
+
       mapRef.current?.animateToRegion({
         latitude: location.coords.latitude,
         longitude: location.coords.longitude,
         latitudeDelta: 0.01,
         longitudeDelta: 0.01,
       });
+      
     } catch (error) {
       console.error('Error getting location:', error);
       Alert.alert('Error', 'Could not get your current location.');
@@ -199,7 +218,7 @@ const GoogleMap = ({
   };
 
   const handleRegionChange = (region: Region) => {
-    // Calculate approximate zoom level from latitudeDelta
+    // // Calculate approximate zoom level from latitudeDelta
     const zoom = Math.log2(360 / region.latitudeDelta);
     setCurrentZoom(zoom);
   };
@@ -207,6 +226,7 @@ const GoogleMap = ({
   return (
     <View style={[styles.container, { height: height as any }]}>
       <MapView
+        mapType={Platform.OS === 'android' ? 'none' : 'standard'} // Use 'none' for Android to apply custom styles
         ref={mapRef}
         provider={'google'}
         style={styles.map}
@@ -223,6 +243,7 @@ const GoogleMap = ({
           }
         }}
       >
+
         {markers.map((marker) => (
           <Marker
             key={marker.id}
@@ -236,40 +257,40 @@ const GoogleMap = ({
           >
             {/* Custom marker view */}
             <View style={styles.markerContainer}>
-              <View style={[styles.marker, { backgroundColor: colors.primaryColor, borderColor: '#fff' }]}>
-                <MapPin size={20} color="#fff" />
-              </View>
+              <LocationPinIcon size={45} color={colors.primaryColor} />
             </View>
           </Marker>
         ))}
       </MapView>
 
       {/* Custom Controls */}
-      {showControls && (
-        <View style={styles.controlsContainer}>
-          {/* Top buttons group */}
-          <TouchableOpacity
-            style={[styles.controlButton, { backgroundColor: colors.card }]}
-            onPress={handleLocateMe}
-          >
-            <Home size={24} color={colors.blackIcon} />
-          </TouchableOpacity>
+      {
+        showControls && (
+          <View style={styles.controlsContainer}>
+            {/* Top buttons group */}
+            <TouchableOpacity
+              style={[styles.controlButton, { backgroundColor: colors.card }]}
+              onPress={handleLocateMe}
+            >
+              <Home size={24} color={colors.blackIcon} />
+            </TouchableOpacity>
 
-          <TouchableOpacity
-            style={[styles.controlButton, { backgroundColor: colors.card }]}
-            onPress={handleZoomIn}
-          >
-            <Plus size={24} color={colors.blackIcon} />
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.controlButton, { backgroundColor: colors.card }]}
-            onPress={handleZoomOut}
-          >
-            <Minus size={24} color={colors.blackIcon} />
-          </TouchableOpacity>
-        </View>
-      )}
-    </View>
+            <TouchableOpacity
+              style={[styles.controlButton, { backgroundColor: colors.card }]}
+              onPress={handleZoomIn}
+            >
+              <Plus size={24} color={colors.blackIcon} />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.controlButton, { backgroundColor: colors.card }]}
+              onPress={handleZoomOut}
+            >
+              <Minus size={24} color={colors.blackIcon} />
+            </TouchableOpacity>
+          </View>
+        )
+      }
+    </View >
   );
 };
 
@@ -313,14 +334,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   marker: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 2,
-    borderColor: '#fff',
-    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 3,

@@ -1,8 +1,8 @@
 import { useAuthStore } from '@/modules/Auth/auth-store';
 import { useMutation, UseMutationOptions, useQuery, UseQueryOptions } from '@tanstack/react-query';
 import { AxiosResponse } from 'axios';
-import { chatService } from '../services';
 import type {
+  ApiResponse,
   ChatListParams,
   ChatListResponse,
   ChatMessagesParams,
@@ -11,7 +11,8 @@ import type {
   CreateChatRoomRequest,
   MarkAsReadRequest,
   UnreadCountResponse,
-} from '../types';
+} from '../../types';
+import { chatService } from '../services';
 
 /**
  * Hook to query my chats
@@ -21,7 +22,7 @@ export const useMyChatQuery = ({
   querySettings = {} 
 }: { 
   params?: ChatListParams; 
-  querySettings?: Omit<UseQueryOptions<AxiosResponse<ChatListResponse>>, 'queryKey' | 'queryFn'>;
+  querySettings?: Omit<UseQueryOptions<AxiosResponse<ApiResponse<ChatListResponse>>>, 'queryKey' | 'queryFn'>;
 } = {}) => {
   const isAuthorized = useAuthStore((s) => s.isAuthenticated);
   
@@ -37,10 +38,10 @@ export const useMyChatQuery = ({
  * Hook to create or get chat room
  */
 export const useCreateChatMutation = (
-  options?: UseMutationOptions<AxiosResponse<ChatRoomDto>, Error, CreateChatRoomRequest>
+  options?: UseMutationOptions<AxiosResponse<ApiResponse<ChatRoomDto>>, Error, CreateChatRoomRequest>
 ) => {
-  return useMutation<AxiosResponse<ChatRoomDto>, Error, CreateChatRoomRequest>({
-    mutationKey: ["createChat"],
+  return useMutation<AxiosResponse<ApiResponse<ChatRoomDto>>, Error, CreateChatRoomRequest>({
+    mutationKey: ["CREATE_OR_GET_CHAT"],
     mutationFn: (data) => chatService.createOrGetChat(data),
     ...options,
   });
@@ -56,7 +57,7 @@ export const useChatMessagesQuery = ({
 }: { 
   chatRoomId: number;
   params?: ChatMessagesParams; 
-  querySettings?: Omit<UseQueryOptions<AxiosResponse<ChatMessagesResponse>>, 'queryKey' | 'queryFn'>;
+  querySettings?: Omit<UseQueryOptions<AxiosResponse<ApiResponse<ChatMessagesResponse>>>, 'queryKey' | 'queryFn'>;
 }) => {
   const isAuthorized = useAuthStore((s) => s.isAuthenticated);
   
@@ -74,7 +75,7 @@ export const useChatMessagesQuery = ({
 export const useUnreadCountQuery = ({ 
   querySettings = {} 
 }: { 
-  querySettings?: Omit<UseQueryOptions<AxiosResponse<UnreadCountResponse>>, 'queryKey' | 'queryFn'>;
+  querySettings?: Omit<UseQueryOptions<AxiosResponse<ApiResponse<UnreadCountResponse>>>, 'queryKey' | 'queryFn'>;
 } = {}) => {
   const isAuthorized = useAuthStore((s) => s.isAuthenticated);
   
@@ -94,7 +95,7 @@ export const useMarkAsReadMutation = (
   options?: UseMutationOptions<AxiosResponse<void>, Error, MarkAsReadRequest>
 ) => {
   return useMutation<AxiosResponse<void>, Error, MarkAsReadRequest>({
-    mutationKey: ["markAsRead"],
+    mutationKey: ["MARK_AS_READ"],
     mutationFn: (data) => chatService.markAsRead(data),
     ...options,
   });

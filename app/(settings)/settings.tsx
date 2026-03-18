@@ -1,8 +1,8 @@
 import { Switch } from '@/components/ui/switch'
+import { HEADER_PADDING_TOP } from '@/constants/appLimits'
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
 import { useColor } from '@/hooks/useColor'
-import ProfileMenuItem from '@/modules/Profile/ProfileMenuItem'
 import ProfileSection from '@/modules/Profile/ProfileSection'
 import { router } from 'expo-router'
 import {
@@ -21,12 +21,11 @@ import {
 } from 'lucide-react-native'
 import React, { useState } from 'react'
 import {
-	Platform,
 	ScrollView,
 	StyleSheet,
 	Text,
 	TouchableOpacity,
-	View,
+	View
 } from 'react-native'
 
 // Types for settings state
@@ -355,7 +354,7 @@ const styles = StyleSheet.create({
 		flexDirection: 'row',
 		alignItems: 'center',
 		justifyContent: 'space-between',
-		paddingTop: Platform.OS === 'ios' ? 60 : 40,
+		paddingTop: HEADER_PADDING_TOP,
 		paddingBottom: 16,
 		paddingHorizontal: 16,
 		borderBottomWidth: 1,

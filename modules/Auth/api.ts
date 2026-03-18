@@ -1,17 +1,18 @@
 import axiosInstance from '@/api/api'
+import ENDPOINT from '@/api/endpoints'
 
 export const authApi = {
   register: (phoneNumber: string) =>
-    axiosInstance.post('/auth/register', { phone_number: phoneNumber }),
+    axiosInstance.post(ENDPOINT.AUTH.REGISTER, { phone_number: phoneNumber }),
 
   login: (phoneNumber: string) =>
-    axiosInstance.post('/auth/login', { phone_number: phoneNumber }),
+    axiosInstance.post(ENDPOINT.AUTH.LOGIN, { phone_number: phoneNumber }),
 }
 
 // ── User API ──
 
 export const userApi = {
-  getUser: () => axiosInstance.get('/user/get'),
+  getUser: () => axiosInstance.get(ENDPOINT.USER.MY),
 
   updateUser: (data: {
     username?: string
@@ -19,19 +20,19 @@ export const userApi = {
     first_name?: string
     last_name?: string
     bio?: string
-  }) => axiosInstance.post('/user/update', data),
+  }) => axiosInstance.post(ENDPOINT.USER.UPDATE_PROFILE, data),
 
   updateLocation: (data: {
     latitude: number
     longitude: number
     search_radius_km?: number
     address_name?: string
-  }) => axiosInstance.post('/user/update/location', data),
+  }) => axiosInstance.post(ENDPOINT.USER.UPDATE_LOCATION, data),
 
   uploadProfileImage: (formData: FormData) =>
-    axiosInstance.post('/user/upload/profile-image', formData, {
+    axiosInstance.post(ENDPOINT.USER.UPLOAD_PROFILE_IMAGE, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     }),
 
-  deleteUser: () => axiosInstance.post('/user/delete'),
+  deleteUser: () => axiosInstance.post(ENDPOINT.USER.DELETE),
 }

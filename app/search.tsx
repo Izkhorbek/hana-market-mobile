@@ -1,3 +1,4 @@
+import { HEADER_HEIGHT, HEADER_PADDING_TOP } from '@/constants/appLimits'
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
 import { router } from 'expo-router'
@@ -15,13 +16,12 @@ import {
 import React, { useEffect, useMemo, useState } from 'react'
 import {
 	ActivityIndicator,
-	Platform,
 	ScrollView,
 	StyleSheet,
 	Text,
 	TextInput,
 	TouchableOpacity,
-	View,
+	View
 } from 'react-native'
 
 type SearchCategory = 'cars' | 'real_estate' | 'jobs' | 'electronics' | 'furniture'
@@ -219,8 +219,8 @@ export default SearchPage
 const styles = StyleSheet.create({
 	container: { flex: 1 },
 	header: {
-		height: Platform.OS === 'ios' ? 110 : 90,
-		paddingTop: Platform.OS === 'ios' ? 56 : 30,
+		height: HEADER_HEIGHT,
+		paddingTop: HEADER_PADDING_TOP,
 		paddingHorizontal: 16,
 		paddingBottom: 12,
 		borderBottomWidth: 1,

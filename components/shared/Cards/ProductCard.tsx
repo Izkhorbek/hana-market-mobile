@@ -1,46 +1,57 @@
+import RemoteImage from '@/components/shared/RemoteImage'
+import { AppLimits } from '@/constants/appLimits'
 import { Colors } from '@/constants/theme'
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import Ionicons from '@expo/vector-icons/Ionicons'
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
 import React from 'react'
-import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 
 interface ProductCardProps {
-	image: string
 	title: string
+	description: string
+	moljal: string
+	main_image_url: string
+	is_free?: boolean
+	price: string | number
+	status: string
 	distance: string
-	time: string
-	address: string
-	price: string
-	likes: number
+	view_count: number
+	likes_count: number
+	created_ago: string
 	onPress?: () => void
 	onDotsPress?: () => void
 	onHeartPress?: () => void
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({
-	image,
 	title,
+	description,
+	main_image_url,
 	distance,
-	time,
-	address,
+	created_ago,
+	moljal,
 	price,
-	likes,
+	status,
+	likes_count,
+	view_count,
 	onPress,
 	onDotsPress,
 	onHeartPress,
 }) => {
 	const colors = useThemeColors()
 
+	console.log('imagesrc', main_image_url);
 	return (
 		<TouchableOpacity
 			style={[styles.container, { borderColor: colors.borderColor }]}
 			activeOpacity={0.8}
+			onPress={onPress}
 		>
 			{/* Product Image */}
 			<TouchableOpacity onPress={onPress}>
-				<Image source={{ uri: image }} style={styles.image} resizeMode='cover' />
+				<RemoteImage src={main_image_url} style={styles.image} resizeMode='cover' />
 			</TouchableOpacity>
 
 			{/* Content Section */}
@@ -64,24 +75,34 @@ const ProductCard: React.FC<ProductCardProps> = ({
 						</View>
 						<View style={styles.infoItem}>
 							<Ionicons name='time-outline' size={14} color={colors.subText} />
-							<Text style={[styles.infoText, { color: colors.subText }]}>{time}</Text>
+							<Text style={[styles.infoText, { color: colors.subText }]}>{created_ago}</Text>
 						</View>
 					</View>
 
-					{/* Address */}
+					{/* Moljal */}
 					<Text style={[styles.address, { color: colors.subText }]} numberOfLines={1}>
-						{address}
+						{moljal}
 					</Text>
 				</View>
 				{/* Price and Likes Row */}
 				<View style={styles.footer}>
 					<View style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
-						{/* <Text style={{color: 'white',  backgroundColor : 'green', paddingHorizontal: 6 , paddingVertical:  2, borderRadius:  4 }}>{"Reserved"}</Text> */}
+						{(status === 'reserved' || status === 'sold') &&
+							<Text style={{
+								fontSize: 12,
+								color: 'white',
+								backgroundColor: AppLimits.ProductStatusColors[status as keyof typeof AppLimits.ProductStatusColors],
+								paddingHorizontal: 4,
+								paddingVertical: 1,
+								borderRadius: 4
+							}}>
+								{status}</Text>
+						}
 						<Text style={[styles.price, { color: colors.text }]}>{price}</Text>
 					</View>
 					<TouchableOpacity onPress={onHeartPress} style={styles.likesContainer}>
 						<Ionicons name='heart' size={18} color={colors.subText} />
-						<Text style={[styles.likesText, { color: colors.subText }]}>{likes}</Text>
+						<Text style={[styles.likesText, { color: colors.subText }]}>{likes_count}</Text>
 					</TouchableOpacity>
 				</View>
 			</View>
@@ -116,8 +137,8 @@ const styles = StyleSheet.create({
 		alignItems: 'flex-start',
 	},
 	title: {
-		fontSize: 16,
-		fontWeight: '500',
+		fontSize: 18,
+		fontWeight: '400',
 		flex: 1,
 		marginRight: 8,
 		lineHeight: 20,
@@ -151,8 +172,8 @@ const styles = StyleSheet.create({
 		alignItems: 'center',
 	},
 	price: {
-		fontSize: 15,
-		fontWeight: '600',
+		fontSize: 16,
+		fontWeight: '700',
 	},
 	likesContainer: {
 		flexDirection: 'row',

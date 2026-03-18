@@ -1,10 +1,11 @@
+import { HEADER_HEIGHT } from '@/constants/appLimits'
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import Feather from '@expo/vector-icons/Feather'
 import Ionicons from '@expo/vector-icons/Ionicons'
 import { router } from 'expo-router'
 import { ChevronDown, MapPin, Search } from 'lucide-react-native'
 import React from 'react'
-import { Platform, StyleSheet, TouchableOpacity } from 'react-native'
+import { StyleSheet, TouchableOpacity } from 'react-native'
 import { ThemedText } from '../themed-text'
 import { ThemedView } from '../themed-view'
 
@@ -35,19 +36,19 @@ const HomeHeader = () => {
 				onPress={handleNeighborhoodPress}
 				activeOpacity={0.7}
 			>
-				<MapPin size={20} color={colors.primaryColor} />
+				<MapPin size={24} color={colors.primaryColor} />
 				<ThemedText style={[styles.currentCity, { color: colors.blackIcon }]}>Toshkent</ThemedText>
-				<ChevronDown size={18} color={colors.textMuted} />
+				<ChevronDown size={24} color={colors.textMuted} />
 			</TouchableOpacity>
 			<ThemedView style={styles.searchContainer}>
 				<TouchableOpacity onPress={handleCategoriesPress} activeOpacity={0.7}>
-					<Feather name='menu' size={25} color={colors.blackIcon} />
+					<Feather name='menu' size={24} color={colors.blackIcon} />
 				</TouchableOpacity>
 				<TouchableOpacity onPress={handleSearchPress} activeOpacity={0.7}>
-					<Search size={25} color={colors.blackIcon} />
+					<Search size={24} color={colors.blackIcon} />
 				</TouchableOpacity>
 				<TouchableOpacity>
-					<Ionicons name='notifications-outline' size={25} color={colors.blackIcon} />
+					<Ionicons name='notifications-outline' size={24} color={colors.blackIcon} />
 				</TouchableOpacity>
 			</ThemedView>
 		</ThemedView>
@@ -56,7 +57,7 @@ const HomeHeader = () => {
 
 const styles = StyleSheet.create({
 	container: {
-		height: Platform.OS === 'ios' ? 80 : 100,
+		height: HEADER_HEIGHT,
 		display: 'flex',
 		flexDirection: 'row',
 		alignItems: 'flex-end',

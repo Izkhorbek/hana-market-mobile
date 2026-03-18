@@ -5,17 +5,18 @@ import { ScrollView } from '@/components/ui/scroll-view';
 import { Text } from '@/components/ui/text';
 import { View } from '@/components/ui/view';
 import { useThemeColors } from '@/hooks/use-theme-colors';
+import { useTranslations } from '@/hooks/use-translation';
 import { useColor } from '@/hooks/useColor';
 import { BORDER_RADIUS, CORNERS, FONT_SIZE } from '@/theme/globals';
 import {
-    ArrowRight,
-    Calendar,
-    CalendarClock,
-    CalendarRange,
-    ChevronDown,
-    ChevronLeft,
-    ChevronRight,
-    Clock,
+  ArrowRight,
+  Calendar,
+  CalendarClock,
+  CalendarRange,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  Clock,
 } from 'lucide-react-native';
 import { useCallback, useMemo, useState } from 'react';
 import { TextStyle, TouchableOpacity, ViewStyle } from 'react-native';
@@ -54,23 +55,6 @@ interface DatePickerPropsDate extends BaseDatePickerProps {
 
 export type DatePickerProps = DatePickerPropsRange | DatePickerPropsDate;
 
-const MONTHS = [
-  'January',
-  'February',
-  'March',
-  'April',
-  'May',
-  'June',
-  'July',
-  'August',
-  'September',
-  'October',
-  'November',
-  'December',
-];
-
-const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-
 // Generate year range (current year ± 50 years)
 const currentYear = new Date().getFullYear();
 const YEARS = Array.from({ length: 101 }, (_, i) => currentYear - 50 + i);
@@ -102,6 +86,10 @@ export function DatePicker(props: DatePickerProps) {
     labelStyle,
     errorStyle,
   } = props;
+
+  const { t } = useTranslations();
+  const MONTHS: string[] = t('date_picker.months', { returnObjects: true }) as string[];
+  const DAYS: string[] = t('date_picker.days', { returnObjects: true }) as string[];
 
   const mode = props.mode || 'date';
   const value = props.value;

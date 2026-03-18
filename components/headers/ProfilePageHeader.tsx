@@ -1,6 +1,7 @@
+import { HEADER_HEIGHT } from '@/constants/appLimits';
 import { useThemeColors } from '@/hooks/use-theme-colors';
 import { useTranslations } from '@/hooks/use-translation';
-import { Platform, StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
 import { ThemedText } from '../themed-text';
 import { ThemedView } from '../themed-view';
 
@@ -29,7 +30,7 @@ export default ProfilePageHeader;
 
 const styles = StyleSheet.create({
   container: {
-    height: Platform.OS === 'ios' ? 90 : 100,
+    height: HEADER_HEIGHT,
     display: 'flex',
     flexDirection: 'row',
     alignItems: 'flex-end',

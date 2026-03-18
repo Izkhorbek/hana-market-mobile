@@ -4,7 +4,7 @@ import { useModeToggle } from '@/hooks/useModeToggle'
 import { useAuthStore } from '@/modules/Auth/auth-store'
 import { ThemeProvider } from '@/theme/theme-provider'
 import { QueryClientProvider } from '@tanstack/react-query'
-import { Stack, useRootNavigationState } from 'expo-router'
+import { Stack } from 'expo-router'
 import { Sun } from 'lucide-react-native'
 import React from 'react'
 import { ActivityIndicator, StatusBar, View } from 'react-native'
@@ -14,8 +14,6 @@ export default function RootLayout() {
 	const colorScheme = useColorScheme()
 	const { toggleMode } = useModeToggle()
 	const isHydrated = useAuthStore((s) => s.isHydrated)
-	const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
-	const rootNavigationState = useRootNavigationState()
 
 	// Wait for Zustand to rehydrate from AsyncStorage
 	if (!isHydrated) {
@@ -32,30 +30,15 @@ export default function RootLayout() {
 		<QueryClientProvider client={queryClient}>
 			<ThemeProvider>
 				<Stack screenOptions={{ headerShown: false }}>
-					{isAuthenticated ? (
-						<>
-							<Stack.Screen name='(tabs)' />
-							<Stack.Screen name='(post)' />
-							<Stack.Screen name='(settings)' />
-							<Stack.Screen name='search' />
-							<Stack.Screen name='categories' />
-							<Stack.Screen name='product/[id]' />
-							<Stack.Screen name='chat/[id]' />
-							<Stack.Screen name='(auth)' />
-						</>
-					) : (
-						<>
-							<Stack.Screen name='(auth)' />
-							<Stack.Screen name='(tabs)' />
-							<Stack.Screen name='(post)' />
-							<Stack.Screen name='(settings)' />
-							<Stack.Screen name='search' />
-							<Stack.Screen name='categories' />
-							<Stack.Screen name='product/[id]' />
-							<Stack.Screen name='chat/[id]' />
-						</>
-					)}
 					<Stack.Screen name='index' />
+					<Stack.Screen name='(tabs)' />
+					<Stack.Screen name='(post)' />
+					<Stack.Screen name='(settings)' />
+					<Stack.Screen name='(auth)' />
+					<Stack.Screen name='search' />
+					<Stack.Screen name='categories' />
+					<Stack.Screen name='product/[id]' />
+					<Stack.Screen name='chat/[id]' />
 				</Stack>
 				<StatusBar barStyle={colorScheme === 'dark' ? 'light-content' : 'dark-content'} />
 				<View

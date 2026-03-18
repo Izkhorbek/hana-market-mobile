@@ -1,51 +1,66 @@
 import { useCreateProductMutation } from '@/api/hooks';
-import { ECarCondition, ECarFuelType, ECarTransmissionType, ECurrencyType, EProductType } from '@/api/types';
 import FormCheckbox from '@/components/FormElements/FormCheckbox';
 import FormInput from '@/components/FormElements/FormInput';
+import { ECarCondition, ECarFuelType, ECarTransmissionType, ECategoryType, ECurrencyType, EProductType } from '@/constants/enums';
 import { useTranslations } from '@/hooks/use-translation';
 import { useColor } from '@/hooks/useColor';
+import { resolveEnum } from '@/utils/enumHelpers';
 import { useRouter } from 'expo-router';
 import { MapPin } from 'lucide-react-native';
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { ActivityIndicator, Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import FormRow from '../FormElements/FormRow';
-import ImageUploader from '../FormElements/ImageUploader';
+import ImageUploader, { DraftImageItem } from '../FormElements/ImageUploader';
 import RadioButtonGroup, { RadioOption } from '../FormElements/RadioButtonGroup';
 import MapModal from '../MapModal';
-
-interface CreateCarFormProps {
-  // No props needed, form is self-contained
-}
 
 const CreateCarForm = () => {
   const { t } = useTranslations();
   const primaryColor = useColor('primaryColor');
   const textColor = useColor('text');
   const router = useRouter();
-  const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>(null);
+  // const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>(null);
+   const [location, setLocation] = useState<{ latitude: number; longitude: number }>({ latitude: 41.311081, longitude: 69.240562 }); // Default to Tashkent for testing
   const [isMapModalVisible, setIsMapModalVisible] = useState(false);
+
+  
+  const fuelTypeOptions: RadioOption[] = [
+    { value: 'petrol', label: t('car.petrol') },
+    { value: 'gas', label: t('car.gas') },
+    { value: 'hybrid', label: t('car.hybrid') },
+    { value: 'electric', label: t('car.electric') },
+  ];
+
+  const transmissionOptions: RadioOption[] = [
+    { value: 'automatic', label: t('car.automatic') },
+    { value: 'manual', label: t('car.manual') },
+  ];
+
+  const conditionOptions: RadioOption[] = [
+    { value: 'new', label: t('car.new') },
+    { value: 'used', label: t('car.used') },
+    { value: 'broken', label: t('car.needs_repair') },
+  ];
 
   const form = useForm({
     defaultValues: {
       images: [],
-      brand: '',
-      model: '',
-      year: '',
-      mileage: '',
-      fuelType: 'petrol',
-      transmission: 'automatic',
-      price: '',
-      currency: 'SUM',
+      brand: 'test for car',
+      model: 'test for model',
+      year: '2020',
+      mileage: '28000',
+      fuelType: fuelTypeOptions[0].value, // Default to first fuel type option
+      transmission: transmissionOptions[0].value, // Default to first transmission option
+      price: '5000',
+      currency: 'USD',
       negotiable: false,
-      condition: 'used',
+      condition: conditionOptions[0].value, // Default to first condition option
       location: '',
-      landmark: '',
-      additionalNotes: '',
+      landmark: 'Yunusobod, Amir Temur ko`chasi',
+      additionalNotes: 'Holati yaxshi, hech qanday muammosi yo`q. Faqatgina sotuvidaman.',
     },
   });
-
-  const { formState: { errors } } = form;
 
   const fuelType = form.watch('fuelType');
   const transmission = form.watch('transmission');
@@ -72,54 +87,29 @@ const CreateCarForm = () => {
     },
   });
 
-  const fuelTypeOptions: RadioOption[] = [
-    {
-      value: 'petrol',
-      label: t('car.petrol'),
-    },
-    {
-      value: 'gas',
-      label: t('car.gas'),
-    },
-    {
-      value: 'hybrid',
-      label: t('car.hybrid'),
-    },
-    {
-      value: 'electric',
-      label: t('car.electric'),
-    },
-  ];
-
-  const transmissionOptions: RadioOption[] = [
-    {
-      value: 'automatic',
-      label: t('car.automatic'),
-    },
-    {
-      value: 'manual',
-      label: t('car.manual'),
-    },
-  ];
-
-  const conditionOptions: RadioOption[] = [
-    {
-      value: 'new',
-      label: t('car.new'),
-    },
-    {
-      value: 'used',
-      label: t('car.used'),
-    },
-    {
-      value: 'needs_repair',
-      label: t('car.needs_repair'),
-    },
-  ];
 
   const handleSubmit = form.handleSubmit((data) => {
+
     if (!location) {
       Alert.alert(t('post.error'), t('post.please_select_location'));
+      return;
+    }
+
+     // ── Enum resolution ──
+    const fuelTypeValue    = resolveEnum(ECarFuelType,          data.fuelType);
+    const transmissionValue = resolveEnum(ECarTransmissionType, data.transmission);
+    const conditionValue   = resolveEnum(ECarCondition,         data.condition);
+
+    if (fuelTypeValue === undefined) {
+      Alert.alert(t('post.error'), 'Invalid fuel type selected');
+      return;
+    }
+    if (transmissionValue === undefined) {
+      Alert.alert(t('post.error'), 'Invalid transmission selected');
+      return;
+    }
+    if (conditionValue === undefined) {
+      Alert.alert(t('post.error'), 'Invalid condition selected');
       return;
     }
 
@@ -128,6 +118,8 @@ const CreateCarForm = () => {
     // Add product type
     formData.append('product_type', EProductType.CAR.toString());
 
+    // Add category
+    formData.append('category_id', ECategoryType.CARS.toString()); // Assuming 100 is the category ID for cars, adjust as needed
     // Add car brand and model
     formData.append('car_brand', data.brand);
     formData.append('car_model', data.model);
@@ -138,29 +130,9 @@ const CreateCarForm = () => {
     formData.append('car_data.year', data.year);
     formData.append('car_data.mileage', data.mileage);
 
-    // Map fuel type to enum
-    const fuelTypeMap: Record<string, ECarFuelType> = {
-      petrol: ECarFuelType.PETROL,
-      gas: ECarFuelType.GAS,
-      hybrid: ECarFuelType.HYBRID,
-      electric: ECarFuelType.ELECTRIC,
-    };
-    formData.append('car_data.fuel_type', fuelTypeMap[data.fuelType].toString());
-
-    // Map transmission to enum
-    const transmissionMap: Record<string, ECarTransmissionType> = {
-      automatic: ECarTransmissionType.AUTOMATIC,
-      manual: ECarTransmissionType.MANUAL,
-    };
-    formData.append('car_data.car_transmission', transmissionMap[data.transmission].toString());
-
-    // Map condition to enum
-    const conditionMap: Record<string, ECarCondition> = {
-      new: ECarCondition.NEW,
-      used: ECarCondition.USED,
-      needs_repair: ECarCondition.DAMAGED,
-    };
-    formData.append('car_data.car_condition', conditionMap[data.condition].toString());
+    formData.append('car_data.fuel_type',      fuelTypeValue.toString());
+    formData.append('car_data.car_transmission', transmissionValue.toString());
+    formData.append('car_data.car_condition',  conditionValue.toString());
 
     // Add pricing
     const currencyType = data.currency === 'USD' ? ECurrencyType.USD : ECurrencyType.UZS;
@@ -176,22 +148,20 @@ const CreateCarForm = () => {
     formData.append('moljal', data.landmark || '');
 
     // Add images
-    data.images.forEach((imageUri: string, index: number) => {
-      const imageFile = {
-        uri: imageUri,
-        type: 'image/jpeg',
-        name: `image_${index}.jpg`,
-      } as any;
+    const images: DraftImageItem[] = data.images;
+    
+    const draft_images = images.map((img, index) => ({
+      draft_uuid: img.draft_uuid,
+      draft_image_url: img.draft_image_url,
+      sort_order: index, // You can implement sorting logic if needed
+    }));
 
-      if (index === 0) {
-        formData.append('main_image_url', imageFile);
-      }
-
-      formData.append(`images[${index}].image_url`, imageFile);
-      formData.append(`images[${index}].sort_order`, index.toString());
-    });
+    formData.append('images_json', JSON.stringify(draft_images));
+      
     console.log(formData);
-    // createProduct(formData);
+    
+    // Submit the form data
+    createProduct(formData);
   });
 
   const handleOpenMap = () => {
@@ -260,6 +230,16 @@ const CreateCarForm = () => {
                 required
                 rules={{
                   required: t('car.errors.year'),
+                  pattern: {
+                    value: /^\d{4}$/,
+                    message: t('car.errors.year_invalid'),
+                  },
+                  validate: (value: string) => {
+                    const year = parseInt(value, 10);
+                    if (year < 1900 || year > new Date().getFullYear() + 1)
+                      return t('car.errors.year_range');
+                    return true;
+                  },
                 }}
               />
             </View>
@@ -273,6 +253,12 @@ const CreateCarForm = () => {
                 required
                 rules={{
                   required: t('car.errors.mileage'),
+                  validate: (value: string) => {
+                    const num = parseInt(value, 10);
+                    if (isNaN(num) || num < 0)
+                      return t('car.errors.mileage_invalid');
+                    return true;
+                  },
                 }}
               />
             </View>
@@ -318,6 +304,12 @@ const CreateCarForm = () => {
                 required
                 rules={{
                   required: t('car.errors.price'),
+                  validate: (value: string) => {
+                    const num = parseFloat(value);
+                    if (isNaN(num) || num <= 0)
+                      return t('car.errors.price_invalid');
+                    return true;
+                  },
                 }}
               />
             </View>
@@ -378,12 +370,12 @@ const CreateCarForm = () => {
             <View style={styles.locationInputWrapper}>
               <FormInput
                 control={form.control}
-                name="location"
-                label={t('car.location')}
-                placeholder={t('car.location_placeholder')}
+                name="landmark"
+                label={t('car.landmark')}
+                placeholder={t('car.landmark_placeholder')}
                 required
                 rules={{
-                  required: t('car.errors.location'),
+                  required: t('car.errors.landmark'),
                 }}
               />
             </View>
@@ -396,12 +388,12 @@ const CreateCarForm = () => {
             </TouchableOpacity>
           </FormRow>
 
-          <FormInput
+          {/* <FormInput
             control={form.control}
             name="landmark"
             label={t('car.landmark')}
             placeholder={t('car.landmark_placeholder')}
-          />
+          /> */}
         </View>
 
         {/* Section 4: Additional Notes */}

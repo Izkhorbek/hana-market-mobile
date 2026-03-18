@@ -1,161 +1,116 @@
+import { useProfileQuery } from '@/api/hooks'
+import RemoteImage from '@/components/shared/RemoteImage'
+import { HEADER_PADDING_TOP } from '@/constants/appLimits'
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
-import { useAuthStore } from '@/modules/Auth/auth-store'
 import { router } from 'expo-router'
-import { ArrowLeft, Pencil, User } from 'lucide-react-native'
+import { ArrowLeft, BadgeCheck, MapPin, Pencil, User } from 'lucide-react-native'
 import React from 'react'
 import {
-	Image,
-	Platform,
+	ActivityIndicator,
 	ScrollView,
 	StyleSheet,
 	Text,
 	TouchableOpacity,
-	View,
+	View
 } from 'react-native'
 
-// Types for user profile data
-interface UserProfile {
-	id: string
-	name: string
-	profileImage: string | null
-	temperature: string
-	isActive: boolean
-	phoneNumber: string
-	memberSince: string
-	stats: {
-		listings: number
-		sold: number
-		reviews: number
-	}
-}
-
-// Mock user data - replace with actual data from API/context
-const mockUserProfile: UserProfile = {
-	id: '1',
-	name: 'John Doe',
-	profileImage: null,
-	temperature: '36.3°C',
-	isActive: true,
-	phoneNumber: '+82 10-1234-5678',
-	memberSince: 'January 2024',
-	stats: {
-		listings: 12,
-		sold: 8,
-		reviews: 24,
-	},
-}
-
-// Reusable components
-interface ProfileAvatarProps {
-	imageUri: string | null
-	size?: number
-	showStatus?: boolean
-	isActive?: boolean
-}
-
-const ProfileAvatar: React.FC<ProfileAvatarProps> = ({
-	imageUri,
-	size = 100,
-	showStatus = false,
-	isActive = true,
-}) => {
-	const colors = useThemeColors()
-	const statusSize = size * 0.16
-
-	return (
-		<View style={styles.avatarWrapper}>
-			{imageUri ? (
-				<Image
-					source={{ uri: imageUri }}
-					style={[
-						styles.avatarImage,
-						{ width: size, height: size, borderRadius: size / 2 },
-					]}
-				/>
-			) : (
-				<View
-					style={[
-						styles.avatarPlaceholder,
-						{
-							width: size,
-							height: size,
-							borderRadius: size / 2,
-							backgroundColor: colors.primaryColor,
-						},
-					]}
-				>
-					<User size={size * 0.5} color='#fff' strokeWidth={1.5} />
-				</View>
-			)}
-			{showStatus && (
-				<View
-					style={[
-						styles.statusIndicator,
-						{
-							width: statusSize,
-							height: statusSize,
-							borderRadius: statusSize / 2,
-							backgroundColor: isActive ? '#10b981' : colors.textMuted,
-							borderColor: colors.background,
-						},
-					]}
-				/>
-			)}
-		</View>
-	)
-}
+//  InfoRow 
 
 interface InfoRowProps {
 	label: string
-	value: string
+	value: string | null | undefined
 }
 
 const InfoRow: React.FC<InfoRowProps> = ({ label, value }) => {
 	const colors = useThemeColors()
+	const { t } = useTranslations()
 
 	return (
 		<View style={styles.infoRow}>
 			<Text style={[styles.infoLabel, { color: colors.text }]}>{label}</Text>
-			<Text style={[styles.infoValue, { color: colors.textMuted }]}>{value}</Text>
+			<Text
+				style={[
+					styles.infoValue,
+					{ color: colors.textMuted, opacity: value ? 1 : 0.5 },
+				]}
+				numberOfLines={1}
+			>
+				{value || t('my_profile.not_specified')}
+			</Text>
 		</View>
 	)
 }
 
+//  StatItem 
 interface StatItemProps {
 	value: number
 	label: string
+	isLoading?: boolean
 }
 
-const StatItem: React.FC<StatItemProps> = ({ value, label }) => {
+const StatItem: React.FC<StatItemProps> = ({ value, label, isLoading }) => {
 	const colors = useThemeColors()
 
 	return (
 		<View style={styles.statItem}>
-			<Text style={[styles.statValue, { color: colors.text }]}>{value}</Text>
+			{isLoading ? (
+				<ActivityIndicator size='small' color={colors.primaryColor} style={{ marginBottom: 4 }} />
+			) : (
+				<Text style={[styles.statValue, { color: colors.text }]}>{value}</Text>
+			)}
 			<Text style={[styles.statLabel, { color: colors.textMuted }]}>{label}</Text>
 		</View>
 	)
 }
 
+//  Main page 
 const MyProfilePage: React.FC = () => {
 	const { t } = useTranslations()
 	const colors = useThemeColors()
-	const { user: realUser, token } = useAuthStore()
 
-	// In real app, fetch user data from context/API
-	const user = mockUserProfile
+	//  API 
+	const { data: profileRes, isLoading: profileLoading } = useProfileQuery()
 
-	const handleGoBack = () => {
-		router.back()
+
+	console.log('Profile API response:', profileRes) // Debug log
+
+	const listingsCount = profileRes?.data?.data?.total_products ?? 0
+	const likedCount = profileRes?.data?.data?.total_likes ?? 0
+	const phoneNumber = profileRes?.data?.data?.phone_number
+	const email = profileRes?.data?.data?.email
+	const bio = profileRes?.data?.data?.bio
+
+
+	// Display name: "First Last" -> @username -> phone_number -> "--"
+	const displayName =
+		profileRes?.data?.data?.first_name || profileRes?.data?.data?.last_name
+			? [profileRes?.data?.data?.first_name, profileRes?.data?.data?.last_name].filter(Boolean).join(' ')
+			: profileRes?.data?.data?.username ?? profileRes?.data?.data?.phone_number ?? '--'
+
+	console.log('User profile data:', profileRes?.data?.data) // Debug log
+	//  Loading 
+	if (profileLoading) {
+		return (
+			<View style={[styles.container, { backgroundColor: colors.profileBackground }]}>
+				<View
+					style={[
+						styles.header,
+						{ backgroundColor: colors.background, borderBottomColor: colors.borderColor },
+					]}
+				>
+					<TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+						<ArrowLeft size={24} color={colors.text} />
+					</TouchableOpacity>
+					<Text style={[styles.headerTitle, { color: colors.text }]}>{t('my_profile.title')}</Text>
+					<View style={styles.headerRight} />
+				</View>
+				<View style={styles.loadingContainer}>
+					<ActivityIndicator size='large' color={colors.primaryColor} />
+				</View>
+			</View>
+		)
 	}
-
-	const handleEditProfile = () => {
-		router.push('/(settings)/edit-profile')
-	}
-
-	console.log(realUser)
-	console.log(token)
 
 	return (
 		<View style={[styles.container, { backgroundColor: colors.profileBackground }]}>
@@ -163,14 +118,11 @@ const MyProfilePage: React.FC = () => {
 			<View
 				style={[
 					styles.header,
-					{
-						backgroundColor: colors.background,
-						borderBottomColor: colors.borderColor,
-					},
+					{ backgroundColor: colors.background, borderBottomColor: colors.borderColor },
 				]}
 			>
 				<TouchableOpacity
-					onPress={handleGoBack}
+					onPress={() => router.back()}
 					style={styles.backButton}
 					hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
 				>
@@ -190,25 +142,59 @@ const MyProfilePage: React.FC = () => {
 				{/* Profile Card */}
 				<View style={[styles.card, { backgroundColor: colors.background }]}>
 					<View style={styles.profileSection}>
-						<ProfileAvatar
-							imageUri={user.profileImage}
-							size={100}
-							showStatus
-							isActive={user.isActive}
-						/>
-
-						<Text style={[styles.userName, { color: colors.text }]}>{user.name}</Text>
-
-						<View style={styles.statusBadge}>
-							<View style={[styles.statusDot, { backgroundColor: '#10b981' }]} />
-							<Text style={[styles.statusText, { color: colors.textMuted }]}>
-								{user.temperature} {t('my_profile.active')}
-							</Text>
+						{/* Avatar */}
+						<View style={styles.avatarWrapper}>
+							{profileRes?.data?.data?.profile_image_url ? (
+								<RemoteImage
+									src={profileRes.data.data.profile_image_url}
+									style={styles.avatarImage}
+									resizeMode='cover'
+								/>
+							) : (
+								<View
+									style={[styles.avatarPlaceholder, { backgroundColor: colors.primaryColor }]}
+								>
+									<User size={50} color='#fff' strokeWidth={1.5} />
+								</View>
+							)}
 						</View>
 
+						{/* Name */}
+						<Text style={[styles.userName, { color: colors.text }]}>{displayName}</Text>
+
+						{/* @username */}
+						{profileRes?.data?.data?.username && (
+							<Text style={[styles.usernameHandle, { color: colors.textMuted }]}>
+								@{profileRes.data.data.username}
+							</Text>
+						)}
+
+						{/* Verified */}
+						{profileRes?.data?.data?.is_verified && (
+							<View
+								style={[styles.verifiedBadge, { backgroundColor: colors.primaryColor + '20' }]}
+							>
+								<BadgeCheck size={14} color={colors.primaryColor} />
+								<Text style={[styles.verifiedText, { color: colors.primaryColor }]}>
+									{t('my_profile.verified')}
+								</Text>
+							</View>
+						)}
+
+						{/* Location */}
+						{profileRes?.data?.data?.address_name && (
+							<View style={styles.locationRow}>
+								<MapPin size={13} color={colors.textMuted} />
+								<Text style={[styles.locationText, { color: colors.textMuted }]}>
+									{profileRes.data.data.address_name}
+								</Text>
+							</View>
+						)}
+
+						{/* Edit button */}
 						<TouchableOpacity
 							style={[styles.editButton, { backgroundColor: colors.primaryColor }]}
-							onPress={handleEditProfile}
+							onPress={() => router.push('/(settings)/edit-profile')}
 							activeOpacity={0.8}
 						>
 							<Pencil size={18} color='#fff' />
@@ -223,8 +209,19 @@ const MyProfilePage: React.FC = () => {
 						{t('my_profile.account_information')}
 					</Text>
 
-					<InfoRow label={t('my_profile.phone_number')} value={realUser?.phone_number!} />
-					<InfoRow label={t('my_profile.member_since')} value={user.memberSince} />
+					<InfoRow label={t('my_profile.phone_number')} value={phoneNumber} />
+					<InfoRow label={t('my_profile.email')} value={email} />
+
+					{bio ? (
+						<View style={styles.bioRow}>
+							<Text style={[styles.infoLabel, { color: colors.text }]}>
+								{t('my_profile.bio')}
+							</Text>
+							<Text style={[styles.bioText, { color: colors.textMuted }]}>{bio}</Text>
+						</View>
+					) : (
+						<InfoRow label={t('my_profile.bio')} value={null} />
+					)}
 				</View>
 
 				{/* Activity Card */}
@@ -234,11 +231,17 @@ const MyProfilePage: React.FC = () => {
 					</Text>
 
 					<View style={styles.statsContainer}>
-						<StatItem value={user.stats.listings} label={t('my_profile.listings')} />
+						<StatItem
+							value={listingsCount}
+							label={t('my_profile.listings')}
+							isLoading={profileLoading}
+						/>
 						<View style={[styles.statDivider, { backgroundColor: colors.borderColor }]} />
-						<StatItem value={user.stats.sold} label={t('my_profile.sold')} />
-						<View style={[styles.statDivider, { backgroundColor: colors.borderColor }]} />
-						<StatItem value={user.stats.reviews} label={t('my_profile.reviews')} />
+						<StatItem
+							value={likedCount}
+							label={t('my_profile.liked')}
+							isLoading={profileLoading}
+						/>
 					</View>
 				</View>
 			</ScrollView>
@@ -249,14 +252,17 @@ const MyProfilePage: React.FC = () => {
 export default MyProfilePage
 
 const styles = StyleSheet.create({
-	container: {
+	container: { flex: 1 },
+	loadingContainer: {
 		flex: 1,
+		alignItems: 'center',
+		justifyContent: 'center',
 	},
 	header: {
 		flexDirection: 'row',
 		alignItems: 'center',
 		justifyContent: 'space-between',
-		paddingTop: Platform.OS === 'ios' ? 60 : 40,
+		paddingTop: HEADER_PADDING_TOP,
 		paddingBottom: 16,
 		paddingHorizontal: 16,
 		borderBottomWidth: 1,
@@ -267,64 +273,40 @@ const styles = StyleSheet.create({
 		justifyContent: 'center',
 		alignItems: 'flex-start',
 	},
-	headerTitle: {
-		fontSize: 18,
-		fontWeight: '600',
-	},
-	headerRight: {
-		width: 40,
-	},
-	scrollView: {
-		flex: 1,
-	},
-	scrollContent: {
-		padding: 16,
-		paddingBottom: 40,
-	},
-	card: {
-		borderRadius: 16,
-		padding: 20,
-		marginBottom: 16,
-	},
-	profileSection: {
-		alignItems: 'center',
-	},
-	avatarWrapper: {
-		position: 'relative',
-		marginBottom: 16,
-	},
-	avatarImage: {
-		resizeMode: 'cover',
-	},
+	headerTitle: { fontSize: 18, fontWeight: '600' },
+	headerRight: { width: 40 },
+	scrollView: { flex: 1 },
+	scrollContent: { padding: 16, paddingBottom: 40 },
+	card: { borderRadius: 16, padding: 20, marginBottom: 16 },
+	profileSection: { alignItems: 'center' },
+	avatarWrapper: { marginBottom: 16 },
+	avatarImage: { width: 100, height: 100, borderRadius: 50 },
 	avatarPlaceholder: {
+		width: 100,
+		height: 100,
+		borderRadius: 50,
 		justifyContent: 'center',
 		alignItems: 'center',
 	},
-	statusIndicator: {
-		position: 'absolute',
-		bottom: 4,
-		right: 4,
-		borderWidth: 3,
-	},
-	userName: {
-		fontSize: 22,
-		fontWeight: '700',
-		marginBottom: 8,
-	},
-	statusBadge: {
+	userName: { fontSize: 22, fontWeight: '700', marginBottom: 4 },
+	usernameHandle: { fontSize: 14, marginBottom: 10 },
+	verifiedBadge: {
 		flexDirection: 'row',
 		alignItems: 'center',
+		gap: 4,
+		paddingHorizontal: 10,
+		paddingVertical: 4,
+		borderRadius: 20,
+		marginBottom: 8,
+	},
+	verifiedText: { fontSize: 12, fontWeight: '600' },
+	locationRow: {
+		flexDirection: 'row',
+		alignItems: 'center',
+		gap: 4,
 		marginBottom: 20,
 	},
-	statusDot: {
-		width: 8,
-		height: 8,
-		borderRadius: 4,
-		marginRight: 6,
-	},
-	statusText: {
-		fontSize: 14,
-	},
+	locationText: { fontSize: 13 },
 	editButton: {
 		flexDirection: 'row',
 		alignItems: 'center',
@@ -334,12 +316,9 @@ const styles = StyleSheet.create({
 		borderRadius: 12,
 		width: '100%',
 		gap: 8,
+		marginTop: 4,
 	},
-	editButtonText: {
-		color: '#fff',
-		fontSize: 16,
-		fontWeight: '600',
-	},
+	editButtonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
 	sectionTitle: {
 		fontSize: 12,
 		fontWeight: '600',
@@ -353,33 +332,18 @@ const styles = StyleSheet.create({
 		alignItems: 'center',
 		paddingVertical: 12,
 	},
-	infoLabel: {
-		fontSize: 15,
-		fontWeight: '500',
-	},
-	infoValue: {
-		fontSize: 15,
-	},
+	infoLabel: { fontSize: 15, fontWeight: '500' },
+	infoValue: { fontSize: 15, maxWidth: '55%', textAlign: 'right' },
+	bioRow: { paddingVertical: 12 },
+	bioText: { fontSize: 14, lineHeight: 20, marginTop: 6 },
 	statsContainer: {
 		flexDirection: 'row',
 		alignItems: 'center',
 		justifyContent: 'space-around',
 		paddingVertical: 8,
 	},
-	statItem: {
-		alignItems: 'center',
-		flex: 1,
-	},
-	statValue: {
-		fontSize: 24,
-		fontWeight: '700',
-		marginBottom: 4,
-	},
-	statLabel: {
-		fontSize: 13,
-	},
-	statDivider: {
-		width: 1,
-		height: 40,
-	},
+	statItem: { alignItems: 'center', flex: 1 },
+	statValue: { fontSize: 24, fontWeight: '700', marginBottom: 4 },
+	statLabel: { fontSize: 13 },
+	statDivider: { width: 1, height: 40 },
 })

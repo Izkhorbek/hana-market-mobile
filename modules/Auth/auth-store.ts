@@ -1,19 +1,27 @@
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
- 
+
+import { setLogoutFn, setTokenGetter } from '@/api/auth-bridge'
 import { authApi as localAuthApi, userApi as localUserApi } from './api'
 
 // ── Types ──
-
 export interface User {
   id: number
-  username: string | null 
+  username: string | null
   first_name: string | null
   last_name: string | null
   bio: string | null
+  email: string | null
   phone_number: string | null
   profile_image_url: string | null
+  latitude?: number | null
+  longitude?: number | null
+  search_radius_km?: number | null
+  address_name?: string | null
+  is_verified?: boolean
+  status?: string | null
+  is_blocked?: boolean
 }
 
 interface AuthState {
@@ -55,40 +63,44 @@ export const useAuthStore = create<AuthState>()(
 
       register: async (phoneNumber) => {
         const response = await localAuthApi.register(phoneNumber)
- 
+
         const token = response.headers['x-access-token']
+        const userData = response.data?.data
 
         if (token) {
           set({
-             token: token,
-             isAuthenticated: true,
-             user: {
-               id: 0, // Placeholder
-               username: null,
-               first_name: null,
-               last_name: null,
-               bio: null,
-               phone_number: phoneNumber,
-               profile_image_url: null,
-             }
-           })
+            token: token,
+            isAuthenticated: true,
+            user: userData ?? {
+              id: 0,
+              username: null,
+              first_name: null,
+              last_name: null,
+              bio: null,
+              email: null,
+              phone_number: phoneNumber,
+              profile_image_url: null,
+            }
+          })
         }
       },
 
       login: async (phoneNumber) => {
         const response = await localAuthApi.login(phoneNumber)
         const token = response.headers['x-access-token']
+        const userData = response.data?.data
 
         if (token) {
           set({
             token: token,
             isAuthenticated: true,
-            user: {
-              id: 0, // Placeholder
+            user: userData ?? {
+              id: 0,
               username: null,
               first_name: null,
               last_name: null,
               bio: null,
+              email: null,
               phone_number: phoneNumber,
               profile_image_url: null,
             }
@@ -99,7 +111,7 @@ export const useAuthStore = create<AuthState>()(
       fetchUser: async () => {
         try {
           const response = await localUserApi.getUser()
-          set({ user: response.data })
+          set({ user: response.data.data })
         } catch {
           // Token may be expired — log out
           get().logout()
@@ -113,7 +125,22 @@ export const useAuthStore = create<AuthState>()(
           search_radius_km: searchRadiusKm,
           address_name: addressName,
         })
-        set({ locationGranted: true })
+        // Update local user state with new location data
+        const currentUser = get().user
+        if (currentUser) {
+          set({
+            user: {
+              ...currentUser,
+              latitude,
+              longitude,
+              search_radius_km: searchRadiusKm,
+              address_name: addressName,
+            },
+            locationGranted: true,
+          })
+        } else {
+          set({ locationGranted: true })
+        }
       },
 
       setLocationGranted: (granted) => set({ locationGranted: granted }),
@@ -135,3 +162,7 @@ export const useAuthStore = create<AuthState>()(
     },
   ),
 )
+
+// Register bridge functions — breaks the circular dependency with api/api.ts
+setTokenGetter(() => useAuthStore.getState().token)
+setLogoutFn(() => useAuthStore.getState().logout())

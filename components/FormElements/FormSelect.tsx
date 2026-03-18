@@ -14,7 +14,7 @@ import { useTranslations } from '@/hooks/use-translation';
 import { useColor } from '@/hooks/useColor';
 import React from 'react';
 import { Control, Controller } from 'react-hook-form';
-import { StyleSheet, Text, View } from 'react-native';
+import { Dimensions, StyleSheet, Text, View } from 'react-native';
 
 interface FormSelectProps {
   options?: OptionType[];
@@ -57,7 +57,10 @@ const FormSelect = ({
         rules={rules}
         render={({ field, fieldState: { error } }) => (
           <>
-            <Combobox value={field.value} onValueChange={field.onChange}>
+            <Combobox
+              value={field.value ? (options.find((o) => o.value === field.value) ?? null) : null}
+              onValueChange={(option) => field.onChange(option?.value ?? '')}
+            >
               <ComboboxTrigger style={[
                 styles.trigger,
                 {
@@ -67,12 +70,12 @@ const FormSelect = ({
               ]}>
                 <ComboboxValue placeholder={placeholder} style={styles.valueText} />
               </ComboboxTrigger>
-              <ComboboxContent maxHeight={300}>
+              <ComboboxContent maxHeight={Dimensions.get('window').height / 2}>
                 {inputPlaceholder && <ComboboxInput placeholder={inputPlaceholder} />}
                 <ComboboxList style={styles.list}>
                   {options.length === 0 && <ComboboxEmpty>{t('form_elements.select.no_framework_found')}</ComboboxEmpty>}
                   {options.map((option) => (
-                    <ComboboxItem key={option.value} value={option.value}>
+                    <ComboboxItem key={option.value} value={option.value} style={styles.item}>
                       {option.label}
                     </ComboboxItem>
                   ))}
@@ -119,7 +122,13 @@ const styles = StyleSheet.create({
   },
   list: {
     overflow: 'hidden',
-    // borderRadius: 12,
+    borderRadius: 12,
+  },
+  item:{
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E0E0E0',
   },
   errorText: {
     fontSize: 12,

@@ -1,6 +1,8 @@
+import { useChatList, useMyChatQuery, useSignalRConnection, useUnreadCountQuery } from '@/api/hooks';
 import ChatPageHeader from '@/components/headers/ChatPageHeader';
 import { useTranslations } from '@/hooks/use-translation';
 import { useColor } from '@/hooks/useColor';
+import { useAuthStore } from '@/modules/Auth/auth-store';
 import {
   ChatItemData,
   ChatListItem,
@@ -8,84 +10,94 @@ import {
   FilterTabType,
   NotificationBanner,
 } from '@/modules/Chat';
+import { ChatRoomDto } from '@/types';
+import { formatDistanceToNow } from 'date-fns';
 import { router } from 'expo-router';
-import React, { useState } from 'react';
-import { FlatList, StyleSheet, Text, View } from 'react-native';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native';
 
-// Mock chat data
-const MOCK_CHATS: ChatItemData[] = [
-  {
-    id: '1',
-    name: 'Nebr Market',
-    message: 'Device change detected. To keep your acco',
-    time: '11:08 AM',
-    isOnline: true,
-    unreadCount: 1,
-  },
-  {
-    id: '2',
-    name: 'Sarah',
-    message: 'Hi! Is this still available?',
-    location: 'Downtown',
-    time: '2 months ago',
-    avatar: 'https://i.pravatar.cc/150?img=1',
-    thumbnail: 'https://picsum.photos/200/200?random=1',
-  },
-  {
-    id: '3',
-    name: 'Michael Chen',
-    message: 'Thanks for the quick response!',
-    location: 'Eastside',
-    time: '2 months ago',
-    avatar: 'https://i.pravatar.cc/150?img=2',
-    thumbnail: 'https://picsum.photos/200/200?random=2',
-  },
-  {
-    id: '4',
-    name: 'Emily Davis',
-    message: 'Hello! Is there a discount for bulk',
-    location: 'Westwood',
-    time: '2 months ago',
-    avatar: 'https://i.pravatar.cc/150?img=3',
-    thumbnail: 'https://picsum.photos/200/200?random=3',
-  },
-  {
-    id: '5',
-    name: 'David Park',
-    message: 'No problem!',
-    location: 'Northside',
-    time: '2 months ago',
-    avatar: 'https://i.pravatar.cc/150?img=4',
-    thumbnail: 'https://picsum.photos/200/200?random=4',
-  },
-  {
-    id: '6',
-    name: 'Jessica',
-    message: 'Thank you!',
-    location: 'Southside',
-    time: '2 months ago',
-    avatar: 'https://i.pravatar.cc/150?img=5',
-    thumbnail: 'https://picsum.photos/200/200?random=5',
-  },
-  {
-    id: '7',
-    name: 'Ryan Lee',
-    message: 'Sounds good',
-    location: 'Midtown',
-    time: '2 months ago',
-    avatar: 'https://i.pravatar.cc/150?img=6',
-    thumbnail: 'https://picsum.photos/200/200?random=6',
-  },
-];
+/**
+ * Transform API ChatListItemDto to UI ChatItemData
+ * Shows the OTHER party's info (not the current user)
+ */
+const transformChatItem = (item: ChatRoomDto, currentUserId: number | undefined): ChatItemData => {
+  // Determine if current user is the buyer or seller
+  const isBuyer = item.buyer.id === currentUserId
+  // Show the other party's info
+  const otherUser = isBuyer ? item.seller : item.buyer
+
+  console.log('Transforming chat item:', item);
+
+  return {
+    id: String(item.id),
+    name: otherUser.username || 'Unknown',
+    message: item.last_message || '',
+    avatar: otherUser.profile_image_url || undefined,
+    thumbnail: item.product.image_url || undefined,
+    time: item.last_message_at
+      ? formatDistanceToNow(new Date(item.last_message_at), { addSuffix: true })
+      : '',
+    isOnline: item.is_other_user_online ?? otherUser.is_online ?? false,
+    unreadCount: item.unread_count,
+  }
+}
 
 const ChatPage = () => {
   const { t } = useTranslations();
   const backgroundColor = useColor('background');
   const mutedTextColor = useColor('textMuted');
+  const primaryColor = useColor('primary');
 
   const [activeTab, setActiveTab] = useState<FilterTabType>('all');
   const [showBanner, setShowBanner] = useState(true);
-  const [chats] = useState<ChatItemData[]>(MOCK_CHATS);
+  const userId = useAuthStore((s) => s.user?.id);
+
+  // Connect to SignalR
+  const { isConnected } = useSignalRConnection();
+
+  // Get chat list from store (for real-time updates)
+  const { chatList, setChatList } = useChatList();
+
+  // Query chat list from API
+  const {
+    data: chatListResponse,
+    isLoading,
+    isRefetching,
+    refetch
+  } = useMyChatQuery({
+    querySettings: {
+      staleTime: 1000 * 60, // 1 minute
+    }
+  });
+
+  // Query unread count
+  const { data: unreadCountResponse } = useUnreadCountQuery();
+
+  // Update store when API data changes
+  useEffect(() => {
+    if (chatListResponse?.data?.data?.chats) {
+      setChatList(chatListResponse.data.data.chats);
+    }
+  }, [chatListResponse, setChatList]);
+
+  // Use store data for rendering (updated via SignalR)
+  const displayChats = chatList.length > 0 ? chatList : (chatListResponse?.data?.data?.chats || []);
+
+  // Filter chats based on active tab
+  const filteredChats = useMemo(() => {
+    switch (activeTab) {
+      case 'selling':
+        // I'm the seller - show chats where I'm selling to someone
+        return displayChats.filter(chat => chat.seller.id === userId);
+      case 'buying':
+        // I'm the buyer - show chats where I'm buying from someone
+        return displayChats.filter(chat => chat.buyer.id === userId);
+      case 'unread':
+        return displayChats.filter(chat => chat.unread_count > 0);
+      default:
+        return displayChats;
+    }
+  }, [displayChats, activeTab, userId]);
 
   const filterTabs = [
     { key: 'all' as FilterTabType, label: t('chat.filter_all') },
@@ -94,9 +106,9 @@ const ChatPage = () => {
     { key: 'unread' as FilterTabType, label: t('chat.filter_unread') },
   ];
 
-  const handleChatPress = (chatId: string) => {
+  const handleChatPress = useCallback((chatId: string) => {
     router.push(`/chat/${chatId}`);
-  };
+  }, []);
 
   const handleFilterPress = () => {
     console.log('Open filter modal');
@@ -110,6 +122,10 @@ const ChatPage = () => {
     console.log('Open notifications');
   };
 
+  const handleRefresh = useCallback(async () => {
+    await refetch();
+  }, [refetch]);
+
   const renderEmptyState = () => (
     <View style={styles.emptyContainer}>
       <Text style={[styles.emptyText, { color: mutedTextColor }]}>
@@ -121,21 +137,39 @@ const ChatPage = () => {
     </View>
   );
 
+  const renderChatItem = useCallback(({ item }: { item: ChatRoomDto }) => {
+    const transformedItem = transformChatItem(item, userId);
+    return <ChatListItem chat={transformedItem} onPress={handleChatPress} />;
+  }, [handleChatPress, userId]);
+
+  if (isLoading && !chatListResponse) {
+    return (
+      <View style={[styles.container, styles.loadingContainer, { backgroundColor }]}>
+        <ActivityIndicator size="large" color={primaryColor} />
+      </View>
+    );
+  }
+
   return (
     <View style={[styles.container, { backgroundColor }]}>
       <ChatPageHeader
         onFilterPress={handleFilterPress}
         onBookmarkPress={handleBookmarkPress}
         onNotificationPress={handleNotificationPress}
-        hasNotifications={true}
+        hasNotifications={(unreadCountResponse?.data?.data?.unread_count ?? 0) > 0}
       />
 
       <FlatList
-        data={chats}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <ChatListItem chat={item} onPress={handleChatPress} />
-        )}
+        data={filteredChats}
+        keyExtractor={(item) => String(item.id)}
+        renderItem={renderChatItem}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefetching}
+            onRefresh={handleRefresh}
+            tintColor={primaryColor}
+          />
+        }
         ListHeaderComponent={
           <>
             {showBanner && (
@@ -153,7 +187,7 @@ const ChatPage = () => {
         }
         ListEmptyComponent={renderEmptyState}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={chats.length === 0 ? styles.emptyListContent : undefined}
+        contentContainerStyle={filteredChats.length === 0 ? styles.emptyListContent : undefined}
       />
     </View>
   );
@@ -164,6 +198,10 @@ export default ChatPage;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  loadingContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   emptyListContent: {
     flex: 1,

@@ -3,9 +3,12 @@ import { BottomSheet } from '@/components/ui/bottom-sheet';
 import { Text } from '@/components/ui/text';
 import { View } from '@/components/ui/view';
 import { useThemeColors } from '@/hooks/use-theme-colors';
+import { useTranslations } from '@/hooks/use-translation';
+import { navigate } from 'expo-router/build/global-state/routing';
 import { X } from 'lucide-react-native';
 import React from 'react';
-import { Image, StyleSheet, TouchableOpacity } from 'react-native';
+import { StyleSheet, TouchableOpacity } from 'react-native';
+import RemoteImage from '../shared/RemoteImage';
 
 interface MarkerDetailModalProps {
   marker: MarkerData | null;
@@ -15,9 +18,16 @@ interface MarkerDetailModalProps {
 
 export function MarkerDetailModal({ marker, isVisible, onClose }: MarkerDetailModalProps) {
   const colors = useThemeColors();
+  const { t } = useTranslations();
 
   if (!marker) return null;
 
+  const handleViewDetails = (productId: number | string) => {
+    if (!productId) return;
+
+    navigate(`/product/${productId}`);
+    onClose();
+  }
   return (
     <BottomSheet
       isVisible={isVisible}
@@ -29,8 +39,8 @@ export function MarkerDetailModal({ marker, isVisible, onClose }: MarkerDetailMo
     >
       <View style={styles.container}>
         {/* Close Button */}
-        <TouchableOpacity 
-          style={[styles.closeButton, { backgroundColor: colors.muted }]} 
+        <TouchableOpacity
+          style={[styles.closeButton, { backgroundColor: colors.muted }]}
           onPress={onClose}
         >
           <X size={20} color={colors.text} />
@@ -40,17 +50,17 @@ export function MarkerDetailModal({ marker, isVisible, onClose }: MarkerDetailMo
         <View style={styles.content}>
           {/* Image and Main Info */}
           <View style={styles.header}>
-            <Image
-              source={{ uri: marker.image || 'https://images.pexels.com/photos/7486933/pexels-photo-7486933.jpeg' }}
+            <RemoteImage
+              src={marker.image || undefined}
               style={styles.image}
               resizeMode="cover"
             />
             <View style={styles.headerText}>
               <Text variant="title" style={styles.title} numberOfLines={1}>
-                {marker.title || 'Location'}
+                {marker.title || 'Title'}
               </Text>
-              <Text variant="caption" style={[styles.category, { color: colors.muted }]}>
-                {marker.category || 'Location'}
+              <Text variant="caption" style={[styles.category, { color: colors.textMuted }]} numberOfLines={1}>
+                {marker.category || 'Category'}
               </Text>
             </View>
           </View>
@@ -59,13 +69,13 @@ export function MarkerDetailModal({ marker, isVisible, onClose }: MarkerDetailMo
           <View style={styles.metaRow}>
             {marker.categoryTag && (
               <View style={[styles.tag, { backgroundColor: '#E8F5E9' }]}>
-                <Text variant="caption" style={[styles.tagText, { color: '#2E7D32' }]}>
+                <Text variant="caption" style={[styles.tagText, { color: '#2E7D32' }]} numberOfLines={1}  >
                   {marker.categoryTag}
                 </Text>
               </View>
             )}
             {marker.distance && (
-              <Text variant="caption" style={[styles.distance, { color: colors.muted }]}>
+              <Text variant="caption" style={[styles.distance]} numberOfLines={1}>
                 {marker.distance}
               </Text>
             )}
@@ -75,27 +85,25 @@ export function MarkerDetailModal({ marker, isVisible, onClose }: MarkerDetailMo
           {marker.features && marker.features.length > 0 && (
             <View style={styles.featuresContainer}>
               {marker.features.map((feature, index) => (
-                <Text 
-                  key={index} 
-                  variant="body" 
-                  style={[styles.feature, { color: '#2E7D32' }]}
+                <Text
+                  key={index}
+                  variant="body"
+                  style={[styles.feature, { color: colors.primaryColor }]}
+                  numberOfLines={1}
                 >
-                  {feature}
+                  {feature},
                 </Text>
               ))}
             </View>
           )}
 
           {/* View Details Button */}
-          <TouchableOpacity 
+          <TouchableOpacity
             style={[styles.button, { backgroundColor: '#2E7D32' }]}
-            onPress={() => {
-              console.log('View details for:', marker.title);
-              // Add your navigation logic here
-            }}
+            onPress={() => handleViewDetails(marker.id)}
           >
-            <Text variant="body" style={styles.buttonText}>
-              View Details
+            <Text variant="body" style={styles.buttonText} numberOfLines={1}>
+              {t('map.view_details')}
             </Text>
           </TouchableOpacity>
         </View>
@@ -131,6 +139,8 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 12,
+    borderColor: '#E0E0E0',
+    borderWidth: 1,
     backgroundColor: '#E0E0E0',
   },
   headerText: {
@@ -138,7 +148,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   title: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '600',
   },
   category: {
@@ -151,7 +161,7 @@ const styles = StyleSheet.create({
   },
   tag: {
     paddingHorizontal: 12,
-    paddingVertical: 4,
+    paddingVertical: 8,
     borderRadius: 6,
   },
   tagText: {
@@ -162,6 +172,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
   featuresContainer: {
+    flexDirection: 'row',
     gap: 8,
   },
   feature: {

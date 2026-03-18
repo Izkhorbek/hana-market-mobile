@@ -1,7 +1,8 @@
+import { HEADER_HEIGHT } from '@/constants/appLimits';
 import { useThemeColors } from '@/hooks/use-theme-colors';
 import { useTranslations } from '@/hooks/use-translation';
 import { Bell, Bookmark, SlidersHorizontal } from 'lucide-react-native';
-import { Platform, StyleSheet, TouchableOpacity } from 'react-native';
+import { StyleSheet, TouchableOpacity } from 'react-native';
 import { ThemedText } from '../themed-text';
 import { ThemedView } from '../themed-view';
 
@@ -36,7 +37,7 @@ const ChatPageHeader = ({
       </ThemedText>
 
       <ThemedView style={styles.iconsContainer}>
-        <TouchableOpacity  onPress={onFilterPress} style={styles.iconButton}>
+        <TouchableOpacity onPress={onFilterPress} style={styles.iconButton}>
           <SlidersHorizontal size={24} color={colors.blackIcon} strokeWidth={2} />
         </TouchableOpacity>
 
@@ -57,7 +58,7 @@ export default ChatPageHeader;
 
 const styles = StyleSheet.create({
   container: {
-    height: Platform.OS === 'ios' ? 90 : 100,
+    height: HEADER_HEIGHT,
     display: 'flex',
     flexDirection: 'row',
     alignItems: 'flex-end',

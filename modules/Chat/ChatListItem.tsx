@@ -1,6 +1,7 @@
+import RemoteImage from '@/components/shared/RemoteImage';
 import { useColor } from '@/hooks/useColor';
 import React from 'react';
-import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export interface ChatItemData {
   id: string;
@@ -24,6 +25,7 @@ const ChatListItem = ({ chat, onPress }: ChatListItemProps) => {
   const mutedTextColor = useColor('textMuted');
   const backgroundColor = useColor('background');
 
+  console.log('Rendering ChatListItem:', chat);
   return (
     <TouchableOpacity
       style={[styles.container, { backgroundColor }]}
@@ -33,7 +35,7 @@ const ChatListItem = ({ chat, onPress }: ChatListItemProps) => {
       {/* Avatar */}
       <View style={styles.avatarContainer}>
         {chat.avatar ? (
-          <Image source={{ uri: chat.avatar }} style={styles.avatar} />
+          <RemoteImage src={chat.avatar} style={styles.avatar} />
         ) : (
           <View style={[styles.avatar, styles.placeholderAvatar]}>
             <Text style={styles.placeholderText}>
@@ -79,7 +81,7 @@ const ChatListItem = ({ chat, onPress }: ChatListItemProps) => {
 
       {/* Thumbnail */}
       {chat.thumbnail && (
-        <Image source={{ uri: chat.thumbnail }} style={styles.thumbnail} />
+        <RemoteImage src={chat.thumbnail} style={styles.thumbnail} />
       )}
     </TouchableOpacity>
   );

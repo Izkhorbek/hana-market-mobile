@@ -56,7 +56,7 @@ const AuthPage = () => {
     setIsLoading(true)
     try {
       const fullPhone = `+998${phoneNumber}`
-      await register(fullPhone)
+      await login(fullPhone)
       router.replace('/(tabs)/home')
     } catch (error: any) {
       const message = error?.response?.data?.errors?.[0] ||
@@ -80,7 +80,7 @@ const AuthPage = () => {
     } finally {
       setIsLoading(false)
     }
-  }, [phoneNumber, isLoading, register, router, t])
+  }, [phoneNumber, isLoading, login, router, t])
 
   const isDoneEnabled = phoneNumber.length === 9 && !isLoading
 
@@ -212,7 +212,7 @@ const styles = StyleSheet.create({
   codeText: {
     fontSize: 16,
     flex: 1,
-    padding: 0, 
+    padding: 0,
   },
   timerText: {
     fontSize: 16,

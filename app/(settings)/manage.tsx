@@ -1,178 +1,105 @@
+import { AppLimits, HEADER_PADDING_TOP } from '@/constants/appLimits'
 import { useColorScheme } from '@/hooks/use-color-scheme'
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
+import { useAuthStore } from '@/modules/Auth/auth-store'
 import Slider from '@react-native-community/slider'
 import * as Location from 'expo-location'
 import { router } from 'expo-router'
-import { ArrowLeft, Check, MapPin } from 'lucide-react-native'
-import React, { useEffect, useRef, useState } from 'react'
+import { ArrowLeft, Check, Home, MapPin, Navigation } from 'lucide-react-native'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { Alert, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import MapView, { Circle, Marker } from 'react-native-maps'
-
-// Dark mode map style
-const darkMapStyle = [
-	{ elementType: 'geometry', stylers: [{ color: '#242f3e' }] },
-	{ elementType: 'labels.text.stroke', stylers: [{ color: '#242f3e' }] },
-	{ elementType: 'labels.text.fill', stylers: [{ color: '#746855' }] },
-	{
-		featureType: 'administrative.locality',
-		elementType: 'labels.text.fill',
-		stylers: [{ color: '#d59563' }],
-	},
-	{
-		featureType: 'poi',
-		elementType: 'labels.text.fill',
-		stylers: [{ color: '#d59563' }],
-	},
-	{
-		featureType: 'poi.park',
-		elementType: 'geometry',
-		stylers: [{ color: '#263c3f' }],
-	},
-	{
-		featureType: 'poi.park',
-		elementType: 'labels.text.fill',
-		stylers: [{ color: '#6b9a76' }],
-	},
-	{
-		featureType: 'road',
-		elementType: 'geometry',
-		stylers: [{ color: '#38414e' }],
-	},
-	{
-		featureType: 'road',
-		elementType: 'geometry.stroke',
-		stylers: [{ color: '#212a37' }],
-	},
-	{
-		featureType: 'road',
-		elementType: 'labels.text.fill',
-		stylers: [{ color: '#9ca5b3' }],
-	},
-	{
-		featureType: 'road.highway',
-		elementType: 'geometry',
-		stylers: [{ color: '#746855' }],
-	},
-	{
-		featureType: 'road.highway',
-		elementType: 'geometry.stroke',
-		stylers: [{ color: '#1f2835' }],
-	},
-	{
-		featureType: 'road.highway',
-		elementType: 'labels.text.fill',
-		stylers: [{ color: '#f3d19c' }],
-	},
-	{
-		featureType: 'transit',
-		elementType: 'geometry',
-		stylers: [{ color: '#2f3948' }],
-	},
-	{
-		featureType: 'transit.station',
-		elementType: 'labels.text.fill',
-		stylers: [{ color: '#d59563' }],
-	},
-	{
-		featureType: 'water',
-		elementType: 'geometry',
-		stylers: [{ color: '#17263c' }],
-	},
-	{
-		featureType: 'water',
-		elementType: 'labels.text.fill',
-		stylers: [{ color: '#515c6d' }],
-	},
-	{
-		featureType: 'water',
-		elementType: 'labels.text.stroke',
-		stylers: [{ color: '#17263c' }],
-	},
-]
-
-// Light mode map style (standard Google Maps)
-const lightMapStyle: any[] = []
+import { googleMapStyle } from '../../components/Maps/googleMapStyle'
 
 interface LocationData {
 	latitude: number
 	longitude: number
 	neighborhood?: string
-	city?: string
-	country?: string
+	city: string
+	country: string
 }
 
-// Default location (Tashkent)
-const DEFAULT_LOCATION = {
-	latitude: 41.3111,
-	longitude: 69.2797,
+// Calculate distance between two coordinates in km (Haversine formula)
+const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
+	const R = 6371 // Earth's radius in km
+	const dLat = ((lat2 - lat1) * Math.PI) / 180
+	const dLon = ((lon2 - lon1) * Math.PI) / 180
+	const a =
+		Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+		Math.cos((lat1 * Math.PI) / 180) *
+		Math.cos((lat2 * Math.PI) / 180) *
+		Math.sin(dLon / 2) *
+		Math.sin(dLon / 2)
+	const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+	return R * c
 }
 
 const ManageNeighborhoodPage = () => {
+
 	const { t } = useTranslations()
 	const colors = useThemeColors()
 	const colorScheme = useColorScheme()
 	const mapRef = useRef<MapView>(null)
+	const storeUser = useAuthStore((s) => s.user)
 
-	// User's actual GPS location - this is fixed and doesn't change when map moves
-	const [userLocation, setUserLocation] = useState<LocationData | null>(null)
+	// Get stored location from auth store or fallback to Tashkent
+	const defaultStoredLocation = {
+		latitude: storeUser?.latitude ?? AppLimits.DefaultCoordinates.TASHKENT_LATITUDE,
+		longitude: storeUser?.longitude ?? AppLimits.DefaultCoordinates.TASHKENT_LONGITUDE,
+	}
 
-	const [radius, setRadius] = useState(3) // Default 3km
+	// Stored location from auth store (user's saved/preferred location)
+	const [storedLocation, setStoredLocation] = useState<LocationData | null>(null)
+	// Current GPS location (device's actual position)
+	const [gpsLocation, setGpsLocation] = useState<LocationData | null>(null)
+	// Ref to track GPS location for callbacks
+	const gpsLocationRef = useRef<LocationData | null>(null)
+
+	const [radius, setRadius] = useState(storeUser?.search_radius_km ?? 3)
 	const [isLoading, setIsLoading] = useState(true)
 	const [isSaving, setIsSaving] = useState(false)
 
-	const mapStyle = colorScheme === 'dark' ? darkMapStyle : lightMapStyle
+	const mapStyle = colorScheme === 'dark' ? googleMapStyle.darkMapStyle : googleMapStyle.lightMapStyle
+
+	// Check if locations are different (more than 0.5km apart)
+	const locationsAreDifferent = storedLocation && gpsLocation
+		? calculateDistance(
+			storedLocation.latitude,
+			storedLocation.longitude,
+			gpsLocation.latitude,
+			gpsLocation.longitude
+		) > 0.5
+		: false
+
+	// Keep ref in sync with GPS location state
+	useEffect(() => {
+		gpsLocationRef.current = gpsLocation
+	}, [gpsLocation])
 
 	useEffect(() => {
-		getCurrentLocation()
+		initializeLocations()
 	}, [])
 
-	const getCurrentLocation = async () => {
-		try {
-			const { status } = await Location.requestForegroundPermissionsAsync()
-			if (status !== 'granted') {
-				Alert.alert(t('neighborhood.permission_denied'), t('neighborhood.permission_message'))
-				// Use default location
-				await updateLocationInfo(DEFAULT_LOCATION.latitude, DEFAULT_LOCATION.longitude)
-				setIsLoading(false)
-				return
-			}
+	const initializeLocations = async () => {
+		setIsLoading(true)
 
-			const location = await Location.getCurrentPositionAsync({
-				accuracy: Location.Accuracy.Balanced,
-			})
+		// 1. Load stored location from auth store
+		await loadStoredLocation()
 
-			const { latitude, longitude } = location.coords
+		// 2. Get current GPS location
+		await getCurrentGPSLocation()
 
-			// Update user location with address info
-			await updateLocationInfo(latitude, longitude)
-
-			// Animate to user location
-			mapRef.current?.animateToRegion({
-				latitude,
-				longitude,
-				latitudeDelta: calculateDelta(radius),
-				longitudeDelta: calculateDelta(radius),
-			})
-
-			setIsLoading(false)
-		} catch (error) {
-			console.error('Error getting location:', error)
-			// Use default location on error
-			await updateLocationInfo(DEFAULT_LOCATION.latitude, DEFAULT_LOCATION.longitude)
-			setIsLoading(false)
-		}
+		setIsLoading(false)
 	}
 
-	// Update location info from coordinates
-	const updateLocationInfo = async (latitude: number, longitude: number) => {
-		try {
-			const [address] = await Location.reverseGeocodeAsync({
-				latitude,
-				longitude,
-			})
+	const loadStoredLocation = async () => {
+		const { latitude, longitude } = defaultStoredLocation
 
-			setUserLocation({
+		try {
+			const [address] = await Location.reverseGeocodeAsync({ latitude, longitude })
+
+			setStoredLocation({
 				latitude,
 				longitude,
 				neighborhood: address?.district || address?.subregion || address?.name || '',
@@ -180,8 +107,7 @@ const ManageNeighborhoodPage = () => {
 				country: address?.country || '',
 			})
 		} catch (error) {
-			// If reverse geocoding fails, just update coordinates
-			setUserLocation({
+			setStoredLocation({
 				latitude,
 				longitude,
 				neighborhood: '',
@@ -191,9 +117,48 @@ const ManageNeighborhoodPage = () => {
 		}
 	}
 
+	const getCurrentGPSLocation = async () => {
+		try {
+			const { status } = await Location.requestForegroundPermissionsAsync()
+			if (status !== 'granted') {
+				// If permission denied, use stored location as GPS location
+				setGpsLocation(storedLocation)
+				return
+			}
+
+			const location = await Location.getCurrentPositionAsync({
+				accuracy: Location.Accuracy.Balanced,
+			})
+
+			const { latitude, longitude } = location.coords
+
+			const [address] = await Location.reverseGeocodeAsync({ latitude, longitude })
+
+			setGpsLocation({
+				latitude,
+				longitude,
+				neighborhood: address?.district || address?.subregion || address?.name || '',
+				city: address?.city || address?.region || '',
+				country: address?.country || '',
+			})
+
+			// Animate to GPS location (where circle will be drawn)
+			mapRef.current?.animateToRegion({
+				latitude,
+				longitude,
+				latitudeDelta: calculateDelta(radius),
+				longitudeDelta: calculateDelta(radius),
+			})
+
+			console.log('Current GPS location obtained:', { latitude, longitude })
+
+		} catch (error) {
+			setGpsLocation(storedLocation)
+		}
+	}
+
 	// Calculate map delta based on radius (km)
 	const calculateDelta = (radiusKm: number) => {
-		// Approximate conversion: 1 degree latitude ≈ 111 km
 		return (radiusKm * 2.5) / 111
 	}
 
@@ -201,30 +166,45 @@ const ManageNeighborhoodPage = () => {
 		setRadius(value)
 	}
 
-	const handleRadiusChangeComplete = (value: number) => {
-		// Animate map to show the new radius properly
-		if (mapRef.current && userLocation) {
+	const handleRadiusChangeComplete = useCallback((value: number) => {
+		const currentGps = gpsLocationRef.current
+
+		if (mapRef.current && currentGps) {
 			mapRef.current.animateToRegion({
-				latitude: userLocation.latitude,
-				longitude: userLocation.longitude,
+				latitude: currentGps.latitude,
+				longitude: currentGps.longitude,
 				latitudeDelta: calculateDelta(value),
 				longitudeDelta: calculateDelta(value),
 			})
 		}
-	}
+	}, [])
 
 	const handleSavePreferences = async () => {
+		// Save using GPS location (current device location), not stored location
+		if (!gpsLocation) {
+			Alert.alert(t('neighborhood.error'), t('neighborhood.no_location'))
+			return
+		}
+
 		setIsSaving(true)
 		try {
-			// TODO: Save to backend/storage
-			// Save userLocation and radius
-			console.log('Saving preferences:', { userLocation, radius })
-			await new Promise(resolve => setTimeout(resolve, 500))
+			const addressName = [gpsLocation.neighborhood, gpsLocation.city, gpsLocation.country]
+				.filter(Boolean)
+				.join(', ')
+
+			// Save GPS location as new user location
+			const response = await useAuthStore.getState().updateLocation(
+				gpsLocation.latitude,
+				gpsLocation.longitude,
+				radius,
+				addressName
+			)
 
 			Alert.alert(t('neighborhood.success'), t('neighborhood.preferences_saved'), [
 				{ text: 'OK', onPress: () => router.back() },
 			])
 		} catch (error) {
+			console.error('Error saving location:', error)
 			Alert.alert(t('neighborhood.error'), t('neighborhood.save_error'))
 		} finally {
 			setIsSaving(false)
@@ -233,6 +213,44 @@ const ManageNeighborhoodPage = () => {
 
 	const handleGoBack = () => {
 		router.back()
+	}
+
+	const handleLocateMe = async () => {
+		try {
+			const { status } = await Location.requestForegroundPermissionsAsync()
+			if (status !== 'granted') {
+				Alert.alert(t('neighborhood.permission_denied'), t('neighborhood.permission_message'))
+				return
+			}
+
+			const location = await Location.getCurrentPositionAsync({
+				accuracy: Location.Accuracy.Balanced,
+			})
+
+			const { latitude, longitude } = location.coords
+
+			// Update GPS location with reverse geocoding
+			const [address] = await Location.reverseGeocodeAsync({ latitude, longitude })
+
+			setGpsLocation({
+				latitude,
+				longitude,
+				neighborhood: address?.district || address?.subregion || address?.name || '',
+				city: address?.city || address?.region || '',
+				country: address?.country || '',
+			})
+
+			// Animate to current GPS location
+			mapRef.current?.animateToRegion({
+				latitude,
+				longitude,
+				latitudeDelta: calculateDelta(radius),
+				longitudeDelta: calculateDelta(radius),
+			})
+		} catch (error) {
+			console.error('Error getting current location:', error)
+			Alert.alert(t('neighborhood.error'), t('neighborhood.location_error'))
+		}
 	}
 
 	return (
@@ -262,35 +280,35 @@ const ManageNeighborhoodPage = () => {
 					style={styles.map}
 					customMapStyle={mapStyle}
 					initialRegion={{
-						latitude: userLocation?.latitude || DEFAULT_LOCATION.latitude,
-						longitude: userLocation?.longitude || DEFAULT_LOCATION.longitude,
+						latitude: gpsLocation?.latitude || defaultStoredLocation.latitude,
+						longitude: gpsLocation?.longitude || defaultStoredLocation.longitude,
 						latitudeDelta: calculateDelta(radius),
 						longitudeDelta: calculateDelta(radius),
 					}}
-					showsUserLocation={false}
+					showsUserLocation={true}
 					showsMyLocationButton={false}
 					showsCompass={false}
 				>
-					{/* Radius Circle - fixed at user location */}
-					{userLocation && (
+					{/* Radius Circle - centered at GPS location (current device position) */}
+					{radius && (
 						<Circle
 							center={{
-								latitude: userLocation.latitude,
-								longitude: userLocation.longitude,
+								latitude: gpsLocation?.latitude || defaultStoredLocation.latitude,
+								longitude: gpsLocation?.longitude || defaultStoredLocation.longitude,
 							}}
-							radius={radius * 1000} // Convert km to meters
+							radius={radius * 1000}
 							strokeColor={colors.primaryColor}
 							strokeWidth={2}
 							fillColor={colorScheme === 'dark' ? 'rgba(2, 163, 72, 0.15)' : 'rgba(2, 163, 72, 0.1)'}
 						/>
 					)}
 
-					{/* Custom Marker - fixed at user location */}
-					{userLocation && (
+					{/* Stored Location Marker (user's saved location - green) */}
+					{storedLocation && (
 						<Marker
 							coordinate={{
-								latitude: userLocation.latitude,
-								longitude: userLocation.longitude,
+								latitude: storedLocation.latitude,
+								longitude: storedLocation.longitude,
 							}}
 							anchor={{ x: 0.5, y: 0.5 }}
 						>
@@ -301,7 +319,33 @@ const ManageNeighborhoodPage = () => {
 							</View>
 						</Marker>
 					)}
+
+					{/* GPS Location Marker (current device position - blue) */}
+					{/* {gpsLocation && (
+						<Marker
+							coordinate={{
+								latitude: gpsLocation.latitude,
+								longitude: gpsLocation.longitude,
+							}}
+							anchor={{ x: 0.5, y: 0.5 }}
+						>
+							<View style={[styles.markerOuter, { borderColor: '#3B82F6' }]}>
+								<View style={[styles.markerInner, { backgroundColor: '#3B82F6' }]}>
+									<Navigation size={18} color='#fff' />
+								</View>
+							</View>
+						</Marker>
+					)} */}
 				</MapView>
+
+				{/* Home button to locate current position */}
+				<TouchableOpacity
+					style={[styles.locateButton, { backgroundColor: colors.card }]}
+					onPress={handleLocateMe}
+					activeOpacity={0.8}
+				>
+					<Home size={24} color={colors.primaryColor} />
+				</TouchableOpacity>
 			</View>
 
 			{/* Bottom Sheet */}
@@ -314,28 +358,79 @@ const ManageNeighborhoodPage = () => {
 					},
 				]}
 			>
-				{/* Location Info */}
-				<View style={styles.locationInfoContainer}>
-					<View
-						style={[
-							styles.locationIconContainer,
-							{ backgroundColor: colorScheme === 'dark' ? '#1C3D2E' : '#E6F4ED' },
-						]}
-					>
-						<MapPin size={20} color={colors.primaryColor} />
+				{/* Location Info - Show both if different */}
+				{locationsAreDifferent ? (
+					<>
+						{/* Stored Location (green) */}
+						<View style={styles.locationInfoContainer}>
+							<View
+								style={[
+									styles.locationIconContainer,
+									{ backgroundColor: colorScheme === 'dark' ? '#1C3D2E' : '#E6F4ED' },
+								]}
+							>
+								<MapPin size={20} color={colors.primaryColor} />
+							</View>
+							<View style={styles.locationTextContainer}>
+								<Text style={[styles.locationLabel, { color: colors.primaryColor }]}>
+									{t('neighborhood.stored_location')}
+								</Text>
+								<Text style={[styles.locationName, { color: colors.text }]}>
+									{storedLocation?.neighborhood || t('neighborhood.loading')}
+								</Text>
+								<Text style={[styles.locationCity, { color: colors.textMuted }]}>
+									{storedLocation?.city ? `${storedLocation.city}, ${storedLocation.country}` : ''}
+								</Text>
+							</View>
+						</View>
+
+						{/* Current GPS Location (blue) */}
+						<View style={[styles.locationInfoContainer, { marginBottom: 16 }]}>
+							<View
+								style={[
+									styles.locationIconContainer,
+									{ backgroundColor: colorScheme === 'dark' ? '#1C2E3D' : '#E6EFFA' },
+								]}
+							>
+								<Navigation size={20} color='#3B82F6' />
+							</View>
+							<View style={styles.locationTextContainer}>
+								<Text style={[styles.locationLabel, { color: '#3B82F6' }]}>
+									{t('neighborhood.current_gps_location')}
+								</Text>
+								<Text style={[styles.locationName, { color: colors.text }]}>
+									{gpsLocation?.neighborhood || t('neighborhood.loading')}
+								</Text>
+								<Text style={[styles.locationCity, { color: colors.textMuted }]}>
+									{gpsLocation?.city ? `${gpsLocation.city}, ${gpsLocation.country}` : ''}
+								</Text>
+							</View>
+						</View>
+					</>
+				) : (
+					/* Single location display when both are same */
+					<View style={styles.locationInfoContainer}>
+						<View
+							style={[
+								styles.locationIconContainer,
+								{ backgroundColor: colorScheme === 'dark' ? '#1C2E3D' : '#E6EFFA' },
+							]}
+						>
+							<Navigation size={20} color='#3B82F6' />
+						</View>
+						<View style={styles.locationTextContainer}>
+							<Text style={[styles.locationLabel, { color: '#3B82F6' }]}>
+								{t('neighborhood.current_gps_location')}
+							</Text>
+							<Text style={[styles.locationName, { color: colors.text }]}>
+								{gpsLocation?.neighborhood || t('neighborhood.loading')}
+							</Text>
+							<Text style={[styles.locationCity, { color: colors.textMuted }]}>
+								{gpsLocation?.city ? `${gpsLocation.city}, ${gpsLocation.country}` : ''}
+							</Text>
+						</View>
 					</View>
-					<View style={styles.locationTextContainer}>
-						<Text style={[styles.locationLabel, { color: colors.primaryColor }]}>
-							{t('neighborhood.current_neighborhood')}
-						</Text>
-						<Text style={[styles.locationName, { color: colors.text }]}>
-							{userLocation?.neighborhood || t('neighborhood.loading')}
-						</Text>
-						<Text style={[styles.locationCity, { color: colors.textMuted }]}>
-							{userLocation?.city ? `${userLocation.city}, ${userLocation.country}` : ''}
-						</Text>
-					</View>
-				</View>
+				)}
 
 				{/* Radius Slider */}
 				<View style={styles.sliderContainer}>
@@ -353,8 +448,8 @@ const ManageNeighborhoodPage = () => {
 
 					<Slider
 						style={styles.slider}
-						minimumValue={1}
-						maximumValue={20}
+						minimumValue={AppLimits.Location.MIN_RADIUS_KM}
+						maximumValue={AppLimits.Location.MAX_RADIUS_KM}
 						step={1}
 						value={radius}
 						onValueChange={handleRadiusChange}
@@ -366,10 +461,10 @@ const ManageNeighborhoodPage = () => {
 
 					<View style={styles.sliderLabels}>
 						<Text style={[styles.sliderMinMax, { color: colors.textMuted }]}>
-							1 {t('neighborhood.km')}
+							{AppLimits.Location.MIN_RADIUS_KM} {t('neighborhood.km')}
 						</Text>
 						<Text style={[styles.sliderMinMax, { color: colors.textMuted }]}>
-							20 {t('neighborhood.km')}
+							{AppLimits.Location.MAX_RADIUS_KM} {t('neighborhood.km')}
 						</Text>
 					</View>
 				</View>
@@ -410,7 +505,7 @@ const styles = StyleSheet.create({
 		flexDirection: 'row',
 		alignItems: 'center',
 		justifyContent: 'space-between',
-		paddingTop: Platform.OS === 'ios' ? 60 : 40,
+		paddingTop: HEADER_PADDING_TOP,
 		paddingBottom: 16,
 		paddingHorizontal: 16,
 		borderBottomWidth: 1,
@@ -434,6 +529,21 @@ const styles = StyleSheet.create({
 	},
 	map: {
 		flex: 1,
+	},
+	locateButton: {
+		position: 'absolute',
+		right: 16,
+		bottom: 16,
+		width: 48,
+		height: 48,
+		borderRadius: 12,
+		justifyContent: 'center',
+		alignItems: 'center',
+		shadowColor: '#000',
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.1,
+		shadowRadius: 4,
+		elevation: 4,
 	},
 	markerOuter: {
 		width: 60,

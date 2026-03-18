@@ -85,7 +85,10 @@ const FilterButtons: React.FC<FilterButtonsProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    paddingVertical: 8,
+    paddingVertical: 4,
+    height: 48,
+    flexGrow: 0,
+    flexShrink: 0,
   },
   listContent: {
     paddingHorizontal: 12,
@@ -93,8 +96,8 @@ const styles = StyleSheet.create({
   },
   chip: {
     paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
+    paddingVertical: 10,
+    borderRadius: 18,
   },
   chipText: {
     fontSize: 14,

@@ -2,7 +2,8 @@ import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
 import React from 'react'
-import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import RemoteImage from '../RemoteImage'
 
 export type ListingStatus = 'active' | 'sold' | 'hidden'
 
@@ -50,8 +51,8 @@ const MyListingCard: React.FC<MyListingCardProps> = ({
 		>
 			{/* Image Container */}
 			<View style={styles.imageContainer}>
-				<Image
-					source={{ uri: image }}
+				<RemoteImage
+					src={image}
 					style={[
 						styles.image,
 						isGrayscale && styles.grayscaleImage,

@@ -31,6 +31,8 @@ export const Colors = {
 
 		tint: '#02A348',
 		borderColor: '#F3F4F6',
+
+		
 	},
 	dark: {
 		text: '#ECEDEE',
@@ -54,6 +56,11 @@ export const Colors = {
 
 		tint: '#fff',
 		borderColor: '#49495B',
+
+		status: {
+			sold: '#FF4400',
+			reserved: '#02A348',
+		},
 	},
 }
 

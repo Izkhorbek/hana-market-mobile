@@ -6,6 +6,7 @@ import React from 'react';
 import { Platform, StyleSheet, TouchableOpacity } from 'react-native';
 import { ThemedText } from '../themed-text';
 import { ThemedView } from '../themed-view';
+import { HEADER_HEIGHT } from '@/constants/appLimits';
 
 const CreateHeader = () => {
   const colors = useThemeColors()
@@ -34,7 +35,7 @@ const CreateHeader = () => {
 
 const styles = StyleSheet.create({
   container: {
-    height: Platform.OS === 'ios' ? 100 : 100,
+    height: HEADER_HEIGHT,
     display: "flex",
     flexDirection: "row",
     alignItems: 'flex-end',

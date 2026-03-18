@@ -1,36 +1,70 @@
+import type {
+  ApiResponse,
+  LikedProductDto,
+  MyProductDto,
+  UpdateLocationRequest,
+  UpdateProfileRequest,
+  User,
+} from '../../types';
 import axiosInstance from '../api';
-import type { User } from '../types';
+import ENDPOINT from '../endpoints';
 
 export const userService = {
   /**
-   * Get user profile
-   * GET /api/user/profile
+   * Get current user info
+   * GET /api/user/my
    */
   getProfile: () => {
-    return axiosInstance.get<User>('/user/profile');
+    return axiosInstance.get<ApiResponse<User>>(ENDPOINT.USER.MY);
   },
 
   /**
    * Update user profile
-   * PUT /api/user/profile
+   * POST /api/user/update
    */
-  updateProfile: (data: Partial<User>) => {
-    return axiosInstance.put<User>('/user/profile', data);
+  updateProfile: (data: UpdateProfileRequest) => {
+    return axiosInstance.post<ApiResponse<{}>>(ENDPOINT.USER.UPDATE_PROFILE, data);
+  },
+
+  /**
+   * Upload profile image
+   * POST /api/user/upload/profile-image
+   */
+  uploadProfileImage: (data: FormData) => {
+    return axiosInstance.post<ApiResponse<string>>(ENDPOINT.USER.UPLOAD_PROFILE_IMAGE, data, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
+
+  /**
+   * Update user location
+   * POST /api/user/update/location
+   */
+  updateLocation: (data: UpdateLocationRequest) => {
+    return axiosInstance.post<ApiResponse<string>>(ENDPOINT.USER.UPDATE_LOCATION, data);
+  },
+
+  /**
+   * Get liked products
+   * GET /api/product/likes
+   */
+  getLikedProducts: () => {
+    return axiosInstance.get<ApiResponse<LikedProductDto[]>>(ENDPOINT.PRODUCT.LIKES);
   },
 
   /**
    * Get my products
-   * GET /api/user/my-products
+   * GET /api/product/my
    */
-  getMyProducts: (params: { page?: number; page_size?: number } = {}) => {
-    return axiosInstance.get('/user/my-products', { params });
+  getMyProducts: () => {
+    return axiosInstance.get<ApiResponse<MyProductDto[]>>(ENDPOINT.PRODUCT.MY);
   },
 
   /**
-   * Get favorites
-   * GET /api/user/favorites
+   * Delete account (soft delete)
+   * POST /api/user/delete
    */
-  getFavorites: (params: { page?: number; page_size?: number } = {}) => {
-    return axiosInstance.get('/user/favorites', { params });
+  deleteAccount: () => {
+    return axiosInstance.post<ApiResponse<{}>>(ENDPOINT.USER.DELETE);
   },
 };
