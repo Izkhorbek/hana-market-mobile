@@ -11,7 +11,6 @@ import ProfileMenuItem from '@/modules/Profile/ProfileMenuItem'
 import ProfileSection from '@/modules/Profile/ProfileSection'
 import { router } from 'expo-router'
 import {
-	Bell,
 	FileText,
 	Globe,
 	Heart,
@@ -19,13 +18,10 @@ import {
 	Home,
 	LogOut,
 	MapPin,
-	MessageCircle,
 	MessageSquare,
 	Moon,
 	Package,
-	Settings,
-	ShieldCheck,
-	Sparkles,
+	Sparkles
 } from 'lucide-react-native'
 import React, { useState } from 'react'
 import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native'
@@ -141,7 +137,7 @@ const ProfilePage = () => {
 					/>
 				</ProfileSection>
 
-				{/* Trust & Verification Section */}
+				{/* Trust & Verification Section
 				<ProfileSection title={t('profile.trust_verification')}>
 					<ProfileMenuItem
 						icon={ShieldCheck}
@@ -149,10 +145,10 @@ const ProfilePage = () => {
 						subtitle={t('profile.verification_subtitle')}
 						onPress={() => handleNavigation('verification')}
 					/>
-				</ProfileSection>
+				</ProfileSection> */}
 
 				{/* Settings Section */}
-				<ProfileSection title={t('profile.settings_section')}>
+				{/* <ProfileSection title={t('profile.settings_section')}>
 					<ProfileMenuItem
 						icon={Settings}
 						title={t('profile.settings')}
@@ -168,7 +164,7 @@ const ProfilePage = () => {
 						title={t('profile.notifications')}
 						onPress={() => handleNavigation('notifications')}
 					/>
-				</ProfileSection>
+				</ProfileSection> */}
 
 				{/* Appearance Section */}
 				<ProfileSection title={t('profile.appearance')}>
