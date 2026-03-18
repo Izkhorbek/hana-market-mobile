@@ -1,6 +1,7 @@
 import RemoteImage from '@/components/shared/RemoteImage';
 import { useColor } from '@/hooks/useColor';
-import React from 'react';
+import useResponsive from '@/hooks/useResponsive';
+import React, { useMemo } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export interface ChatItemData {
@@ -24,35 +25,90 @@ const ChatListItem = ({ chat, onPress }: ChatListItemProps) => {
   const textColor = useColor('text');
   const mutedTextColor = useColor('textMuted');
   const backgroundColor = useColor('background');
+  const { ms, fs, isSmallDevice, isLargeDevice } = useResponsive();
+
+  // Responsive sizes
+  const responsiveStyles = useMemo(() => ({
+    container: {
+      paddingHorizontal: ms(16),
+      paddingVertical: ms(12),
+      gap: ms(12),
+    },
+    avatar: {
+      width: ms(48),
+      height: ms(48),
+      borderRadius: ms(24),
+    },
+    onlineIndicator: {
+      width: ms(14),
+      height: ms(14),
+      borderRadius: ms(7),
+      borderWidth: ms(2.5),
+    },
+    name: {
+      fontSize: fs(16),
+    },
+    time: {
+      fontSize: fs(12),
+      marginLeft: ms(8),
+    },
+    location: {
+      fontSize: fs(13),
+    },
+    message: {
+      fontSize: fs(13),
+    },
+    badge: {
+      minWidth: ms(20),
+      height: ms(20),
+      borderRadius: ms(10),
+      paddingHorizontal: ms(6),
+    },
+    badgeText: {
+      fontSize: fs(12),
+    },
+    thumbnail: {
+      width: ms(52),
+      height: ms(52),
+      borderRadius: ms(8),
+    },
+    placeholderText: {
+      fontSize: fs(18),
+    },
+  }), [ms, fs]);
 
   console.log('Rendering ChatListItem:', chat);
   return (
     <TouchableOpacity
-      style={[styles.container, { backgroundColor }]}
+      style={[
+        styles.container,
+        { backgroundColor },
+        responsiveStyles.container
+      ]}
       onPress={() => onPress?.(chat.id)}
       activeOpacity={0.7}
     >
       {/* Avatar */}
       <View style={styles.avatarContainer}>
         {chat.avatar ? (
-          <RemoteImage src={chat.avatar} style={styles.avatar} />
+          <RemoteImage src={chat.avatar} style={responsiveStyles.avatar} />
         ) : (
-          <View style={[styles.avatar, styles.placeholderAvatar]}>
-            <Text style={styles.placeholderText}>
+          <View style={[responsiveStyles.avatar, styles.placeholderAvatar]}>
+            <Text style={[styles.placeholderText, responsiveStyles.placeholderText]}>
               {chat.name.charAt(0).toUpperCase()}
             </Text>
           </View>
         )}
-        {chat.isOnline && <View style={styles.onlineIndicator} />}
+        {chat.isOnline && <View style={[styles.onlineIndicator, responsiveStyles.onlineIndicator]} />}
       </View>
 
       {/* Content */}
       <View style={styles.content}>
         <View style={styles.headerRow}>
-          <Text style={[styles.name, { color: textColor }]} numberOfLines={1}>
+          <Text style={[styles.name, { color: textColor }, responsiveStyles.name]} numberOfLines={1}>
             {chat.name}
           </Text>
-          <Text style={[styles.time, { color: mutedTextColor }]}>
+          <Text style={[styles.time, { color: mutedTextColor }, responsiveStyles.time]}>
             {chat.time}
           </Text>
         </View>
@@ -60,29 +116,27 @@ const ChatListItem = ({ chat, onPress }: ChatListItemProps) => {
         <View style={styles.messageRow}>
           <View style={styles.messageContainer}>
             {chat.location && (
-              <Text style={[styles.location, { color: mutedTextColor }]}>
+              <Text style={[styles.location, { color: mutedTextColor }, responsiveStyles.location]}>
                 {chat.location}{' '}
               </Text>
             )}
             <Text
-              style={[styles.message, { color: mutedTextColor }]}
+              style={[styles.message, { color: mutedTextColor }, responsiveStyles.message]}
               numberOfLines={1}
             >
               {chat.message}
             </Text>
           </View>
           {chat.unreadCount !== undefined && chat.unreadCount > 0 && (
-            <View style={styles.badge}>
-              <Text style={styles.badgeText}>{chat.unreadCount}</Text>
+            <View style={[styles.badge, responsiveStyles.badge]}>
+              <Text style={[styles.badgeText, responsiveStyles.badgeText]}>{chat.unreadCount}</Text>
             </View>
           )}
         </View>
       </View>
 
       {/* Thumbnail */}
-      {chat.thumbnail && (
-        <RemoteImage src={chat.thumbnail} style={styles.thumbnail} />
-      )}
+      <RemoteImage src={chat.thumbnail} style={responsiveStyles.thumbnail} />
     </TouchableOpacity>
   );
 };

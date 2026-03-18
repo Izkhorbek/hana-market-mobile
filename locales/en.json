@@ -11,6 +11,21 @@
 		"error": "Error",
 		"go_back": "Go Back"
 	},
+	"alert": {
+		"error_title": "Something went wrong",
+		"success_title": "Success",
+		"warning_title": "Warning",
+		"info_title": "Information",
+		"location_required_title": "Location Required",
+		"location_required_message": "Please set up your location and search radius to see products near you and improve your experience.",
+		"setup_location": "Set Up Location",
+		"username_required_title": "Create Username",
+		"username_required_message": "Please create a username to complete your profile setup.",
+		"username_placeholder": "Enter username",
+		"username_invalid": "Username must be 3-20 characters and can only contain letters, numbers, and underscores",
+		"continue": "Continue",
+		"skip": "Skip for now"
+	},
 	"map": {
 		"title": "Map",
 		"select_location": "Select Location",
@@ -615,7 +630,8 @@
 		"not_found": "Chat not found",
 		"connection_error": "Connection error",
 		"quick_reply_hello": "Hello.",
-		"quick_reply_available": "Is the item still available?"
+		"quick_reply_available": "Is the item still available?",
+		"load_more": "Load earlier messages"
 	},
 	"date_picker": {
 		"months": ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],

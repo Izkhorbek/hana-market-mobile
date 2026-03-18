@@ -3,6 +3,7 @@ import LocationMapPreview from '@/components/ProductDetail/LocationMapPreview'
 import ProductImageGallery from '@/components/ProductDetail/ProductImageGallery'
 import SimilarProductCard, { SimilarProduct } from '@/components/ProductDetail/SimilarProductCard'
 import RemoteImage from '@/components/shared/RemoteImage'
+import ImageViewer from '@/components/ui/ImageViewer'
 import { AppLimits } from '@/constants/appLimits'
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
@@ -105,6 +106,18 @@ const ProductDetailPage: React.FC = () => {
 	const [isLiked, setIsLiked] = useState(false)
 	const isLikedRef = useRef(false)
 	const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
+
+	// Image viewer state
+	const [imageViewerVisible, setImageViewerVisible] = useState(false)
+	const [imageViewerIndex, setImageViewerIndex] = useState(0)
+	const [imageViewerUrls, setImageViewerUrls] = useState<string[]>([])
+
+	// Handle image press from gallery
+	const handleImagePress = useCallback((index: number, urls: string[]) => {
+		setImageViewerIndex(index)
+		setImageViewerUrls(urls)
+		setImageViewerVisible(true)
+	}, [])
 
 	// ── Real product data ────────────────────────────────────────────────────
 	const { data: productRes, isLoading: productLoading } = useProductQuery({
@@ -388,6 +401,7 @@ const ProductDetailPage: React.FC = () => {
 						<ProductImageGallery
 							mainImage={null}
 							images={imagesGalleryImages}
+							onImagePress={handleImagePress}
 						/>
 					</Animated.View>
 					<Animated.View style={[styles.heroTopRow, headerButtonsStyle]}>
@@ -586,6 +600,14 @@ const ProductDetailPage: React.FC = () => {
 					<Text style={styles.chatButtonText}>{t('product_detail.chat_with_seller')}</Text>
 				</TouchableOpacity>
 			</Animated.View>
+
+			{/* Fullscreen Image Viewer */}
+			<ImageViewer
+				visible={imageViewerVisible}
+				images={imageViewerUrls}
+				initialIndex={imageViewerIndex}
+				onClose={() => setImageViewerVisible(false)}
+			/>
 		</View>
 	)
 }

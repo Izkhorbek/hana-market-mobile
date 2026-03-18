@@ -1,7 +1,7 @@
 import RemoteImage from '@/components/shared/RemoteImage'
 import { AppLimits } from '@/constants/appLimits'
 import React, { useCallback, useRef, useState } from 'react'
-import { FlatList, StyleSheet, Text, useWindowDimensions, View, ViewToken } from 'react-native'
+import { FlatList, Pressable, StyleSheet, Text, useWindowDimensions, View, ViewToken } from 'react-native'
 
 export interface GalleryImage {
   image_url: string
@@ -12,6 +12,8 @@ interface ProductImageGalleryProps {
   mainImage: string | null | undefined
   /** Additional images from ProductImageDto[], sorted by sort_order */
   images?: GalleryImage[]
+  /** Called when an image is pressed, with index and all image URLs */
+  onImagePress?: (index: number, urls: string[]) => void
 }
 
 /**
@@ -21,6 +23,7 @@ interface ProductImageGalleryProps {
 const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
   mainImage,
   images = [],
+  onImagePress,
 }) => {
   const { width } = useWindowDimensions()
   const [activeIndex, setActiveIndex] = useState(0)
@@ -47,13 +50,23 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
     },
   )
 
+  const handleImagePress = useCallback((index: number) => {
+    if (onImagePress) {
+      onImagePress(index, urls.filter(url => url !== ''))
+    }
+  }, [onImagePress, urls])
+
   const renderItem = useCallback(
-    ({ item }: { item: string }) => (
-      <View style={[styles.slide, { width }]}>
+    ({ item, index }: { item: string; index: number }) => (
+      <Pressable
+        style={[styles.slide, { width }]}
+        onPress={() => handleImagePress(index)}
+        disabled={!onImagePress}
+      >
         <RemoteImage src={item || null} style={styles.image} resizeMode='cover' />
-      </View>
+      </Pressable>
     ),
-    [width],
+    [width, handleImagePress, onImagePress],
   )
 
   const keyExtractor = useCallback((_: string, idx: number) => String(idx), [])

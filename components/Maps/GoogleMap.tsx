@@ -3,7 +3,7 @@ import { useThemeColors } from '@/hooks/use-theme-colors';
 import * as Location from 'expo-location';
 import { Home, Minus, Plus } from 'lucide-react-native';
 import React, { useEffect, useRef, useState } from 'react';
-import { Alert, Platform, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Alert, StyleSheet, TouchableOpacity, View } from 'react-native';
 import MapView, { Marker, Region } from 'react-native-maps';
 import LocationPinIcon from './LocationPinIcon';
 
@@ -210,7 +210,7 @@ const GoogleMap = ({
         latitudeDelta: 0.01,
         longitudeDelta: 0.01,
       });
-      
+
     } catch (error) {
       console.error('Error getting location:', error);
       Alert.alert('Error', 'Could not get your current location.');
@@ -226,7 +226,7 @@ const GoogleMap = ({
   return (
     <View style={[styles.container, { height: height as any }]}>
       <MapView
-        mapType={Platform.OS === 'android' ? 'none' : 'standard'} // Use 'none' for Android to apply custom styles
+        mapType="standard"
         ref={mapRef}
         provider={'google'}
         style={styles.map}

@@ -1,18 +1,18 @@
 // ==================== COMMON ====================
 
 import {
-  ECarCondition,
-  ECarFuelType,
-  ECarTransmissionType,
-  EComplaintType,
-  ECurrencyType,
-  EPaymentType,
-  EProductSortBy,
-  EProductType,
-  EWorkCondition,
-  EWorkerType,
-  EWorkSalaryType,
-  EWorkType
+    ECarCondition,
+    ECarFuelType,
+    ECarTransmissionType,
+    EComplaintType,
+    ECurrencyType,
+    EPaymentType,
+    EProductSortBy,
+    EProductType,
+    EWorkCondition,
+    EWorkerType,
+    EWorkSalaryType,
+    EWorkType
 } from "@/constants/enums";
 
 export interface ApiResponse<T> {
@@ -79,6 +79,7 @@ export interface UpdateLocationRequest {
 // Types for UI display
 export interface DisplayMessage {
 	id: string
+	localId?: string
 	text: string
 	timestamp: string
 	isMe: boolean

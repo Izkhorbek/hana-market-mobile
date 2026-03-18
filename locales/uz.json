@@ -11,6 +11,21 @@
 		"error": "Xato",
 		"go_back": "Ortga qaytish"
 	},
+	"alert": {
+		"error_title": "Xatolik yuz berdi",
+		"success_title": "Muvaffaqiyatli",
+		"warning_title": "Ogohlantirish",
+		"info_title": "Ma'lumot",
+		"location_required_title": "Joylashuv talab qilinadi",
+		"location_required_message": "Iltimos, yaqin atrofdagi mahsulotlarni ko'rish uchun joylashuv va qidiruv radiusini sozlang.",
+		"setup_location": "Joylashuvni sozlash",
+		"username_required_title": "Foydalanuvchi nomini yarating",
+		"username_required_message": "Iltimos, profil sozlamalarini yakunlash uchun foydalanuvchi nomini kiriting.",
+		"username_placeholder": "Foydalanuvchi nomini kiriting",
+		"username_invalid": "Foydalanuvchi nomi 3-20 belgi bo'lishi va faqat harflar, raqamlar va pastki chiziq bo'lishi kerak",
+		"continue": "Davom etish",
+		"skip": "Keyinroq"
+	},
 	"map": {		"title": "Xarita",		"select_location": "Joylashuvni tanlash",
 		"view_location": "Joylashuvni ko'rish",
 		"view_details": "Batafsil ko'rish",
@@ -620,7 +635,8 @@
 		"not_found": "Chat topilmadi",
 		"connection_error": "Ulanish xatosi",
 		"quick_reply_hello": "Assalomu alaykum.",
-		"quick_reply_available": "Buyum hali ham mavjudmi?"
+		"quick_reply_available": "Buyum hali ham mavjudmi?",
+		"load_more": "Oldingi xabarlarni yuklash"
 	},
 	"date_picker": {
 		"months": ["Yanvar", "Fevral", "Mart", "Aprel", "May", "Iyun", "Iyul", "Avgust", "Sentabr", "Oktabr", "Noyabr", "Dekabr"],

@@ -3,11 +3,12 @@ import { create } from 'zustand';
 import { MessageTypeString } from './../../constants/appLimits';
 
 import {
-  ReceiveMessagePayload,
-  signalRService,
-  UserStatusPayload,
-  UserTypingPayload
+    ReceiveMessagePayload,
+    signalRService,
+    UserStatusPayload,
+    UserTypingPayload
 } from '@/api/services/signalr.service';
+import { useAuthStore } from '@/modules/Auth/auth-store';
 import type { ChatMessageDto, ChatRoomDto } from '@/types';
 
 // Convert API message type string to numeric type for storage
@@ -100,6 +101,9 @@ interface ChatState {
   joinChatRoom: (chatRoomId: number) => Promise<void>
   leaveChatRoom: (chatRoomId: number) => Promise<void>
   markAsRead: (chatRoomId: number) => Promise<void>
+
+  // Actions - Reset (for logout)
+  reset: () => void
 
   // Internal - Event handlers
   _handleReceiveMessage: (payload: ReceiveMessagePayload) => void
@@ -457,30 +461,74 @@ export const useChatStore = create<ChatState>((set, get) => ({
     }
   },
 
+  // Reset store (for logout)
+  reset: () => {
+    console.log('[ChatStore] Resetting store state')
+    
+    // Clean up event listeners
+    if (eventListenersCleanup) {
+      eventListenersCleanup()
+      eventListenersCleanup = null
+    }
+    
+    // Disconnect SignalR
+    signalRService.disconnect()
+    
+    // Reset state to initial values
+    set({
+      connectionState: HubConnectionState.Disconnected,
+      isConnecting: false,
+      chatList: [],
+      chatListLoading: false,
+      unreadCount: 0,
+      activeChatRoomId: null,
+      messages: {},
+      messagesLoading: {},
+      onlineUsers: {},
+      typingUsers: {},
+    })
+    
+    console.log('[ChatStore] Store reset complete')
+  },
+
   // Event Handlers (using API snake_case format)
   _handleReceiveMessage: (payload) => {
     console.log('[ChatStore] _handleReceiveMessage called with:', payload)
     
+    // Extract message and chat_room from wrapped payload (backend format)
+    const messageData = payload.message
+    const chatRoomData = payload.chat_room
+    
+    if (!messageData) {
+      console.error('[ChatStore] Invalid payload - no message data:', payload)
+      return
+    }
+    
+    // Get current user ID to determine is_mine locally (don't trust backend's is_mine in broadcast)
+    const currentUserId = useAuthStore.getState().user?.id
+    const isMine = currentUserId ? messageData.sender_id === currentUserId : messageData.is_mine
+    
     // Transform API payload to local message format
     const message: ChatMessage = {
-      id: payload.id,
-      chat_room_id: payload.chat_room_id,
-      sender_id: payload.sender_id,
-      sender_name: payload.sender_name,
-      content: payload.content,
-      sender_image_url: payload.sender_image_url || null,
-      message_type: messageTypeToNumber(payload.type || 'text'),
-      is_read: payload.is_read,
-      sent_at: payload.sent_at,
-      is_mine: payload.is_mine,
+      id: messageData.id,
+      chat_room_id: messageData.chat_room_id,
+      sender_id: messageData.sender_id,
+      sender_name: messageData.sender_name,
+      content: messageData.content,
+      sender_image_url: messageData.sender_image_url || null,
+      message_type: messageTypeToNumber(messageData.type || 'text'),
+      is_read: messageData.is_read,
+      sent_at: messageData.sent_at,
+      is_mine: isMine, // Use locally computed is_mine
     }
 
-    console.log('[ChatStore] Adding message to chat room:', payload.chat_room_id, message)
+    const chatRoomId = messageData.chat_room_id
+    console.log('[ChatStore] Adding message to chat room:', chatRoomId, 'isMine:', isMine, message)
 
     // Check if this is our own sent message (replace temp message instead of adding duplicate)
-    const existingMessages = get().messages[payload.chat_room_id] || []
+    const existingMessages = get().messages[chatRoomId] || []
     const tempMessageIndex = existingMessages.findIndex(
-      (msg) => msg.localId && msg.content === payload.content && msg.is_mine && payload.is_mine
+      (msg) => msg.localId && msg.content === messageData.content && msg.is_mine && isMine
     )
 
     if (tempMessageIndex !== -1) {
@@ -489,19 +537,19 @@ export const useChatStore = create<ChatState>((set, get) => ({
       set((state) => ({
         messages: {
           ...state.messages,
-          [payload.chat_room_id]: state.messages[payload.chat_room_id].map((msg, idx) =>
+          [chatRoomId]: state.messages[chatRoomId].map((msg, idx) =>
             idx === tempMessageIndex ? message : msg
           ),
         },
       }))
     } else {
       // Add new message from other user
-      get().addMessage(payload.chat_room_id, message)
+      get().addMessage(chatRoomId, message)
     }
 
-    // Update chat list
+    // Update chat list with chat_room data if available
     const chatList = get().chatList
-    const existingChat = chatList.find((c) => c.id === payload.chat_room_id)
+    const existingChat = chatList.find((c) => c.id === chatRoomId)
     
     if (existingChat) {
       // Calculate new unread count
@@ -510,20 +558,46 @@ export const useChatStore = create<ChatState>((set, get) => ({
       // Only increment unread if:
       // 1. Not in the active chat room
       // 2. Message is from another user (not our own)
-      if (get().activeChatRoomId !== payload.chat_room_id && !payload.is_mine) {
+      if (get().activeChatRoomId !== chatRoomId && !isMine) {
         newUnreadCount = existingChat.unread_count + 1
       }
       
-      get().updateChatListItem(payload.chat_room_id, {
-        last_message: payload.content || (payload.type === 'image' ? '📷 Image' : '📎 File'),
-        last_message_at: payload.sent_at,
+      get().updateChatListItem(chatRoomId, {
+        last_message: messageData.content || (messageData.type === 'image' ? '📷 Image' : '📎 File'),
+        last_message_at: messageData.sent_at,
         unread_count: newUnreadCount,
+        // Update other user online status from chat_room data if available
+        ...(chatRoomData && {
+          is_other_user_online: chatRoomData.is_other_user_online,
+          other_user_last_seen: chatRoomData.other_user_last_seen,
+        }),
       })
+    } else if (chatRoomData) {
+      // New chat room - add it to the list
+      console.log('[ChatStore] Adding new chat room to list:', chatRoomId)
+      get().setChatList([chatRoomData, ...chatList])
     }
 
     // Update global unread count if not in active chat
-    if (get().activeChatRoomId !== payload.chat_room_id && !payload.is_mine) {
+    if (get().activeChatRoomId !== chatRoomId && !isMine) {
       get().incrementUnreadCount()
+    }
+    
+    // Auto-mark as read if this is an incoming message and chat room is currently open
+    if (get().activeChatRoomId === chatRoomId && !isMine && messageData.id > 0) {
+      // Mark this message as read immediately since user is viewing the chat
+      signalRService.markMessagesAsRead(chatRoomId, [messageData.id]).catch((err) => {
+        console.error('[ChatStore] Failed to auto-mark message as read:', err)
+      })
+      // Update local message state to show as read
+      set((state) => ({
+        messages: {
+          ...state.messages,
+          [chatRoomId]: (state.messages[chatRoomId] || []).map((msg) =>
+            msg.id === messageData.id ? { ...msg, is_read: true } : msg
+          ),
+        },
+      }))
     }
   },
 

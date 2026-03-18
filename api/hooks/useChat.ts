@@ -1,16 +1,16 @@
 import { useAuthStore } from '@/modules/Auth/auth-store';
-import { useMutation, UseMutationOptions, useQuery, UseQueryOptions } from '@tanstack/react-query';
+import { useInfiniteQuery, useMutation, UseMutationOptions, useQuery, UseQueryOptions } from '@tanstack/react-query';
 import { AxiosResponse } from 'axios';
 import type {
-  ApiResponse,
-  ChatListParams,
-  ChatListResponse,
-  ChatMessagesParams,
-  ChatMessagesResponse,
-  ChatRoomDto,
-  CreateChatRoomRequest,
-  MarkAsReadRequest,
-  UnreadCountResponse,
+    ApiResponse,
+    ChatListParams,
+    ChatListResponse,
+    ChatMessagesParams,
+    ChatMessagesResponse,
+    ChatRoomDto,
+    CreateChatRoomRequest,
+    MarkAsReadRequest,
+    UnreadCountResponse,
 } from '../../types';
 import { chatService } from '../services';
 
@@ -66,6 +66,37 @@ export const useChatMessagesQuery = ({
     queryFn: () => chatService.getChatMessages(chatRoomId, params),
     enabled: isAuthorized && !!chatRoomId,
     ...querySettings,
+  });
+};
+
+/**
+ * Hook to query chat messages with infinite pagination
+ * Messages are returned oldest-first from API, we reverse for display
+ */
+export const useChatMessagesInfiniteQuery = ({ 
+  chatRoomId, 
+  pageSize = 50,
+}: { 
+  chatRoomId: number;
+  pageSize?: number;
+}) => {
+  const isAuthorized = useAuthStore((s) => s.isAuthenticated);
+  
+  return useInfiniteQuery({
+    queryKey: ['CHAT_MESSAGES_INFINITE', chatRoomId],
+    queryFn: async ({ pageParam = 1 }) => {
+      const response = await chatService.getChatMessages(chatRoomId, { page: pageParam, pageSize });
+      return response.data;
+    },
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => {
+      const data = lastPage?.data;
+      if (data && data.has_more && data.current_page < data.total_pages) {
+        return data.current_page + 1;
+      }
+      return undefined;
+    },
+    enabled: isAuthorized && !!chatRoomId,
   });
 };
 

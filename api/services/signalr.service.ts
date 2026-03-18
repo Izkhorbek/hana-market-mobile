@@ -1,5 +1,6 @@
 import { HubConnection, HubConnectionBuilder, HubConnectionState, LogLevel } from '@microsoft/signalr';
 import { MessageTypeString } from '../../constants/appLimits';
+import { ChatRoomDto } from '../../types';
 import { IMAGE_BASE_URL } from '../api';
 import { getAuthToken } from '../auth-bridge';
 
@@ -20,7 +21,8 @@ export interface UserStatusPayload {
   last_seen_at: string | null
 }
 
-export interface ReceiveMessagePayload {
+// Message payload inside ReceiveMessage event
+export interface SignalRMessagePayload {
   id: number
   chat_room_id: number
   sender_id: number
@@ -32,6 +34,12 @@ export interface ReceiveMessagePayload {
   is_read: boolean
   is_edited: boolean
   is_mine: boolean
+}
+
+// Actual ReceiveMessage event payload from backend (wrapped format)
+export interface ReceiveMessagePayload {
+  message: SignalRMessagePayload
+  chat_room: ChatRoomDto
 }
 
 export interface MessagesReadPayload {

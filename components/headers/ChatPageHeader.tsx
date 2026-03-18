@@ -1,7 +1,9 @@
 import { HEADER_HEIGHT } from '@/constants/appLimits';
 import { useThemeColors } from '@/hooks/use-theme-colors';
 import { useTranslations } from '@/hooks/use-translation';
+import { useResponsive } from '@/hooks/useResponsive';
 import { Bell, Bookmark, SlidersHorizontal } from 'lucide-react-native';
+import { useMemo } from 'react';
 import { StyleSheet, TouchableOpacity } from 'react-native';
 import { ThemedText } from '../themed-text';
 import { ThemedView } from '../themed-view';
@@ -21,6 +23,31 @@ const ChatPageHeader = ({
 }: ChatPageHeaderProps) => {
   const { t } = useTranslations();
   const colors = useThemeColors();
+  const { ms, fs } = useResponsive();
+
+  const responsiveStyles = useMemo(() => ({
+    container: {
+      paddingHorizontal: ms(20),
+      paddingBottom: ms(8),
+    },
+    title: {
+      fontSize: fs(24),
+    },
+    iconsContainer: {
+      gap: ms(16),
+    },
+    iconSize: ms(24),
+    iconButton: {
+      padding: ms(4),
+    },
+    notificationDot: {
+      top: ms(2),
+      right: ms(2),
+      width: ms(10),
+      height: ms(10),
+      borderRadius: ms(5),
+    },
+  }), [ms, fs]);
 
   return (
     <ThemedView
@@ -30,24 +57,25 @@ const ChatPageHeader = ({
           backgroundColor: colors.background,
           borderBottomColor: colors.borderColor,
         },
+        responsiveStyles.container,
       ]}
     >
-      <ThemedText style={[styles.title, { color: colors.blackIcon }]}>
+      <ThemedText style={[styles.title, { color: colors.blackIcon }, responsiveStyles.title]}>
         {t('chat.title')}
       </ThemedText>
 
-      <ThemedView style={styles.iconsContainer}>
-        <TouchableOpacity onPress={onFilterPress} style={styles.iconButton}>
-          <SlidersHorizontal size={24} color={colors.blackIcon} strokeWidth={2} />
+      <ThemedView style={[styles.iconsContainer, responsiveStyles.iconsContainer]}>
+        <TouchableOpacity onPress={onFilterPress} style={[styles.iconButton, responsiveStyles.iconButton]}>
+          <SlidersHorizontal size={responsiveStyles.iconSize} color={colors.blackIcon} strokeWidth={2} />
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={onBookmarkPress} style={styles.iconButton}>
-          <Bookmark size={24} color={colors.blackIcon} strokeWidth={2} />
+        <TouchableOpacity onPress={onBookmarkPress} style={[styles.iconButton, responsiveStyles.iconButton]}>
+          <Bookmark size={responsiveStyles.iconSize} color={colors.blackIcon} strokeWidth={2} />
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={onNotificationPress} style={styles.iconButton}>
-          <Bell size={24} color={colors.blackIcon} strokeWidth={2} />
-          {hasNotifications && <ThemedView style={styles.notificationDot} />}
+        <TouchableOpacity onPress={onNotificationPress} style={[styles.iconButton, responsiveStyles.iconButton]}>
+          <Bell size={responsiveStyles.iconSize} color={colors.blackIcon} strokeWidth={2} />
+          {hasNotifications && <ThemedView style={[styles.notificationDot, responsiveStyles.notificationDot]} />}
         </TouchableOpacity>
       </ThemedView>
     </ThemedView>

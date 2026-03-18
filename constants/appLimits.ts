@@ -1,9 +1,9 @@
 import { Platform, StatusBar } from "react-native";
       
 // Platform-aware layout constants
-export const HEADER_HEIGHT = Platform.OS === 'ios' ? 90 : 80;
+export const HEADER_HEIGHT = Platform.OS === 'ios' ? 90 : 60;
 export const HEADER_PADDING_TOP = Platform.OS === 'ios' ? 56 : 30;
-export const TAB_FOOTER_HEIGHT = Platform.OS === 'ios' ? 100 : 120;
+export const TAB_FOOTER_HEIGHT = Platform.OS === 'ios' ? 100 : 80;
 
 // STATUS_BAR_HEIGHT: 44 on iOS (behind notch) | actual bar height on Android
 const STATUS_BAR_HEIGHT = Platform.OS === 'ios' ? 44 : (StatusBar.currentHeight ?? 0);

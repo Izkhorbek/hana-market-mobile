@@ -90,12 +90,10 @@ const data = await response.json();
         "product": {
           "id": 101,
           "title": "iPhone 15 Pro",
-          "currency_type": 1000,
-          "price_uzs": 15000000,
-          "price_usd": null,
+          "price": "15000000so`m",
           "seller_id": 789,
           "image_url": "http://example.com/product.jpg",
-          "status": "available",
+          "status": "active",
           "initial_message": "Salom, bu mahsulot haqida ma'lumot berardingizmi?"
         },
         "created_at": "2024-01-10T14:20:00Z",
@@ -558,17 +556,31 @@ connection.on('Error', (error) => {
 #### ReceiveMessage
 ```javascript
 {
-  id: number,
-  chat_room_id: number,
-  sender_id: number,
-  content: string,
-  type: 'text' | 'image' | 'file',
-  sent_at: string,  // ISO 8601 format
-  sender_name: string,
-  sender_image_url: string,
-  is_read: boolean,
-  is_edited: boolean,
-  is_mine: boolean
+  message: {
+    id: number,
+    chat_room_id: number,
+    sender_id: number,
+    content: string,
+    type: 'text' | 'image' | 'file',
+    sent_at: string,  // ISO 8601 format
+    sender_name: string,
+    sender_image_url: string,
+    is_read: boolean,
+    is_edited: boolean,
+    is_mine: boolean
+  },
+  chat_room: {
+    id: number,
+    buyer: ChatUserInfoDto,
+    seller: ChatUserInfoDto,
+    product: ChatProductInfoDto,
+    created_at: string,
+    last_message_at: string,
+    last_message: string,
+    unread_count: number,
+    is_other_user_online: boolean,
+    other_user_last_seen: string
+  }
 }
 ```
 

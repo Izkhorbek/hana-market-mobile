@@ -1,7 +1,9 @@
 import { ThemedText } from '@/components/themed-text'
 import { ThemedView } from '@/components/themed-view'
+import CustomAlert from '@/components/ui/CustomAlert'
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
+import { userApi } from '@/modules/Auth/api'
 import { useAuthStore } from '@/modules/Auth/auth-store'
 import Ionicons from '@expo/vector-icons/Ionicons'
 import { useRouter } from 'expo-router'
@@ -10,12 +12,13 @@ import {
   ActivityIndicator,
   Alert,
   KeyboardAvoidingView,
+  Modal,
   Platform,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  View,
+  View
 } from 'react-native'
 
 const AuthPage = () => {
@@ -23,11 +26,23 @@ const AuthPage = () => {
   const colors = useThemeColors()
   const { t } = useTranslations()
 
-  const { register, login } = useAuthStore()
+  const { register, login, user } = useAuthStore()
 
   const [phoneNumber, setPhoneNumber] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const phoneInputRef = useRef<TextInput>(null)
+
+  // Location alert state
+  const [showLocationAlert, setShowLocationAlert] = useState(false)
+
+  // Username modal state
+  const [showUsernameModal, setShowUsernameModal] = useState(false)
+  const [username, setUsername] = useState('')
+  const [usernameError, setUsernameError] = useState('')
+  const [isUpdatingUsername, setIsUpdatingUsername] = useState(false)
+
+  // Store reference to logged-in user for checking after alerts
+  const [pendingNavigation, setPendingNavigation] = useState(false)
 
   // Focus phone input on mount
   useEffect(() => {
@@ -57,6 +72,23 @@ const AuthPage = () => {
     try {
       const fullPhone = `+998${phoneNumber}`
       await login(fullPhone)
+
+      // Get the updated user from the store
+      const loggedInUser = useAuthStore.getState().user
+
+      // Check if user needs to set up username (first-time login)
+      if (loggedInUser && !loggedInUser.username) {
+        setShowUsernameModal(true)
+        return
+      }
+
+      // Check if user needs to set up location
+      if (loggedInUser && (loggedInUser.latitude == null || loggedInUser.longitude == null)) {
+        setShowLocationAlert(true)
+        return
+      }
+
+      // All set, navigate to home
       router.replace('/(tabs)/home')
     } catch (error: any) {
       const message = error?.response?.data?.errors?.[0] ||
@@ -69,6 +101,22 @@ const AuthPage = () => {
       ) {
         try {
           await login(`+998${phoneNumber}`)
+
+          // Get the updated user from the store
+          const loggedInUser = useAuthStore.getState().user
+
+          // Check if user needs to set up username (first-time login)
+          if (loggedInUser && !loggedInUser.username) {
+            setShowUsernameModal(true)
+            return
+          }
+
+          // Check if user needs to set up location
+          if (loggedInUser && (loggedInUser.latitude == null || loggedInUser.longitude == null)) {
+            setShowLocationAlert(true)
+            return
+          }
+
           router.replace('/(tabs)/home')
           return
         } catch (loginError) {
@@ -83,6 +131,80 @@ const AuthPage = () => {
   }, [phoneNumber, isLoading, login, router, t])
 
   const isDoneEnabled = phoneNumber.length === 9 && !isLoading
+
+  // Username validation
+  const validateUsername = (value: string): boolean => {
+    const usernameRegex = /^[a-zA-Z0-9_]{3,20}$/
+    return usernameRegex.test(value)
+  }
+
+  const handleUsernameChange = (text: string) => {
+    setUsername(text)
+    if (text && !validateUsername(text)) {
+      setUsernameError(t('alert.username_invalid'))
+    } else {
+      setUsernameError('')
+    }
+  }
+
+  const handleUsernameSubmit = async () => {
+    if (!validateUsername(username)) {
+      setUsernameError(t('alert.username_invalid'))
+      return
+    }
+
+    setIsUpdatingUsername(true)
+    try {
+      await userApi.updateUser({ username })
+
+      // Update local user state
+      const currentUser = useAuthStore.getState().user
+      if (currentUser) {
+        useAuthStore.setState({
+          user: { ...currentUser, username }
+        })
+      }
+
+      setShowUsernameModal(false)
+
+      // Check if location is needed after username is set
+      const updatedUser = useAuthStore.getState().user
+      if (updatedUser && (updatedUser.latitude == null || updatedUser.longitude == null)) {
+        setShowLocationAlert(true)
+      } else {
+        router.replace('/(tabs)/home')
+      }
+    } catch (error: any) {
+      const message = error?.response?.data?.errors?.[0] ||
+        error?.message ||
+        t('auth.verification.error_generic')
+      setUsernameError(message)
+    } finally {
+      setIsUpdatingUsername(false)
+    }
+  }
+
+  const handleSkipUsername = () => {
+    setShowUsernameModal(false)
+
+    // Check if location is needed
+    const currentUser = useAuthStore.getState().user
+    if (currentUser && (currentUser.latitude == null || currentUser.longitude == null)) {
+      setShowLocationAlert(true)
+    } else {
+      router.replace('/(tabs)/home')
+    }
+  }
+
+  const handleSetupLocation = () => {
+    setShowLocationAlert(false)
+    router.replace('/(auth)/location-permission')
+  }
+
+  const handleSkipLocation = () => {
+    setShowLocationAlert(false)
+    router.replace('/(tabs)/home')
+  }
 
   return (
     <KeyboardAvoidingView
@@ -162,6 +284,85 @@ const AuthPage = () => {
           </TouchableOpacity>
         </View>
       </ThemedView>
+
+      {/* Location Required Alert */}
+      <CustomAlert
+        visible={showLocationAlert}
+        type="warning"
+        title={t('alert.location_required_title')}
+        message={t('alert.location_required_message')}
+        primaryButtonText={t('alert.setup_location')}
+        secondaryButtonText={t('alert.skip')}
+        onPrimaryPress={handleSetupLocation}
+        onSecondaryPress={handleSkipLocation}
+        onDismiss={handleSkipLocation}
+      />
+
+      {/* Username Modal */}
+      <Modal
+        visible={showUsernameModal}
+        transparent
+        animationType="fade"
+        onRequestClose={handleSkipUsername}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { backgroundColor: colors.card }]}>
+            <ThemedText type="subtitle" style={styles.modalTitle}>
+              {t('alert.username_required_title')}
+            </ThemedText>
+            <ThemedText style={styles.modalMessage}>
+              {t('alert.username_required_message')}
+            </ThemedText>
+
+            <View style={[styles.usernameInputContainer, { borderColor: usernameError ? '#EF4444' : colors.borderColor }]}>
+              <TextInput
+                style={[styles.usernameInput, { color: colors.text }]}
+                value={username}
+                onChangeText={handleUsernameChange}
+                placeholder={t('alert.username_placeholder')}
+                placeholderTextColor={colors.subText}
+                autoCapitalize="none"
+                autoCorrect={false}
+                maxLength={20}
+              />
+            </View>
+
+            {usernameError ? (
+              <Text style={styles.errorText}>{usernameError}</Text>
+            ) : null}
+
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.secondaryButton, { borderColor: colors.borderColor }]}
+                onPress={handleSkipUsername}
+                disabled={isUpdatingUsername}
+              >
+                <Text style={[styles.secondaryButtonText, { color: colors.text }]}>
+                  {t('alert.skip')}
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[
+                  styles.modalButton,
+                  styles.primaryButton,
+                  { backgroundColor: validateUsername(username) ? colors.primaryColor : colors.borderColor }
+                ]}
+                onPress={handleUsernameSubmit}
+                disabled={!validateUsername(username) || isUpdatingUsername}
+              >
+                {isUpdatingUsername ? (
+                  <ActivityIndicator color="#fff" size="small" />
+                ) : (
+                  <Text style={[styles.primaryButtonText, { color: validateUsername(username) ? '#fff' : colors.subText }]}>
+                    {t('alert.continue')}
+                  </Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </KeyboardAvoidingView>
   )
 }
@@ -245,6 +446,74 @@ const styles = StyleSheet.create({
   doneButtonText: {
     fontSize: 16,
     fontWeight: '600',
+  },
+  // Username Modal Styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  modalContent: {
+    width: '100%',
+    maxWidth: 400,
+    borderRadius: 16,
+    padding: 24,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  modalMessage: {
+    fontSize: 14,
+    textAlign: 'center',
+    marginBottom: 20,
+    opacity: 0.7,
+  },
+  usernameInputContainer: {
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    marginBottom: 8,
+  },
+  usernameInput: {
+    fontSize: 16,
+    padding: 0,
+  },
+  errorText: {
+    color: '#EF4444',
+    fontSize: 12,
+    marginBottom: 16,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 8,
+  },
+  modalButton: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  primaryButton: {
+    // backgroundColor set dynamically
+  },
+  secondaryButton: {
+    borderWidth: 1,
+  },
+  primaryButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  secondaryButtonText: {
+    fontSize: 16,
+    fontWeight: '500',
   },
 })
 

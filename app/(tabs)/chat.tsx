@@ -2,6 +2,7 @@ import { useChatList, useMyChatQuery, useSignalRConnection, useUnreadCountQuery 
 import ChatPageHeader from '@/components/headers/ChatPageHeader';
 import { useTranslations } from '@/hooks/use-translation';
 import { useColor } from '@/hooks/useColor';
+import { useResponsive } from '@/hooks/useResponsive';
 import { useAuthStore } from '@/modules/Auth/auth-store';
 import {
   ChatItemData,
@@ -47,6 +48,7 @@ const ChatPage = () => {
   const backgroundColor = useColor('background');
   const mutedTextColor = useColor('textMuted');
   const primaryColor = useColor('primary');
+  const { ms, fs } = useResponsive();
 
   const [activeTab, setActiveTab] = useState<FilterTabType>('all');
   const [showBanner, setShowBanner] = useState(true);
@@ -127,11 +129,11 @@ const ChatPage = () => {
   }, [refetch]);
 
   const renderEmptyState = () => (
-    <View style={styles.emptyContainer}>
-      <Text style={[styles.emptyText, { color: mutedTextColor }]}>
+    <View style={[styles.emptyContainer, { paddingHorizontal: ms(40) }]}>
+      <Text style={[styles.emptyText, { color: mutedTextColor, fontSize: fs(18), marginBottom: ms(8) }]}>
         {t('chat.empty_state')}
       </Text>
-      <Text style={[styles.emptySubtext, { color: mutedTextColor }]}>
+      <Text style={[styles.emptySubtext, { color: mutedTextColor, fontSize: fs(14) }]}>
         {t('chat.empty_state_description')}
       </Text>
     </View>

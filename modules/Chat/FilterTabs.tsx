@@ -1,5 +1,6 @@
 import { useColor } from '@/hooks/useColor';
-import React from 'react';
+import { useResponsive } from '@/hooks/useResponsive';
+import React, { useMemo } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity } from 'react-native';
 
 export type FilterTabType = 'all' | 'selling' | 'buying' | 'unread';
@@ -15,12 +16,30 @@ const FilterTabs = ({ activeTab, onTabChange, tabs }: FilterTabsProps) => {
   const textColor = useColor('text');
   const activeColor = useColor('border');
   const mutedColor = useColor('muted');
+  const { ms, fs } = useResponsive();
+
+  const responsiveStyles = useMemo(() => ({
+    container: {
+      paddingHorizontal: ms(16),
+      paddingVertical: ms(12),
+      gap: ms(8),
+    },
+    tab: {
+      paddingVertical: ms(8),
+      paddingHorizontal: ms(20),
+      borderRadius: ms(20),
+      marginRight: ms(8),
+    },
+    tabText: {
+      fontSize: fs(14),
+    },
+  }), [ms, fs]);
 
   return (
     <ScrollView
       horizontal
       showsHorizontalScrollIndicator={false}
-      contentContainerStyle={styles.container}
+      contentContainerStyle={[styles.container, responsiveStyles.container]}
     >
       {tabs.map((tab) => {
         const isActive = activeTab === tab.key;
@@ -29,6 +48,7 @@ const FilterTabs = ({ activeTab, onTabChange, tabs }: FilterTabsProps) => {
             key={tab.key}
             style={[
               styles.tab,
+              responsiveStyles.tab,
               {
                 backgroundColor: isActive ? primaryColor : mutedColor,
               },
@@ -39,6 +59,7 @@ const FilterTabs = ({ activeTab, onTabChange, tabs }: FilterTabsProps) => {
             <Text
               style={[
                 styles.tabText,
+                responsiveStyles.tabText,
                 {
                   color: isActive ? activeColor : textColor,
                   fontWeight: isActive ? '600' : '500',

@@ -2,6 +2,7 @@ import RemoteImage from '@/components/shared/RemoteImage'
 import { AppLimits } from '@/constants/appLimits'
 import { Colors } from '@/constants/theme'
 import { useThemeColors } from '@/hooks/use-theme-colors'
+import { useTranslations } from '@/hooks/use-translation'
 import Ionicons from '@expo/vector-icons/Ionicons'
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
@@ -33,6 +34,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
 	created_ago,
 	moljal,
 	price,
+	is_free,
 	status,
 	likes_count,
 	view_count,
@@ -41,6 +43,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
 	onHeartPress,
 }) => {
 	const colors = useThemeColors()
+	const { t } = useTranslations();
 
 	console.log('imagesrc', main_image_url);
 	return (
@@ -98,6 +101,16 @@ const ProductCard: React.FC<ProductCardProps> = ({
 							}}>
 								{status}</Text>
 						}
+						{is_free && <Text style={{
+							fontSize: 16,
+							color: 'white',
+							backgroundColor: Colors.light.primaryColor,
+							paddingHorizontal: 8,
+							paddingVertical: 1,
+							borderRadius: 4
+						}}>
+							{t('home.free')}
+						</Text>}
 						<Text style={[styles.price, { color: colors.text }]}>{price}</Text>
 					</View>
 					<TouchableOpacity onPress={onHeartPress} style={styles.likesContainer}>

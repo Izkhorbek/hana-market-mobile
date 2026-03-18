@@ -1,11 +1,11 @@
-import { useChatMessagesQuery, useChatRoom, useSendMessage, useSignalRConnection, useTypingIndicator, useUserOnlineStatus } from '@/api/hooks';
+import { useChatMessagesInfiniteQuery, useChatRoom, useSendMessage, useSignalRConnection, useTypingIndicator, useUserOnlineStatus } from '@/api/hooks';
 import RemoteImage from '@/components/shared/RemoteImage';
 import { HEADER_PADDING_TOP } from '@/constants/appLimits';
 import { useThemeColors } from '@/hooks/use-theme-colors';
 import { useTranslations } from '@/hooks/use-translation';
 import { useAuthStore } from '@/modules/Auth/auth-store';
 import { ChatMessage, useChatStore } from '@/modules/Chat/chat-store';
-import { ChatData, ChatMessageDto, DisplayMessage } from '@/types';
+import { ApiResponse, ChatData, ChatMessageDto, ChatMessagesResponse, DisplayMessage } from '@/types';
 import { format, isToday, isYesterday, parseISO } from 'date-fns';
 import { router, useLocalSearchParams } from 'expo-router';
 import { ArrowLeft, Check, CheckCheck, MoreVertical } from 'lucide-react-native';
@@ -23,8 +23,9 @@ import {
 } from 'react-native';
 
 // Transform ChatMessage (from store) to DisplayMessage
-const transformStoreMessage = (message: ChatMessage, currentUserId: number): DisplayMessage => ({
+const transformStoreMessage = (message: ChatMessage, currentUserId: number, index: number): DisplayMessage => ({
 	id: String(message.id),
+	localId: message.localId || `store_${index}_${message.id}`,
 	text: message.content || '',
 	timestamp: format(parseISO(message.sent_at), 'h:mm a'),
 	isMe: message.is_mine ? true : false,
@@ -34,8 +35,9 @@ const transformStoreMessage = (message: ChatMessage, currentUserId: number): Dis
 })
 
 // Transform API ChatMessageDto to DisplayMessage
-const transformApiMessage = (message: ChatMessageDto, currentUserId: number): DisplayMessage => ({
+const transformApiMessage = (message: ChatMessageDto, currentUserId: number, index: number): DisplayMessage => ({
 	id: String(message.id),
+	localId: `api_${index}_${message.id}`,
 	text: message.content || '',
 	timestamp: format(parseISO(message.sent_at), 'h:mm a'),
 	isMe: message.is_mine ? true : false,
@@ -179,7 +181,7 @@ const MessageBubble: React.FC<{ message: DisplayMessage }> = ({ message }) => {
 	const renderContent = () => {
 		// Text message (default)
 		return (
-			<Text style={[styles.messageText, { color: message.isMe ? '#fff' : colors.text }]}>
+			<Text style={[styles.messageText, { color: message.isMe ? '#fff' : "#000" }]}>
 				{message.text}
 			</Text>
 		)
@@ -328,9 +330,6 @@ const ChatRoomPage: React.FC = () => {
 	const currentChat = useChatStore((s) =>
 		chatRoomId ? s.chatList.find((c) => c.id === chatRoomId) ?? null : null
 	)
-
-	console.log('Current Chat:', currentChat)
-
 	// Determine the other user's ID for online status tracking
 	const otherUserId = useMemo(() => {
 		if (!currentChat || !currentUserId) return null
@@ -350,22 +349,30 @@ const ChatRoomPage: React.FC = () => {
 	// Online status of other user
 	const { isOnline } = useUserOnlineStatus(otherUserId)
 
-	// Fetch messages from API (initial load)
-	const { data: messagesResponse, isLoading: isLoadingApi } = useChatMessagesQuery({
+	// Fetch messages from API with infinite pagination (load older messages)
+	const {
+		data: messagesData,
+		isLoading: isLoadingApi,
+		isFetchingNextPage,
+		hasNextPage,
+		fetchNextPage,
+	} = useChatMessagesInfiniteQuery({
 		chatRoomId: chatRoomId || 0,
-		querySettings: {
-			enabled: !!chatRoomId,
-			staleTime: 1000 * 60, // 1 minute
-		},
 	})
 
 	// Set messages from API to store on initial load
 	const setMessages = useChatStore((s) => s.setMessages)
 	const messagesInitializedRef = useRef<number | null>(null)
 
-	// API response is wrapped: { data: { chat_room, messages }, message, code }
-	const apiMessages = messagesResponse?.data?.data?.messages
-	const apiChatRoom = messagesResponse?.data?.data?.chat_room
+	// API response from infinite query - flatten all pages
+	const apiMessages: ChatMessageDto[] = useMemo(() => {
+		if (!messagesData?.pages) return []
+		// Each page: { data: { messages, chat_room }, message, code }
+		// Flatten all messages from all pages (they come oldest first)
+		return messagesData.pages.flatMap((page: ApiResponse<ChatMessagesResponse>) => page?.data?.messages || [])
+	}, [messagesData?.pages])
+
+	const apiChatRoom = messagesData?.pages?.[0]?.data?.chat_room
 
 	console.log('API Messages:', apiMessages)
 	console.log('API Chat Room:', apiChatRoom)
@@ -381,8 +388,8 @@ const ChatRoomPage: React.FC = () => {
 					chatRoomId,
 					apiMessages.map((m) => ({
 						...m,
-						pending: false,
-						failed: false,
+						isPending: false,
+						isFailed: false,
 					}))
 				)
 			}
@@ -393,10 +400,10 @@ const ChatRoomPage: React.FC = () => {
 		const sourceMessages = storeMessages.length > 0 ? storeMessages : apiMessages || []
 		if (!currentUserId) return []
 
-		return sourceMessages.map((msg) =>
-			'pending' in msg
-				? transformStoreMessage(msg as ChatMessage, currentUserId)
-				: transformApiMessage(msg as ChatMessageDto, currentUserId)
+		return sourceMessages.map((msg, index) =>
+			'localId' in msg || 'isPending' in msg
+				? transformStoreMessage(msg as ChatMessage, currentUserId, index)
+				: transformApiMessage(msg as ChatMessageDto, currentUserId, index)
 		)
 	}, [storeMessages, apiMessages, currentUserId])
 
@@ -508,11 +515,18 @@ const ChatRoomPage: React.FC = () => {
 	// Quick Reply Suggestions (translated)
 	const quickReplies = [t('chat_room.quick_reply_hello'), t('chat_room.quick_reply_available')]
 
+	// Handle loading more (older messages)
+	const handleLoadMore = () => {
+		if (hasNextPage && !isFetchingNextPage) {
+			fetchNextPage()
+		}
+	}
+
 	const renderMessageGroup = ({ item }: { item: MessageGroup }) => (
 		<View>
 			<DateSeparator date={item.date} />
 			{item.messages.map((message) => (
-				<MessageBubble key={message.id} message={message} />
+				<MessageBubble key={message.localId || message.id} message={message} />
 			))}
 		</View>
 	)
@@ -563,10 +577,34 @@ const ChatRoomPage: React.FC = () => {
 				keyExtractor={(item) => item.date}
 				contentContainerStyle={styles.messagesList}
 				showsVerticalScrollIndicator={false}
+				ListHeaderComponent={
+					<>
+						{isFetchingNextPage && (
+							<View style={styles.loadingMore}>
+								<ActivityIndicator size="small" color={colors.primaryColor} />
+							</View>
+						)}
+						{hasNextPage && !isFetchingNextPage && (
+							<TouchableOpacity onPress={handleLoadMore} style={styles.loadMoreButton}>
+								<Text style={[styles.loadMoreText, { color: colors.primaryColor }]}>
+									{t('chat_room.load_more')}
+								</Text>
+							</TouchableOpacity>
+						)}
+					</>
+				}
 				ListFooterComponent={<ReservedNotice status={chatData.product.status} />}
 				onContentSizeChange={() => {
 					flatListRef.current?.scrollToEnd({ animated: false })
 				}}
+				// Auto load more when scrolled to top
+				onScroll={(event) => {
+					const { contentOffset } = event.nativeEvent
+					if (contentOffset.y < 50 && hasNextPage && !isFetchingNextPage) {
+						fetchNextPage()
+					}
+				}}
+				scrollEventThrottle={100}
 			/>
 
 			<QuickReplies replies={quickReplies} onSelect={handleQuickReply} />
@@ -845,5 +883,19 @@ const styles = StyleSheet.create({
 	sendIcon: {
 		color: '#fff',
 		fontSize: 16,
+	},
+
+	// Load More
+	loadingMore: {
+		paddingVertical: 12,
+		alignItems: 'center',
+	},
+	loadMoreButton: {
+		paddingVertical: 12,
+		alignItems: 'center',
+	},
+	loadMoreText: {
+		fontSize: 14,
+		fontWeight: '500',
 	},
 })
