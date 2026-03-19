@@ -349,8 +349,7 @@
 		"title": "Qidiruv",
 		"placeholder": "Qidiruv",
 		"recent_searches": "Oxirgi qidiruvlar",
-		"search_results": "Qidiruv natijalari",
-		"categories": {
+		"search_results": "Qidiruv natijalari",		"no_results": "Natijalar topilmadi",		"categories": {
 			"cars": "Avto",
 			"real_estate": "Ko'chmas mulk",
 			"jobs": "Ishlar",
@@ -358,8 +357,17 @@
 			"furniture": "Mebel"
 		}
 	},
+	"network": {
+		"no_connection": "Ulanish yo'q",
+		"no_internet": "Internet mavjud emas",
+		"offline_mode": "Siz oflayn rejimdasiz",
+		"retry": "Qayta urinish",
+		"back_online": "Siz qaytadan onlaysiz!",
+		"offline_features": "Ba'zi funksiyalar mavjud bo'lmasligi mumkin"
+	},
 	"categories_page": {
 		"title": "Kategoriyalar",
+		"empty": "Kategoriyalar mavjud emas",
 		"items": {
 			"electronics": "Elektronika",
 			"fashion": "Moda",

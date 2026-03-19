@@ -3813,6 +3813,11 @@ expo-modules-core@3.0.29:
   dependencies:
     invariant "^2.2.4"
 
+expo-network@^55.0.9:
+  version "55.0.9"
+  resolved "https://registry.npmjs.org/expo-network/-/expo-network-55.0.9.tgz"
+  integrity sha512-vuL7s+Zbsbcqh2XxhaZ45mfuYZVn7ikukL27be7hN3zkLxoABNPgbVt+/gEKOxyv2Gzr/Q5JZvfVxCuwDDh0Fg==
+
 expo-router@*, expo-router@~6.0.22:
   version "6.0.22"
   resolved "https://registry.npmjs.org/expo-router/-/expo-router-6.0.22.tgz"

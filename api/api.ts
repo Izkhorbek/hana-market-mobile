@@ -44,7 +44,16 @@ axiosInstance.interceptors.response.use(
     return response;
   },
   (error) => {
-    console.error('API Request Error:', error);
+    // Log detailed error info for debugging
+    const url = error.config?.url || 'unknown'
+    const method = error.config?.method?.toUpperCase() || 'unknown'
+    const status = error.response?.status || 'no response'
+    
+    console.error(`[API Error] ${method} ${url} → ${status}`, {
+      message: error.message,
+      data: error.response?.data,
+    })
+    
     // Handle common errors
     if (error.response) {
       // Server responded with error

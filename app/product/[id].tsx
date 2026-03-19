@@ -338,12 +338,6 @@ const ProductDetailPage: React.FC = () => {
 
 
 	//---Seller products section ------------------------------
-	const { data: sellerProductsRes } = useProductQuery({
-		id: productSellerId,
-		querySettings: { enabled: !!productSellerId },
-	})
-
-
 	return (
 		<View style={[styles.container, { backgroundColor: colors.profileBackground }]}>
 			{/* Sticky Header — always present, driven by scrollY */}

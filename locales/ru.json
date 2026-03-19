@@ -348,8 +348,7 @@
 		"title": "Поиск",
 		"placeholder": "Поиск",
 		"recent_searches": "Недавние запросы",
-		"search_results": "Результаты поиска",
-		"categories": {
+		"search_results": "Результаты поиска",		"no_results": "Результаты не найдены",		"categories": {
 			"cars": "Авто",
 			"real_estate": "Недвижимость",
 			"jobs": "Работа",
@@ -357,8 +356,17 @@
 			"furniture": "Мебель"
 		}
 	},
+	"network": {
+		"no_connection": "Нет соединения",
+		"no_internet": "Нет доступа к интернету",
+		"offline_mode": "Вы в оффлайн режиме",
+		"retry": "Повторить",
+		"back_online": "Вы снова онлайн!",
+		"offline_features": "Некоторые функции могут быть недоступны"
+	},
 	"categories_page": {
 		"title": "Категории",
+		"empty": "Категории недоступны",
 		"items": {
 			"electronics": "Электроника",
 			"fashion": "Мода",

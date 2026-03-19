@@ -1,4 +1,5 @@
 import { queryClient } from '@/api/queryClient'
+import { NetworkProvider } from '@/components/providers/NetworkProvider'
 import { useColorScheme } from '@/hooks/use-color-scheme'
 import { useModeToggle } from '@/hooks/useModeToggle'
 import { useAuthStore } from '@/modules/Auth/auth-store'
@@ -29,17 +30,19 @@ export default function RootLayout() {
 	return (
 		<QueryClientProvider client={queryClient}>
 			<ThemeProvider>
-				<Stack screenOptions={{ headerShown: false }}>
-					<Stack.Screen name='index' />
-					<Stack.Screen name='(tabs)' />
-					<Stack.Screen name='(post)' />
-					<Stack.Screen name='(settings)' />
-					<Stack.Screen name='(auth)' />
-					<Stack.Screen name='search' />
-					<Stack.Screen name='categories' />
-					<Stack.Screen name='product/[id]' />
-					<Stack.Screen name='chat/[id]' />
-				</Stack>
+				<NetworkProvider>
+					<Stack screenOptions={{ headerShown: false }}>
+						<Stack.Screen name='index' />
+						<Stack.Screen name='(tabs)' />
+						<Stack.Screen name='(post)' />
+						<Stack.Screen name='(settings)' />
+						<Stack.Screen name='(auth)' />
+						<Stack.Screen name='search' />
+						<Stack.Screen name='categories' />
+						<Stack.Screen name='product/[id]' />
+						<Stack.Screen name='chat/[id]' />
+					</Stack>
+				</NetworkProvider>
 				<StatusBar barStyle={colorScheme === 'dark' ? 'light-content' : 'dark-content'} />
 				<View
 					style={{

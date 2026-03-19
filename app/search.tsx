@@ -189,12 +189,21 @@ const SearchPage: React.FC = () => {
 							<View style={styles.loadingWrap}>
 								<ActivityIndicator size='small' color={colors.primaryColor} />
 							</View>
+						) : results.length === 0 ? (
+							<Text style={[styles.noResultsText, { color: colors.textMuted }]}>
+								{t('search_page.no_results')}
+							</Text>
 						) : (
 							results.map(item => (
-								<View key={item.id} style={styles.recentItem}>
+								<TouchableOpacity
+									key={item.id}
+									style={styles.recentItem}
+									onPress={() => router.push(`/product/${item.id}`)}
+									activeOpacity={0.7}
+								>
 									<Search size={18} color={colors.textMuted} />
 									<Text style={[styles.recentText, { color: colors.text }]}>{item.title}</Text>
-								</View>
+								</TouchableOpacity>
 							))
 						)}
 					</View>
@@ -261,4 +270,5 @@ const styles = StyleSheet.create({
 	},
 	recentText: { fontSize: 29 - 9, fontWeight: '500' },
 	loadingWrap: { paddingVertical: 10, alignItems: 'flex-start' },
+	noResultsText: { fontSize: 15, paddingVertical: 12 },
 })

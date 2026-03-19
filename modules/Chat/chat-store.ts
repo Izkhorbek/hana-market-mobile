@@ -10,6 +10,7 @@ import {
 } from '@/api/services/signalr.service';
 import { useAuthStore } from '@/modules/Auth/auth-store';
 import type { ChatMessageDto, ChatRoomDto } from '@/types';
+import { typingTimeoutManager } from './typing-timeout-manager';
 
 // Convert API message type string to numeric type for storage
 const messageTypeToNumber = (type: MessageTypeString): number => {
@@ -357,8 +358,8 @@ export const useChatStore = create<ChatState>((set, get) => ({
             ? roomTyping.map((t, i) => (i === existingIndex ? typingUser : t))
             : [...roomTyping, typingUser]
 
-        // Set timeout to clear typing indicator
-        setTimeout(() => {
+        // Use manager to set timeout with proper cleanup
+        typingTimeoutManager.setTypingTimeout(chatRoomId, userId, () => {
           get().clearTypingTimeout(chatRoomId, userId)
         }, TYPING_TIMEOUT)
 
@@ -366,6 +367,9 @@ export const useChatStore = create<ChatState>((set, get) => ({
           typingUsers: { ...state.typingUsers, [chatRoomId]: newRoomTyping },
         }
       } else {
+        // Clear the timeout when user stops typing
+        typingTimeoutManager.clearTypingTimeout(chatRoomId, userId)
+        
         // Remove typing user
         return {
           typingUsers: {
@@ -394,20 +398,18 @@ export const useChatStore = create<ChatState>((set, get) => ({
   },
 
   clearTypingTimeout: (chatRoomId, userId) => {
+    // Clear from the timeout manager
+    typingTimeoutManager.clearTypingTimeout(chatRoomId, userId)
+    
+    // Remove from state
     set((state) => {
       const roomTyping = state.typingUsers[chatRoomId] || []
-      const typingUser = roomTyping.find((t) => t.userId === userId)
-      
-      // Only clear if the typing indicator is old
-      if (typingUser && Date.now() - typingUser.timestamp >= TYPING_TIMEOUT) {
-        return {
-          typingUsers: {
-            ...state.typingUsers,
-            [chatRoomId]: roomTyping.filter((t) => t.userId !== userId),
-          },
-        }
+      return {
+        typingUsers: {
+          ...state.typingUsers,
+          [chatRoomId]: roomTyping.filter((t) => t.userId !== userId),
+        },
       }
-      return state
     })
   },
 
@@ -470,6 +472,9 @@ export const useChatStore = create<ChatState>((set, get) => ({
       eventListenersCleanup()
       eventListenersCleanup = null
     }
+    
+    // Clear all typing timeouts to prevent memory leaks
+    typingTimeoutManager.clearAll()
     
     // Disconnect SignalR
     signalRService.disconnect()

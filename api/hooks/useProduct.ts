@@ -104,7 +104,7 @@ export const useDeleteProductMutation = (
  * Hook to toggle product like
  */
 export const useToggleLikeMutation = (
-  options?: UseMutationOptions<AxiosResponse<ApiResponse<{}>>, Error, { id: number}>
+  options?: UseMutationOptions<AxiosResponse<ApiResponse<{}>>, Error, { id: number; data: ProductLikeDto }>
 ) => {
   return useMutation<AxiosResponse<ApiResponse<{}>>, Error, { id: number; data: ProductLikeDto }>({
     mutationFn: ({ id, data }) => productService.toggleLike(id, data),

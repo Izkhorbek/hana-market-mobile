@@ -350,6 +350,7 @@
 		"placeholder": "Search",
 		"recent_searches": "Recent Searches",
 		"search_results": "Search Results",
+		"no_results": "No results found",
 		"categories": {
 			"cars": "Cars",
 			"real_estate": "Real Estate",
@@ -358,8 +359,17 @@
 			"furniture": "Furniture"
 		}
 	},
+	"network": {
+		"no_connection": "No Connection",
+		"no_internet": "No Internet Access",
+		"offline_mode": "You are in offline mode",
+		"retry": "Retry",
+		"back_online": "You're back online!",
+		"offline_features": "Some features may be unavailable"
+	},
 	"categories_page": {
 		"title": "Categories",
+		"empty": "No categories available",
 		"items": {
 			"electronics": "Electronics",
 			"fashion": "Fashion",
