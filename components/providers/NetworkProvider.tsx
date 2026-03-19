@@ -105,18 +105,12 @@ export const NetworkProvider: React.FC<NetworkProviderProps> = ({
     return (
         <NetworkContext.Provider value={contextValue}>
             {children}
-            {showOfflineBanner && (
-                CustomOfflineBanner ? (
-                    !networkStatus.isConnected && (
-                        <CustomOfflineBanner onRetry={networkStatus.refresh} />
-                    )
-                ) : (
-                    <OfflineBanner
-                        slideAnim={slideAnim}
-                        onRetry={networkStatus.refresh}
-                        isChecking={networkStatus.isChecking}
-                    />
-                )
+            {showOfflineBanner && !networkStatus.isConnected && (
+                <OfflineBanner
+                    slideAnim={slideAnim}
+                    onRetry={networkStatus.refresh}
+                    isChecking={networkStatus.isChecking}
+                />
             )}
         </NetworkContext.Provider>
     )

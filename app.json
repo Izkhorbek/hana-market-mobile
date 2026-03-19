@@ -4,7 +4,7 @@
 		"slug": "hana-market",
 		"version": "1.0.0",
 		"orientation": "portrait",
-		"icon": "./assets/images/icon.png",
+		"icon": "./assets/icons/logo.svg",
 		"scheme": "hana-market",
 		"userInterfaceStyle": "automatic",
 		"newArchEnabled": true,
@@ -19,7 +19,7 @@
 			"backgroundColor": "#ffffff"
 		},
 		"androidNavigationBar": {
-			"visible": "immersive",
+			"visible": "sticky-immersive",
 			"barStyle": "dark-content",
 			"enforceContrast": true
 		},
