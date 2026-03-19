@@ -1,12 +1,12 @@
 import { authLogout, getAuthToken } from '@/api/auth-bridge';
 import axios from 'axios';
 
-// const PROD_API_URL = 'http://46.8.176.21/api';
+const PROD_API_URL = 'http://46.8.176.21/api';
 // Android emulator: 10.0.2.2, iOS simulator: localhost, physical device: machine's local IP
 // const DEV_API_URL = 'http://10.0.2.2:5000/api';
- const DEV_API_URL = 'http://192.168.1.102:5000/api';
+//  const DEV_API_URL = 'http://192.168.1.102:5000/api';
 
-const API_URL = DEV_API_URL;
+const API_URL = PROD_API_URL;
 
 // Static files (wwwroot) are served from the server root, not under /api
 export const IMAGE_BASE_URL = API_URL.replace(/\/api\/?$/, '');

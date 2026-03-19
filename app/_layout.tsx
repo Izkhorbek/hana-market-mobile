@@ -1,5 +1,6 @@
 import { queryClient } from '@/api/queryClient'
 import { NetworkProvider } from '@/components/providers/NetworkProvider'
+import '@/constants/localization'
 import { useColorScheme } from '@/hooks/use-color-scheme'
 import { useModeToggle } from '@/hooks/useModeToggle'
 import { useAuthStore } from '@/modules/Auth/auth-store'
