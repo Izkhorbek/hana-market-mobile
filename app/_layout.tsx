@@ -1,4 +1,5 @@
 import { queryClient } from '@/api/queryClient'
+import { useThemeNavigationBar } from '@/components/AnroidNavbarButtonsColorChange'
 import { NetworkProvider } from '@/components/providers/NetworkProvider'
 import '@/constants/localization'
 import { useColorScheme } from '@/hooks/use-color-scheme'
@@ -16,7 +17,7 @@ export default function RootLayout() {
 	const colorScheme = useColorScheme()
 	const { toggleMode } = useModeToggle()
 	const isHydrated = useAuthStore((s) => s.isHydrated)
-
+	useThemeNavigationBar()
 	// Wait for Zustand to rehydrate from AsyncStorage
 	if (!isHydrated) {
 		return (
@@ -27,6 +28,8 @@ export default function RootLayout() {
 			</ThemeProvider>
 		)
 	}
+
+
 
 	return (
 		<QueryClientProvider client={queryClient}>

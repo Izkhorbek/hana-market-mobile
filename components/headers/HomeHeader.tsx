@@ -62,7 +62,7 @@ const styles = StyleSheet.create({
 		flexDirection: 'row',
 		alignItems: 'flex-end',
 		justifyContent: 'space-between',
-		paddingBottom: 8,
+		paddingBottom: 10,
 		paddingHorizontal: 14,
 		borderBottomWidth: 1,
 	},

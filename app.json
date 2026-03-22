@@ -19,8 +19,8 @@
       "backgroundColor": "#ffffff"
     },
     "androidNavigationBar": {
-      "visible": "immersive",
-      "barStyle": "dark-content",
+      "visible": "transparent", // "immersive", "transparent", "hidden"
+      // "barStyle": "dark-content",
       "enforceContrast": true
     },
     "jsEngine": "hermes",
@@ -30,6 +30,7 @@
           "apiKey": "YOUR_GOOGLE_MAPS_ANDROID_API_KEY"
         }
       },
+      "usesCleartextTraffic": true,
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",

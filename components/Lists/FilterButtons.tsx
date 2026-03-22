@@ -89,6 +89,7 @@ const styles = StyleSheet.create({
     height: 48,
     flexGrow: 0,
     flexShrink: 0,
+    marginVertical: 5,
   },
   listContent: {
     paddingHorizontal: 12,

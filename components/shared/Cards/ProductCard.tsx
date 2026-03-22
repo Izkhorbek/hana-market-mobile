@@ -45,7 +45,6 @@ const ProductCard: React.FC<ProductCardProps> = ({
 	const colors = useThemeColors()
 	const { t } = useTranslations();
 
-	console.log('imagesrc', main_image_url);
 	return (
 		<TouchableOpacity
 			style={[styles.container, { borderColor: colors.borderColor }]}
