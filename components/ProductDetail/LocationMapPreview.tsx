@@ -54,7 +54,7 @@ const LocationMapPreview: React.FC<LocationMapPreviewProps> = ({
 				customMapStyle={colorScheme === 'dark' ? DARK_MAP_STYLE : []}
 				pointerEvents='none'
 			>
-				<Marker coordinate={{ latitude, longitude }} title={title} />
+				<Marker coordinate={{ latitude, longitude }} title={title} pinColor={colors.primaryColor} />
 			</MapView>
 
 			{/* Tap overlay */}

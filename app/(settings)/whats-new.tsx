@@ -4,6 +4,7 @@ import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
 import { useColor } from '@/hooks/useColor'
 import type { NewsItem } from '@/types'
+import { parseBackendDateTime } from '@/utils/dateTime'
 import { router } from 'expo-router'
 import { ArrowLeft, Sparkles } from 'lucide-react-native'
 import React from 'react'
@@ -39,7 +40,11 @@ const NewsItemCard: React.FC<NewsItemCardProps> = ({ item, isRu }) => {
 
 	const formatDate = (dateStr: string) => {
 		try {
-			return new Date(dateStr).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+			return parseBackendDateTime(dateStr).toLocaleDateString('en-US', {
+				year: 'numeric',
+				month: 'short',
+				day: 'numeric',
+			})
 		} catch {
 			return dateStr
 		}

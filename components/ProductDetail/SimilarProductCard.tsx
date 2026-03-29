@@ -13,22 +13,36 @@ export interface SimilarProduct {
 interface SimilarProductCardProps {
 	item: SimilarProduct
 	onPress?: (id: string) => void
+	variant?: 'compact' | 'grid'
 }
 
-const SimilarProductCard: React.FC<SimilarProductCardProps> = ({ item, onPress }) => {
+const SimilarProductCard: React.FC<SimilarProductCardProps> = ({
+	item,
+	onPress,
+	variant = 'compact',
+}) => {
 	const colors = useThemeColors()
+	const isGrid = variant === 'grid'
 
 	return (
 		<Pressable
-			style={[styles.container, { backgroundColor: colors.background, borderColor: colors.borderColor }]}
+			style={[
+				styles.container,
+				isGrid ? styles.gridContainer : styles.compactContainer,
+				{ backgroundColor: colors.background, borderColor: colors.borderColor },
+			]}
 			onPress={() => onPress?.(item.id)}
 		>
-			<RemoteImage src={item.image} style={styles.image} resizeMode='cover' />
-			<View style={styles.content}>
-				<Text style={[styles.title, { color: colors.text }]} numberOfLines={1}>
+			<RemoteImage
+				src={item.image}
+				style={[styles.image, isGrid ? styles.gridImage : styles.compactImage]}
+				resizeMode='cover'
+			/>
+			<View style={[styles.content, isGrid && styles.gridContent]}>
+				<Text style={[styles.title, isGrid && styles.gridTitle, { color: colors.text }]} numberOfLines={isGrid ? 2 : 1}>
 					{item.title}
 				</Text>
-				<Text style={[styles.price, { color: colors.primaryColor }]} numberOfLines={1}>
+				<Text style={[styles.price, isGrid && styles.gridPrice, { color: colors.primaryColor }]} numberOfLines={1}>
 					{item.price}
 				</Text>
 			</View>
@@ -40,25 +54,47 @@ export default SimilarProductCard
 
 const styles = StyleSheet.create({
 	container: {
-		width: '50%',
 		borderRadius: 8,
 		borderWidth: 1,
 		overflow: 'hidden',
 	},
+	compactContainer: {
+		width: 172,
+	},
+	gridContainer: {
+		width: '48%',
+		minWidth: 152,
+	},
 	image: {
 		width: '100%',
-		height: 90,
+	},
+	compactImage: {
+		height: 108,
+	},
+	gridImage: {
+		height: 122,
 	},
 	content: {
-		padding: 8,
+		padding: 10,
 		gap: 4,
+	},
+	gridContent: {
+		minHeight: 74,
+		justifyContent: 'space-between',
 	},
 	title: {
 		fontSize: 12,
 		fontWeight: '500',
 	},
+	gridTitle: {
+		fontSize: 13,
+		lineHeight: 18,
+	},
 	price: {
 		fontSize: 12,
 		fontWeight: '700',
+	},
+	gridPrice: {
+		fontSize: 13,
 	},
 })

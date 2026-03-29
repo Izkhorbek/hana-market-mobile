@@ -4,10 +4,11 @@ import { Text } from '@/components/ui/text';
 import { View } from '@/components/ui/view';
 import { useThemeColors } from '@/hooks/use-theme-colors';
 import { useTranslations } from '@/hooks/use-translation';
+import * as Location from 'expo-location';
 import { navigate } from 'expo-router/build/global-state/routing';
-import { X } from 'lucide-react-native';
-import React from 'react';
-import { StyleSheet, TouchableOpacity } from 'react-native';
+import { Navigation, X } from 'lucide-react-native';
+import React, { useCallback, useEffect, useState } from 'react';
+import { Alert, Linking, StyleSheet, TouchableOpacity } from 'react-native';
 import RemoteImage from '../shared/RemoteImage';
 
 interface MarkerDetailModalProps {
@@ -20,14 +21,115 @@ export function MarkerDetailModal({ marker, isVisible, onClose }: MarkerDetailMo
   const colors = useThemeColors();
   const { t } = useTranslations();
 
-  if (!marker) return null;
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [isLoadingLocation, setIsLoadingLocation] = useState(true);
+
+  // Get user's current location when modal opens OR when marker changes
+  useEffect(() => {
+    const getUserLocation = async () => {
+      try {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== 'granted') {
+          setIsLoadingLocation(false);
+          return;
+        }
+
+        const location = await Location.getCurrentPositionAsync({
+          accuracy: Location.Accuracy.Balanced,
+        });
+
+        setUserLocation({
+          lat: location.coords.latitude,
+          lng: location.coords.longitude,
+        });
+      } catch (error) {
+        console.error('Error getting user location:', error);
+      } finally {
+        setIsLoadingLocation(false);
+      }
+    };
+
+    // Fetch location when modal becomes visible
+    if (isVisible && marker) {
+      setIsLoadingLocation(true);
+      getUserLocation();
+    }
+  }, [isVisible, marker?.id]); // Re-run when marker changes
 
   const handleViewDetails = (productId: number | string) => {
     if (!productId) return;
 
     navigate(`/product/${productId}`);
     onClose();
+  };
+
+  const handleOpenDirections = useCallback(async () => {
+    // If no user location, show alert
+    if (!userLocation) {
+      Alert.alert(
+        t('navigation.location_permission') || 'Location Required',
+        t('navigation.location_needed') || 'Unable to get your location. Please enable location services.',
+        [{ text: 'OK' }],
+      );
+      return;
+    }
+
+    // If no marker, return early
+    if (!marker) {
+      Alert.alert('Error', 'Marker location not available.');
+      return;
+    }
+
+    // Google Maps URL scheme
+    const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${userLocation.lat},${userLocation.lng}&destination=${marker.latitude},${marker.longitude}`;
+
+    // Fallback URLs
+    const appleMapsUrl = `http://maps.apple.com/?saddr=${userLocation.lat},${userLocation.lng}&daddr=${marker.latitude},${marker.longitude}`;
+    const geoUrl = `geo:${marker.latitude},${marker.longitude}`;
+
+    try {
+      // Try Google Maps first
+      const googleMapsSupported = await Linking.canOpenURL(googleMapsUrl);
+      if (googleMapsSupported) {
+        await Linking.openURL(googleMapsUrl);
+        return;
+      }
+
+      // Try Apple Maps
+      const appleMapsSupported = await Linking.canOpenURL(appleMapsUrl);
+      if (appleMapsSupported) {
+        await Linking.openURL(appleMapsUrl);
+        return;
+      }
+
+      // Try generic geo URL
+      const geoSupported = await Linking.canOpenURL(geoUrl);
+      if (geoSupported) {
+        await Linking.openURL(geoUrl);
+        return;
+      }
+
+      // If nothing works
+      Alert.alert(
+        t('navigation.no_maps') || 'No Maps App',
+        t('navigation.install_maps') || 'Please install Google Maps or Apple Maps to view directions.',
+        [{ text: 'OK' }],
+      );
+    } catch (error) {
+      Alert.alert(
+        t('navigation.error') || 'Error',
+        t('navigation.error_opening_maps') || 'Could not open maps application.',
+        [{ text: 'OK' }],
+      );
+      console.error('Error opening maps:', error);
+    }
+  }, [userLocation, marker, t]);
+
+  // Don't render if no marker
+  if (!marker) {
+    return null;
   }
+
   return (
     <BottomSheet
       isVisible={isVisible}
@@ -97,15 +199,32 @@ export function MarkerDetailModal({ marker, isVisible, onClose }: MarkerDetailMo
             </View>
           )}
 
-          {/* View Details Button */}
-          <TouchableOpacity
-            style={[styles.button, { backgroundColor: '#2E7D32' }]}
-            onPress={() => handleViewDetails(marker.id)}
-          >
-            <Text variant="body" style={styles.buttonText} numberOfLines={1}>
-              {t('map.view_details')}
-            </Text>
-          </TouchableOpacity>
+          {/* Buttons Container */}
+          <View style={styles.buttonsContainer}>
+            {/* View Details Button */}
+            <TouchableOpacity
+              style={[styles.button, { backgroundColor: '#2E7D32', flex: 1 }]}
+              onPress={() => handleViewDetails(marker.id)}
+            >
+              <Text variant="body" style={styles.buttonText} numberOfLines={1}>
+                {t('map.view_details')}
+              </Text>
+            </TouchableOpacity>
+
+            {/* Directions Button */}
+            <TouchableOpacity
+              style={[
+                styles.directionsButton,
+                {
+                  backgroundColor: colors.primaryColor,
+                },
+              ]}
+              onPress={handleOpenDirections}
+              disabled={isLoadingLocation}
+            >
+              <Navigation size={18} color="#fff" />
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
     </BottomSheet>
@@ -179,11 +298,29 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
+  buttonsContainer: {
+    flexDirection: 'row',
+    gap: 12,
+    alignItems: 'center',
+    marginTop: 8,
+  },
   button: {
     paddingVertical: 14,
     borderRadius: 12,
     alignItems: 'center',
-    marginTop: 8,
+    justifyContent: 'center',
+  },
+  directionsButton: {
+    width: 50,
+    height: 50,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+    elevation: 3,
   },
   buttonText: {
     color: '#FFFFFF',

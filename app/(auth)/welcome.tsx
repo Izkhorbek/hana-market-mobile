@@ -43,13 +43,13 @@ const WelcomePage = () => {
           </ThemedText>
         </TouchableOpacity>
 
-        <ThemedView style={styles.loginContainer}>
+        <ThemedView style={[styles.loginContainer, {}]} >
           <ThemedText type='default' style={styles.loginText}>
             {t('auth.welcome_page.already_have_account')}{' '}
           </ThemedText>
           <TouchableOpacity>
             <ThemedText type='default' style={styles.loginLink}>
-              <Link href={'/(auth)/auth'}>
+              <Link href={'/(auth)/register'} style={{ color: Colors.light.primaryColor }}>
                 {t('auth.welcome_page.login_link')}
               </Link>
             </ThemedText>
@@ -115,7 +115,8 @@ const styles = StyleSheet.create({
   loginContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
+    paddingBottom: 10,
   },
   loginText: {
     fontSize: 14,

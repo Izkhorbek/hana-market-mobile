@@ -1,17 +1,18 @@
-import { useMyProductsQuery } from '@/api/hooks'
+import { useDeleteProductMutation, useMyProductsQuery } from '@/api/hooks'
 import MyListingCard, { ListingStatus, MyListingCardProps } from '@/components/shared/Cards/MyListingCard'
 import { HEADER_PADDING_TOP } from '@/constants/appLimits'
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
 import { MyProductDto } from '@/types'
+import { parseBackendDateTime } from '@/utils/dateTime'
 import { resolveImageUrl } from '@/utils/imageUrl'
 import { router } from 'expo-router'
 import { ArrowLeft } from 'lucide-react-native'
 import React, { useMemo, useState } from 'react'
 import {
 	ActivityIndicator,
+	Alert,
 	FlatList,
-	Platform,
 	RefreshControl,
 	StyleSheet,
 	Text,
@@ -33,9 +34,10 @@ const mapProductToCardProps = (product: MyProductDto): MyListingCardProps => ({
 	image: resolveImageUrl(product.main_image_url) || '',
 	title: product.title || '',
 	price: product.price || '',
+	is_free: product.is_free ?? false,
 	views: product.views_count,
 	likes: product.likes_count,
-	timeAgo: product.created_at,
+	timeAgo: parseBackendDateTime(product.created_at).toLocaleDateString(), // You can customize this format
 	status: product.status as ListingStatus,
 })
 
@@ -43,9 +45,23 @@ const MyListingsPage = () => {
 	const { t } = useTranslations()
 	const colors = useThemeColors()
 	const [activeTab, setActiveTab] = useState<TabType>('active')
+	const [deletingListingId, setDeletingListingId] = useState<string | null>(null)
 
 	// Fetch my products from API
 	const { data: myProductsResponse, isLoading, refetch, isRefetching } = useMyProductsQuery({})
+
+	const { mutate: deleteProduct } = useDeleteProductMutation({
+		onSuccess: () => {
+			Alert.alert(t('edit_profile.success'), t('my_listings.delete_success'))
+			refetch()
+		},
+		onError: () => {
+			Alert.alert(t('edit_profile.error'), t('my_listings.delete_error'))
+		},
+		onSettled: () => {
+			setDeletingListingId(null)
+		},
+	})
 
 	// Get products array from response
 	const allProducts = myProductsResponse?.data?.data || []
@@ -78,8 +94,28 @@ const MyListingsPage = () => {
 	}
 
 	const handleMenuPress = (listing: MyListingCardProps) => {
-		console.log('Menu pressed for:', listing.id)
-		// TODO: Show action sheet with options (edit, delete, hide, mark as sold, etc.)
+		if (deletingListingId) return
+
+		const listingId = Number(listing.id)
+		if (!Number.isFinite(listingId) || listingId <= 0) {
+			return
+		}
+
+		Alert.alert(
+			t('my_listings.delete_confirm_title'),
+			t('my_listings.delete_confirm_message'),
+			[
+				{ text: t('common.cancel'), style: 'cancel' },
+				{
+					text: t('my_listings.actions.delete'),
+					style: 'destructive',
+					onPress: () => {
+						setDeletingListingId(listing.id)
+						deleteProduct(listingId)
+					},
+				},
+			]
+		)
 	}
 
 	const renderListingItem = ({ item }: { item: MyListingCardProps }) => (

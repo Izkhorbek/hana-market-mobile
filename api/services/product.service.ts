@@ -87,4 +87,21 @@ export const productService = {
   deleteDraftImage: (draftUuid: string) => {
     return axiosInstance.delete(ENDPOINT.PRODUCT.DELETE_DRAFT(draftUuid));
   },
+
+  /**
+   * Get products by seller ID
+   * GET /api/product/seller/{sellerId}/products
+   */
+  getProductsBySeller: (sellerId: number, page: number, pageSize: number) => {
+    return axiosInstance.get<ApiResponse<PaginatedResponse<any>>>(ENDPOINT.PRODUCT.SELLER_PRODUCTS(sellerId), { params: { page, pageSize } });
+  },
+
+  /**
+   * Get related products by product ID
+   * GET /api/product/{id}/related  
+   * Returns products from the same category, excluding the current product
+   */
+  getRelatedProducts: (id: number) => {   
+    return axiosInstance.get<ApiResponse<any[]>>(ENDPOINT.PRODUCT.RELATED(id));
+  }
 };

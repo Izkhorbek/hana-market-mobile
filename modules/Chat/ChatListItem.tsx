@@ -77,7 +77,6 @@ const ChatListItem = ({ chat, onPress }: ChatListItemProps) => {
     },
   }), [ms, fs]);
 
-  console.log('Rendering ChatListItem:', chat);
   return (
     <TouchableOpacity
       style={[

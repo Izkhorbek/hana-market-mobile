@@ -48,6 +48,10 @@ interface AuthState {
   logout: () => void
 }
 
+const hasValidUserId = (user: User | null | undefined): user is User => {
+  return !!user && typeof user.id === 'number' && user.id > 0
+}
+
 // ── Store ──
 
 export const useAuthStore = create<AuthState>()(
@@ -66,51 +70,45 @@ export const useAuthStore = create<AuthState>()(
         const response = await localAuthApi.register(phoneNumber)
 
         const token = response.headers['x-access-token']
-        const userData = response.data?.data
+        const userData = response.data?.data as User | undefined
 
         if (token) {
           set({
             token: token,
             isAuthenticated: true,
-            user: userData ?? {
-              id: 0,
-              username: null,
-              first_name: null,
-              last_name: null,
-              bio: null,
-              email: null,
-              phone_number: phoneNumber,
-              profile_image_url: null,
-            }
+            // Never write id=0 placeholder user into persisted auth state.
+            user: hasValidUserId(userData) ? userData : get().user,
           })
+
+          if (!hasValidUserId(userData)) {
+            await get().fetchUser()
+          }
         }
       },
 
       login: async (phoneNumber) => {
         const response = await localAuthApi.login(phoneNumber)
         const token = response.headers['x-access-token']
-        const userData = response.data?.data
+        const userData = response.data?.data as User | undefined
 
         if (token) {
           set({
             token: token,
             isAuthenticated: true,
-            user: userData ?? {
-              id: 0,
-              username: null,
-              first_name: null,
-              last_name: null,
-              bio: null,
-              email: null,
-              phone_number: phoneNumber,
-              profile_image_url: null,
-            }
+            // Never write id=0 placeholder user into persisted auth state.
+            user: hasValidUserId(userData) ? userData : get().user,
           })
+
+          if (!hasValidUserId(userData)) {
+            await get().fetchUser()
+          }
         }
       },
 
       fetchUser: async () => {
         try {
+          console.trace('Fetching user data with token:', get().token)
+          
           const response = await localUserApi.getUser()
           set({ user: response.data.data })
         } catch {
@@ -163,7 +161,22 @@ export const useAuthStore = create<AuthState>()(
       name: 'hana-auth-storage',
       storage: createJSONStorage(() => AsyncStorage),
       onRehydrateStorage: () => (state) => {
-        state?.setHydrated(true)
+        if (!state) return
+
+        // Recover from previously persisted placeholder users (id <= 0).
+        const shouldRefreshUser =
+          !!state.token &&
+          state.isAuthenticated &&
+          (!state.user || !hasValidUserId(state.user))
+
+        if (shouldRefreshUser) {
+          state
+            .fetchUser()
+            .finally(() => state.setHydrated(true))
+          return
+        }
+
+        state.setHydrated(true)
       },
     },
   ),

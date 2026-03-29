@@ -1,13 +1,13 @@
 import type {
-  ApiResponse,
-  ChatListParams,
-  ChatListResponse,
-  ChatMessagesParams,
-  ChatMessagesResponse,
-  ChatRoomDto,
-  CreateChatRoomRequest,
-  MarkAsReadRequest,
-  UnreadCountResponse,
+    ApiResponse,
+    ChatListParams,
+    ChatListResponse,
+    ChatMessagesParams,
+    ChatMessagesResponse,
+    ChatRoomDto,
+    CreateChatRoomRequest,
+    MarkAsReadRequest,
+    UnreadCountResponse,
 } from '../../types';
 import axiosInstance from '../api';
 import ENDPOINT from '../endpoints';
@@ -51,6 +51,26 @@ export const chatService = {
    */
   markAsRead: (data: MarkAsReadRequest) => {
     return axiosInstance.post(ENDPOINT.CHAT.MARK_AS_READ, data);
+  },
+
+  /**
+   * Delete chat room for current user
+   * DELETE /api/chats/room/{chatRoomId}
+   */
+  deleteChatRoom: (chatRoomId: number) => {
+    return axiosInstance.delete<ApiResponse<Record<string, never>>>(
+      ENDPOINT.CHAT.DELETE_CHAT_ROOM(chatRoomId)
+    );
+  },
+
+  /**
+   * Delete one message in a chat room for current user
+   * DELETE /api/chats/room/{chatRoomId}/message/{messageId}
+   */
+  deleteChatMessage: (chatRoomId: number, messageId: number) => {
+    return axiosInstance.delete<ApiResponse<Record<string, never>>>(
+      ENDPOINT.CHAT.DELETE_ROOM_MESSAGES(chatRoomId, messageId)
+    );
   },
 
   /**

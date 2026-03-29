@@ -1,4 +1,4 @@
-import { useChatList, useMyChatQuery, useSignalRConnection, useUnreadCountQuery } from '@/api/hooks';
+import { useChatList, useDeleteChatRoomMutation, useMyChatQuery, useSignalRConnection, useUnreadCountQuery } from '@/api/hooks';
 import ChatPageHeader from '@/components/headers/ChatPageHeader';
 import { useTranslations } from '@/hooks/use-translation';
 import { useColor } from '@/hooks/useColor';
@@ -12,10 +12,15 @@ import {
   NotificationBanner,
 } from '@/modules/Chat';
 import { ChatRoomDto } from '@/types';
+import { parseBackendDateTime } from '@/utils/dateTime';
+import { useQueryClient } from '@tanstack/react-query';
 import { formatDistanceToNow } from 'date-fns';
 import { router } from 'expo-router';
+import { Trash2 } from 'lucide-react-native';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, FlatList, RefreshControl, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import Swipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
 
 /**
  * Transform API ChatListItemDto to UI ChatItemData
@@ -27,8 +32,6 @@ const transformChatItem = (item: ChatRoomDto, currentUserId: number | undefined)
   // Show the other party's info
   const otherUser = isBuyer ? item.seller : item.buyer
 
-  console.log('Transforming chat item:', item);
-
   return {
     id: String(item.id),
     name: otherUser.username || 'Unknown',
@@ -36,7 +39,7 @@ const transformChatItem = (item: ChatRoomDto, currentUserId: number | undefined)
     avatar: otherUser.profile_image_url || undefined,
     thumbnail: item.product.image_url || undefined,
     time: item.last_message_at
-      ? formatDistanceToNow(new Date(item.last_message_at), { addSuffix: true })
+      ? formatDistanceToNow(parseBackendDateTime(item.last_message_at), { addSuffix: true })
       : '',
     isOnline: item.is_other_user_online ?? otherUser.is_online ?? false,
     unreadCount: item.unread_count,
@@ -52,13 +55,43 @@ const ChatPage = () => {
 
   const [activeTab, setActiveTab] = useState<FilterTabType>('all');
   const [showBanner, setShowBanner] = useState(true);
+  const [deletingChatId, setDeletingChatId] = useState<string | null>(null);
+  const [snackbar, setSnackbar] = useState<{ visible: boolean; message: string; isError?: boolean }>({
+    visible: false,
+    message: '',
+    isError: false,
+  });
   const userId = useAuthStore((s) => s.user?.id);
+  const queryClient = useQueryClient();
 
   // Connect to SignalR
   const { isConnected } = useSignalRConnection();
 
   // Get chat list from store (for real-time updates)
   const { chatList, setChatList } = useChatList();
+
+  const { mutate: deleteChatRoom } = useDeleteChatRoomMutation({
+    onSuccess: (_res, chatRoomId) => {
+      setChatList(chatList.filter((chat) => chat.id !== chatRoomId));
+      queryClient.invalidateQueries({ queryKey: ['MY_CHATS'] });
+      queryClient.invalidateQueries({ queryKey: ['UNREAD_COUNT'] });
+      setSnackbar({ visible: true, message: t('chat.delete_chat_success'), isError: false });
+    },
+    onError: () => {
+      setSnackbar({ visible: true, message: t('chat.delete_chat_error'), isError: true });
+    },
+    onSettled: () => {
+      setDeletingChatId(null);
+    },
+  });
+
+  useEffect(() => {
+    if (!snackbar.visible) return;
+    const timer = setTimeout(() => {
+      setSnackbar((prev) => ({ ...prev, visible: false }));
+    }, 2200);
+    return () => clearTimeout(timer);
+  }, [snackbar.visible]);
 
   // Query chat list from API
   const {
@@ -128,6 +161,24 @@ const ChatPage = () => {
     await refetch();
   }, [refetch]);
 
+  const handleDeleteChatRoom = useCallback((chat: ChatRoomDto) => {
+    Alert.alert(
+      t('chat.delete_chat_title'),
+      t('chat.delete_chat_confirm'),
+      [
+        { text: t('common.cancel'), style: 'cancel' },
+        {
+          text: t('chat.delete'),
+          style: 'destructive',
+          onPress: () => {
+            setDeletingChatId(String(chat.id));
+            deleteChatRoom(chat.id);
+          },
+        },
+      ]
+    );
+  }, [deleteChatRoom, t]);
+
   const renderEmptyState = () => (
     <View style={[styles.emptyContainer, { paddingHorizontal: ms(40) }]}>
       <Text style={[styles.emptyText, { color: mutedTextColor, fontSize: fs(18), marginBottom: ms(8) }]}>
@@ -141,8 +192,31 @@ const ChatPage = () => {
 
   const renderChatItem = useCallback(({ item }: { item: ChatRoomDto }) => {
     const transformedItem = transformChatItem(item, userId);
-    return <ChatListItem chat={transformedItem} onPress={handleChatPress} />;
-  }, [handleChatPress, userId]);
+    const isDeleting = deletingChatId === String(item.id);
+
+    return (
+      <Swipeable
+        overshootRight={false}
+        renderRightActions={() => (
+          <TouchableOpacity
+            style={styles.swipeDeleteAction}
+            onPress={() => handleDeleteChatRoom(item)}
+            disabled={isDeleting}
+          >
+            {isDeleting ? (
+              <ActivityIndicator size='small' color='#fff' />
+            ) : (
+              <Trash2 size={18} color='#fff' />
+            )}
+          </TouchableOpacity>
+        )}
+      >
+        <View style={styles.chatItemMain}>
+          <ChatListItem chat={transformedItem} onPress={handleChatPress} />
+        </View>
+      </Swipeable>
+    );
+  }, [deletingChatId, handleChatPress, handleDeleteChatRoom, userId]);
 
   if (isLoading && !chatListResponse) {
     return (
@@ -153,45 +227,53 @@ const ChatPage = () => {
   }
 
   return (
-    <View style={[styles.container, { backgroundColor }]}>
-      <ChatPageHeader
-        onFilterPress={handleFilterPress}
-        onBookmarkPress={handleBookmarkPress}
-        onNotificationPress={handleNotificationPress}
-        hasNotifications={(unreadCountResponse?.data?.data?.unread_count ?? 0) > 0}
-      />
+    <GestureHandlerRootView style={styles.container}>
+      <View style={[styles.container, { backgroundColor }]}>
+        <ChatPageHeader
+          onFilterPress={handleFilterPress}
+          onBookmarkPress={handleBookmarkPress}
+          onNotificationPress={handleNotificationPress}
+          hasNotifications={(unreadCountResponse?.data?.data?.unread_count ?? 0) > 0}
+        />
 
-      <FlatList
-        data={filteredChats}
-        keyExtractor={(item) => String(item.id)}
-        renderItem={renderChatItem}
-        refreshControl={
-          <RefreshControl
-            refreshing={isRefetching}
-            onRefresh={handleRefresh}
-            tintColor={primaryColor}
-          />
-        }
-        ListHeaderComponent={
-          <>
-            {showBanner && (
-              <NotificationBanner
-                message={t('chat.notification_banner')}
-                onClose={() => setShowBanner(false)}
-              />
-            )}
-            <FilterTabs
-              activeTab={activeTab}
-              onTabChange={setActiveTab}
-              tabs={filterTabs}
+        <FlatList
+          data={filteredChats}
+          keyExtractor={(item) => String(item.id)}
+          renderItem={renderChatItem}
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefetching}
+              onRefresh={handleRefresh}
+              tintColor={primaryColor}
             />
-          </>
-        }
-        ListEmptyComponent={renderEmptyState}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={filteredChats.length === 0 ? styles.emptyListContent : undefined}
-      />
-    </View>
+          }
+          ListHeaderComponent={
+            <>
+              {showBanner && (
+                <NotificationBanner
+                  message={t('chat.notification_banner')}
+                  onClose={() => setShowBanner(false)}
+                />
+              )}
+              <FilterTabs
+                activeTab={activeTab}
+                onTabChange={setActiveTab}
+                tabs={filterTabs}
+              />
+            </>
+          }
+          ListEmptyComponent={renderEmptyState}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={filteredChats.length === 0 ? styles.emptyListContent : undefined}
+        />
+
+        {snackbar.visible && (
+          <View style={[styles.snackbar, { backgroundColor: snackbar.isError ? '#DC2626' : '#16A34A' }]}>
+            <Text style={styles.snackbarText}>{snackbar.message}</Text>
+          </View>
+        )}
+      </View>
+    </GestureHandlerRootView>
   );
 };
 
@@ -214,6 +296,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 40,
   },
+  chatItemMain: {
+    backgroundColor: 'transparent',
+  },
+  swipeDeleteAction: {
+    width: 76,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#DC2626',
+  },
   emptyText: {
     fontSize: 18,
     fontWeight: '600',
@@ -221,6 +312,21 @@ const styles = StyleSheet.create({
   },
   emptySubtext: {
     fontSize: 14,
+    textAlign: 'center',
+  },
+  snackbar: {
+    position: 'absolute',
+    left: 16,
+    right: 16,
+    bottom: 20,
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+  },
+  snackbarText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
     textAlign: 'center',
   },
 });

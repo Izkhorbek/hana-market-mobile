@@ -1,5 +1,6 @@
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
+import { Colors } from '@/theme/colors'
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
 import React from 'react'
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
@@ -12,6 +13,7 @@ export interface MyListingCardProps {
 	image: string
 	title: string
 	price: string
+	is_free?: boolean
 	views: number
 	likes: number
 	timeAgo: string
@@ -26,6 +28,7 @@ const MyListingCard: React.FC<MyListingCardProps> = ({
 	image,
 	title,
 	price,
+	is_free,
 	views,
 	likes,
 	timeAgo,
@@ -94,8 +97,23 @@ const MyListingCard: React.FC<MyListingCardProps> = ({
 				</View>
 
 				{/* Price */}
-				<Text style={[styles.price, { color: colors.text }]}>{price}</Text>
+				{is_free ? <Text style={{
+					fontSize: 16,
+					color: 'white',
+					backgroundColor: Colors.light.primaryColor,
+					paddingHorizontal: 8,
+					paddingVertical: 1,
+					borderRadius: 4,
+					width: 60,
+					textAlign: 'center',
+				}}>
+					{t('home.free')}
+				</Text> :
 
+					<Text style={[styles.price, { color: colors.text }]}>
+						{price}
+					</Text>
+				}
 				{/* Stats Row */}
 				<View style={styles.statsRow}>
 					<View style={styles.statItem}>

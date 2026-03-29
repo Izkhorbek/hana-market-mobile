@@ -27,6 +27,8 @@ export const  ENDPOINT = {
     MARK_AS_READ: 'chats/mark-as-read',
     USER_STATUS: (userId: string | number) => `chats/user-status/${userId}`,
     HEALTH: 'chats/health',
+    DELETE_CHAT_ROOM: (chatRoomId: string | number) => `chats/room/${chatRoomId}`,
+    DELETE_ROOM_MESSAGES: (chatRoomId: string | number, messageId: string | number) => `chats/room/${chatRoomId}/message/${messageId}`,
   },
 
   // Product
@@ -43,6 +45,9 @@ export const  ENDPOINT = {
     UPLOAD_DRAFT: 'product/images/upload-draft',
     DELETE_IMAGES_BATCH: (id: string | number) => `product/${id}/images/batch`,
     DELETE_DRAFT: (draftUuid: string | number) => `product/images/delete-draft/${draftUuid}`,
+    SELLER_PRODUCTS: (sellerId: string | number) => `product/seller/${sellerId}/products`,
+    RELATED: (id: string | number) => `product/${id}/related`,
+
   },
 
   // Categories

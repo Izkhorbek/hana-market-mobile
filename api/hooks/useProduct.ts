@@ -149,3 +149,43 @@ export const useInfiniteProductsQuery = ({
     ...querySettings,
   });
 };
+
+/**
+ * Hook to fetch products by seller ID
+ */
+export const useProductsBySellerQuery = ({   
+  sellerId,
+  page,
+  pageSize,
+  querySettings = {},
+}: {
+  sellerId: number; 
+  page?: number;
+  pageSize?: number;
+  querySettings?: Record<string, any>;
+}) => {
+  return useQuery({
+    queryKey: ['PRODUCTS_BY_SELLER', sellerId, page, pageSize],
+    queryFn: () => productService.getProductsBySeller(sellerId, page ?? 1, pageSize ?? 20), // Default to first page with 20 items, can be enhanced to support pagination
+    enabled: !!sellerId,
+    ...querySettings,
+  });
+};
+
+/**
+ * Hook to fetch related products by product ID 
+ */
+export const useRelatedProductsQuery = ({   
+  productId,
+  querySettings = {}, 
+}: {
+  productId: number; 
+  querySettings?: Record<string, any>;
+}) => {
+  return useQuery({
+    queryKey: ['RELATED_PRODUCTS', productId],
+    queryFn: () => productService.getRelatedProducts(productId),
+    enabled: !!productId,
+    ...querySettings,
+  });
+};

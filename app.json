@@ -20,7 +20,6 @@
     },
     "androidNavigationBar": {
       "visible": "transparent", // "immersive", "transparent", "hidden"
-      // "barStyle": "dark-content",
       "enforceContrast": true
     },
     "jsEngine": "hermes",
@@ -73,4 +72,3 @@
     }
   }
 }
-

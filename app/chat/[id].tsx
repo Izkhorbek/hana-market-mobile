@@ -1,4 +1,15 @@
-import { useChatMessagesInfiniteQuery, useChatRoom, useSendMessage, useSignalRConnection, useTypingIndicator, useUserOnlineStatus } from '@/api/hooks';
+import {
+	useChatMessagesInfiniteQuery,
+	useChatRoom,
+	useDeleteChatMessageMutation,
+	useDeleteChatRoomMutation,
+	useMarkAsReadMutation,
+	useMyChatQuery,
+	useSendMessage,
+	useSignalRConnection,
+	useTypingIndicator,
+	useUserOnlineStatus
+} from '@/api/hooks';
 import RemoteImage from '@/components/shared/RemoteImage';
 import { HEADER_PADDING_TOP } from '@/constants/appLimits';
 import { useThemeColors } from '@/hooks/use-theme-colors';
@@ -6,12 +17,15 @@ import { useTranslations } from '@/hooks/use-translation';
 import { useAuthStore } from '@/modules/Auth/auth-store';
 import { ChatMessage, useChatStore } from '@/modules/Chat/chat-store';
 import { ApiResponse, ChatData, ChatMessageDto, ChatMessagesResponse, DisplayMessage } from '@/types';
-import { format, isToday, isYesterday, parseISO } from 'date-fns';
+import { parseBackendDateTime } from '@/utils/dateTime';
+import { useQueryClient } from '@tanstack/react-query';
+import { format, isToday, isYesterday } from 'date-fns';
 import { router, useLocalSearchParams } from 'expo-router';
 import { ArrowLeft, Check, CheckCheck, MoreVertical } from 'lucide-react-native';
 import { default as React, useEffect, useMemo, useRef, useState } from 'react';
 import {
 	ActivityIndicator,
+	Alert,
 	FlatList,
 	KeyboardAvoidingView,
 	Platform,
@@ -27,7 +41,7 @@ const transformStoreMessage = (message: ChatMessage, currentUserId: number, inde
 	id: String(message.id),
 	localId: message.localId || `store_${index}_${message.id}`,
 	text: message.content || '',
-	timestamp: format(parseISO(message.sent_at), 'h:mm a'),
+	timestamp: format(parseBackendDateTime(message.sent_at), 'h:mm a'),
 	isMe: message.is_mine ? true : false,
 	status: message.isPending ? 'pending' : message.is_read ? 'read' : 'sent',
 	failed: message.isFailed,
@@ -39,7 +53,7 @@ const transformApiMessage = (message: ChatMessageDto, currentUserId: number, ind
 	id: String(message.id),
 	localId: `api_${index}_${message.id}`,
 	text: message.content || '',
-	timestamp: format(parseISO(message.sent_at), 'h:mm a'),
+	timestamp: format(parseBackendDateTime(message.sent_at), 'h:mm a'),
 	isMe: message.is_mine ? true : false,
 	status: message.is_read ? 'read' : 'sent',
 	imageUrl: message.sender_image_url || undefined,
@@ -47,7 +61,7 @@ const transformApiMessage = (message: ChatMessageDto, currentUserId: number, ind
 
 // Format date for date separator
 const formatMessageDate = (dateString: string): string => {
-	const date = parseISO(dateString)
+	const date = parseBackendDateTime(dateString)
 	if (isToday(date)) return 'Today'
 	if (isYesterday(date)) return 'Yesterday'
 	return format(date, 'MMM d, yyyy')
@@ -175,7 +189,7 @@ const DateSeparator: React.FC<{ date: string }> = ({ date }) => {
 	)
 }
 
-const MessageBubble: React.FC<{ message: DisplayMessage }> = ({ message }) => {
+const MessageBubble: React.FC<{ message: DisplayMessage; onLongPress?: () => void }> = ({ message, onLongPress }) => {
 	const colors = useThemeColors()
 
 	const renderContent = () => {
@@ -206,7 +220,12 @@ const MessageBubble: React.FC<{ message: DisplayMessage }> = ({ message }) => {
 	}
 
 	return (
-		<View style={[styles.messageContainer, message.isMe ? styles.messageContainerMe : styles.messageContainerOther]}>
+		<TouchableOpacity
+			activeOpacity={0.9}
+			onLongPress={onLongPress}
+			disabled={!onLongPress}
+			style={[styles.messageContainer, message.isMe ? styles.messageContainerMe : styles.messageContainerOther]}
+		>
 			<View
 				style={[
 					styles.messageBubble,
@@ -223,7 +242,7 @@ const MessageBubble: React.FC<{ message: DisplayMessage }> = ({ message }) => {
 					{renderStatus()}
 				</View>
 			</View>
-		</View>
+		</TouchableOpacity>
 	)
 }
 
@@ -319,9 +338,20 @@ const ChatRoomPage: React.FC = () => {
 
 	const [inputText, setInputText] = useState('')
 	const [isSending, setIsSending] = useState(false)
+	const [deletingMessageId, setDeletingMessageId] = useState<number | null>(null)
+	const [isDeletingRoom, setIsDeletingRoom] = useState(false)
+	const [snackbar, setSnackbar] = useState<{ visible: boolean; message: string; isError?: boolean }>({
+		visible: false,
+		message: '',
+		isError: false,
+	})
+	const queryClient = useQueryClient()
 
 	// Get current user
 	const currentUserId = useAuthStore((s) => s.user?.id)
+	const user = useAuthStore((s) => s.user)
+
+	console.log('Current USER:', user)
 
 	// Establish SignalR connection (required for chat functionality)
 	const { isConnected: signalRConnected } = useSignalRConnection()
@@ -330,12 +360,31 @@ const ChatRoomPage: React.FC = () => {
 	const currentChat = useChatStore((s) =>
 		chatRoomId ? s.chatList.find((c) => c.id === chatRoomId) ?? null : null
 	)
+
+	// Fallback: fetch chat list if current chat not found in store
+	const { data: chatListData } = useMyChatQuery({
+		params: { page: 1, pageSize: 100 },
+		querySettings: {
+			enabled: !currentChat && !!chatRoomId && !!currentUserId,
+			staleTime: 1000 * 60, // 1 minute
+		}
+	})
+
+	// Extract chat from list if currentChat is null (newly created chat)
+	const fallbackChat = useMemo(() => {
+		if (currentChat || !chatListData?.data?.data?.chats) return null
+		return chatListData.data.data.chats.find((c) => c.id === chatRoomId) ?? null
+	}, [currentChat, chatListData, chatRoomId])
+
+	// Use either store chat or fallback from list
+	const chatData_source = currentChat || fallbackChat
+
 	// Determine the other user's ID for online status tracking
 	const otherUserId = useMemo(() => {
-		if (!currentChat || !currentUserId) return null
-		const isBuyer = currentChat.buyer.id === currentUserId
-		return isBuyer ? currentChat.seller.id : currentChat.buyer.id
-	}, [currentChat, currentUserId])
+		if (!chatData_source || !currentUserId) return null
+		const isBuyer = chatData_source.buyer.id === currentUserId
+		return isBuyer ? chatData_source.seller.id : chatData_source.buyer.id
+	}, [chatData_source, currentUserId])
 
 	// Join chat room and get real-time messages
 	const { messages: storeMessages, messagesLoading, isConnected } = useChatRoom(chatRoomId)
@@ -362,7 +411,90 @@ const ChatRoomPage: React.FC = () => {
 
 	// Set messages from API to store on initial load
 	const setMessages = useChatStore((s) => s.setMessages)
+	const setChatList = useChatStore((s) => s.setChatList)
 	const messagesInitializedRef = useRef<number | null>(null)
+
+	// Sync fallback chat to store when fetched
+	useEffect(() => {
+		if (fallbackChat && chatRoomId && !currentChat) {
+			// Update store with fetched chat to prevent refetching
+			const existingList = useChatStore.getState().chatList
+			const updated = existingList.find(c => c.id === chatRoomId)
+				? existingList
+				: [fallbackChat, ...existingList]
+			setChatList(updated)
+		}
+	}, [fallbackChat, chatRoomId, currentChat, setChatList])
+
+	const { mutate: deleteChatRoom } = useDeleteChatRoomMutation({
+		onSuccess: (response) => {
+			console.log('Chat deletion successful:', response)
+
+			// Only update store AFTER server confirms deletion
+			if (chatRoomId) {
+				setChatList(useChatStore.getState().chatList.filter((chat) => chat.id !== chatRoomId))
+				// Clear messages for this chat
+				setMessages(chatRoomId, [])
+			}
+
+			// Force refetch from server to confirm deletion
+			queryClient.refetchQueries({ queryKey: ['MY_CHATS'] })
+			queryClient.refetchQueries({ queryKey: ['UNREAD_COUNT'] })
+
+			setSnackbar({ visible: true, message: t('chat.delete_chat_success'), isError: false })
+
+			// Navigate back after 1.5 seconds to show success message
+			setTimeout(() => {
+				setIsDeletingRoom(false)
+				router.back()
+			}, 1500)
+		},
+		onError: (error: any) => {
+			console.error('Delete chat failed:', {
+				message: error?.message,
+				response: error?.response?.data,
+				status: error?.response?.status,
+				error: error
+			})
+			setIsDeletingRoom(false)
+			setSnackbar({
+				visible: true,
+				message: error?.response?.data?.message || t('chat.delete_chat_error'),
+				isError: true
+			})
+		},
+		onSettled: () => {
+			// Don't do anything here - let onSuccess/onError handle state
+		},
+	})
+
+	const { mutate: deleteChatMessage } = useDeleteChatMessageMutation({
+		onSuccess: (_res, variables) => {
+			const currentMessages = useChatStore.getState().messages[variables.chatRoomId] || []
+			setMessages(
+				variables.chatRoomId,
+				currentMessages.filter((m) => m.id !== variables.messageId)
+			)
+			queryClient.invalidateQueries({ queryKey: ['CHAT_MESSAGES_INFINITE', variables.chatRoomId] })
+			setSnackbar({ visible: true, message: t('chat_room.delete_message_success'), isError: false })
+		},
+		onError: () => {
+			setSnackbar({ visible: true, message: t('chat_room.delete_message_error'), isError: true })
+		},
+		onSettled: () => {
+			setDeletingMessageId(null)
+		},
+	})
+
+	const { mutate: markAsRead } = useMarkAsReadMutation({
+		onSuccess: () => {
+			// Messages marked as read, query will auto-refresh
+			queryClient.invalidateQueries({ queryKey: ['UNREAD_COUNT'] })
+		},
+		onError: (error) => {
+			console.error('Failed to mark messages as read:', error)
+		},
+	})
 
 	// API response from infinite query - flatten all pages
 	const apiMessages: ChatMessageDto[] = useMemo(() => {
@@ -374,70 +506,125 @@ const ChatRoomPage: React.FC = () => {
 
 	const apiChatRoom = messagesData?.pages?.[0]?.data?.chat_room
 
-	console.log('API Messages:', apiMessages)
-	console.log('API Chat Room:', apiChatRoom)
+	console.log('API messages:', apiMessages)
+
+	useEffect(() => {
+		if (!snackbar.visible) return
+		const timer = setTimeout(() => {
+			setSnackbar((prev) => ({ ...prev, visible: false }))
+		}, 2200)
+		return () => clearTimeout(timer)
+	}, [snackbar.visible])
 
 	useEffect(() => {
 		// Only initialize messages once per chatRoomId when store is empty
-		if (chatRoomId && apiMessages && messagesInitializedRef.current !== chatRoomId) {
+		if (chatRoomId && apiMessages.length > 0 && messagesInitializedRef.current !== chatRoomId) {
 			// Check store directly to get fresh value (avoid stale closure)
 			const currentStoreMessages = useChatStore.getState().messages[chatRoomId] || []
 			if (currentStoreMessages.length === 0) {
 				messagesInitializedRef.current = chatRoomId
-				setMessages(
-					chatRoomId,
-					apiMessages.map((m) => ({
-						...m,
-						isPending: false,
-						isFailed: false,
-					}))
-				)
+				const initializedMessages = apiMessages.map((m) => ({
+					...m,
+					isPending: false,
+					isFailed: false,
+				}))
+
+				setMessages(chatRoomId, initializedMessages)
+
+				// Mark unread messages as read
+				const unreadMessageIds = initializedMessages
+					.filter((m) => !m.is_read && !m.is_mine) // Only mark as read if it's not mine and not already read
+					.map((m) => m.id)
+
+				console.log('Marking messages as read for chatRoomId:', chatRoomId, 'with messageIds:', unreadMessageIds)
+				if (unreadMessageIds.length > 0) {
+					markAsRead({
+						chat_room_id: chatRoomId,
+						message_ids: unreadMessageIds,
+					})
+				}
 			}
 		}
-	}, [chatRoomId, apiMessages, setMessages])
-	// Get display messages (prefer store for real-time, fallback to API)
+	}, [chatRoomId, apiMessages, setMessages, markAsRead])
+
+	// Merge API history and store realtime updates to avoid source-flipping.
+	const mergedMessages = useMemo<ChatMessage[]>(() => {
+		const byKey = new Map<string, ChatMessage>()
+
+		const toStoreShape = (msg: ChatMessage | ChatMessageDto): ChatMessage => {
+			if ('localId' in msg || 'isPending' in msg || 'isFailed' in msg) {
+				return msg as ChatMessage
+			}
+
+			return {
+				...(msg as ChatMessageDto),
+				isPending: false,
+				isFailed: false,
+			}
+		}
+
+		const getMessageKey = (msg: ChatMessage): string => {
+			if (msg.localId) return `local:${msg.localId}`
+			if (msg.id > 0) return `id:${msg.id}`
+
+			return `fallback:${msg.chat_room_id}:${msg.sender_id}:${msg.sent_at}:${msg.content}`
+		}
+
+		apiMessages.forEach((msg) => {
+			const normalized = toStoreShape(msg)
+			byKey.set(getMessageKey(normalized), normalized)
+		})
+
+		storeMessages.forEach((msg) => {
+			const normalized = toStoreShape(msg)
+			byKey.set(getMessageKey(normalized), normalized)
+		})
+
+		return Array.from(byKey.values()).sort(
+			(a, b) => parseBackendDateTime(a.sent_at).getTime() - parseBackendDateTime(b.sent_at).getTime()
+		)
+	}, [apiMessages, storeMessages])
+
+	// Get display messages from merged timeline
 	const displayMessages = useMemo(() => {
-		const sourceMessages = storeMessages.length > 0 ? storeMessages : apiMessages || []
 		if (!currentUserId) return []
 
-		return sourceMessages.map((msg, index) =>
-			'localId' in msg || 'isPending' in msg
-				? transformStoreMessage(msg as ChatMessage, currentUserId, index)
-				: transformApiMessage(msg as ChatMessageDto, currentUserId, index)
+		return mergedMessages.map((msg, index) =>
+			transformStoreMessage(msg as ChatMessage, currentUserId, index)
 		)
-	}, [storeMessages, apiMessages, currentUserId])
+	}, [mergedMessages, currentUserId])
 
 	// Group messages by date
 	const messageGroups = useMemo(() => {
-		const sourceMessages = storeMessages.length > 0 ? storeMessages : apiMessages || []
-		return groupMessagesByDate(displayMessages, sourceMessages)
-	}, [displayMessages, storeMessages, apiMessages])
+		return groupMessagesByDate(displayMessages, mergedMessages)
+	}, [displayMessages, mergedMessages])
 
 	// Build chat data for header/product card
 	// Supports both ChatListItemDto (from store) and ChatRoomDto (from API response)
 	const chatData: ChatData | null = useMemo(() => {
-		// Try from store first
-		if (currentChat && currentUserId) {
+		// Try from store or fetched list first
+
+		if (chatData_source && currentUserId) {
 			// Determine the other user (buyer if I'm seller, seller if I'm buyer)
-			const isBuyer = currentChat.buyer.id === currentUserId
-			const otherUser = isBuyer ? currentChat.seller : currentChat.buyer
+			const isBuyer = chatData_source.buyer.id === currentUserId
+			const otherUser = isBuyer ? chatData_source.seller : chatData_source.buyer
 
 			return {
-				id: currentChat.id,
+				id: chatData_source.id,
 				name: otherUser.username || 'Unknown',
 				avatar: otherUser.profile_image_url || undefined,
 				trustScore: '0.0°C',
 				isOnline,
 				otherUserId: otherUser.id,
 				product: {
-					id: currentChat.product.id,
-					title: currentChat.product.title || 'Product',
-					is_free: currentChat.product.is_free || false,
-					price: currentChat.product.price ? `${currentChat.product.price}` : '',
-					image: currentChat.product.image_url || '',
-					isSold: currentChat.product.status === 'sold',
-					isReserved: currentChat.product.status === 'reserved',
-					status: currentChat.product.status,
+					id: chatData_source.product.id,
+					title: chatData_source.product.title || 'Product',
+					is_free: chatData_source.product.is_free || false,
+					price: chatData_source.product.price ? `${chatData_source.product.price}` : '',
+					image: chatData_source.product.image_url || '',
+					isSold: chatData_source.product.status === 'sold',
+					isReserved: chatData_source.product.status === 'reserved',
+					status: chatData_source.product.status,
 				},
 			}
 		}
@@ -473,7 +660,26 @@ const ChatRoomPage: React.FC = () => {
 		}
 
 		return null
-	}, [currentChat, isOnline, apiChatRoom, currentUserId])
+	}, [chatData_source, isOnline, apiChatRoom, currentUserId])
+
+	const effectiveChatData: ChatData = useMemo(
+		() =>
+			chatData ?? {
+				id: chatRoomId ?? 0,
+				name: 'Chat',
+				trustScore: '0.0°C',
+				isOnline: false,
+				otherUserId: 0,
+				product: {
+					id: 0,
+					title: '',
+					price: '',
+					image: '',
+					status: '',
+				},
+			},
+		[chatData, chatRoomId]
+	)
 
 	const handleBack = () => {
 		router.back()
@@ -484,7 +690,48 @@ const ChatRoomPage: React.FC = () => {
 	}
 
 	const handleMore = () => {
-		console.log('More options pressed')
+		if (!chatRoomId || isDeletingRoom) return
+
+		Alert.alert(
+			t('chat.delete_chat_title'),
+			t('chat.delete_chat_confirm'),
+			[
+				{ text: t('common.cancel'), style: 'cancel' },
+				{
+					text: t('chat.delete'),
+					style: 'destructive',
+					onPress: () => {
+						setIsDeletingRoom(true)
+						deleteChatRoom(chatRoomId)
+					},
+				},
+			]
+		)
+	}
+
+	const handleDeleteMessage = (message: DisplayMessage) => {
+		if (!chatRoomId || deletingMessageId || !message.id) return
+
+		const numericMessageId = Number(message.id)
+		if (!Number.isFinite(numericMessageId) || numericMessageId <= 0) {
+			return
+		}
+
+		Alert.alert(
+			t('chat_room.delete_message_title'),
+			t('chat_room.delete_message_confirm'),
+			[
+				{ text: t('common.cancel'), style: 'cancel' },
+				{
+					text: t('chat.delete'),
+					style: 'destructive',
+					onPress: () => {
+						setDeletingMessageId(numericMessageId)
+						deleteChatMessage({ chatRoomId, messageId: numericMessageId })
+					},
+				},
+			]
+		)
 	}
 
 	const handleSend = async () => {
@@ -526,7 +773,11 @@ const ChatRoomPage: React.FC = () => {
 		<View>
 			<DateSeparator date={item.date} />
 			{item.messages.map((message) => (
-				<MessageBubble key={message.localId || message.id} message={message} />
+				<MessageBubble
+					key={message.localId || message.id}
+					message={message}
+					onLongPress={() => handleDeleteMessage(message)}
+				/>
 			))}
 		</View>
 	)
@@ -540,18 +791,6 @@ const ChatRoomPage: React.FC = () => {
 		)
 	}
 
-	// No chat data found
-	if (!chatData) {
-		return (
-			<View style={[styles.container, styles.loadingContainer, { backgroundColor: colors.profileBackground }]}>
-				<Text style={{ color: colors.textMuted }}>{t('chat_room.not_found')}</Text>
-				<TouchableOpacity onPress={handleBack} style={{ marginTop: 16 }}>
-					<Text style={{ color: colors.primaryColor }}>{t('common.go_back')}</Text>
-				</TouchableOpacity>
-			</View>
-		)
-	}
-
 	return (
 		<KeyboardAvoidingView
 			style={[styles.container, { backgroundColor: colors.profileBackground }]}
@@ -559,14 +798,19 @@ const ChatRoomPage: React.FC = () => {
 			keyboardVerticalOffset={0}
 		>
 			<ChatHeader
-				chatData={chatData}
+				chatData={effectiveChatData}
 				onBack={handleBack}
 				onCall={handleCall}
 				onMore={handleMore}
 				isTyping={isTyping}
 			/>
+			{isDeletingRoom && (
+				<View style={styles.deletingOverlay}>
+					<ActivityIndicator size='small' color={colors.primaryColor} />
+				</View>
+			)}
 
-			<ProductCard product={chatData.product} />
+			<ProductCard product={effectiveChatData.product} />
 
 			<SafetyBanner />
 
@@ -593,7 +837,7 @@ const ChatRoomPage: React.FC = () => {
 						)}
 					</>
 				}
-				ListFooterComponent={<ReservedNotice status={chatData.product.status} />}
+				ListFooterComponent={<ReservedNotice status={effectiveChatData.product.status} />}
 				onContentSizeChange={() => {
 					flatListRef.current?.scrollToEnd({ animated: false })
 				}}
@@ -615,8 +859,14 @@ const ChatRoomPage: React.FC = () => {
 				onSend={handleSend}
 				onAttach={handleAttach}
 				onTyping={handleTyping}
-				isSending={isSending || chatData.product.isSold}
+				isSending={isSending || !!effectiveChatData.product.isSold}
 			/>
+
+			{snackbar.visible && (
+				<View style={[styles.snackbar, { backgroundColor: snackbar.isError ? '#DC2626' : '#16A34A' }]}>
+					<Text style={styles.snackbarText}>{snackbar.message}</Text>
+				</View>
+			)}
 		</KeyboardAvoidingView>
 	)
 }
@@ -897,5 +1147,27 @@ const styles = StyleSheet.create({
 	loadMoreText: {
 		fontSize: 14,
 		fontWeight: '500',
+	},
+	deletingOverlay: {
+		position: 'absolute',
+		top: HEADER_PADDING_TOP + 10,
+		right: 48,
+		zIndex: 20,
+	},
+	snackbar: {
+		position: 'absolute',
+		left: 16,
+		right: 16,
+		bottom: Platform.OS === 'ios' ? 96 : 84,
+		borderRadius: 12,
+		paddingVertical: 12,
+		paddingHorizontal: 14,
+		zIndex: 40,
+	},
+	snackbarText: {
+		color: '#fff',
+		fontSize: 14,
+		fontWeight: '600',
+		textAlign: 'center',
 	},
 })

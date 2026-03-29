@@ -153,7 +153,7 @@ export default function HomeScreen() {
             </TouchableOpacity>
           </View>
 
-          {/* Category rows */}
+          {/* Post Category rows */}
           <View style={styles.categoryList}>
             {categories.map((cat, index) => {
               const { Icon } = cat;

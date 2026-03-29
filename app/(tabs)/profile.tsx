@@ -9,7 +9,7 @@ import { useAuthStore } from '@/modules/Auth/auth-store'
 import ProfileHeader from '@/modules/Profile/ProfileHeader'
 import ProfileMenuItem from '@/modules/Profile/ProfileMenuItem'
 import ProfileSection from '@/modules/Profile/ProfileSection'
-import { router } from 'expo-router'
+import { router, useFocusEffect } from 'expo-router'
 import {
 	FileText,
 	Globe,
@@ -23,7 +23,7 @@ import {
 	Package,
 	Sparkles
 } from 'lucide-react-native'
-import React, { useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native'
 
 const ProfilePage = () => {
@@ -34,8 +34,15 @@ const ProfilePage = () => {
 	const { isDark, setMode } = useModeToggle()
 	const [isLanguageModalVisible, setIsLanguageModalVisible] = useState(false)
 	const logout = useAuthStore((s) => s.logout)
+	const fetchUser = useAuthStore((s) => s.fetchUser)
 
 	const { isAuthenticated, user } = useAuthStore()
+
+	useFocusEffect(
+		useCallback(() => {
+			if (isAuthenticated) fetchUser()
+		}, [isAuthenticated, fetchUser]),
+	)
 
 	const handleLogout = () => {
 		Alert.alert(
@@ -62,6 +69,8 @@ const ProfilePage = () => {
 			router.push('/(settings)/my-profile')
 		} else if (route === 'listings') {
 			router.push('/(settings)/my-listings')
+		} else if (route === 'favorites') {
+			router.push('/(settings)/favorites')
 		} else if (route === 'verification') {
 			router.push('/(settings)/verification')
 		} else if (route === 'settings') {

@@ -66,17 +66,24 @@
 			"login_link": "Kirish"
 		},
 		"verification": {
-			"title": "Tasdiqlash kodingizni\nkiriting",
+			"title": "Telefon raqamingizni\nkiriting",
+			"otp_title": "Tasdiqlash kodini\nkiriting",
+			"otp_subtitle": "Raqamingizga 4 xonali kod yuborildi",
+			"send": "Yuborish",
+			"verify": "Tasdiqlash",
+			"resend_in": "Qayta yuborish:",
 			"phone_placeholder": "00 000 00 00",
-			"code_placeholder": "Kodni kiriting",
+			"code_placeholder": "Tasdiqlash kodini kiriting",
 			"resend_code": "Kodni qayta yuborish",
 			"done": "Tayyor",
 			"error_title": "Kirish xatosi",
 			"error_generic": "Nimadir noto'g'ri ketdi. Qayta urinib ko'ring."
 		},
 		"register": {
-			"title": "Hisob yaratish",
+			"title": "Akkaunt yaratish",
 			"description": "Bu telefon raqami hali ro'yxatdan o'tmagan. Hisobingizni yaratish uchun quyidagi tugmani bosing.",
+			"username_title": "Foydalanuvchi nomini kiriting",
+			"username_subtitle": "Profilingiz uchun noyob foydalanuvchi nomini tanlang",
 			"button": "Ro'yxatdan o'tish",
 			"error_title": "Ro'yxatdan o'tish xatosi",
 			"error_generic": "Nimadir noto'g'ri ketdi. Qayta urinib ko'ring."
@@ -106,7 +113,7 @@
 		"cars": "Avtomobillar",
 		"cars_desc": "Avtomobil va mototsikllar",
 		"works": "Ishlar",
-		"works_desc": "Ish o'rinlari va xizmatlar",
+		"works_desc": "Ish takliflari va xizmatlar",
 		"what_posting": "Nima e'lon qilasiz?",
 		"images": "Rasmlar",
 		"item_details": "Mahsulot ma'lumotlari",
@@ -313,7 +320,12 @@
 		"filter_unread": "O'qilmagan",
 		"notification_banner": "YANGILIK! Endi siz xabarlarni saqlashingiz mumkin.",
 		"empty_state": "Hali chatlar yo'q",
-		"empty_state_description": "Suhbatni boshlang va bu yerda ko'ring"
+		"empty_state_description": "Suhbatni boshlang va bu yerda ko'ring",
+		"delete": "O'chirish",
+		"delete_chat_title": "Chatni o'chirish",
+		"delete_chat_confirm": "Ushbu chatni o'chirishni xohlaysizmi?",
+		"delete_chat_error": "Chatni o'chirib bo'lmadi. Qayta urinib ko'ring.",
+		"delete_chat_success": "Chat muvaffaqiyatli o'chirildi"
 	},
 	"neighborhood": {
 		"title": "Mahallani boshqarish",
@@ -570,6 +582,10 @@
 		"likes": "Yoqtirishlar",
 		"sold_badge": "SOTILDI",
 		"empty_state": "Hali e'lonlar yo'q",
+		"delete_confirm_title": "E'lonni o'chirish",
+		"delete_confirm_message": "Haqiqatan ham bu e'lonni o'chirmoqchimisiz?",
+		"delete_success": "E'lon muvaffaqiyatli o'chirildi",
+		"delete_error": "E'lonni o'chirib bo'lmadi. Qayta urinib ko'ring.",
 		"actions": {
 			"edit": "Tahrirlash",
 			"delete": "O'chirish",
@@ -644,7 +660,11 @@
 		"connection_error": "Ulanish xatosi",
 		"quick_reply_hello": "Assalomu alaykum.",
 		"quick_reply_available": "Buyum hali ham mavjudmi?",
-		"load_more": "Oldingi xabarlarni yuklash"
+		"load_more": "Oldingi xabarlarni yuklash",
+		"delete_message_title": "Xabarni o'chirish",
+		"delete_message_confirm": "Ushbu xabarni o'chirishni xohlaysizmi?",
+		"delete_message_error": "Xabarni o'chirib bo'lmadi. Qayta urinib ko'ring.",
+		"delete_message_success": "Xabar muvaffaqiyatli o'chirildi"
 	},
 	"date_picker": {
 		"months": ["Yanvar", "Fevral", "Mart", "Aprel", "May", "Iyun", "Iyul", "Avgust", "Sentabr", "Oktabr", "Noyabr", "Dekabr"],
@@ -659,7 +679,7 @@
 		"share_message": "Ushbu e'lonni ko'ring!",
 		"status": "E'lon holati",
 		"status_active": "Faol",
-		"status_reserved": "Band qilingan",
+		"status_reserved": "Band",
 		"status_sold": "Sotilgan",
 		"status_hidden": "Yashirilgan",
 		"basic_info": "Asosiy ma'lumotlar",
@@ -671,5 +691,13 @@
 		"product_updated_successfully": "E'lon muvaffaqiyatli yangilandi!",
 		"error_updating_product": "E'lonni yangilab bo'lmadi. Qayta urinib ko'ring.",
 		"product_not_found": "Mahsulot topilmadi"
+	},
+	"navigation": {
+		"location_permission": "Joylashuvni talab qiladi",
+		"location_needed": "Sizning joylashuvingizni olish imkonsiz. Iltimos, joylashuvni aniqlash xizmatlarini yoqing va qayta urinib ko'ring.",
+		"no_maps": "Xarita ilovasi topilmadi",
+		"install_maps": "Marshrutlarni ko'rish uchun Google Xaritalar yoki Apple Xaritalarini o'rnating.",
+		"error": "Xatolik",
+		"error_opening_maps": "Xarita ilovasini ochibolamadi. Iltimos qayta urinib ko'ring."
 	}
 }

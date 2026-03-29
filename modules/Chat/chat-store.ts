@@ -3,10 +3,10 @@ import { create } from 'zustand';
 import { MessageTypeString } from './../../constants/appLimits';
 
 import {
-    ReceiveMessagePayload,
-    signalRService,
-    UserStatusPayload,
-    UserTypingPayload
+  ReceiveMessagePayload,
+  signalRService,
+  UserStatusPayload,
+  UserTypingPayload
 } from '@/api/services/signalr.service';
 import { useAuthStore } from '@/modules/Auth/auth-store';
 import type { ChatMessageDto, ChatRoomDto } from '@/types';
@@ -200,7 +200,9 @@ export const useChatStore = create<ChatState>((set, get) => ({
   setActiveChatRoom: (chatRoomId) => set({ activeChatRoomId: chatRoomId }),
 
   setMessages: (chatRoomId, messages) =>
-    set((state) => ({
+    set((state) => (
+      console.log('Setting messages for chatRoomId:', chatRoomId, 'with messages:', messages),
+      {
       messages: { ...state.messages, [chatRoomId]: messages },
     })),
 
@@ -245,6 +247,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
   // Send Message
   sendMessage: async (chatRoomId, text, messageType: MessageTypeString = 'text') => {
     const localId = `temp_${Date.now()}`
+
     const tempMessage: ChatMessage = {
       id: -1,
       chat_room_id: chatRoomId,

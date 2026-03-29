@@ -1,18 +1,18 @@
 // ==================== COMMON ====================
 
 import {
-    ECarCondition,
-    ECarFuelType,
-    ECarTransmissionType,
-    EComplaintType,
-    ECurrencyType,
-    EPaymentType,
-    EProductSortBy,
-    EProductType,
-    EWorkCondition,
-    EWorkerType,
-    EWorkSalaryType,
-    EWorkType
+  ECarCondition,
+  ECarFuelType,
+  ECarTransmissionType,
+  EComplaintType,
+  ECurrencyType,
+  EPaymentType,
+  EProductSortBy,
+  EProductType,
+  EWorkCondition,
+  EWorkerType,
+  EWorkSalaryType,
+  EWorkType
 } from "@/constants/enums";
 
 export interface ApiResponse<T> {
@@ -308,6 +308,7 @@ export interface LikedProductDto {
   id: number;
   product_id: number;
   title: string | null;
+  likes_count: number;
   description: string | null;
   main_image_url: string | null;
   status: string | null;
@@ -367,6 +368,7 @@ export interface Category {
   id: number;
   name_uz: string;
   name_ru: string;
+  image_url: string;
   parent_id: number | null;
   sort_order: number;
   product_count: number;

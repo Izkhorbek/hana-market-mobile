@@ -1,17 +1,18 @@
-import { queryClient } from '@/api/queryClient'
-import { useThemeNavigationBar } from '@/components/AnroidNavbarButtonsColorChange'
-import { NetworkProvider } from '@/components/providers/NetworkProvider'
-import '@/constants/localization'
-import { useColorScheme } from '@/hooks/use-color-scheme'
-import { useModeToggle } from '@/hooks/useModeToggle'
-import { useAuthStore } from '@/modules/Auth/auth-store'
-import { ThemeProvider } from '@/theme/theme-provider'
-import { QueryClientProvider } from '@tanstack/react-query'
-import { Stack } from 'expo-router'
-import { Sun } from 'lucide-react-native'
-import React from 'react'
-import { ActivityIndicator, StatusBar, View } from 'react-native'
-import 'react-native-reanimated'
+if (__DEV__) { require('../ReactotronConfig'); }
+import { queryClient } from '@/api/queryClient';
+import { useThemeNavigationBar } from '@/components/AnroidNavbarButtonsColorChange';
+import { NetworkProvider } from '@/components/providers/NetworkProvider';
+import '@/constants/localization';
+import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useModeToggle } from '@/hooks/useModeToggle';
+import { useAuthStore } from '@/modules/Auth/auth-store';
+import { ThemeProvider } from '@/theme/theme-provider';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { Stack } from 'expo-router';
+import { Sun } from 'lucide-react-native';
+import React from 'react';
+import { ActivityIndicator, StatusBar, View } from 'react-native';
+import 'react-native-reanimated';
 
 export default function RootLayout() {
 	const colorScheme = useColorScheme()
@@ -44,6 +45,7 @@ export default function RootLayout() {
 						<Stack.Screen name='search' />
 						<Stack.Screen name='categories' />
 						<Stack.Screen name='product/[id]' />
+						<Stack.Screen name='product/location' />
 						<Stack.Screen name='chat/[id]' />
 					</Stack>
 				</NetworkProvider>

@@ -1,8 +1,14 @@
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
-import { AlertCircle, CheckCircle, Info, XCircle } from 'lucide-react-native'
-import React from 'react'
 import {
+    AlertTriangle,
+    CheckCircle2,
+    Info,
+    XCircle,
+} from 'lucide-react-native'
+import React, { useEffect, useRef } from 'react'
+import {
+    Animated,
     Modal,
     StyleSheet,
     Text,
@@ -34,7 +40,7 @@ export interface CustomAlertProps {
     dismissOnBackdrop?: boolean
 }
 
-const ICON_SIZE = 48
+const ICON_SIZE = 32
 
 const CustomAlert: React.FC<CustomAlertProps> = ({
     visible,
@@ -52,39 +58,65 @@ const CustomAlert: React.FC<CustomAlertProps> = ({
     const colors = useThemeColors()
     const { t } = useTranslations()
 
-    // Default button text based on type
+    const scaleAnim = useRef(new Animated.Value(0.88)).current
+    const opacityAnim = useRef(new Animated.Value(0)).current
+
+    useEffect(() => {
+        if (visible) {
+            Animated.parallel([
+                Animated.spring(scaleAnim, {
+                    toValue: 1,
+                    useNativeDriver: true,
+                    damping: 18,
+                    stiffness: 260,
+                }),
+                Animated.timing(opacityAnim, {
+                    toValue: 1,
+                    duration: 180,
+                    useNativeDriver: true,
+                }),
+            ]).start()
+        } else {
+            scaleAnim.setValue(0.88)
+            opacityAnim.setValue(0)
+        }
+    }, [visible])
+
     const defaultPrimaryText = primaryButtonText ?? t('common.ok')
 
-    // Get icon and color based on type
     const getAlertConfig = () => {
         switch (type) {
             case 'error':
                 return {
-                    icon: <XCircle size={ICON_SIZE} color="#EF4444" />,
-                    backgroundColor: '#FEE2E2',
-                    borderColor: '#EF4444',
+                    icon: <XCircle size={ICON_SIZE} color="#fff" strokeWidth={2.2} />,
+                    iconBg: '#EF4444',
+                    accentColor: '#EF4444',
+                    pillBg: '#FEE2E2',
                     defaultTitle: t('alert.error_title'),
                 }
             case 'success':
                 return {
-                    icon: <CheckCircle size={ICON_SIZE} color="#10B981" />,
-                    backgroundColor: '#D1FAE5',
-                    borderColor: '#10B981',
+                    icon: <CheckCircle2 size={ICON_SIZE} color="#fff" strokeWidth={2.2} />,
+                    iconBg: '#02A348',
+                    accentColor: '#02A348',
+                    pillBg: '#D1FAE5',
                     defaultTitle: t('alert.success_title'),
                 }
             case 'warning':
                 return {
-                    icon: <AlertCircle size={ICON_SIZE} color="#F59E0B" />,
-                    backgroundColor: '#FEF3C7',
-                    borderColor: '#F59E0B',
+                    icon: <AlertTriangle size={ICON_SIZE} color="#fff" strokeWidth={2.2} />,
+                    iconBg: '#F59E0B',
+                    accentColor: '#F59E0B',
+                    pillBg: '#FEF3C7',
                     defaultTitle: t('alert.warning_title'),
                 }
             case 'info':
             default:
                 return {
-                    icon: <Info size={ICON_SIZE} color={colors.primaryColor} />,
-                    backgroundColor: colors.primaryColor + '20',
-                    borderColor: colors.primaryColor,
+                    icon: <Info size={ICON_SIZE} color="#fff" strokeWidth={2.2} />,
+                    iconBg: colors.primaryColor,
+                    accentColor: colors.primaryColor,
+                    pillBg: colors.primaryColor + '18',
                     defaultTitle: t('alert.info_title'),
                 }
         }
@@ -94,74 +126,82 @@ const CustomAlert: React.FC<CustomAlertProps> = ({
     const displayTitle = title ?? config.defaultTitle
 
     const handleBackdropPress = () => {
-        if (dismissOnBackdrop && onDismiss) {
-            onDismiss()
-        }
+        if (dismissOnBackdrop && onDismiss) onDismiss()
     }
 
     const handlePrimaryPress = () => {
-        if (onPrimaryPress) {
-            onPrimaryPress()
-        } else if (onDismiss) {
-            onDismiss()
-        }
+        if (onPrimaryPress) onPrimaryPress()
+        else if (onDismiss) onDismiss()
     }
 
     return (
         <Modal
             visible={visible}
             transparent
-            animationType="fade"
+            animationType="none"
             onRequestClose={onDismiss}
         >
             <TouchableWithoutFeedback onPress={handleBackdropPress}>
                 <View style={styles.overlay}>
                     <TouchableWithoutFeedback>
-                        <View style={[styles.container, { backgroundColor: colors.background }]}>
-                            {/* Icon */}
-                            <View style={[styles.iconContainer, { backgroundColor: config.backgroundColor }]}>
-                                {config.icon}
+                        <Animated.View
+                            style={[
+                                styles.container,
+                                { backgroundColor: colors.background },
+                                { transform: [{ scale: scaleAnim }], opacity: opacityAnim },
+                            ]}
+                        >
+                            {/* Accent top bar */}
+                            <View style={[styles.accentBar, { backgroundColor: config.accentColor }]} />
+
+                            {/* Icon pill */}
+                            <View style={[styles.iconPill, { backgroundColor: config.pillBg }]}>
+                                <View style={[styles.iconCircle, { backgroundColor: config.iconBg }]}>
+                                    {config.icon}
+                                </View>
                             </View>
 
-                            {/* Title */}
-                            <Text style={[styles.title, { color: colors.text }]}>
-                                {displayTitle}
-                            </Text>
+                            {/* Content */}
+                            <View style={styles.content}>
+                                <Text style={[styles.title, { color: colors.text }]}>
+                                    {displayTitle}
+                                </Text>
+                                <Text style={[styles.message, { color: colors.textMuted }]}>
+                                    {message}
+                                </Text>
+                            </View>
 
-                            {/* Message */}
-                            <Text style={[styles.message, { color: colors.textMuted }]}>
-                                {message}
-                            </Text>
+                            {/* Divider */}
+                            <View style={[styles.divider, { backgroundColor: colors.borderColor }]} />
 
                             {/* Buttons */}
                             <View style={styles.buttonContainer}>
                                 {secondaryButtonText && (
                                     <TouchableOpacity
-                                        style={[styles.button, styles.secondaryButton, { borderColor: colors.borderColor }]}
+                                        style={[styles.secondaryButton, { borderColor: colors.borderColor, backgroundColor: colors.card }]}
                                         onPress={onSecondaryPress}
                                         activeOpacity={0.7}
                                     >
-                                        <Text style={[styles.buttonText, { color: colors.text }]}>
+                                        <Text style={[styles.secondaryButtonText, { color: colors.text }]}>
                                             {secondaryButtonText}
                                         </Text>
                                     </TouchableOpacity>
                                 )}
                                 <TouchableOpacity
                                     style={[
-                                        styles.button,
                                         styles.primaryButton,
-                                        { backgroundColor: colors.primaryColor },
-                                        secondaryButtonText ? { flex: 1 } : { width: '100%' },
+                                        { backgroundColor: config.accentColor },
+                                        !secondaryButtonText && styles.fullWidthButton,
                                     ]}
                                     onPress={handlePrimaryPress}
-                                    activeOpacity={0.7}
+                                    activeOpacity={0.82}
                                 >
-                                    <Text style={[styles.buttonText, styles.primaryButtonText]}>
+                                    <Text style={styles.primaryButtonText}>
                                         {defaultPrimaryText}
                                     </Text>
                                 </TouchableOpacity>
                             </View>
-                        </View>
+                        </Animated.View>
                     </TouchableWithoutFeedback>
                 </View>
             </TouchableWithoutFeedback>
@@ -172,68 +212,95 @@ const CustomAlert: React.FC<CustomAlertProps> = ({
 const styles = StyleSheet.create({
     overlay: {
         flex: 1,
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        backgroundColor: 'rgba(0,0,0,0.45)',
         justifyContent: 'center',
         alignItems: 'center',
-        paddingHorizontal: 24,
+        paddingHorizontal: 28,
     },
     container: {
         width: '100%',
-        maxWidth: 340,
-        borderRadius: 16,
-        padding: 24,
+        maxWidth: 360,
+        borderRadius: 20,
+        overflow: 'hidden',
         alignItems: 'center',
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.15,
-        shadowRadius: 12,
-        elevation: 8,
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.18,
+        shadowRadius: 24,
+        elevation: 12,
     },
-    iconContainer: {
-        width: 80,
-        height: 80,
+    accentBar: {
+        width: '100%',
+        height: 4,
+    },
+    iconPill: {
+        marginTop: 28,
+        marginBottom: 4,
         borderRadius: 40,
+        padding: 14,
+    },
+    iconCircle: {
+        width: 64,
+        height: 64,
+        borderRadius: 32,
         justifyContent: 'center',
         alignItems: 'center',
-        marginBottom: 16,
+    },
+    content: {
+        paddingHorizontal: 24,
+        paddingTop: 12,
+        paddingBottom: 20,
+        alignItems: 'center',
     },
     title: {
-        fontSize: 20,
+        fontSize: 18,
         fontWeight: '700',
         textAlign: 'center',
         marginBottom: 8,
+        letterSpacing: -0.2,
     },
     message: {
-        fontSize: 15,
+        fontSize: 14,
         textAlign: 'center',
-        lineHeight: 22,
-        marginBottom: 24,
+        lineHeight: 21,
+    },
+    divider: {
+        width: '100%',
+        height: 1,
     },
     buttonContainer: {
         flexDirection: 'row',
         width: '100%',
-        gap: 12,
+        padding: 16,
+        gap: 10,
     },
-    button: {
-        paddingVertical: 14,
-        paddingHorizontal: 24,
+    primaryButton: {
+        flex: 1,
+        paddingVertical: 13,
         borderRadius: 12,
         alignItems: 'center',
         justifyContent: 'center',
     },
-    primaryButton: {
-        minWidth: 120,
+    fullWidthButton: {
+        flex: 1,
     },
     secondaryButton: {
         flex: 1,
+        paddingVertical: 13,
+        borderRadius: 12,
         borderWidth: 1,
-    },
-    buttonText: {
-        fontSize: 16,
-        fontWeight: '600',
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     primaryButtonText: {
+        fontSize: 15,
+        fontWeight: '700',
         color: '#FFFFFF',
+        letterSpacing: 0.1,
+    },
+    secondaryButtonText: {
+        fontSize: 15,
+        fontWeight: '600',
     },
 })
 

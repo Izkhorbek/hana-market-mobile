@@ -7,10 +7,6 @@ export default function Index() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
   const isHydrated = useAuthStore((s) => s.isHydrated)
 
-  if (__DEV__) {
-    require("../ReactotronConfig");
-  }
-
   if (!isHydrated) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>

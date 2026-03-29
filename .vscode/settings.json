@@ -3,5 +3,10 @@
     "source.fixAll": "explicit",
     "source.organizeImports": "explicit",
     "source.sortMembers": "explicit"
-  }
+  },
+  "cSpell.ignoreRandomStrings": false,
+  "cSpell.enabled": false,
+  "cSpell.checkOnlyEnabledFileTypes": false,
+  "cSpell.diagnosticLevel": "Hint",
+  "chat.editor.fontSize": 14
 }

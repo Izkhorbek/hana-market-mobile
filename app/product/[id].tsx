@@ -1,8 +1,9 @@
-import { useCreateChatMutation, useProductQuery, useToggleLikeMutation } from '@/api/hooks'
+import { useCreateChatMutation, useProductQuery, useProductsBySellerQuery, useRelatedProductsQuery, useToggleLikeMutation } from '@/api/hooks'
 import LocationMapPreview from '@/components/ProductDetail/LocationMapPreview'
 import ProductImageGallery from '@/components/ProductDetail/ProductImageGallery'
 import SimilarProductCard, { SimilarProduct } from '@/components/ProductDetail/SimilarProductCard'
 import RemoteImage from '@/components/shared/RemoteImage'
+import { BottomSheet } from '@/components/ui/bottom-sheet'
 import ImageViewer from '@/components/ui/ImageViewer'
 import { AppLimits } from '@/constants/appLimits'
 import { useThemeColors } from '@/hooks/use-theme-colors'
@@ -37,55 +38,6 @@ import Animated, {
 	withTiming
 } from 'react-native-reanimated'
 
-const mockSellerProducts: SimilarProduct[] = [
-	{
-		id: '11',
-		title: 'MacBook Pro 16"',
-		price: '25,000,000 UZS',
-		image:
-			'https://images.unsplash.com/photo-1517336714739-489689fd1ca8?auto=format&fit=crop&w=700&q=80',
-	},
-	{
-		id: '12',
-		title: 'iPhone 15 Pro Max',
-		price: '18,000,000 UZS',
-		image:
-			'https://images.unsplash.com/photo-1510557880182-3f8f7a2d47cb?auto=format&fit=crop&w=700&q=80',
-	},
-	{
-		id: '13',
-		title: 'Sofa Set',
-		price: '8,500,000 UZS',
-		image:
-			'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=700&q=80',
-	},
-]
-
-const mockSimilarProducts: SimilarProduct[] = [
-	{
-		id: '21',
-		title: 'Modern 2-Room',
-		price: '450,000 $',
-		image:
-			'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=700&q=80',
-	},
-	{
-		id: '22',
-		title: '3-Room',
-		price: '550,000 $',
-		image:
-			'https://images.unsplash.com/photo-1560448204-603b3fc33ddc?auto=format&fit=crop&w=700&q=80',
-	},
-	{
-		id: '23',
-		title: 'Luxury Apartment',
-		price: '750,000 $',
-		image:
-			'https://images.unsplash.com/photo-1494526585095-c41746248156?auto=format&fit=crop&w=700&q=80',
-	},
-]
-
-
 // Animation configuration
 const ANIMATION_CONFIG = {
 	imageScale: { initial: 0.85, final: 1 },
@@ -97,6 +49,66 @@ const ANIMATION_CONFIG = {
 
 // Animated ScrollView
 const AnimatedScrollView = Animated.ScrollView
+const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity)
+
+interface ProductCollectionSheetProps {
+	isVisible: boolean
+	title: string
+	contextLabel?: string
+	products: SimilarProduct[]
+	onClose: () => void
+	onPressProduct: (id: string) => void
+	colors: ReturnType<typeof useThemeColors>
+}
+
+const ProductCollectionSheet: React.FC<ProductCollectionSheetProps> = ({
+	isVisible,
+	title,
+	contextLabel,
+	products,
+	onClose,
+	onPressProduct,
+	colors,
+}) => {
+	return (
+		<BottomSheet
+			isVisible={isVisible}
+			onClose={onClose}
+			snapPoints={[0.78]}
+			style={{ backgroundColor: colors.background }}
+		>
+			<View style={styles.sheetContent}>
+				<View style={[
+					styles.sheetHero,
+					{ backgroundColor: colors.card, borderColor: colors.borderColor },
+				]}>
+					<View style={styles.sheetHeroTextWrap}>
+						<Text style={[styles.sheetTitle, { color: colors.text }]}>{title}</Text>
+						{contextLabel ? (
+							<Text style={[styles.sheetSubtitle, { color: colors.textMuted }]} numberOfLines={1}>
+								{contextLabel}
+							</Text>
+						) : null}
+					</View>
+					<View style={[styles.sheetCountBadge, { backgroundColor: `${colors.primaryColor}18` }]}>
+						<Text style={[styles.sheetCountText, { color: colors.primaryColor }]}>{products.length}</Text>
+					</View>
+				</View>
+
+				<View style={styles.sheetGrid}>
+					{products.map((item) => (
+						<SimilarProductCard
+							key={item.id}
+							item={item}
+							variant='grid'
+							onPress={onPressProduct}
+						/>
+					))}
+				</View>
+			</View>
+		</BottomSheet>
+	)
+}
 
 const ProductDetailPage: React.FC = () => {
 	const { id } = useLocalSearchParams<{ id?: string }>()
@@ -106,11 +118,16 @@ const ProductDetailPage: React.FC = () => {
 	const [isLiked, setIsLiked] = useState(false)
 	const isLikedRef = useRef(false)
 	const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
+	const currentUserId = useAuthStore((s) => s.user?.id)
+	const user = useAuthStore((s) => s.user)
+
+	console.log("user", user)
 
 	// Image viewer state
 	const [imageViewerVisible, setImageViewerVisible] = useState(false)
 	const [imageViewerIndex, setImageViewerIndex] = useState(0)
 	const [imageViewerUrls, setImageViewerUrls] = useState<string[]>([])
+	const [activeSheet, setActiveSheet] = useState<'related' | null>(null)
 
 	// Handle image press from gallery
 	const handleImagePress = useCallback((index: number, urls: string[]) => {
@@ -154,11 +171,48 @@ const ProductDetailPage: React.FC = () => {
 		isLikedRef.current = productIsLiked
 	}, [productIsLiked])
 
-	// Seller info (using mock data for now)
+	// Seller info
 	const productSellerId = product?.user_id ?? 0
+	const isMyProduct = !!currentUserId && productSellerId === currentUserId
 	const productSellerUserName = product?.seller?.username ?? 'unknown'
 	const productSellerLocation = product?.seller?.address_name ?? 'unknown'
 	const productSellerProfileImage = product?.seller?.profile_image_url ?? null
+
+	console.log("product", product)
+	console.log('currentUserId', currentUserId)
+	console.log('isMyProduct', isMyProduct)
+
+	// ── Seller products ──────────────────────────────────────────────────────
+	const { data: sellerProductsRes } = useProductsBySellerQuery({
+		sellerId: productSellerId,
+		pageSize: 12,
+		querySettings: { enabled: productSellerId > 0 },
+	})
+	const sellerProducts: SimilarProduct[] = (sellerProductsRes?.data?.data?.items ?? [])
+		.filter((p: any) => Number(p.id) !== productId)
+		.map((p: any) => ({
+			id: String(p.id),
+			title: p.title ?? '',
+			price: p.is_free ? t('home.free') : (p.price ?? ''),
+			image: p.main_image_url ?? '',
+		}))
+
+	// ── Related products ─────────────────────────────────────────────────────
+	const { data: relatedProductsRes } = useRelatedProductsQuery({
+		productId,
+		querySettings: { enabled: productId > 0 },
+	})
+	const relatedProducts: SimilarProduct[] = (relatedProductsRes?.data?.data ?? [])
+		.filter((p: any) => Number(p.id) !== productId)
+		.map((p: any) => ({
+			id: String(p.id),
+			title: p.title ?? '',
+			price: p.is_free ? t('home.free') : (p.price ?? ''),
+			image: p.main_image_url ?? '',
+		}))
+
+	const sellerPreviewProducts = sellerProducts.slice(0, 6)
+	const relatedPreviewProducts = relatedProducts.slice(0, 6)
 
 	// ── Animations ───────────────────────────────────────────────────────────
 	// Scroll position drives ALL scroll-based animations on the UI thread
@@ -275,11 +329,12 @@ const ProductDetailPage: React.FC = () => {
 
 	const handleMapPress = useCallback(() => {
 		router.push({
-			pathname: '/(tabs)/map',
+			pathname: '/product/location',
 			params: {
 				latitude: String(productLat),
 				longitude: String(productLng),
-				markerTitle: productMoljal || productTitle,
+				title: productTitle,
+				moljal: productMoljal,
 			},
 		})
 	}, [productLat, productLng, productMoljal, productTitle])
@@ -300,6 +355,7 @@ const ProductDetailPage: React.FC = () => {
 
 	const handleChat = useCallback(() => {
 		if (!isAuthenticated) { router.push('/(auth)/auth'); return }
+		if (isMyProduct) return
 		if (!productSellerId) return
 		createChat(
 			{ seller_id: productSellerId, product_id: productId },
@@ -313,7 +369,7 @@ const ProductDetailPage: React.FC = () => {
 				}
 			},
 		)
-	}, [isAuthenticated, productSellerId, productId, createChat])
+	}, [isAuthenticated, isMyProduct, productSellerId, productId, createChat])
 
 	const handleShare = useCallback(async () => {
 		try {
@@ -333,8 +389,20 @@ const ProductDetailPage: React.FC = () => {
 	}, [productTitle, productId])
 
 	const handleOpenProduct = useCallback((id: string) => {
+		setActiveSheet(null)
 		router.push(`/product/${id}`)
 	}, [])
+
+	const handleOpenSellerProducts = useCallback(() => {
+		if (!productSellerId) return
+		router.push({
+			pathname: '/product/seller/[sellerId]',
+			params: {
+				sellerId: String(productSellerId),
+				sellerName: productSellerUserName,
+			},
+		})
+	}, [productSellerId, productSellerUserName])
 
 
 	//---Seller products section ------------------------------
@@ -413,8 +481,10 @@ const ProductDetailPage: React.FC = () => {
 
 				<View style={[styles.content, { backgroundColor: colors.profileBackground }]}>
 					{/* Seller Row */}
-					<Animated.View
+					<AnimatedTouchableOpacity
 						style={[styles.sellerRow, { borderBottomColor: colors.borderColor }, sellerRowStyle]}
+						onPress={handleOpenSellerProducts}
+						activeOpacity={0.8}
 					>
 						<View style={styles.sellerInfo}>
 							{productSellerProfileImage ? (
@@ -434,7 +504,7 @@ const ProductDetailPage: React.FC = () => {
 							</View>
 						</View>
 						<ChevronRight size={18} color={colors.textMuted} />
-					</Animated.View>
+					</AnimatedTouchableOpacity>
 
 					{/* Title & Price */}
 					<Animated.View style={titleStyle}>
@@ -520,46 +590,54 @@ const ProductDetailPage: React.FC = () => {
 					</Animated.View>
 
 					{/* More from this seller */}
-					<Animated.View style={sellerProductsStyle}>
-						<View style={styles.sectionHeaderRow}>
-							<Text style={[styles.sectionTitle, { color: colors.text }]}>
-								{t('product_detail.more_from_seller')}
-							</Text>
-							<Text style={[styles.seeAll, { color: colors.primaryColor }]}>
-								{t('product_detail.see_all')}
-							</Text>
-						</View>
-						<Animated.ScrollView
-							horizontal
-							showsHorizontalScrollIndicator={false}
-							contentContainerStyle={styles.hList}
-						>
-							{mockSellerProducts.map(item => (
-								<SimilarProductCard key={item.id} item={item} onPress={handleOpenProduct} />
-							))}
-						</Animated.ScrollView>
-					</Animated.View>
+					{sellerProducts.length > 0 && (
+						<Animated.View style={sellerProductsStyle}>
+							<View style={styles.sectionHeaderRow}>
+								<Text style={[styles.sectionTitle, { color: colors.text }]}>
+									{t('product_detail.more_from_seller')}
+								</Text>
+								<TouchableOpacity onPress={handleOpenSellerProducts} activeOpacity={0.75}>
+									<Text style={[styles.seeAll, { color: colors.primaryColor }]}>
+										{t('product_detail.see_all')}
+									</Text>
+								</TouchableOpacity>
+							</View>
+							<Animated.ScrollView
+								horizontal
+								showsHorizontalScrollIndicator={false}
+								contentContainerStyle={styles.hList}
+							>
+								{sellerPreviewProducts.map(item => (
+									<SimilarProductCard key={item.id} item={item} onPress={handleOpenProduct} />
+								))}
+							</Animated.ScrollView>
+						</Animated.View>
+					)}
 
-					{/* Similar Listings */}
-					<Animated.View style={similarProductsStyle}>
-						<View style={styles.sectionHeaderRow}>
-							<Text style={[styles.sectionTitle, { color: colors.text }]}>
-								{t('product_detail.similar_listings')}
-							</Text>
-							<Text style={[styles.seeAll, { color: colors.primaryColor }]}>
-								{t('product_detail.see_all')}
-							</Text>
-						</View>
-						<Animated.ScrollView
-							horizontal
-							showsHorizontalScrollIndicator={false}
-							contentContainerStyle={styles.hList}
-						>
-							{mockSimilarProducts.map(item => (
-								<SimilarProductCard key={item.id} item={item} onPress={handleOpenProduct} />
-							))}
-						</Animated.ScrollView>
-					</Animated.View>
+					{/* Related Products */}
+					{relatedProducts.length > 0 && (
+						<Animated.View style={similarProductsStyle}>
+							<View style={styles.sectionHeaderRow}>
+								<Text style={[styles.sectionTitle, { color: colors.text }]}>
+									{t('product_detail.similar_listings')}
+								</Text>
+								{/* <TouchableOpacity onPress={() => setActiveSheet('related')} activeOpacity={0.75}>
+									<Text style={[styles.seeAll, { color: colors.primaryColor }]}>
+										{t('product_detail.see_all')}
+									</Text>
+								</TouchableOpacity> */}
+							</View>
+							<Animated.ScrollView
+								horizontal
+								showsHorizontalScrollIndicator={false}
+								contentContainerStyle={styles.hList}
+							>
+								{relatedPreviewProducts.map(item => (
+									<SimilarProductCard key={item.id} item={item} onPress={handleOpenProduct} />
+								))}
+							</Animated.ScrollView>
+						</Animated.View>
+					)}
 				</View>
 			</AnimatedScrollView>
 
@@ -586,9 +664,15 @@ const ProductDetailPage: React.FC = () => {
 					/>
 				</TouchableOpacity>
 				<TouchableOpacity
-					style={[styles.chatButton, { backgroundColor: colors.primaryColor, opacity: chatPending ? 0.7 : 1 }]}
+					style={[
+						styles.chatButton,
+						{
+							backgroundColor: colors.primaryColor,
+							opacity: chatPending || isMyProduct ? 0.45 : 1,
+						},
+					]}
 					onPress={handleChat}
-					disabled={chatPending}
+					disabled={chatPending || isMyProduct}
 				>
 					<MessageCircle size={20} color='#fff' />
 					<Text style={styles.chatButtonText}>{t('product_detail.chat_with_seller')}</Text>
@@ -601,6 +685,16 @@ const ProductDetailPage: React.FC = () => {
 				images={imageViewerUrls}
 				initialIndex={imageViewerIndex}
 				onClose={() => setImageViewerVisible(false)}
+			/>
+
+			<ProductCollectionSheet
+				isVisible={activeSheet === 'related'}
+				title={t('product_detail.similar_listings')}
+				contextLabel={productCategory}
+				products={relatedProducts}
+				onClose={() => setActiveSheet(null)}
+				onPressProduct={handleOpenProduct}
+				colors={colors}
 			/>
 		</View>
 	)
@@ -728,7 +822,51 @@ const styles = StyleSheet.create({
 		justifyContent: 'space-between',
 	},
 	seeAll: { fontSize: 13, fontWeight: '600' },
-	hList: { gap: 10, paddingBottom: 12 },
+	hList: { gap: 10, paddingBottom: 12, paddingRight: 16 },
+	sheetContent: {
+		gap: 16,
+	},
+	sheetHero: {
+		borderWidth: 1,
+		borderRadius: 18,
+		paddingHorizontal: 16,
+		paddingVertical: 14,
+		flexDirection: 'row',
+		alignItems: 'center',
+		justifyContent: 'space-between',
+		gap: 12,
+	},
+	sheetHeroTextWrap: {
+		flex: 1,
+		gap: 4,
+	},
+	sheetTitle: {
+		fontSize: 18,
+		fontWeight: '700',
+	},
+	sheetSubtitle: {
+		fontSize: 13,
+	},
+	sheetCountBadge: {
+		minWidth: 40,
+		height: 40,
+		borderRadius: 20,
+		alignItems: 'center',
+		justifyContent: 'center',
+		paddingHorizontal: 12,
+	},
+	sheetCountText: {
+		fontSize: 15,
+		fontWeight: '700',
+	},
+	sheetGrid: {
+		flexDirection: 'row',
+		flexWrap: 'wrap',
+		justifyContent: 'space-between',
+		rowGap: 12,
+		columnGap: 0,
+		paddingBottom: 12,
+	},
 
 	// Bottom Bar - increased height
 	bottomBar: {

@@ -133,6 +133,40 @@ export const useMarkAsReadMutation = (
 };
 
 /**
+ * Hook to delete a chat room for current user
+ */
+export const useDeleteChatRoomMutation = (
+  options?: UseMutationOptions<AxiosResponse<ApiResponse<Record<string, never>>>, Error, number>
+) => {
+  return useMutation<AxiosResponse<ApiResponse<Record<string, never>>>, Error, number>({
+    mutationKey: ["DELETE_CHAT_ROOM"],
+    mutationFn: (chatRoomId) => chatService.deleteChatRoom(chatRoomId),
+    ...options,
+  });
+};
+
+/**
+ * Hook to delete a message from a chat room for current user
+ */
+export const useDeleteChatMessageMutation = (
+  options?: UseMutationOptions<
+    AxiosResponse<ApiResponse<Record<string, never>>>,
+    Error,
+    { chatRoomId: number; messageId: number }
+  >
+) => {
+  return useMutation<
+    AxiosResponse<ApiResponse<Record<string, never>>>,
+    Error,
+    { chatRoomId: number; messageId: number }
+  >({
+    mutationKey: ["DELETE_CHAT_MESSAGE"],
+    mutationFn: ({ chatRoomId, messageId }) => chatService.deleteChatMessage(chatRoomId, messageId),
+    ...options,
+  });
+};
+
+/**
  * Hook to query user online status
  */
 export const useUserStatusQuery = ({ 

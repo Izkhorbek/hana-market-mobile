@@ -12,8 +12,8 @@ import {
   ActivityIndicator,
   Alert,
   KeyboardAvoidingView,
-  Modal,
   Platform,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -26,28 +26,36 @@ const AuthPage = () => {
   const colors = useThemeColors()
   const { t } = useTranslations()
 
-  const { register, login, user } = useAuthStore()
+  const { login } = useAuthStore()
 
   const [phoneNumber, setPhoneNumber] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const phoneInputRef = useRef<TextInput>(null)
 
-  // Location alert state
   const [showLocationAlert, setShowLocationAlert] = useState(false)
+  const [showUserNotFoundAlert, setShowUserNotFoundAlert] = useState(false)
 
-  // Username modal state
-  const [showUsernameModal, setShowUsernameModal] = useState(false)
+  const [step, setStep] = useState<'phone' | 'otp' | 'username'>('phone')
+  const [otpCode, setOtpCode] = useState(['', '', '', ''])
+  const [otpFocused, setOtpFocused] = useState(-1)
+  const [countdown, setCountdown] = useState(0)
+  const otpRefs = useRef<(TextInput | null)[]>([null, null, null, null])
+
   const [username, setUsername] = useState('')
   const [usernameError, setUsernameError] = useState('')
-  const [isUpdatingUsername, setIsUpdatingUsername] = useState(false)
-
-  // Store reference to logged-in user for checking after alerts
-  const [pendingNavigation, setPendingNavigation] = useState(false)
+  const usernameInputRef = useRef<TextInput>(null)
 
   // Focus phone input on mount
   useEffect(() => {
     setTimeout(() => phoneInputRef.current?.focus(), 100)
   }, [])
+
+  // Countdown timer for OTP resend
+  useEffect(() => {
+    if (step !== 'otp' || countdown <= 0) return
+    const timer = setInterval(() => setCountdown(prev => prev - 1), 1000)
+    return () => clearInterval(timer)
+  }, [step, countdown])
 
   const formatPhone = (raw: string): string => {
     const digits = raw.replace(/\D/g, '')
@@ -65,78 +73,15 @@ const AuthPage = () => {
     }
   }
 
-  const handleDone = useCallback(async () => {
-    if (phoneNumber.length !== 9 || isLoading) return
-
-    setIsLoading(true)
-    try {
-      const fullPhone = `+998${phoneNumber}`
-      await login(fullPhone)
-
-      // Get the updated user from the store
-      const loggedInUser = useAuthStore.getState().user
-
-      // Check if user needs to set up username (first-time login)
-      if (loggedInUser && !loggedInUser.username) {
-        setShowUsernameModal(true)
-        return
-      }
-
-      // Check if user needs to set up location
-      if (loggedInUser && (loggedInUser.latitude == null || loggedInUser.longitude == null)) {
-        setShowLocationAlert(true)
-        return
-      }
-
-      // All set, navigate to home
-      router.replace('/(tabs)/home')
-    } catch (error: any) {
-      const message = error?.response?.data?.errors?.[0] ||
-        error?.message ||
-        t('auth.verification.error_generic')
-
-      if (
-        message.toLowerCase().includes('already') ||
-        message.toLowerCase().includes('exists')
-      ) {
-        try {
-          await login(`+998${phoneNumber}`)
-
-          // Get the updated user from the store
-          const loggedInUser = useAuthStore.getState().user
-
-          // Check if user needs to set up username (first-time login)
-          if (loggedInUser && !loggedInUser.username) {
-            setShowUsernameModal(true)
-            return
-          }
-
-          // Check if user needs to set up location
-          if (loggedInUser && (loggedInUser.latitude == null || loggedInUser.longitude == null)) {
-            setShowLocationAlert(true)
-            return
-          }
-
-          router.replace('/(tabs)/home')
-          return
-        } catch (loginError) {
-          console.error('Auto-login failed:', loginError)
-        }
-      }
-
-      Alert.alert(t('auth.verification.error_title'), message)
-    } finally {
-      setIsLoading(false)
-    }
-  }, [phoneNumber, isLoading, login, router, t])
-
-  const isDoneEnabled = phoneNumber.length === 9 && !isLoading
-
-  // Username validation
-  const validateUsername = (value: string): boolean => {
-    const usernameRegex = /^[a-zA-Z0-9_]{3,20}$/
-    return usernameRegex.test(value)
+  const handleOtpInput = (index: number, value: string) => {
+    const digit = value.replace(/\D/g, '').slice(-1)
+    const newCode = [...otpCode]
+    newCode[index] = digit
+    setOtpCode(newCode)
+    if (digit && index < 3) otpRefs.current[index + 1]?.focus()
   }
+
+  const validateUsername = (value: string) => /^[a-zA-Z0-9_]{3,20}$/.test(value)
 
   const handleUsernameChange = (text: string) => {
     setUsername(text)
@@ -147,54 +92,75 @@ const AuthPage = () => {
     }
   }
 
-  const handleUsernameSubmit = async () => {
-    if (!validateUsername(username)) {
-      setUsernameError(t('alert.username_invalid'))
+  // Step 1: call login — success → OTP step; any non-blocked error → user not found → register
+  const handleSend = useCallback(async () => {
+    if (phoneNumber.length !== 9 || isLoading) return
+    setIsLoading(true)
+    try {
+      await login(`+998${phoneNumber}`)
+      setIsLoading(false)
+      setStep('otp')
+      setCountdown(240)
+      setTimeout(() => otpRefs.current[0]?.focus(), 200)
+    } catch (error: any) {
+      setIsLoading(false)
+      const status = error?.response?.status
+      const message: string = error?.response?.data?.message || error?.message || ''
+      if (status === 403 || message.toLowerCase().includes('block')) {
+        Alert.alert(t('auth.verification.error_title'), message || t('auth.verification.error_generic'))
+        return
+      }
+      // User not found — show alert, then redirect to register on confirm
+      setShowUserNotFoundAlert(true)
+    }
+  }, [phoneNumber, isLoading, login, router, t])
+
+  const handleResend = useCallback(() => {
+    if (countdown > 0 || isLoading) return
+    setOtpCode(['', '', '', ''])
+    setCountdown(240)
+    setTimeout(() => otpRefs.current[0]?.focus(), 100)
+  }, [countdown, isLoading])
+
+  // Step 2: token already stored from handleSend — check username, then navigate home
+  const handleDone = useCallback(() => {
+    if (otpCode.join('').length !== 4 || isLoading) return
+    const loggedInUser = useAuthStore.getState().user
+    if (loggedInUser && (!loggedInUser.username || loggedInUser.username === 'unknown')) {
+      setStep('username')
+      setTimeout(() => usernameInputRef.current?.focus(), 200)
       return
     }
+    if (loggedInUser && (loggedInUser.latitude == null || loggedInUser.longitude == null)) {
+      setShowLocationAlert(true)
+      return
+    }
+    router.replace('/(tabs)/home')
+  }, [otpCode, isLoading, router])
 
-    setIsUpdatingUsername(true)
+  // Step 3: save username then navigate home
+  const handleSaveUsername = useCallback(async () => {
+    if (!validateUsername(username) || isLoading) return
+    setIsLoading(true)
     try {
       await userApi.updateUser({ username })
-
-      // Update local user state
-      const currentUser = useAuthStore.getState().user
-      if (currentUser) {
-        useAuthStore.setState({
-          user: { ...currentUser, username }
-        })
-      }
-
-      setShowUsernameModal(false)
-
-      // Check if location is needed after username is set
-      const updatedUser = useAuthStore.getState().user
-      if (updatedUser && (updatedUser.latitude == null || updatedUser.longitude == null)) {
+      setIsLoading(false)
+      const loggedInUser = useAuthStore.getState().user
+      if (loggedInUser && (loggedInUser.latitude == null || loggedInUser.longitude == null)) {
         setShowLocationAlert(true)
-      } else {
-        router.replace('/(tabs)/home')
+        return
       }
-    } catch (error: any) {
-      const message = error?.response?.data?.errors?.[0] ||
-        error?.message ||
-        t('auth.verification.error_generic')
-      setUsernameError(message)
-    } finally {
-      setIsUpdatingUsername(false)
-    }
-  }
-
-  const handleSkipUsername = () => {
-    setShowUsernameModal(false)
-
-    // Check if location is needed
-    const currentUser = useAuthStore.getState().user
-    if (currentUser && (currentUser.latitude == null || currentUser.longitude == null)) {
-      setShowLocationAlert(true)
-    } else {
       router.replace('/(tabs)/home')
+    } catch (error: any) {
+      setIsLoading(false)
+      const message = error?.response?.data?.errors?.[0] || error?.message || t('auth.register.error_generic')
+      setUsernameError(message)
     }
-  }
+  }, [username, isLoading, router, t])
+
+  const isSendEnabled = phoneNumber.length === 9 && !isLoading
+  const isDoneEnabled = otpCode.join('').length === 4 && !isLoading
+  const isUsernameReady = validateUsername(username) && !isLoading
 
   const handleSetupLocation = () => {
     setShowLocationAlert(false)
@@ -209,22 +175,42 @@ const AuthPage = () => {
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'padding'}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
     >
       <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
-        {/* Top Section */}
-        <View style={styles.topSection}>
+        <ScrollView
+          style={{ flex: 1 }}
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
           <TouchableOpacity
             style={styles.backButton}
-            onPress={() => router.back()}
+            onPress={() => {
+              if (step === 'username') {
+                setStep('otp')
+                setUsername('')
+                setUsernameError('')
+              } else if (step === 'otp') {
+                setStep('phone')
+                setOtpCode(['', '', '', ''])
+                setCountdown(0)
+              } else {
+                router.back()
+              }
+            }}
             activeOpacity={0.7}
           >
             <Ionicons name="arrow-back" size={24} color={colors.text} />
           </TouchableOpacity>
 
           <ThemedText type="title" style={styles.title}>
-            {t('auth.verification.title')}
+            {step === 'phone'
+              ? t('auth.verification.title')
+              : step === 'otp'
+                ? t('auth.verification.otp_title')
+                : t('auth.register.username_title')}
           </ThemedText>
 
           {/* Phone Input */}
@@ -234,58 +220,177 @@ const AuthPage = () => {
               ref={phoneInputRef}
               style={[styles.phoneNumber, { color: colors.text }]}
               value={formatPhone(phoneNumber)}
-              onChangeText={handlePhoneChange}
+              onChangeText={step === 'phone' ? handlePhoneChange : undefined}
               placeholder={t('auth.verification.phone_placeholder')}
               placeholderTextColor={colors.subText}
               keyboardType="phone-pad"
-              maxLength={12} // Adjusted for spaces in formatted phone
+              maxLength={12}
+              editable={step === 'phone'}
             />
           </View>
 
-          {/* OTP Section Disabled Temporarily */}
-          {/* 
-          <View style={[styles.inputContainer, { borderColor: colors.borderColor }]}>
-            <TextInput
-              // ... code input logic ...
-            />
-             ... timer ... 
-          </View>
-           ... resend button ... 
-          */}
-        </View>
-
-        {/* Done Button */}
-        <View style={styles.doneButtonWrapper}>
-          <TouchableOpacity
-            style={[
-              styles.doneButton,
-              {
-                backgroundColor: isDoneEnabled
-                  ? colors.primaryColor
-                  : colors.borderColor,
-              },
-            ]}
-            onPress={handleDone}
-            disabled={!isDoneEnabled}
-            activeOpacity={0.8}
-          >
-            {isLoading ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text
+          {/* Username Step */}
+          {step === 'username' && (
+            <>
+              <Text style={[styles.otpSubtitle, { color: colors.subText }]}>
+                {t('auth.register.username_subtitle')}
+              </Text>
+              <View
                 style={[
-                  styles.doneButtonText,
-                  { color: isDoneEnabled ? '#fff' : colors.subText },
+                  styles.inputContainer,
+                  { borderColor: usernameError ? '#EF4444' : colors.borderColor },
                 ]}
               >
-                {t('auth.verification.done')}
+                <TextInput
+                  ref={usernameInputRef}
+                  style={[styles.phoneNumber, { color: colors.text }]}
+                  value={username}
+                  onChangeText={handleUsernameChange}
+                  placeholder={t('alert.username_placeholder')}
+                  placeholderTextColor={colors.subText}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  maxLength={20}
+                />
+              </View>
+              {usernameError ? (
+                <Text style={styles.errorText}>{usernameError}</Text>
+              ) : null}
+            </>
+          )}
+
+          {/* OTP Verification */}
+          {step === 'otp' && (
+            <>
+              <Text style={[styles.otpSubtitle, { color: colors.subText }]}>
+                {t('auth.verification.otp_subtitle')}
               </Text>
-            )}
-          </TouchableOpacity>
+              <View style={styles.otpContainer}>
+                {[0, 1, 2, 3].map((i) => (
+                  <TextInput
+                    key={i}
+                    ref={(ref) => { otpRefs.current[i] = ref }}
+                    style={[
+                      styles.otpBox,
+                      {
+                        borderColor: otpFocused === i ? colors.primaryColor : colors.borderColor,
+                        color: colors.text,
+                        backgroundColor: colors.card,
+                      },
+                    ]}
+                    value={otpCode[i]}
+                    onChangeText={(val) => handleOtpInput(i, val)}
+                    onFocus={() => setOtpFocused(i)}
+                    onBlur={() => setOtpFocused(-1)}
+                    onKeyPress={({ nativeEvent }) => {
+                      if (nativeEvent.key === 'Backspace' && !otpCode[i] && i > 0) {
+                        otpRefs.current[i - 1]?.focus()
+                      }
+                    }}
+                    keyboardType="numeric"
+                    maxLength={1}
+                    selectTextOnFocus
+                    textAlign="center"
+                  />
+                ))}
+              </View>
+              <TouchableOpacity
+                onPress={handleResend}
+                disabled={countdown > 0 || isLoading}
+                style={styles.resendContainer}
+              >
+                <Text
+                  style={[
+                    styles.resendText,
+                    { color: countdown > 0 ? colors.subText : colors.primaryColor },
+                  ]}
+                >
+                  {countdown > 0
+                    ? `${t('auth.verification.resend_in')} ${countdown}s`
+                    : t('auth.verification.resend_code')}
+                </Text>
+              </TouchableOpacity>
+            </>
+          )}
+        </ScrollView>
+
+        {/* Action Button — pinned above keyboard */}
+        <View style={styles.doneButtonWrapper}>
+          {step === 'phone' && (
+            <TouchableOpacity
+              style={[
+                styles.doneButton,
+                { backgroundColor: isSendEnabled ? colors.primaryColor : colors.borderColor },
+              ]}
+              onPress={handleSend}
+              disabled={!isSendEnabled}
+              activeOpacity={0.8}
+            >
+              {isLoading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={[styles.doneButtonText, { color: isSendEnabled ? '#fff' : colors.subText }]}>
+                  {t('auth.verification.send')}
+                </Text>
+              )}
+            </TouchableOpacity>
+          )}
+          {step === 'otp' && (
+            <TouchableOpacity
+              style={[
+                styles.doneButton,
+                { backgroundColor: isDoneEnabled ? colors.primaryColor : colors.borderColor },
+              ]}
+              onPress={handleDone}
+              disabled={!isDoneEnabled}
+              activeOpacity={0.8}
+            >
+              {isLoading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={[styles.doneButtonText, { color: isDoneEnabled ? '#fff' : colors.subText }]}>
+                  {t('auth.verification.done')}
+                </Text>
+              )}
+            </TouchableOpacity>
+          )}
+          {step === 'username' && (
+            <TouchableOpacity
+              style={[
+                styles.doneButton,
+                { backgroundColor: isUsernameReady ? colors.primaryColor : colors.borderColor },
+              ]}
+              onPress={handleSaveUsername}
+              disabled={!isUsernameReady}
+              activeOpacity={0.8}
+            >
+              {isLoading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={[styles.doneButtonText, { color: isUsernameReady ? '#fff' : colors.subText }]}>
+                  {t('auth.register.button')}
+                </Text>
+              )}
+            </TouchableOpacity>
+          )}
         </View>
       </ThemedView>
 
-      {/* Location Required Alert */}
+      <CustomAlert
+        visible={showUserNotFoundAlert}
+        type="warning"
+        title="Foydalanuvchi topilmadi"
+        message={`Foydalanuvchi topilmadi.\nIltimos ro'yxatdan o'ting.`}
+        primaryButtonText="Ro'yxatdan o'tish"
+        secondaryButtonText={t('profile.logout_cancel')}
+        onPrimaryPress={() => {
+          setShowUserNotFoundAlert(false)
+          router.push({ pathname: '/(auth)/register', params: { phone: phoneNumber } })
+        }}
+        onSecondaryPress={() => setShowUserNotFoundAlert(false)}
+        onDismiss={() => setShowUserNotFoundAlert(false)}
+      />
+
       <CustomAlert
         visible={showLocationAlert}
         type="warning"
@@ -297,72 +402,6 @@ const AuthPage = () => {
         onSecondaryPress={handleSkipLocation}
         onDismiss={handleSkipLocation}
       />
-
-      {/* Username Modal */}
-      <Modal
-        visible={showUsernameModal}
-        transparent
-        animationType="fade"
-        onRequestClose={handleSkipUsername}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={[styles.modalContent, { backgroundColor: colors.card }]}>
-            <ThemedText type="subtitle" style={styles.modalTitle}>
-              {t('alert.username_required_title')}
-            </ThemedText>
-            <ThemedText style={styles.modalMessage}>
-              {t('alert.username_required_message')}
-            </ThemedText>
-
-            <View style={[styles.usernameInputContainer, { borderColor: usernameError ? '#EF4444' : colors.borderColor }]}>
-              <TextInput
-                style={[styles.usernameInput, { color: colors.text }]}
-                value={username}
-                onChangeText={handleUsernameChange}
-                placeholder={t('alert.username_placeholder')}
-                placeholderTextColor={colors.subText}
-                autoCapitalize="none"
-                autoCorrect={false}
-                maxLength={20}
-              />
-            </View>
-
-            {usernameError ? (
-              <Text style={styles.errorText}>{usernameError}</Text>
-            ) : null}
-
-            <View style={styles.modalButtons}>
-              <TouchableOpacity
-                style={[styles.modalButton, styles.secondaryButton, { borderColor: colors.borderColor }]}
-                onPress={handleSkipUsername}
-                disabled={isUpdatingUsername}
-              >
-                <Text style={[styles.secondaryButtonText, { color: colors.text }]}>
-                  {t('alert.skip')}
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[
-                  styles.modalButton,
-                  styles.primaryButton,
-                  { backgroundColor: validateUsername(username) ? colors.primaryColor : colors.borderColor }
-                ]}
-                onPress={handleUsernameSubmit}
-                disabled={!validateUsername(username) || isUpdatingUsername}
-              >
-                {isUpdatingUsername ? (
-                  <ActivityIndicator color="#fff" size="small" />
-                ) : (
-                  <Text style={[styles.primaryButtonText, { color: validateUsername(username) ? '#fff' : colors.subText }]}>
-                    {t('alert.continue')}
-                  </Text>
-                )}
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
     </KeyboardAvoidingView>
   )
 }
@@ -371,10 +410,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  topSection: {
-    flex: 1,
+  scrollContent: {
+    flexGrow: 1,
     paddingHorizontal: 24,
     paddingTop: 56,
+    paddingBottom: 8,
   },
   backButton: {
     width: 40,
@@ -409,23 +449,34 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 0, // Reset default padding
   },
-  // OTP Styles (unused temporarily)
-  codeText: {
-    fontSize: 16,
-    flex: 1,
-    padding: 0,
-  },
-  timerText: {
-    fontSize: 16,
-    fontWeight: '500',
-  },
-  resendButton: {
-    alignSelf: 'center',
-    borderWidth: 1,
-    borderRadius: 20,
-    paddingHorizontal: 20,
-    paddingVertical: 8,
+  otpSubtitle: {
+    fontSize: 14,
+    lineHeight: 20,
     marginTop: 8,
+    marginBottom: 20,
+  },
+  otpContainer: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 8,
+  },
+  otpBox: {
+    flex: 1,
+    height: 64,
+    borderWidth: 1.5,
+    borderRadius: 12,
+    fontSize: 24,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  resendContainer: {
+    alignItems: 'center',
+    paddingVertical: 12,
+  },
+  errorText: {
+    color: '#EF4444',
+    fontSize: 12,
+    marginBottom: 16,
   },
   resendText: {
     fontSize: 14,
@@ -446,74 +497,6 @@ const styles = StyleSheet.create({
   doneButtonText: {
     fontSize: 16,
     fontWeight: '600',
-  },
-  // Username Modal Styles
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 24,
-  },
-  modalContent: {
-    width: '100%',
-    maxWidth: 400,
-    borderRadius: 16,
-    padding: 24,
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-  modalMessage: {
-    fontSize: 14,
-    textAlign: 'center',
-    marginBottom: 20,
-    opacity: 0.7,
-  },
-  usernameInputContainer: {
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    marginBottom: 8,
-  },
-  usernameInput: {
-    fontSize: 16,
-    padding: 0,
-  },
-  errorText: {
-    color: '#EF4444',
-    fontSize: 12,
-    marginBottom: 16,
-  },
-  modalButtons: {
-    flexDirection: 'row',
-    gap: 12,
-    marginTop: 8,
-  },
-  modalButton: {
-    flex: 1,
-    paddingVertical: 14,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  primaryButton: {
-    // backgroundColor set dynamically
-  },
-  secondaryButton: {
-    borderWidth: 1,
-  },
-  primaryButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  secondaryButtonText: {
-    fontSize: 16,
-    fontWeight: '500',
   },
 })
 
