@@ -40,7 +40,7 @@ export default function HomeScreen() {
   const colorScheme = useColorScheme();
   const { t } = useTranslations();
 
-  const [activeFilter, setActiveFilter] = useState('all');
+  const [activeFilter, setActiveFilter] = useState('things');
   const [sheetVisible, setSheetVisible] = useState(false);
 
   // Slide-up animation

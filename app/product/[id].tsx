@@ -6,6 +6,7 @@ import RemoteImage from '@/components/shared/RemoteImage'
 import { BottomSheet } from '@/components/ui/bottom-sheet'
 import ImageViewer from '@/components/ui/ImageViewer'
 import { AppLimits } from '@/constants/appLimits'
+import { ECarCondition, ECarFuelType, ECarTransmissionType, EPaymentType, EProductType, EWorkCondition, EWorkerType, EWorkSalaryType, EWorkType } from '@/constants/enums'
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
 import { useAuthStore } from '@/modules/Auth/auth-store'
@@ -50,6 +51,49 @@ const ANIMATION_CONFIG = {
 // Animated ScrollView
 const AnimatedScrollView = Animated.ScrollView
 const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity)
+
+type EnumValue = string | number | { value?: string | number; name?: string; description?: string } | null | undefined
+
+type WorkDetailData = {
+	worker_type?: EnumValue
+	working_days_hours?: string | null
+	salary_type?: EnumValue
+	salary_amount?: number | string | null
+	payment_type?: EnumValue
+	payment_time_type?: EnumValue
+	employer_information?: string | null
+	workplace_information?: string | null
+	phone_number?: string | null
+	work_ethics?: string | null
+} | null | undefined
+
+const asDisplayString = (value: EnumValue): string | null => {
+	if (value == null) return null
+	if (typeof value === 'object') {
+		if (value.description) return value.description
+		if (value.name) return value.name
+		if (value.value != null) return String(value.value)
+		return null
+	}
+	const normalized = String(value).trim()
+	return normalized.length > 0 ? normalized : null
+}
+
+const createEnumLabelGetter = (mapping: Record<string, string>) => {
+	return (value: EnumValue) => {
+		if (value == null) return null
+		if (typeof value === 'object') {
+			if (value.description) return value.description
+			if (value.name) return value.name
+			if (value.value != null) return mapping[String(value.value)] ?? String(value.value)
+			return null
+		}
+		return mapping[String(value)] ?? mapping[String(value).toLowerCase()] ?? String(value)
+	}
+}
+
+const compactSpecs = (items: Array<{ label: string; value: string | number | null | undefined }>) =>
+	items.filter((item) => item.value != null && String(item.value).trim().length > 0)
 
 interface ProductCollectionSheetProps {
 	isVisible: boolean
@@ -121,8 +165,6 @@ const ProductDetailPage: React.FC = () => {
 	const currentUserId = useAuthStore((s) => s.user?.id)
 	const user = useAuthStore((s) => s.user)
 
-	console.log("user", user)
-
 	// Image viewer state
 	const [imageViewerVisible, setImageViewerVisible] = useState(false)
 	const [imageViewerIndex, setImageViewerIndex] = useState(0)
@@ -149,6 +191,7 @@ const ProductDetailPage: React.FC = () => {
 	const productPrice = product?.is_free ? t('home.free') : (product?.price ?? '')
 	const productMainImage = product?.main_image_url ?? null
 	const productImages = product?.images ?? []
+	const productType = product?.product_type ?? ''
 	const productDesc = product?.description ?? ''
 	const productMoljal = product?.moljal ?? ''
 	const productLat = product?.latitude ?? 41.309
@@ -158,9 +201,137 @@ const ProductDetailPage: React.FC = () => {
 	const productCategory = product?.category_name_uz ?? ''
 	const productCreated = product?.created_ago ?? ''
 	const isNegotiable = product?.is_negotiable ?? false
-	const productWorkType = product?.work_type ?? null
 	const productStatus = product?.status ?? 'sold'
 	const productIsLiked = product?.is_liked ?? false
+	const normalizedProductType = Number(product?.product_type)
+	const carData = product?.car_data
+	const workData = product?.work_data as WorkDetailData
+
+	const getCarFuelLabel = createEnumLabelGetter({
+		[String(ECarFuelType.PETROL)]: t('car.petrol'),
+		[String(ECarFuelType.GAS)]: t('car.gas'),
+		[String(ECarFuelType.HYBRID)]: t('car.hybrid'),
+		[String(ECarFuelType.ELECTRIC)]: t('car.electric'),
+		petrol: t('car.petrol'),
+		gas: t('car.gas'),
+		hybrid: t('car.hybrid'),
+		electric: t('car.electric'),
+	})
+
+	const getTransmissionLabel = createEnumLabelGetter({
+		[String(ECarTransmissionType.AUTOMATIC)]: t('car.automatic'),
+		[String(ECarTransmissionType.MANUAL)]: t('car.manual'),
+		automatic: t('car.automatic'),
+		manual: t('car.manual'),
+	})
+
+	const getCarConditionLabel = createEnumLabelGetter({
+		[String(ECarCondition.NEW)]: t('car.new'),
+		[String(ECarCondition.USED)]: t('car.used'),
+		[String(ECarCondition.BROKEN)]: t('car.needs_repair'),
+		new: t('car.new'),
+		used: t('car.used'),
+		broken: t('car.needs_repair'),
+		damaged: t('car.needs_repair'),
+		needs_repair: t('car.needs_repair'),
+	})
+
+	const getWorkTypeLabel = createEnumLabelGetter({
+		[String(EWorkType.FULL_TIME)]: t('work.full_time'),
+		[String(EWorkType.PART_TIME)]: t('work.part_time'),
+		[String(EWorkType.CONTRACT)]: t('work.contract'),
+		[String(EWorkType.FREELANCER)]: t('work.freelancer'),
+		full_time: t('work.full_time'),
+		part_time: t('work.part_time'),
+		contract: t('work.contract'),
+		freelancer: t('work.freelancer'),
+	})
+
+	const getWorkConditionLabel = createEnumLabelGetter({
+		[String(EWorkCondition.TEMPORARY)]: t('work.temporary'),
+		[String(EWorkCondition.ONE_MONTH)]: t('work.one_month'),
+		[String(EWorkCondition.LONG_TERM)]: t('work.long_term'),
+		temporary: t('work.temporary'),
+		one_month: t('work.one_month'),
+		long_term: t('work.long_term'),
+		permanent: t('work.long_term'),
+	})
+
+	const getWorkerTypeLabel = createEnumLabelGetter({
+		[String(EWorkerType.EMPLOYEE)]: t('work.employee'),
+		[String(EWorkerType.ASSISTANT)]: t('work.assistant'),
+		[String(EWorkerType.TEACHER)]: t('work.teacher'),
+		employee: t('work.employee'),
+		assistant: t('work.assistant'),
+		teacher: t('work.teacher'),
+		employer: t('work.employee'),
+	})
+
+	const getSalaryTypeLabel = createEnumLabelGetter({
+		[String(EWorkSalaryType.HOURLY)]: t('work.hourly'),
+		[String(EWorkSalaryType.DAILY)]: t('work.daily'),
+		[String(EWorkSalaryType.PER_TASK)]: t('work.per_task'),
+		[String(EWorkSalaryType.MONTHLY)]: t('work.payment_monthly'),
+		hourly: t('work.hourly'),
+		daily: t('work.daily'),
+		per_task: t('work.per_task'),
+		monthly: t('work.payment_monthly'),
+		fixed: t('work.payment_monthly'),
+	})
+
+	const getPaymentTypeLabel = createEnumLabelGetter({
+		[String(EPaymentType.CASH)]: t('work.payment_cash'),
+		[String(EPaymentType.BANK_TRANSFER)]: t('work.payment_bank_transfer'),
+		[String(EPaymentType.MOBILE_PAYMENT)]: t('work.payment_mobile_payment'),
+		cash: t('work.payment_cash'),
+		bank_transfer: t('work.payment_bank_transfer'),
+		mobile_payment: t('work.payment_mobile_payment'),
+		bank: t('work.payment_bank_transfer'),
+		card: t('work.payment_bank_transfer'),
+	})
+
+	const getPaymentTimeLabel = createEnumLabelGetter({
+		'1000': t('work.payment_immediately'),
+		'1010': t('work.payment_weekly'),
+		'1020': t('work.payment_monthly'),
+		'1030': t('work.payment_after_completion'),
+		immediately: t('work.payment_immediately'),
+		weekly: t('work.payment_weekly'),
+		monthly: t('work.payment_monthly'),
+		after_completion: t('work.payment_after_completion'),
+		daily: t('work.payment_immediately'),
+	})
+
+	const carSpecs = compactSpecs([
+		{ label: t('car.car_brand'), value: product?.car_brand },
+		{ label: t('car.car_model'), value: product?.car_model },
+		{ label: t('car.year'), value: carData?.year },
+		{ label: t('car.mileage'), value: carData?.mileage },
+		{ label: t('car.fuel_type'), value: getCarFuelLabel(carData?.fuel_type) },
+		{ label: t('car.transmission'), value: getTransmissionLabel(carData?.car_transmission) },
+		{ label: t('car.condition'), value: getCarConditionLabel(carData?.car_condition) },
+	])
+
+	const workPrimarySpecs = compactSpecs([
+		{ label: t('work.job_type'), value: getWorkTypeLabel(product?.work_type) },
+		{ label: t('work.job_deadlines'), value: getWorkConditionLabel(product?.work_condition) },
+		{ label: t('work.worker_type'), value: getWorkerTypeLabel(workData?.worker_type) },
+		{ label: t('work.job_period_days_hours'), value: workData?.working_days_hours },
+	])
+
+	const workSalarySpecs = compactSpecs([
+		{ label: t('work.salary_type'), value: getSalaryTypeLabel(workData?.salary_type) },
+		{ label: t('work.salary_amount'), value: workData?.salary_amount },
+		{ label: t('work.payment_type'), value: getPaymentTypeLabel(workData?.payment_type) },
+		{ label: t('work.payment_time'), value: getPaymentTimeLabel(workData?.payment_time_type) },
+	])
+
+	const workEmployerSpecs = compactSpecs([
+		{ label: t('work.employer_information'), value: workData?.employer_information },
+		{ label: t('work.workplace_info'), value: workData?.workplace_information },
+		{ label: t('work.phone_number'), value: workData?.phone_number },
+		{ label: t('work.web_links'), value: workData?.work_ethics },
+	])
 
 	// prepare images for gallery component
 	const imagesGalleryImages = productImages?.map((image: string) => ({ image_url: image }));
@@ -404,6 +575,27 @@ const ProductDetailPage: React.FC = () => {
 		})
 	}, [productSellerId, productSellerUserName])
 
+	const renderSpecSection = useCallback((title: string, specs: Array<{ label: string; value: string | number | null | undefined }>) => {
+		if (!specs.length) return null
+
+		return (
+			<View style={[styles.specCard, { backgroundColor: colors.background, borderColor: colors.borderColor }]}>
+				<Text style={[styles.sectionTitle, styles.specSectionTitle, { color: colors.text }]}>{title}</Text>
+				<View style={styles.specGrid}>
+					{specs.map((item) => (
+						<View
+							key={`${title}-${item.label}`}
+							style={[styles.specItem, { backgroundColor: colors.profileBackground }]}
+						>
+							<Text style={[styles.specLabel, { color: colors.textMuted }]}>{item.label}</Text>
+							<Text style={[styles.specValue, { color: colors.text }]}>{item.value}</Text>
+						</View>
+					))}
+				</View>
+			</View>
+		)
+	}, [colors.background, colors.borderColor, colors.profileBackground, colors.text, colors.textMuted])
+
 
 	//---Seller products section ------------------------------
 	return (
@@ -426,7 +618,7 @@ const ProductDetailPage: React.FC = () => {
 
 				{/* Square Image */}
 				<RemoteImage
-					src={productMainImage ?? (productImages.length > 0 ? productImages[0].image_url : null)}
+					src={productMainImage ?? (imagesGalleryImages.length > 0 ? imagesGalleryImages[0].image_url : null)}
 					style={styles.stickyImage}
 					resizeMode='cover'
 				/>
@@ -548,6 +740,20 @@ const ProductDetailPage: React.FC = () => {
 					</Animated.View>
 
 					<View style={[styles.separator, { backgroundColor: colors.borderColor }]} />
+
+					{normalizedProductType === EProductType.CAR ? (
+						<Animated.View style={descriptionStyle}>
+							{renderSpecSection(t('car.car_information'), carSpecs)}
+						</Animated.View>
+					) : null}
+
+					{normalizedProductType === EProductType.WORK ? (
+						<Animated.View style={descriptionStyle}>
+							{renderSpecSection(t('work.job_information'), workPrimarySpecs)}
+							{renderSpecSection(t('work.salary_details'), workSalarySpecs)}
+							{renderSpecSection(t('work.employer_information'), workEmployerSpecs)}
+						</Animated.View>
+					) : null}
 
 					{/* Description */}
 					{productDesc ? (
@@ -811,7 +1017,35 @@ const styles = StyleSheet.create({
 	metaText: { fontSize: 14 },
 	separator: { height: 1, marginVertical: 14 },
 	sectionTitle: { fontSize: 18, fontWeight: '700', marginBottom: 10 },
+	specSectionTitle: { marginBottom: 14 },
 	description: { marginTop: 10, fontSize: 14, lineHeight: 22 },
+	specCard: {
+		marginBottom: 16,
+		padding: 14,
+		borderWidth: 1,
+		borderRadius: 18,
+	},
+	specGrid: {
+		flexDirection: 'row',
+		flexWrap: 'wrap',
+		gap: 10,
+	},
+	specItem: {
+		width: '48%',
+		paddingHorizontal: 12,
+		paddingVertical: 11,
+		borderRadius: 14,
+		gap: 6,
+	},
+	specLabel: {
+		fontSize: 12,
+		fontWeight: '600',
+	},
+	specValue: {
+		fontSize: 14,
+		fontWeight: '700',
+		lineHeight: 20,
+	},
 	statsRow: { flexDirection: 'row', gap: 16, marginBottom: 14 },
 	statText: { fontSize: 13 },
 	sectionHeaderRow: {

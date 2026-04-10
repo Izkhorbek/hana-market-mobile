@@ -1,5 +1,6 @@
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useResponsive } from '@/hooks/useResponsive'
+import { useSafeAreaEdgeInsets } from '@/hooks/useSafeAreaEdgeInsets'
 import { X } from 'lucide-react-native'
 import React, { useCallback, useRef, useState } from 'react'
 import {
@@ -25,7 +26,6 @@ import Animated, {
     useSharedValue,
     withSpring
 } from 'react-native-reanimated'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import RemoteImage from '../shared/RemoteImage'
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window')
@@ -220,7 +220,7 @@ const ImageViewer: React.FC<ImageViewerProps> = ({
     onClose,
 }) => {
     const colors = useThemeColors()
-    const insets = useSafeAreaInsets()
+    const insets = useSafeAreaEdgeInsets()
     const { ms, fs } = useResponsive()
     const [currentIndex, setCurrentIndex] = useState(initialIndex)
     const flatListRef = useRef<FlatList>(null)

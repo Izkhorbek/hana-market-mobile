@@ -21,6 +21,9 @@ const CreateThingForm = () => {
   const { t, locale } = useTranslations();
   const primaryColor = useColor('primaryColor');
   const textColor = useColor('text');
+  const surfaceColor = useColor('background');
+  const sectionTintColor = useColor('profileBackground');
+  const borderColor = useColor('borderColor');
   const router = useRouter();
   const [location, setLocation] = useState<{ latitude: number; longitude: number, address?: string } | null>(null);
   const [isMapModalVisible, setIsMapModalVisible] = useState(false);
@@ -31,7 +34,7 @@ const CreateThingForm = () => {
     label: locale === 'ru' ? category.name_ru : category.name_uz,
   })) || [];
 
-   const sellingMethodOptions: RadioOption[] = [
+  const sellingMethodOptions: RadioOption[] = [
     {
       value: 'for_sale',
       label: t('post.for_sale'),
@@ -93,7 +96,7 @@ const CreateThingForm = () => {
   const isUploading = watchedImages.some((img) => img.uploading);
   const isPending = isCreating || isUploading;
 
- 
+
   const onInvalid = (formErrors: Record<string, any>) => {
     const messages = Object.values(formErrors)
       .map((err) => `• ${err?.message}`)
@@ -139,7 +142,7 @@ const CreateThingForm = () => {
     }
 
     // Add location
-    formData.append('latitude',  (location?.latitude ?? 0).toString());
+    formData.append('latitude', (location?.latitude ?? 0).toString());
     formData.append('longitude', (location?.longitude ?? 0).toString());
     formData.append('moljal', data.landmark || '');
 
@@ -151,7 +154,7 @@ const CreateThingForm = () => {
     }));
 
     formData.append('images_json', JSON.stringify(draft_images));
-    
+
     console.log('thing-formData', formData);
     createProduct(formData);
   }, onInvalid);
@@ -172,10 +175,13 @@ const CreateThingForm = () => {
     <View style={styles.container}>
       <View style={styles.formContent}>
         {/* Section 1: Images */}
-        <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: textColor }]}>
-            {t('post.images')}
-          </Text>
+        <View style={[styles.section, { backgroundColor: sectionTintColor, borderColor }]}>
+          <View style={styles.sectionHeader}>
+            <View style={[styles.sectionAccent, { backgroundColor: primaryColor }]} />
+            <Text style={[styles.sectionTitle, { color: textColor }]}>
+              {t('post.images')}
+            </Text>
+          </View>
           <ImageUploader
             control={form.control}
             name="images"
@@ -191,10 +197,13 @@ const CreateThingForm = () => {
         </View>
 
         {/* Section 2: Item Details */}
-        <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: textColor }]}>
-            {t('post.item_details')}
-          </Text>
+        <View style={[styles.section, { backgroundColor: surfaceColor, borderColor }]}>
+          <View style={styles.sectionHeader}>
+            <View style={[styles.sectionAccent, { backgroundColor: primaryColor }]} />
+            <Text style={[styles.sectionTitle, { color: textColor }]}>
+              {t('post.item_details')}
+            </Text>
+          </View>
 
           <FormInput
             control={form.control}
@@ -230,10 +239,13 @@ const CreateThingForm = () => {
         </View>
 
         {/* Section 3: Selling Methods */}
-        <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: textColor }]}>
-            {t('post.selling_methods')}
-          </Text>
+        <View style={[styles.section, { backgroundColor: sectionTintColor, borderColor }]}>
+          <View style={styles.sectionHeader}>
+            <View style={[styles.sectionAccent, { backgroundColor: primaryColor }]} />
+            <Text style={[styles.sectionTitle, { color: textColor }]}>
+              {t('post.selling_methods')}
+            </Text>
+          </View>
 
           <RadioButtonGroup
             control={form.control}
@@ -308,10 +320,13 @@ const CreateThingForm = () => {
         </View>
 
         {/* Section 4: Meeting */}
-        <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: textColor }]}>
-            {t('post.meeting')}
-          </Text>
+        <View style={[styles.section, { backgroundColor: surfaceColor, borderColor }]}>
+          <View style={styles.sectionHeader}>
+            <View style={[styles.sectionAccent, { backgroundColor: primaryColor }]} />
+            <Text style={[styles.sectionTitle, { color: textColor }]}>
+              {t('post.meeting')}
+            </Text>
+          </View>
 
           {/* Hidden field: validates that user picked a location from the map */}
           <Controller
@@ -343,7 +358,7 @@ const CreateThingForm = () => {
             </TouchableOpacity>
           </FormRow>
           {errors.location && (
-            <Text style={{ color: '#e53935', fontSize: 12, marginTop: 4 }}>
+            <Text style={{ color: '#e53935', fontSize: 12, marginTop: 4, marginLeft: 2 }}>
               {errors.location.message as string}
             </Text>
           )}
@@ -367,7 +382,7 @@ const CreateThingForm = () => {
           {isPending ? (
             <ActivityIndicator color="#fff" />
           ) : (
-              <Text style={styles.postButtonText}>{t('post.post_button')}</Text>
+            <Text style={styles.postButtonText}>{t('post.post_button')}</Text>
           )}
         </TouchableOpacity>
       </View>
@@ -389,16 +404,31 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   formContent: {
-    // paddingHorizontal: 16,
+    paddingHorizontal: 12,
+    paddingTop: 8,
     paddingBottom: 100, // Space for fixed button
   },
   section: {
-    marginBottom: 24,
+    marginBottom: 14,
+    borderWidth: 1,
+    borderRadius: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  sectionAccent: {
+    width: 4,
+    height: 18,
+    borderRadius: 3,
+    marginRight: 8,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: '600',
-    marginBottom: 12,
   },
   priceInputContainer: {
     flexDirection: 'row',
@@ -446,6 +476,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
+    paddingHorizontal: 12,
     marginBottom: 16,
     paddingVertical: 12,
   },

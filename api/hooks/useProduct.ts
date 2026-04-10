@@ -8,6 +8,7 @@ import type {
   ProductLikeDto,
   ProductListParams,
   ProductUpdateRequest,
+  SingleProductResponseDto,
 } from '../../types';
 import { productService } from '../services';
 
@@ -36,7 +37,7 @@ export const useProductQuery = ({
   querySettings = {}
 }: {
   id: number;
-  querySettings?: Omit<UseQueryOptions<AxiosResponse<ApiResponse<any>>>, 'queryKey' | 'queryFn'>;
+  querySettings?: Omit<UseQueryOptions<AxiosResponse<ApiResponse<SingleProductResponseDto>>>, 'queryKey' | 'queryFn'>;
 }) => {
   return useQuery({
     queryKey: ['PRODUCT', id],

@@ -19,12 +19,16 @@ const CreateCarForm = () => {
   const { t } = useTranslations();
   const primaryColor = useColor('primaryColor');
   const textColor = useColor('text');
+  const subTextColor = useColor('subText');
+  const surfaceColor = useColor('background');
+  const sectionTintColor = useColor('profileBackground');
+  const borderColor = useColor('borderColor');
   const router = useRouter();
   // const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>(null);
-   const [location, setLocation] = useState<{ latitude: number; longitude: number }>({ latitude: 41.311081, longitude: 69.240562 }); // Default to Tashkent for testing
+  const [location, setLocation] = useState<{ latitude: number; longitude: number }>({ latitude: 41.311081, longitude: 69.240562 }); // Default to Tashkent for testing
   const [isMapModalVisible, setIsMapModalVisible] = useState(false);
 
-  
+
   const fuelTypeOptions: RadioOption[] = [
     { value: 'petrol', label: t('car.petrol') },
     { value: 'gas', label: t('car.gas') },
@@ -95,10 +99,10 @@ const CreateCarForm = () => {
       return;
     }
 
-     // ── Enum resolution ──
-    const fuelTypeValue    = resolveEnum(ECarFuelType,          data.fuelType);
+    // ── Enum resolution ──
+    const fuelTypeValue = resolveEnum(ECarFuelType, data.fuelType);
     const transmissionValue = resolveEnum(ECarTransmissionType, data.transmission);
-    const conditionValue   = resolveEnum(ECarCondition,         data.condition);
+    const conditionValue = resolveEnum(ECarCondition, data.condition);
 
     if (fuelTypeValue === undefined) {
       Alert.alert(t('post.error'), 'Invalid fuel type selected');
@@ -130,9 +134,9 @@ const CreateCarForm = () => {
     formData.append('car_data.year', data.year);
     formData.append('car_data.mileage', data.mileage);
 
-    formData.append('car_data.fuel_type',      fuelTypeValue.toString());
+    formData.append('car_data.fuel_type', fuelTypeValue.toString());
     formData.append('car_data.car_transmission', transmissionValue.toString());
-    formData.append('car_data.car_condition',  conditionValue.toString());
+    formData.append('car_data.car_condition', conditionValue.toString());
 
     // Add pricing
     const currencyType = data.currency === 'USD' ? ECurrencyType.USD : ECurrencyType.UZS;
@@ -149,7 +153,7 @@ const CreateCarForm = () => {
 
     // Add images
     const images: DraftImageItem[] = data.images;
-    
+
     const draft_images = images.map((img, index) => ({
       draft_uuid: img.draft_uuid,
       draft_image_url: img.draft_image_url,
@@ -157,9 +161,9 @@ const CreateCarForm = () => {
     }));
 
     formData.append('images_json', JSON.stringify(draft_images));
-      
+
     console.log(formData);
-    
+
     // Submit the form data
     createProduct(formData);
   });
@@ -177,10 +181,13 @@ const CreateCarForm = () => {
     <View style={styles.container}>
       <View style={styles.formContent}>
         {/* Section 1: Upload Images */}
-        <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: textColor }]}>
-            {t('car.upload_images')}
-          </Text>
+        <View style={[styles.section, { backgroundColor: sectionTintColor, borderColor }]}>
+          <View style={styles.sectionHeader}>
+            <View style={[styles.sectionAccent, { backgroundColor: primaryColor }]} />
+            <Text style={[styles.sectionTitle, { color: textColor }]}>
+              {t('car.upload_images')}
+            </Text>
+          </View>
           <ImageUploader
             control={form.control}
             name="images"
@@ -192,10 +199,13 @@ const CreateCarForm = () => {
         </View>
 
         {/* Section 2: Car Information */}
-        <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: textColor }]}>
-            {t('car.car_information')}
-          </Text>
+        <View style={[styles.section, { backgroundColor: surfaceColor, borderColor }]}>
+          <View style={styles.sectionHeader}>
+            <View style={[styles.sectionAccent, { backgroundColor: primaryColor }]} />
+            <Text style={[styles.sectionTitle, { color: textColor }]}>
+              {t('car.car_information')}
+            </Text>
+          </View>
 
           <FormInput
             control={form.control}
@@ -265,7 +275,7 @@ const CreateCarForm = () => {
           </FormRow>
 
           <View style={styles.radioSection}>
-            <Text style={[styles.radioLabel, { color: textColor }]}>
+            <Text style={[styles.radioLabel, { color: subTextColor }]}>
               {t('car.fuel_type')}
             </Text>
             <RadioButtonGroup
@@ -276,7 +286,7 @@ const CreateCarForm = () => {
           </View>
 
           <View style={styles.radioSection}>
-            <Text style={[styles.radioLabel, { color: textColor }]}>
+            <Text style={[styles.radioLabel, { color: subTextColor }]}>
               {t('car.transmission')}
             </Text>
             <RadioButtonGroup
@@ -288,10 +298,13 @@ const CreateCarForm = () => {
         </View>
 
         {/* Section 3: Selling Details */}
-        <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: textColor }]}>
-            {t('car.selling_details')}
-          </Text>
+        <View style={[styles.section, { backgroundColor: sectionTintColor, borderColor }]}>
+          <View style={styles.sectionHeader}>
+            <View style={[styles.sectionAccent, { backgroundColor: primaryColor }]} />
+            <Text style={[styles.sectionTitle, { color: textColor }]}>
+              {t('car.selling_details')}
+            </Text>
+          </View>
 
           <FormRow>
             <View style={styles.priceInputWrapper}>
@@ -356,7 +369,7 @@ const CreateCarForm = () => {
           />
 
           <View style={styles.radioSection}>
-            <Text style={[styles.radioLabel, { color: textColor }]}>
+            <Text style={[styles.radioLabel, { color: subTextColor }]}>
               {t('car.condition')}
             </Text>
             <RadioButtonGroup
@@ -397,10 +410,13 @@ const CreateCarForm = () => {
         </View>
 
         {/* Section 4: Additional Notes */}
-        <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: textColor }]}>
-            {t('car.additional_notes')}
-          </Text>
+        <View style={[styles.section, { backgroundColor: surfaceColor, borderColor }]}>
+          <View style={styles.sectionHeader}>
+            <View style={[styles.sectionAccent, { backgroundColor: primaryColor }]} />
+            <Text style={[styles.sectionTitle, { color: textColor }]}>
+              {t('car.additional_notes')}
+            </Text>
+          </View>
 
           <FormInput
             control={form.control}
@@ -429,7 +445,7 @@ const CreateCarForm = () => {
           {isPending ? (
             <ActivityIndicator color="#fff" />
           ) : (
-              <Text style={styles.postButtonText}>{t('car.post_car')}</Text>
+            <Text style={styles.postButtonText}>{t('car.post_car')}</Text>
           )}
         </TouchableOpacity>
       </View>
@@ -451,18 +467,34 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   formContent: {
+    paddingHorizontal: 12,
+    paddingTop: 8,
     paddingBottom: 100, // Space for fixed button
   },
   section: {
-    marginBottom: 24,
+    marginBottom: 14,
+    borderWidth: 1,
+    borderRadius: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
   },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 12,
   },
+  sectionAccent: {
+    width: 4,
+    height: 18,
+    borderRadius: 3,
+    marginRight: 8,
+  },
+  sectionTitle: {
+    fontSize: 17,
+    fontWeight: '600',
+  },
   radioSection: {
-    marginTop: 16,
+    marginTop: 14,
   },
   radioLabel: {
     fontSize: 14,
@@ -522,6 +554,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
+    paddingHorizontal: 12,
     marginBottom: 16,
     paddingVertical: 12,
   },

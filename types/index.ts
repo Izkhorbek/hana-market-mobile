@@ -362,6 +362,46 @@ export interface MyProductDto {
   price: string | null;
 }
 
+export  interface SingleProductResponseDto
+{
+     id: number;
+    user_id: number;
+    seller: User;
+
+    category_id: number;
+    category_name_uz?: string;
+    category_name_ru?: string;
+
+    product_type?: EProductType;
+    product_type_name?: string;
+
+    title: string;
+    description?: string;
+    price: string;
+    is_free: boolean;
+    is_negotiable: boolean;
+    main_image_url: string;
+    moljal?: string;
+    status: string;
+    latitude: number;
+    longitude: number;
+    distance: string;
+    car_brand?: string;
+    car_model?: string;
+    work_condition?: string;
+    work_type?: string;
+    created_ago: string;
+    views_count: number;
+    likes_count: number;
+    is_liked: boolean;
+    
+    images: string[];
+
+    car_data?: CarData;
+
+    work_data?: WorkData;
+}
+
 // ==================== CATEGORY TYPES ====================
 
 export interface Category {

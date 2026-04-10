@@ -5,9 +5,9 @@ export const HEADER_HEIGHT = Platform.OS === 'ios' ? 90 : 70;
 export const HEADER_PADDING_TOP = Platform.OS === 'ios' ? 56 : 30;
 export const TAB_FOOTER_HEIGHT = Platform.OS === 'ios' ? 100 : 90;
 
-// STATUS_BAR_HEIGHT: 44 on iOS (behind notch) | actual bar height on Android
-const STATUS_BAR_HEIGHT = Platform.OS === 'ios' ? 44 : (StatusBar.currentHeight ?? 0);
-const STICKY_HEADER_HEIGHT = Platform.OS === 'ios' ? 56 : (StatusBar.currentHeight ?? 0) + 56;
+// Dynamic safe area values - get actual values at app startup
+const STATUS_BAR_HEIGHT = StatusBar.currentHeight ?? (Platform.OS === 'ios' ? 44 : 0);
+const STICKY_HEADER_HEIGHT = STATUS_BAR_HEIGHT + 56;
 
  export type MessageTypeString = 'text' | 'image' | 'file';
 

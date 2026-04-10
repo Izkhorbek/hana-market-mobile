@@ -1,9 +1,8 @@
 import { useCreateProductMutation } from '@/api/hooks';
-import FormDatePicker from '@/components/FormElements/FormDatePicker';
 import FormInput from '@/components/FormElements/FormInput';
 import FormSelect from '@/components/FormElements/FormSelect';
 import { OptionType } from '@/components/ui/combobox';
-import { ECategoryType, ECurrencyType, EPaymentTimeType, EPaymentType, EProductType, EWorkCondition, EWorkerType, EWorkSalaryType, EWorkType } from '@/constants/enums';
+import { ECategoryType, ECurrencyType, EProductType, EWorkCondition, EWorkerType, EWorkSalaryType, EWorkType } from '@/constants/enums';
 import { useTranslations } from '@/hooks/use-translation';
 import { useColor } from '@/hooks/useColor';
 import { resolveEnum } from '@/utils/enumHelpers';
@@ -22,13 +21,17 @@ const CreateWorksForm = () => {
   const { t } = useTranslations();
   const primaryColor = useColor('primaryColor');
   const textColor = useColor('text');
+  const subTextColor = useColor('subText');
+  const surfaceColor = useColor('background');
+  const sectionTintColor = useColor('profileBackground');
+  const borderColor = useColor('borderColor');
   const router = useRouter();
   // const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>({ latitude: 41.311081, longitude: 69.240562 }); // Default to Tashkent for testing
   const [location, setLocation] = useState<{ latitude: number; longitude: number }>({ latitude: 41.311081, longitude: 69.240562 }); // Default to Tashkent for testing
   const [isMapModalVisible, setIsMapModalVisible] = useState(false);
 
   // Options for radio buttons and selects
- const workerTypeOptions: RadioOption[] = [
+  const workerTypeOptions: RadioOption[] = [
     {
       value: 'employee',
       label: t('work.employee'),
@@ -73,28 +76,26 @@ const CreateWorksForm = () => {
     },
   ];
 
-    // Ish turlari uchun options 
+  // Ish turlari uchun options 
   const workTypeOptions: OptionType[] = [
     { value: 'full_time', label: t('work.full_time') },
     { value: 'part_time', label: t('work.part_time') },
-    { value: 'contract',   label: t('work.contract') },
+    { value: 'contract', label: t('work.contract') },
     { value: 'freelancer', label: t('work.freelancer') },
   ];
 
-  // Payment time options for select
-  const paymentTimeOptions: OptionType[] = [
-    { value: 'immediately', label: t('work.payment_immediately') },
-    { value: 'weekly', label: t('work.payment_weekly') },
-    { value: 'monthly', label: t('work.payment_monthly') },
-    { value: 'after_completion', label: t('work.payment_after_completion') },
-  ];
+  // const paymentTimeOptions: OptionType[] = [
+  //   { value: 'immediately', label: t('work.payment_immediately') },
+  //   { value: 'weekly', label: t('work.payment_weekly') },
+  //   { value: 'monthly', label: t('work.payment_monthly') },
+  //   { value: 'after_completion', label: t('work.payment_after_completion') },
+  // ];
 
-  // Payment type options for select
-  const paymentTypeOptions: OptionType[] = [
-    { value: 'cash', label: t('work.payment_cash') },
-    { value: 'bank_transfer', label: t('work.payment_bank_transfer') },
-    { value: 'mobile_payment', label: t('work.payment_mobile_payment') },
-  ];
+  // const paymentTypeOptions: OptionType[] = [
+  //   { value: 'cash', label: t('work.payment_cash') },
+  //   { value: 'bank_transfer', label: t('work.payment_bank_transfer') },
+  //   { value: 'mobile_payment', label: t('work.payment_mobile_payment') },
+  // ];
 
   // Initialize form with react-hook-form
   const form = useForm({
@@ -104,15 +105,15 @@ const CreateWorksForm = () => {
       workType: workTypeOptions[0].value,
       workTitle: 'sample work title',
       workCondition: workConditionOptions[0].value,
-      workingStartDateTime: new Date(), //undefined as Date | undefined ,
+      workingStartDateTime: undefined as Date | undefined,
       salaryType: salaryTypeOptions[0].value,
       salaryAmount: '452000',
-      currency:  ECurrencyType[ECurrencyType.UZS],
-      paymentType: paymentTypeOptions[0].value,
-      paymentTime: paymentTimeOptions[0].value,
+      currency: ECurrencyType[ECurrencyType.UZS],
+      paymentType: 'cash',
+      paymentTime: 'immediately',
       jobDescription: 'sample job description',
       employerName: 'sample employer name',
-      workplaceInfo: 'sample workplace info',
+      workplaceInfo: '',
       location: 'sample location',
       landmark: 'sample landmark',
       employerPhone: '+998901234567',
@@ -122,9 +123,6 @@ const CreateWorksForm = () => {
 
   const { formState: { errors } } = form;
 
-  const workerType = form.watch('workerType');
-  const jobDeadline = form.watch('workCondition');
-  const salaryType = form.watch('salaryType');
   const currency = form.watch('currency');
 
   const { mutate: createProduct, isPending } = useCreateProductMutation({
@@ -148,7 +146,7 @@ const CreateWorksForm = () => {
     },
   });
 
- 
+
 
   const handleOpenMap = () => {
     setIsMapModalVisible(true);
@@ -167,55 +165,36 @@ const CreateWorksForm = () => {
       return;
     }
 
-    if (data.workingStartDateTime === undefined || isNaN(data.workingStartDateTime.getTime())) {
-      Alert.alert(t('post.error'), t('post.please_select_job_period_date_time'));
-      return;
-    }
-
     // ── Enum resolution (lowercase form value → numeric enum) ──
-    const workerTypeValue    = resolveEnum(EWorkerType,      data.workerType);
-    const workTypeValue      = resolveEnum(EWorkType,        data.workType);
-    const workConditionValue = resolveEnum(EWorkCondition,   data.workCondition);
-    const salaryTypeValue    = resolveEnum(EWorkSalaryType,  data.salaryType);
-    const paymentTypeValue   = resolveEnum(EPaymentType,     data.paymentType);
-    const paymentTimeValue   = resolveEnum(EPaymentTimeType, data.paymentTime);
-    const currencyValue      = resolveEnum(ECurrencyType,    data.currency) ?? ECurrencyType.UZS;
+    const workerTypeValue = resolveEnum(EWorkerType, data.workerType);
+    const workTypeValue = resolveEnum(EWorkType, data.workType);
+    const workConditionValue = resolveEnum(EWorkCondition, data.workCondition);
+    const salaryTypeValue = resolveEnum(EWorkSalaryType, data.salaryType);
+    const currencyValue = resolveEnum(ECurrencyType, data.currency) ?? ECurrencyType.UZS;
 
     // Validate all required enum fields
-    if (workerTypeValue === undefined)    { Alert.alert(t('post.error'), t('work.errors.worker_type'));   return; }
-    if (workTypeValue === undefined)      { Alert.alert(t('post.error'), t('work.errors.work_type'));     return; }
+    if (workerTypeValue === undefined) { Alert.alert(t('post.error'), t('work.errors.worker_type')); return; }
+    if (workTypeValue === undefined) { Alert.alert(t('post.error'), t('work.errors.work_type')); return; }
     if (workConditionValue === undefined) { Alert.alert(t('post.error'), t('work.errors.work_condition')); return; }
-    if (salaryTypeValue === undefined)    { Alert.alert(t('post.error'), t('work.errors.salary_type'));   return; }
-    if (paymentTypeValue === undefined)   { Alert.alert(t('post.error'), t('work.errors.payment_type'));  return; }
-    if (paymentTimeValue === undefined)   { Alert.alert(t('post.error'), t('work.errors.payment_time'));  return; }
-
+    if (salaryTypeValue === undefined) { Alert.alert(t('post.error'), t('work.errors.salary_type')); return; }
     const formData = new FormData();
 
     // Product type & category
     formData.append('product_type', EProductType.WORK.toString());
-    formData.append('category_id',  ECategoryType.WORKS.toString());
+    formData.append('category_id', ECategoryType.WORKS.toString());
 
     // Basic fields
-    formData.append('title',          data.workTitle);
-    formData.append('description',    data.jobDescription || '');
-    formData.append('work_type',      workTypeValue.toString());
+    formData.append('title', data.workTitle);
+    formData.append('description', data.jobDescription || '');
+    formData.append('work_type', workTypeValue.toString());
     formData.append('work_condition', workConditionValue.toString());
 
     // Work data
-    formData.append('work_data.worker_type',           workerTypeValue.toString());
-    formData.append('work_data.salary_type',           salaryTypeValue.toString());
-    formData.append('work_data.salary_amount',         data.salaryAmount);
-    formData.append('work_data.payment_type',          paymentTypeValue.toString());
-    formData.append('work_data.payment_time',          paymentTimeValue.toString());
-    formData.append('work_data.employer_information',  data.employerName || '');
-    formData.append('work_data.workplace_information', data.workplaceInfo || '');
-    formData.append('work_data.phone_number',          data.employerPhone || '');
-    formData.append('work_data.work_ethics',           data.webLinks || '');
-
-    // Working start date
-    if (data.workingStartDateTime) {
-      formData.append('work_data.working_start_date', data.workingStartDateTime.toISOString());
-    }
+    formData.append('work_data.worker_type', workerTypeValue.toString());
+    formData.append('work_data.salary_type', salaryTypeValue.toString());
+    formData.append('work_data.salary_amount', data.salaryAmount);
+    formData.append('work_data.employer_information', data.employerName || '');
+    formData.append('work_data.phone_number', data.employerPhone || '');
 
     // Currency & price
     formData.append('currency_type', currencyValue.toString());
@@ -223,16 +202,16 @@ const CreateWorksForm = () => {
     formData.append('is_free', 'false');
 
     // Location
-    formData.append('latitude',  location.latitude.toString());
+    formData.append('latitude', location.latitude.toString());
     formData.append('longitude', location.longitude.toString());
-    formData.append('moljal',    data.landmark || '');
+    formData.append('moljal', data.landmark || '');
 
     // Images
     const images: DraftImageItem[] = data.images;
     const draft_images = images.map((img, index) => ({
-      draft_uuid:      img.draft_uuid,
+      draft_uuid: img.draft_uuid,
       draft_image_url: img.draft_image_url,
-      sort_order:      index,
+      sort_order: index,
     }));
     formData.append('images_json', JSON.stringify(draft_images));
 
@@ -244,10 +223,13 @@ const CreateWorksForm = () => {
     <View style={styles.container}>
       <View style={styles.formContent}>
         {/* Section 1: Job Images (Optional) */}
-        <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: textColor }]}>
-            {t('work.job_images')}
-          </Text>
+        <View style={[styles.section, { backgroundColor: sectionTintColor, borderColor }]}>
+          <View style={styles.sectionHeader}>
+            <View style={[styles.sectionAccent, { backgroundColor: primaryColor }]} />
+            <Text style={[styles.sectionTitle, { color: textColor }]}>
+              {t('work.job_images')}
+            </Text>
+          </View>
           <ImageUploader
             control={form.control}
             name="images"
@@ -259,10 +241,13 @@ const CreateWorksForm = () => {
         </View>
 
         {/* Section 2: Worker Type */}
-        <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: textColor }]}>
-            {t('work.worker_type')}
-          </Text>
+        <View style={[styles.section, { backgroundColor: surfaceColor, borderColor }]}>
+          <View style={styles.sectionHeader}>
+            <View style={[styles.sectionAccent, { backgroundColor: primaryColor }]} />
+            <Text style={[styles.sectionTitle, { color: textColor }]}>
+              {t('work.worker_type')}
+            </Text>
+          </View>
           <RadioButtonGroup
             control={form.control}
             name="workerType"
@@ -271,10 +256,13 @@ const CreateWorksForm = () => {
         </View>
 
         {/* Section 3: Job Information */}
-        <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: textColor }]}>
-            {t('work.job_information')}
-          </Text>
+        <View style={[styles.section, { backgroundColor: sectionTintColor, borderColor }]}>
+          <View style={styles.sectionHeader}>
+            <View style={[styles.sectionAccent, { backgroundColor: primaryColor }]} />
+            <Text style={[styles.sectionTitle, { color: textColor }]}>
+              {t('work.job_information')}
+            </Text>
+          </View>
 
           <FormInput
             control={form.control}
@@ -300,7 +288,7 @@ const CreateWorksForm = () => {
           />
 
           <View style={styles.radioSection}>
-            <Text style={[styles.radioLabel, { color: textColor }]}>
+            <Text style={[styles.radioLabel, { color: subTextColor }]}>
               {t('work.job_deadlines')}
             </Text>
             <RadioButtonGroup
@@ -310,6 +298,7 @@ const CreateWorksForm = () => {
             />
           </View>
 
+          {/*
           <FormDatePicker
             control={form.control}
             name='workingStartDateTime'
@@ -322,16 +311,20 @@ const CreateWorksForm = () => {
               required: t('work.errors.job_period_date_time'),
             }}
           />
+          */}
         </View>
 
         {/* Section 4: Salary Details */}
-        <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: textColor }]}>
-            {t('work.salary_details')}
-          </Text>
+        <View style={[styles.section, { backgroundColor: surfaceColor, borderColor }]}>
+          <View style={styles.sectionHeader}>
+            <View style={[styles.sectionAccent, { backgroundColor: primaryColor }]} />
+            <Text style={[styles.sectionTitle, { color: textColor }]}>
+              {t('work.salary_details')}
+            </Text>
+          </View>
 
           <View style={styles.radioSection}>
-            <Text style={[styles.radioLabel, { color: textColor }]}>
+            <Text style={[styles.radioLabel, { color: subTextColor }]}>
               {t('work.salary_type')}
             </Text>
             <RadioButtonGroup
@@ -391,6 +384,7 @@ const CreateWorksForm = () => {
             </View>
           </View>
 
+          {/*
           <FormSelect
             control={form.control}
             name="paymentTime"
@@ -414,14 +408,18 @@ const CreateWorksForm = () => {
               required: t('work.errors.payment_type'),
             }}
           />
+          */}
 
         </View>
 
         {/* Section 5: Job Description */}
-        <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: textColor }]}>
-            {t('work.job_description')}
-          </Text>
+        <View style={[styles.section, { backgroundColor: sectionTintColor, borderColor }]}>
+          <View style={styles.sectionHeader}>
+            <View style={[styles.sectionAccent, { backgroundColor: primaryColor }]} />
+            <Text style={[styles.sectionTitle, { color: textColor }]}>
+              {t('work.job_description')}
+            </Text>
+          </View>
 
           <FormInput
             control={form.control}
@@ -437,10 +435,13 @@ const CreateWorksForm = () => {
         </View>
 
         {/* Section 6: Employer Information */}
-        <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: textColor }]}>
-            {t('work.employer_information')}
-          </Text>
+        <View style={[styles.section, { backgroundColor: surfaceColor, borderColor }]}>
+          <View style={styles.sectionHeader}>
+            <View style={[styles.sectionAccent, { backgroundColor: primaryColor }]} />
+            <Text style={[styles.sectionTitle, { color: textColor }]}>
+              {t('work.employer_information')}
+            </Text>
+          </View>
 
           {/* Ish beruvchi nomi yoki kompaniya nomi */}
           <FormInput
@@ -496,6 +497,7 @@ const CreateWorksForm = () => {
             </TouchableOpacity>
           </FormRow>
 
+          {/*
           <FormInput
             control={form.control}
             name="workplaceInfo"
@@ -506,8 +508,10 @@ const CreateWorksForm = () => {
               required: t('work.errors.workplace_info'),
             }}
           />
+          */}
 
           {/* Telegram yoki boshqa ijtimoiy tarmoqlardagi havolalar, ixtiyoriy */}
+          {/*
           <View style={styles.socialMediaInputWrapper}>
             <FormInput
               control={form.control}
@@ -518,6 +522,7 @@ const CreateWorksForm = () => {
               rows={3}
             />
           </View>
+          */}
         </View>
       </View>
 
@@ -538,7 +543,7 @@ const CreateWorksForm = () => {
           {isPending ? (
             <ActivityIndicator color="#fff" />
           ) : (
-              <Text style={styles.postButtonText}>{t('work.post_job')}</Text>
+            <Text style={styles.postButtonText}>{t('work.post_job')}</Text>
           )}
         </TouchableOpacity>
       </View>
@@ -560,18 +565,34 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   formContent: {
+    paddingHorizontal: 12,
+    paddingTop: 8,
     paddingBottom: 100, // Space for fixed button
   },
   section: {
-    marginBottom: 24,
+    marginBottom: 14,
+    borderWidth: 1,
+    borderRadius: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
   },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 12,
   },
+  sectionAccent: {
+    width: 4,
+    height: 18,
+    borderRadius: 3,
+    marginRight: 8,
+  },
+  sectionTitle: {
+    fontSize: 17,
+    fontWeight: '600',
+  },
   radioSection: {
-    marginTop: 16,
+    marginTop: 14,
   },
   radioLabel: {
     fontSize: 14,
@@ -631,6 +652,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
+    paddingHorizontal: 12,
     marginBottom: 16,
     paddingVertical: 12,
   },

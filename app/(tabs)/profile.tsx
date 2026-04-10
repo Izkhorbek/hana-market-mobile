@@ -9,6 +9,7 @@ import { useAuthStore } from '@/modules/Auth/auth-store'
 import ProfileHeader from '@/modules/Profile/ProfileHeader'
 import ProfileMenuItem from '@/modules/Profile/ProfileMenuItem'
 import ProfileSection from '@/modules/Profile/ProfileSection'
+import Ionicons from '@expo/vector-icons/Ionicons'
 import { router, useFocusEffect } from 'expo-router'
 import {
 	FileText,
@@ -31,12 +32,25 @@ const ProfilePage = () => {
 	const colors = useThemeColors()
 	const backgroundColor = useColor('background')
 	const mutedTextColor = useColor('textMuted')
+	const infoCardBg = useColor('infoCardBg')
+	const infoCardBorder = useColor('infoCardBorder')
+	const infoCardText = useColor('infoCardText')
+	const cardColor = useColor('profileCard')
+	const textColor = useColor('text')
 	const { isDark, setMode } = useModeToggle()
 	const [isLanguageModalVisible, setIsLanguageModalVisible] = useState(false)
 	const logout = useAuthStore((s) => s.logout)
 	const fetchUser = useAuthStore((s) => s.fetchUser)
 
 	const { isAuthenticated, user } = useAuthStore()
+	const timeAbbreviations = [
+		{ short: 's', label: t('profile.abbreviation_second'), example: '1 s' },
+		{ short: 'm', label: t('profile.abbreviation_minute'), example: '1 m' },
+		{ short: 'h', label: t('profile.abbreviation_hour'), example: '1 h' },
+		{ short: 'd', label: t('profile.abbreviation_day'), example: '1 d' },
+		{ short: 'mo', label: t('profile.abbreviation_month'), example: '1 mo' },
+		{ short: 'yr', label: t('profile.abbreviation_year'), example: '1 yr' },
+	]
 
 	useFocusEffect(
 		useCallback(() => {
@@ -193,6 +207,49 @@ const ProfilePage = () => {
 					/>
 				</ProfileSection>
 
+				<ProfileSection title={t('profile.abbreviations_section')}>
+					<View
+						style={[
+							styles.abbreviationCard,
+							{
+								backgroundColor: infoCardBg,
+								borderColor: infoCardBorder,
+							},
+						]}
+					>
+						<Text style={[styles.abbreviationCardTitle, { color: infoCardText }]}>
+							{t('profile.abbreviations_title')}
+						</Text>
+						<Text style={[styles.abbreviationCardSubtitle, { color: infoCardText }]}>
+							{t('profile.abbreviations_subtitle')}
+						</Text>
+						<View style={styles.abbreviationList}>
+							{timeAbbreviations.map((item) => (
+								<View
+									key={item.short}
+									style={[
+										styles.abbreviationRow,
+										{ backgroundColor: cardColor },
+									]}
+								>
+									<View style={styles.abbreviationMeta}>
+										{/* <Text style={[styles.abbreviationBadge, { color: infoCardText }]}>
+											{item.short}
+										</Text> */}
+										<Text style={[styles.abbreviationLabel, { color: textColor }]}>
+											{item.label}
+										</Text>
+									</View>
+									<Text style={[styles.abbreviationExample, { color: mutedTextColor }]}>
+										<Ionicons name='time-outline' size={14} color={colors.subText} />
+										{item.example}
+									</Text>
+								</View>
+							))}
+						</View>
+					</View>
+				</ProfileSection>
+
 				{/* Support & Information Section */}
 				<ProfileSection title={t('profile.support_information')}>
 					<ProfileMenuItem
@@ -266,5 +323,53 @@ const styles = StyleSheet.create({
 		textAlign: 'center',
 		marginTop: 24,
 		marginBottom: 16,
+	},
+	abbreviationCard: {
+		borderWidth: 1,
+		borderRadius: 18,
+		padding: 16,
+	},
+	abbreviationCardTitle: {
+		fontSize: 15,
+		fontWeight: '700',
+		marginBottom: 6,
+	},
+	abbreviationCardSubtitle: {
+		fontSize: 13,
+		lineHeight: 18,
+		opacity: 0.92,
+	},
+	abbreviationList: {
+		marginTop: 14,
+		gap: 8,
+	},
+	abbreviationRow: {
+		flexDirection: 'row',
+		alignItems: 'center',
+		justifyContent: 'space-between',
+		borderRadius: 14,
+		paddingHorizontal: 12,
+		paddingVertical: 10,
+	},
+	abbreviationMeta: {
+		flexDirection: 'row',
+		alignItems: 'center',
+		gap: 10,
+		flexShrink: 1,
+	},
+	abbreviationBadge: {
+		fontSize: 12,
+		fontWeight: '800',
+		textTransform: 'uppercase',
+		minWidth: 28,
+	},
+	abbreviationLabel: {
+		fontSize: 14,
+		fontWeight: '500',
+	},
+	abbreviationExample: {
+		fontSize: 12,
+		fontWeight: '500',
+		marginLeft: 12,
 	},
 })

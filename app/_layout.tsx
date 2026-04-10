@@ -8,7 +8,7 @@ import { useModeToggle } from '@/hooks/useModeToggle';
 import { useAuthStore } from '@/modules/Auth/auth-store';
 import { ThemeProvider } from '@/theme/theme-provider';
 import { QueryClientProvider } from '@tanstack/react-query';
-import { Stack } from 'expo-router';
+import { router, Stack, useSegments } from 'expo-router';
 import { Sun } from 'lucide-react-native';
 import React from 'react';
 import { ActivityIndicator, StatusBar, View } from 'react-native';
@@ -17,8 +17,23 @@ import 'react-native-reanimated';
 export default function RootLayout() {
 	const colorScheme = useColorScheme()
 	const { toggleMode } = useModeToggle()
+	const segments = useSegments()
 	const isHydrated = useAuthStore((s) => s.isHydrated)
+	const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
 	useThemeNavigationBar()
+
+	React.useEffect(() => {
+		if (!isHydrated) {
+			return
+		}
+
+		const isInAuthGroup = segments[0] === '(auth)'
+
+		if (!isAuthenticated && !isInAuthGroup) {
+			router.replace('/(auth)/welcome')
+		}
+	}, [isAuthenticated, isHydrated, segments])
+
 	// Wait for Zustand to rehydrate from AsyncStorage
 	if (!isHydrated) {
 		return (

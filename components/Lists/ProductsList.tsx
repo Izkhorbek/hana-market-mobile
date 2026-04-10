@@ -1,5 +1,5 @@
 import { useInfiniteProductsQuery } from '@/api/hooks'
-import { ECategoryType } from '@/constants/enums'
+import { EProductType } from '@/constants/enums'
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
 import { useAuthStore } from '@/modules/Auth/auth-store'
@@ -47,14 +47,12 @@ interface ProductItem {
   created_ago: string | null
 }
 
-// ── Filter key → category_id mapping ────────────────────────────────────────
-const FILTER_TO_CATEGORY: Record<string, number | undefined> = {
-  all: undefined,
-  cars: ECategoryType.CARS,
-  real_estate: ECategoryType.REAL_ESTATE,
-  jobs: ECategoryType.WORKS,
-  electronics: ECategoryType.ELECTRONICS,
-  furniture: ECategoryType.FURNITURE,
+// ── Filter key → product_type mapping ───────────────────────────────────────
+const FILTER_TO_PRODUCT_TYPE: Record<string, EProductType | undefined> = {
+  all: undefined, // No filter for "All"
+  things: EProductType.THING,
+  cars: EProductType.CAR,
+  works: EProductType.WORK,
 }
 
 const DEFAULT_LAT = 41.311081
@@ -73,7 +71,7 @@ const ProductsList: React.FC<ProductsListProps> = ({ selectedFilter, onFilterCha
 
   const userLat = user?.latitude ?? DEFAULT_LAT
   const userLng = user?.longitude ?? DEFAULT_LNG
-  const categoryId = FILTER_TO_CATEGORY[selectedFilter]
+  const productType = FILTER_TO_PRODUCT_TYPE[selectedFilter]
 
   const {
     data,
@@ -88,11 +86,10 @@ const ProductsList: React.FC<ProductsListProps> = ({ selectedFilter, onFilterCha
       user_lat: userLat,
       user_long: userLng,
       page_size: PAGE_SIZE,
-      category_id: categoryId,
+      product_type: productType,
     },
   })
 
-  console.log('ProductsList - data:', data)
   const products: ProductItem[] = useMemo(
     () =>
       data?.pages.flatMap(

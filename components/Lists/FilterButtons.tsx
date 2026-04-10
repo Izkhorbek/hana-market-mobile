@@ -9,12 +9,10 @@ interface FilterItem {
 }
 
 const FILTERS: FilterItem[] = [
-  { key: 'all', labelKey: 'home.filters.all' },
-  { key: 'cars', labelKey: 'home.filters.cars' },
-  { key: 'real_estate', labelKey: 'home.filters.real_estate' },
-  { key: 'jobs', labelKey: 'home.filters.jobs' },
-  { key: 'electronics', labelKey: 'home.filters.electronics' },
-  { key: 'furniture', labelKey: 'home.filters.furniture' },
+  { key: 'all', labelKey: 'post.all' },
+  { key: 'things', labelKey: 'post.things' },
+  { key: 'cars', labelKey: 'post.cars' },
+  { key: 'works', labelKey: 'post.works' },
 ]
 
 interface FilterButtonsProps {
