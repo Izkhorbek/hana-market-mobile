@@ -1,52 +1,26 @@
-if (__DEV__) { require('../ReactotronConfig'); }
 import { queryClient } from '@/api/queryClient';
 import { useThemeNavigationBar } from '@/components/AnroidNavbarButtonsColorChange';
 import { NetworkProvider } from '@/components/providers/NetworkProvider';
 import '@/constants/localization';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useModeToggle } from '@/hooks/useModeToggle';
-import { useAuthStore } from '@/modules/Auth/auth-store';
 import { ThemeProvider } from '@/theme/theme-provider';
 import { QueryClientProvider } from '@tanstack/react-query';
-import { router, Stack, useSegments } from 'expo-router';
+import { Stack } from 'expo-router';
 import { Sun } from 'lucide-react-native';
 import React from 'react';
-import { ActivityIndicator, StatusBar, View } from 'react-native';
+import { StatusBar, View } from 'react-native';
 import 'react-native-reanimated';
+
+if (__DEV__) { require('../ReactotronConfig'); }
 
 export default function RootLayout() {
 	const colorScheme = useColorScheme()
 	const { toggleMode } = useModeToggle()
-	const segments = useSegments()
-	const isHydrated = useAuthStore((s) => s.isHydrated)
-	const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
+
 	useThemeNavigationBar()
 
-	React.useEffect(() => {
-		if (!isHydrated) {
-			return
-		}
-
-		const isInAuthGroup = segments[0] === '(auth)'
-
-		if (!isAuthenticated && !isInAuthGroup) {
-			router.replace('/(auth)/welcome')
-		}
-	}, [isAuthenticated, isHydrated, segments])
-
-	// Wait for Zustand to rehydrate from AsyncStorage
-	if (!isHydrated) {
-		return (
-			<ThemeProvider>
-				<View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-					<ActivityIndicator size="large" />
-				</View>
-			</ThemeProvider>
-		)
-	}
-
-
-
+	// ✅ Root layout only renders structure - no auth logic
 	return (
 		<QueryClientProvider client={queryClient}>
 			<ThemeProvider>

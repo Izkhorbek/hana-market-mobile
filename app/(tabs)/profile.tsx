@@ -44,12 +44,12 @@ const ProfilePage = () => {
 
 	const { isAuthenticated, user } = useAuthStore()
 	const timeAbbreviations = [
-		{ short: 's', label: t('profile.abbreviation_second'), example: '1 s' },
-		{ short: 'm', label: t('profile.abbreviation_minute'), example: '1 m' },
-		{ short: 'h', label: t('profile.abbreviation_hour'), example: '1 h' },
-		{ short: 'd', label: t('profile.abbreviation_day'), example: '1 d' },
-		{ short: 'mo', label: t('profile.abbreviation_month'), example: '1 mo' },
-		{ short: 'yr', label: t('profile.abbreviation_year'), example: '1 yr' },
+		{ short: 's', label: t('profile.abbreviation_second'), example: '1s' },
+		{ short: 'm', label: t('profile.abbreviation_minute'), example: '1m' },
+		{ short: 'h', label: t('profile.abbreviation_hour'), example: '1h' },
+		{ short: 'd', label: t('profile.abbreviation_day'), example: '1d' },
+		{ short: 'mo', label: t('profile.abbreviation_month'), example: '1mo' },
+		{ short: 'yr', label: t('profile.abbreviation_year'), example: '1yr' },
 	]
 
 	useFocusEffect(

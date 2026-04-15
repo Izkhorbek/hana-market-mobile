@@ -3,7 +3,6 @@ import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
 
 import { setLogoutFn, setTokenGetter } from '@/api/auth-bridge'
-import { useChatStore } from '@/modules/Chat/chat-store'
 import { authApi as localAuthApi, userApi as localUserApi } from './api'
 
 // ── Types ──
@@ -145,7 +144,8 @@ export const useAuthStore = create<AuthState>()(
       setLocationGranted: (granted) => set({ locationGranted: granted }),
 
       logout: () => {
-        // Reset chat store state
+          // Lazy import to break circular dependency
+        const { useChatStore } = require('@/modules/Chat/chat-store')
         useChatStore.getState().reset()
         
         // Clear auth state

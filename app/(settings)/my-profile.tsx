@@ -72,9 +72,6 @@ const MyProfilePage: React.FC = () => {
 	//  API 
 	const { data: profileRes, isLoading: profileLoading } = useProfileQuery()
 
-
-	console.log('Profile API response:', profileRes) // Debug log
-
 	const listingsCount = profileRes?.data?.data?.total_products ?? 0
 	const likedCount = profileRes?.data?.data?.total_likes ?? 0
 	const phoneNumber = profileRes?.data?.data?.phone_number
@@ -88,7 +85,6 @@ const MyProfilePage: React.FC = () => {
 			? [profileRes?.data?.data?.first_name, profileRes?.data?.data?.last_name].filter(Boolean).join(' ')
 			: profileRes?.data?.data?.username ?? profileRes?.data?.data?.phone_number ?? '--'
 
-	console.log('User profile data:', profileRes?.data?.data) // Debug log
 	//  Loading 
 	if (profileLoading) {
 		return (
