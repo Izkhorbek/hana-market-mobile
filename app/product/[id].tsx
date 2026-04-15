@@ -21,6 +21,7 @@ import {
 } from 'lucide-react-native'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import {
+	ActivityIndicator,
 	Platform,
 	Share,
 	StyleSheet,
@@ -596,6 +597,18 @@ const ProductDetailPage: React.FC = () => {
 		)
 	}, [colors.background, colors.borderColor, colors.profileBackground, colors.text, colors.textMuted])
 
+	const isInitialPageLoading = productLoading && !product
+
+	if (isInitialPageLoading) {
+		return (
+			<View style={[styles.container, { backgroundColor: colors.profileBackground }]}>
+				<View style={styles.loadingContainer}>
+					<ActivityIndicator size='large' color={colors.primaryColor} />
+				</View>
+			</View>
+		)
+	}
+
 
 	//---Seller products section ------------------------------
 	return (
@@ -910,6 +923,11 @@ export default ProductDetailPage
 
 const styles = StyleSheet.create({
 	container: { flex: 1 },
+	loadingContainer: {
+		flex: 1,
+		alignItems: 'center',
+		justifyContent: 'center',
+	},
 
 	// Sticky Header Styles
 	stickyHeader: {

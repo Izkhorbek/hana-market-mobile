@@ -116,7 +116,10 @@ export default function HomeScreen() {
           onPress={openSheet}
           activeOpacity={0.85}
         >
-          <Feather name="plus" size={28} color="#fff" />
+          <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 2 }}>
+            <Feather name="plus" size={28} color="#fff" />
+            <Text style={{ color: '#fff', fontSize: 16 }}>E'lon</Text>
+          </View>
         </TouchableOpacity>
       </View>
 
@@ -214,8 +217,8 @@ const styles = StyleSheet.create({
     right: 24,
   },
   fab: {
-    width: 58,
-    height: 58,
+    width: 100,
+    height: 54,
     borderRadius: 29,
     justifyContent: 'center',
     alignItems: 'center',
