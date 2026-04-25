@@ -245,7 +245,7 @@ const ImageViewer: React.FC<ImageViewerProps> = ({
                 <ZoomableImage
                     uri={item}
                     width={SCREEN_WIDTH}
-                    height={SCREEN_HEIGHT}
+                    height={SCREEN_HEIGHT - (insets.top + insets.bottom + 20)}
                     onSwipeDown={handleClose}
                 />
             </View>
@@ -272,14 +272,14 @@ const ImageViewer: React.FC<ImageViewerProps> = ({
             statusBarTranslucent
             onRequestClose={handleClose}
         >
-            <GestureHandlerRootView style={styles.container}>
+            <GestureHandlerRootView style={[styles.container]}>
                 <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
 
                 {/* Background */}
                 <View style={styles.background} />
 
                 {/* Header */}
-                <View style={[styles.header, { paddingTop: insets.top + ms(10) }]}>
+                <View style={[styles.header, { paddingTop: insets.top + ms(20) }]}>
                     <TouchableOpacity
                         style={[styles.closeButton, { width: ms(40), height: ms(40) }]}
                         onPress={handleClose}
@@ -319,7 +319,7 @@ const ImageViewer: React.FC<ImageViewerProps> = ({
                 />
 
                 {/* Pagination Dots */}
-                {images.length > 1 && (
+                {/* {images.length > 1 && (
                     <View style={[styles.pagination, { paddingBottom: insets.bottom + ms(20) }]}>
                         {images.map((_, index) => (
                             <View
@@ -335,7 +335,7 @@ const ImageViewer: React.FC<ImageViewerProps> = ({
                             />
                         ))}
                     </View>
-                )}
+                )} */}
             </GestureHandlerRootView>
         </Modal>
     )

@@ -8,8 +8,7 @@ import {
   ChatItemData,
   ChatListItem,
   FilterTabs,
-  FilterTabType,
-  NotificationBanner,
+  FilterTabType
 } from '@/modules/Chat';
 import { ChatRoomDto } from '@/types';
 import { parseBackendDateTime } from '@/utils/dateTime';
@@ -21,6 +20,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Alert, FlatList, RefreshControl, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import Swipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 /**
  * Transform API ChatListItemDto to UI ChatItemData
@@ -51,10 +51,11 @@ const ChatPage = () => {
   const backgroundColor = useColor('background');
   const mutedTextColor = useColor('textMuted');
   const primaryColor = useColor('primary');
+  const insets = useSafeAreaInsets();
   const { ms, fs } = useResponsive();
 
   const [activeTab, setActiveTab] = useState<FilterTabType>('all');
-  const [showBanner, setShowBanner] = useState(true);
+  // const [showBanner, setShowBanner] = useState(false);
   const [deletingChatId, setDeletingChatId] = useState<string | null>(null);
   const [snackbar, setSnackbar] = useState<{ visible: boolean; message: string; isError?: boolean }>({
     visible: false,
@@ -249,12 +250,12 @@ const ChatPage = () => {
           }
           ListHeaderComponent={
             <>
-              {showBanner && (
+              {/* {showBanner && (
                 <NotificationBanner
                   message={t('chat.notification_banner')}
                   onClose={() => setShowBanner(false)}
                 />
-              )}
+              )} */}
               <FilterTabs
                 activeTab={activeTab}
                 onTabChange={setActiveTab}
@@ -268,7 +269,7 @@ const ChatPage = () => {
         />
 
         {snackbar.visible && (
-          <View style={[styles.snackbar, { backgroundColor: snackbar.isError ? '#DC2626' : '#16A34A' }]}>
+          <View style={[styles.snackbar, { backgroundColor: snackbar.isError ? '#DC2626' : '#16A34A', bottom: insets.bottom + 16 }]}>
             <Text style={styles.snackbarText}>{snackbar.message}</Text>
           </View>
         )}
@@ -318,7 +319,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 16,
     right: 16,
-    bottom: 20,
+    bottom: 16,
     borderRadius: 12,
     paddingVertical: 12,
     paddingHorizontal: 14,

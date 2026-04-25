@@ -1,6 +1,5 @@
 import { useProductsBySellerQuery } from '@/api/hooks'
 import ProductCard from '@/components/shared/Cards/ProductCard'
-import { HEADER_HEIGHT, HEADER_PADDING_TOP } from '@/constants/appLimits'
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
 import { router, useLocalSearchParams } from 'expo-router'
@@ -15,6 +14,7 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 interface SellerProductItem {
     id: number
@@ -39,6 +39,7 @@ const SellerProductsPage: React.FC = () => {
     const parsedSellerId = sellerId ? parseInt(sellerId, 10) : 0
     const colors = useThemeColors()
     const { t } = useTranslations()
+    const insets = useSafeAreaInsets()
 
     const [page, setPage] = useState(1)
     const [products, setProducts] = useState<SellerProductItem[]>([])
@@ -133,7 +134,7 @@ const SellerProductsPage: React.FC = () => {
     }
 
     return (
-        <View style={[styles.container, { backgroundColor: colors.profileBackground }]}>
+        <View style={[styles.container, { backgroundColor: colors.profileBackground, paddingTop: insets.top, paddingBottom: insets.bottom }]}>
             <View style={[styles.header, { backgroundColor: colors.background, borderBottomColor: colors.borderColor }]}>
                 <TouchableOpacity onPress={() => router.back()} hitSlop={12}>
                     <ArrowLeft size={24} color={colors.text} />
@@ -160,7 +161,7 @@ const SellerProductsPage: React.FC = () => {
                     data={products}
                     keyExtractor={(item) => item.id.toString()}
                     showsVerticalScrollIndicator={false}
-                    contentContainerStyle={styles.listContent}
+                    contentContainerStyle={[styles.listContent, { paddingBottom: insets.bottom }]}
                     renderItem={({ item }) => (
                         <ProductCard
                             title={item.title ?? ''}
@@ -201,20 +202,15 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     header: {
-        height: HEADER_HEIGHT,
-        paddingTop: HEADER_PADDING_TOP,
         paddingHorizontal: 16,
-        paddingBottom: 12,
         borderBottomWidth: 1,
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 12,
     },
     headerTextWrap: {
         flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
-        gap: 2,
     },
     headerTitle: {
         fontSize: 20,
@@ -229,7 +225,7 @@ const styles = StyleSheet.create({
     },
     listContent: {
         paddingTop: 8,
-        paddingBottom: 24,
+        paddingBottom: 16,
     },
     loadingBox: {
         flex: 1,

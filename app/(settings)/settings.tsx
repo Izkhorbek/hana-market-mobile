@@ -1,3 +1,4 @@
+import ThemedScrollView from '@/components/themed-scrollview'
 import { Switch } from '@/components/ui/switch'
 import { HEADER_PADDING_TOP } from '@/constants/appLimits'
 import { useThemeColors } from '@/hooks/use-theme-colors'
@@ -21,7 +22,6 @@ import {
 } from 'lucide-react-native'
 import React, { useState } from 'react'
 import {
-	ScrollView,
 	StyleSheet,
 	Text,
 	TouchableOpacity,
@@ -227,10 +227,11 @@ const SettingsPage: React.FC = () => {
 				<View style={styles.headerRight} />
 			</View>
 
-			<ScrollView
+			<ThemedScrollView
 				style={styles.scrollView}
 				contentContainerStyle={styles.scrollContent}
 				showsVerticalScrollIndicator={false}
+				withSafeBottom
 			>
 				{/* Under Development Banner */}
 				<View
@@ -339,7 +340,7 @@ const SettingsPage: React.FC = () => {
 						onPress={handleAccountManagement}
 					/>
 				</ProfileSection>
-			</ScrollView>
+			</ThemedScrollView>
 		</View>
 	)
 }
@@ -377,7 +378,7 @@ const styles = StyleSheet.create({
 	},
 	scrollContent: {
 		padding: 16,
-		paddingBottom: 40,
+		paddingBottom: 16,
 	},
 	devBanner: {
 		borderRadius: 12,

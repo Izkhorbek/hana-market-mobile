@@ -33,11 +33,11 @@ const CreatePost = () => {
 
   return (
     <KeyboardAvoidingView
-      style={{ flex: 1 }}
+      style={[{ flex: 1, paddingBottom: insets.bottom + 10 }]}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
     >
-      <ThemedScrollView style={[styles.container, { paddingBottom: insets.bottom }]} showsVerticalScrollIndicator={false}>
+      <ThemedScrollView style={styles.container}>
         <ThemedText style={[styles.sectionTitle, { color: colors.text }]}>
           {t('post.select_type')}
         </ThemedText>
@@ -54,7 +54,7 @@ const CreatePost = () => {
                   styles.categoryCard,
                   {
                     backgroundColor: isSelected ? colors.tabIconBackground : colors.background,
-                    borderColor: isSelected ? colors.tabIconBackground : colors.borderColor,
+                    borderColor: isSelected ? colors.tabIconSelected : colors.borderColor,
                   },
                 ]}
                 onPress={() => setSelectedCategory(category.id)}
@@ -82,7 +82,7 @@ const CreatePost = () => {
         {selectedCategory === 'cars' && <CreateCarForm />}
         {selectedCategory === 'works' && <CreateWorksForm />}
       </ThemedScrollView>
-    </KeyboardAvoidingView>
+    </KeyboardAvoidingView >
   )
 
 }

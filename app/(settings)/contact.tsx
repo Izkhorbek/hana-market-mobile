@@ -1,5 +1,6 @@
 import { useSendContactMessageMutation } from '@/api/hooks'
 import FormInput from '@/components/FormElements/FormInput'
+import ThemedScrollView from '@/components/themed-scrollview'
 import { HEADER_PADDING_TOP } from '@/constants/appLimits'
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
@@ -13,7 +14,6 @@ import {
 	KeyboardAvoidingView,
 	Linking,
 	Platform,
-	ScrollView,
 	StyleSheet,
 	Text,
 	TouchableOpacity,
@@ -111,11 +111,12 @@ const ContactPage: React.FC = () => {
 			</View>
 
 			<KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.keyboardView}>
-				<ScrollView
+				<ThemedScrollView
 					style={styles.scrollView}
 					contentContainerStyle={styles.scrollContent}
 					showsVerticalScrollIndicator={false}
 					keyboardShouldPersistTaps='handled'
+					withSafeBottom
 				>
 					{/* Hero Section */}
 					<View style={styles.heroSection}>
@@ -181,7 +182,7 @@ const ContactPage: React.FC = () => {
 						<Text style={[styles.helpTitle, { color: colors.infoCardText }]}>{t('contact.help_title')}</Text>
 						<Text style={[styles.helpText, { color: colors.infoCardText }]}>{t('contact.help_description')}</Text>
 					</View>
-				</ScrollView>
+				</ThemedScrollView>
 			</KeyboardAvoidingView>
 		</View>
 	)
@@ -205,7 +206,7 @@ const styles = StyleSheet.create({
 	headerRight: { width: 40 },
 	keyboardView: { flex: 1 },
 	scrollView: { flex: 1 },
-	scrollContent: { padding: 16, paddingBottom: 40 },
+	scrollContent: { padding: 16, paddingBottom: 16 },
 	heroSection: { marginBottom: 20 },
 	heroTitle: { fontSize: 22, fontWeight: '700', marginBottom: 8 },
 	heroDescription: { fontSize: 15, lineHeight: 22 },

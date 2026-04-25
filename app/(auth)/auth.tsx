@@ -20,11 +20,13 @@ import {
   TouchableOpacity,
   View
 } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 const AuthPage = () => {
   const router = useRouter()
   const colors = useThemeColors()
   const { t } = useTranslations()
+  const insets = useSafeAreaInsets()
 
   const { login } = useAuthStore()
 
@@ -315,7 +317,7 @@ const AuthPage = () => {
         </ScrollView>
 
         {/* Action Button — pinned above keyboard */}
-        <View style={styles.doneButtonWrapper}>
+        <View style={[styles.doneButtonWrapper, { marginBottom: insets.bottom + 16 }]}>
           {step === 'phone' && (
             <TouchableOpacity
               style={[
@@ -484,7 +486,7 @@ const styles = StyleSheet.create({
   },
   doneButtonWrapper: {
     paddingHorizontal: 24,
-    marginBottom: 40, // Increased to keep it above keyboard if possible or just at bottom
+    marginBottom: 16,
   },
   doneButton: {
     width: '100%',

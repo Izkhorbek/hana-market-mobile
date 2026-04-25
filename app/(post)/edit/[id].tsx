@@ -171,7 +171,7 @@ const EditProductPage = () => {
     return (
         <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
             <EditProductHeader productTitle={product?.title} onShare={handleShare} />
-            <ScrollView style={[styles.container, { backgroundColor: colors.background }]} showsVerticalScrollIndicator={false} contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 24 }]}>
+            <ScrollView style={[styles.container, { backgroundColor: colors.background }]} showsVerticalScrollIndicator={false} contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom }]}>
                 <View style={styles.imageSection}>
                     <RemoteImage src={mainImage} style={styles.mainImage} resizeMode="cover" />
                     {productImages.length > 1 && (

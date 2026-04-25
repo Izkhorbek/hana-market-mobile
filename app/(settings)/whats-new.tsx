@@ -1,4 +1,5 @@
 import { useNewsListQuery } from '@/api/hooks'
+import ThemedScrollView from '@/components/themed-scrollview'
 import { HEADER_PADDING_TOP } from '@/constants/appLimits'
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
@@ -10,7 +11,6 @@ import { ArrowLeft, Sparkles } from 'lucide-react-native'
 import React from 'react'
 import {
 	ActivityIndicator,
-	ScrollView,
 	StyleSheet,
 	Text,
 	TouchableOpacity,
@@ -106,7 +106,7 @@ const WhatsNewPage: React.FC = () => {
 				<View style={styles.headerRight} />
 			</View>
 
-			<ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+			<ThemedScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false} withSafeBottom>
 				{/* Hero Card */}
 				<HeroCard />
 
@@ -131,7 +131,7 @@ const WhatsNewPage: React.FC = () => {
 						<Text style={[styles.footerText, { color: colors.infoCardText }]}>{t('whats_new.footer_note')}</Text>
 					</View>
 				)}
-			</ScrollView>
+			</ThemedScrollView>
 		</View>
 	)
 }
@@ -153,7 +153,7 @@ const styles = StyleSheet.create({
 	headerTitle: { fontSize: 18, fontWeight: '600' },
 	headerRight: { width: 40 },
 	scrollView: { flex: 1 },
-	scrollContent: { padding: 16, paddingBottom: 40 },
+	scrollContent: { padding: 16, paddingBottom: 16 },
 	heroCard: { borderRadius: 16, padding: 24, alignItems: 'center', marginBottom: 20 },
 	heroIconContainer: { width: 56, height: 56, borderRadius: 28, backgroundColor: 'rgba(255, 255, 255, 0.2)', justifyContent: 'center', alignItems: 'center', marginBottom: 16 },
 	heroTitle: { fontSize: 20, fontWeight: '700', color: '#fff', marginBottom: 8, textAlign: 'center' },

@@ -1,19 +1,20 @@
 import { useProfileQuery } from '@/api/hooks'
 import RemoteImage from '@/components/shared/RemoteImage'
-import { HEADER_PADDING_TOP } from '@/constants/appLimits'
+import ThemedScrollView from '@/components/themed-scrollview'
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
+import { useColor } from '@/hooks/useColor'
 import { router } from 'expo-router'
 import { ArrowLeft, BadgeCheck, MapPin, Pencil, User } from 'lucide-react-native'
 import React from 'react'
 import {
 	ActivityIndicator,
-	ScrollView,
 	StyleSheet,
 	Text,
 	TouchableOpacity,
 	View
 } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 //  InfoRow 
 
@@ -68,6 +69,10 @@ const StatItem: React.FC<StatItemProps> = ({ value, label, isLoading }) => {
 const MyProfilePage: React.FC = () => {
 	const { t } = useTranslations()
 	const colors = useThemeColors()
+	const cardColor = useColor('profileCard');
+	const textColor = useColor('text');
+	const mutedTextColor = useColor('textMuted');
+	const insets = useSafeAreaInsets()
 
 	//  API 
 	const { data: profileRes, isLoading: profileLoading } = useProfileQuery()
@@ -88,7 +93,7 @@ const MyProfilePage: React.FC = () => {
 	//  Loading 
 	if (profileLoading) {
 		return (
-			<View style={[styles.container, { backgroundColor: colors.profileBackground }]}>
+			<View style={[styles.container, { backgroundColor: colors.profileBackground, paddingBottom: insets.bottom }]}>
 				<View
 					style={[
 						styles.header,
@@ -109,7 +114,7 @@ const MyProfilePage: React.FC = () => {
 	}
 
 	return (
-		<View style={[styles.container, { backgroundColor: colors.profileBackground }]}>
+		<View style={[styles.container, { backgroundColor: colors.background, paddingBottom: insets.bottom, paddingTop: insets.top }]}>
 			{/* Header */}
 			<View
 				style={[
@@ -130,13 +135,14 @@ const MyProfilePage: React.FC = () => {
 				<View style={styles.headerRight} />
 			</View>
 
-			<ScrollView
-				style={styles.scrollView}
+			<ThemedScrollView
+				style={[styles.scrollView, { backgroundColor: colors.profileBackground }]}
 				contentContainerStyle={styles.scrollContent}
 				showsVerticalScrollIndicator={false}
+				withSafeBottom
 			>
 				{/* Profile Card */}
-				<View style={[styles.card, { backgroundColor: colors.background }]}>
+				<View style={[styles.card, { backgroundColor: cardColor }]}>
 					<View style={styles.profileSection}>
 						{/* Avatar */}
 						<View style={styles.avatarWrapper}>
@@ -200,8 +206,8 @@ const MyProfilePage: React.FC = () => {
 				</View>
 
 				{/* Account Information Card */}
-				<View style={[styles.card, { backgroundColor: colors.background }]}>
-					<Text style={[styles.sectionTitle, { color: colors.textMuted }]}>
+				<View style={[styles.card, { backgroundColor: cardColor }]}>
+					<Text style={[styles.sectionTitle, { color: mutedTextColor }]}>
 						{t('my_profile.account_information')}
 					</Text>
 
@@ -210,10 +216,10 @@ const MyProfilePage: React.FC = () => {
 
 					{bio ? (
 						<View style={styles.bioRow}>
-							<Text style={[styles.infoLabel, { color: colors.text }]}>
+							<Text style={[styles.infoLabel, { color: textColor }]}>
 								{t('my_profile.bio')}
 							</Text>
-							<Text style={[styles.bioText, { color: colors.textMuted }]}>{bio}</Text>
+							<Text style={[styles.bioText, { color: mutedTextColor }]}>{bio}</Text>
 						</View>
 					) : (
 						<InfoRow label={t('my_profile.bio')} value={null} />
@@ -221,8 +227,8 @@ const MyProfilePage: React.FC = () => {
 				</View>
 
 				{/* Activity Card */}
-				<View style={[styles.card, { backgroundColor: colors.background }]}>
-					<Text style={[styles.sectionTitle, { color: colors.textMuted }]}>
+				<View style={[styles.card, { backgroundColor: cardColor }]}>
+					<Text style={[styles.sectionTitle, { color: mutedTextColor }]}>
 						{t('my_profile.activity')}
 					</Text>
 
@@ -232,7 +238,7 @@ const MyProfilePage: React.FC = () => {
 							label={t('my_profile.listings')}
 							isLoading={profileLoading}
 						/>
-						<View style={[styles.statDivider, { backgroundColor: colors.borderColor }]} />
+						<View style={[styles.statDivider, { backgroundColor: mutedTextColor }]} />
 						<StatItem
 							value={likedCount}
 							label={t('my_profile.liked')}
@@ -240,8 +246,8 @@ const MyProfilePage: React.FC = () => {
 						/>
 					</View>
 				</View>
-			</ScrollView>
-		</View>
+			</ThemedScrollView>
+		</View >
 	)
 }
 
@@ -258,8 +264,6 @@ const styles = StyleSheet.create({
 		flexDirection: 'row',
 		alignItems: 'center',
 		justifyContent: 'space-between',
-		paddingTop: HEADER_PADDING_TOP,
-		paddingBottom: 16,
 		paddingHorizontal: 16,
 		borderBottomWidth: 1,
 	},
@@ -272,7 +276,10 @@ const styles = StyleSheet.create({
 	headerTitle: { fontSize: 18, fontWeight: '600' },
 	headerRight: { width: 40 },
 	scrollView: { flex: 1 },
-	scrollContent: { padding: 16, paddingBottom: 40 },
+	scrollContent:
+	{
+		padding: 10,
+	},
 	card: { borderRadius: 16, padding: 20, marginBottom: 16 },
 	profileSection: { alignItems: 'center' },
 	avatarWrapper: { marginBottom: 16 },

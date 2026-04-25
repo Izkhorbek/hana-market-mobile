@@ -1,5 +1,6 @@
 import ProfilePageHeader from '@/components/headers/ProfilePageHeader'
 import { LanguageSelector } from '@/components/Settings/LanguageSelector'
+import ThemedScrollView from '@/components/themed-scrollview'
 import { Switch } from '@/components/ui/switch'
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
@@ -10,6 +11,7 @@ import ProfileHeader from '@/modules/Profile/ProfileHeader'
 import ProfileMenuItem from '@/modules/Profile/ProfileMenuItem'
 import ProfileSection from '@/modules/Profile/ProfileSection'
 import Ionicons from '@expo/vector-icons/Ionicons'
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs'
 import { router, useFocusEffect } from 'expo-router'
 import {
 	FileText,
@@ -25,7 +27,8 @@ import {
 	Sparkles
 } from 'lucide-react-native'
 import React, { useCallback, useState } from 'react'
-import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { Alert, StyleSheet, Text, View } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 const ProfilePage = () => {
 	const { t, locale } = useTranslations()
@@ -37,6 +40,8 @@ const ProfilePage = () => {
 	const infoCardText = useColor('infoCardText')
 	const cardColor = useColor('profileCard')
 	const textColor = useColor('text')
+	const insets = useSafeAreaInsets()
+	const tabBarHeight = useBottomTabBarHeight()
 	const { isDark, setMode } = useModeToggle()
 	const [isLanguageModalVisible, setIsLanguageModalVisible] = useState(false)
 	const logout = useAuthStore((s) => s.logout)
@@ -120,9 +125,9 @@ const ProfilePage = () => {
 		<View style={[styles.container, { backgroundColor }]}>
 			<ProfilePageHeader />
 
-			<ScrollView
+			<ThemedScrollView
 				style={[styles.scrollView, { backgroundColor: colors.profileBackground }]}
-				contentContainerStyle={styles.scrollContent}
+				contentContainerStyle={[styles.scrollContent, { paddingBottom: tabBarHeight + Math.max(insets.bottom, 16) }]}
 				showsVerticalScrollIndicator={false}
 			>
 				{/* Profile Header */}
@@ -293,7 +298,7 @@ const ProfilePage = () => {
 				<Text style={[styles.appVersion, { color: mutedTextColor }]}>
 					{t('profile.app_version')}
 				</Text>
-			</ScrollView>
+			</ThemedScrollView>
 
 			{/* Language Selector Modal */}
 			<LanguageSelector
@@ -315,7 +320,7 @@ const styles = StyleSheet.create({
 	},
 	scrollContent: {
 		paddingHorizontal: 10,
-		paddingBottom: 100,
+		paddingBottom: 16,
 		paddingTop: 20,
 	},
 	appVersion: {

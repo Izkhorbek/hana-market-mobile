@@ -1,4 +1,5 @@
 import { useSubmitFeedbackMutation } from '@/api/hooks'
+import ThemedScrollView from '@/components/themed-scrollview'
 import { HEADER_PADDING_TOP } from '@/constants/appLimits'
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
@@ -12,7 +13,6 @@ import {
 	Alert,
 	KeyboardAvoidingView,
 	Platform,
-	ScrollView,
 	StyleSheet,
 	Text,
 	TextInput,
@@ -119,7 +119,7 @@ const FeedbackPage: React.FC = () => {
 			</View>
 
 			<KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.keyboardView}>
-				<ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps='handled'>
+				<ThemedScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps='handled' withSafeBottom>
 					{/* Hero Section */}
 					<View style={styles.heroSection}>
 						<View style={[styles.heroIconContainer, { backgroundColor: `${colors.primaryColor}15` }]}>
@@ -217,7 +217,7 @@ const FeedbackPage: React.FC = () => {
 					<View style={[styles.privacyCard, { backgroundColor: colors.infoCardBg, borderColor: colors.infoCardBorder }]}>
 						<Text style={[styles.privacyText, { color: colors.infoCardText }]}>{t('feedback.privacy_note')}</Text>
 					</View>
-				</ScrollView>
+				</ThemedScrollView>
 			</KeyboardAvoidingView>
 		</View>
 	)
@@ -241,7 +241,7 @@ const styles = StyleSheet.create({
 	headerRight: { width: 40 },
 	keyboardView: { flex: 1 },
 	scrollView: { flex: 1 },
-	scrollContent: { padding: 16, paddingBottom: 40 },
+	scrollContent: { padding: 16, paddingBottom: 16 },
 	heroSection: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 24 },
 	heroIconContainer: { width: 48, height: 48, borderRadius: 12, justifyContent: 'center', alignItems: 'center', marginRight: 14 },
 	heroContent: { flex: 1 },

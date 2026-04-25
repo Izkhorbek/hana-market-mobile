@@ -16,10 +16,12 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 const FavoritesPage: React.FC = () => {
     const colors = useThemeColors()
     const { t } = useTranslations()
+    const insets = useSafeAreaInsets()
 
     const { data, isFetching, isError, refetch } = useLikedProductsQuery({
         querySettings: { staleTime: 1000 * 30 },
@@ -94,7 +96,7 @@ const FavoritesPage: React.FC = () => {
                     data={products}
                     keyExtractor={(item) => item.id.toString()}
                     showsVerticalScrollIndicator={false}
-                    contentContainerStyle={styles.listContent}
+                    contentContainerStyle={[styles.listContent, { paddingBottom: insets.bottom }]}
                     renderItem={({ item }) => (
                         <ProductCard
                             title={item.title ?? ''}
@@ -153,7 +155,7 @@ const styles = StyleSheet.create({
     },
     listContent: {
         paddingTop: 8,
-        paddingBottom: 24,
+        paddingBottom: 16,
     },
     loadingBox: {
         flex: 1,

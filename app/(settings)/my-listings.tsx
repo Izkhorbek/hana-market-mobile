@@ -1,6 +1,5 @@
 import { useDeleteProductMutation, useMyProductsQuery } from '@/api/hooks'
 import MyListingCard, { ListingStatus, MyListingCardProps } from '@/components/shared/Cards/MyListingCard'
-import { HEADER_PADDING_TOP } from '@/constants/appLimits'
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
 import { MyProductDto } from '@/types'
@@ -19,6 +18,7 @@ import {
 	TouchableOpacity,
 	View
 } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 type TabType = 'active' | 'sold' | 'hidden'
 
@@ -44,6 +44,7 @@ const mapProductToCardProps = (product: MyProductDto): MyListingCardProps => ({
 const MyListingsPage = () => {
 	const { t } = useTranslations()
 	const colors = useThemeColors()
+	const insets = useSafeAreaInsets()
 	const [activeTab, setActiveTab] = useState<TabType>('active')
 	const [deletingListingId, setDeletingListingId] = useState<string | null>(null)
 
@@ -140,7 +141,7 @@ const MyListingsPage = () => {
 	)
 
 	return (
-		<View style={[styles.container, { backgroundColor: colors.background }]}>
+		<View style={[styles.container, { backgroundColor: colors.background, paddingTop: insets.top, paddingBottom: insets.bottom }]}>
 			{/* Header */}
 			<View
 				style={[
@@ -193,7 +194,7 @@ const MyListingsPage = () => {
 				data={filteredListings}
 				renderItem={renderListingItem}
 				keyExtractor={item => item.id}
-				contentContainerStyle={styles.listContent}
+				contentContainerStyle={[styles.listContent]}
 				showsVerticalScrollIndicator={false}
 				ListEmptyComponent={renderEmptyState}
 				refreshControl={
@@ -219,8 +220,6 @@ const styles = StyleSheet.create({
 		flexDirection: 'row',
 		alignItems: 'center',
 		justifyContent: 'space-between',
-		paddingTop: HEADER_PADDING_TOP,
-		paddingBottom: 16,
 		paddingHorizontal: 16,
 		borderBottomWidth: 0,
 	},
@@ -239,7 +238,7 @@ const styles = StyleSheet.create({
 	},
 	tabsContainer: {
 		flexDirection: 'row',
-		paddingHorizontal: 16,
+		paddingHorizontal: 10,
 	},
 	tab: {
 		flex: 1,

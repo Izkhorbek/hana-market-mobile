@@ -19,7 +19,7 @@ const ProfilePageHeader = () => {
         },
       ]}
     >
-      <ThemedText style={[styles.title, { color: colors.blackIcon }]}>
+      <ThemedText style={[styles.title, { color: colors.primaryColor }]}>
         {t('profile.title')}
       </ThemedText>
     </ThemedView>

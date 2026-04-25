@@ -11,7 +11,6 @@ import {
 	useUserOnlineStatus
 } from '@/api/hooks';
 import RemoteImage from '@/components/shared/RemoteImage';
-import { HEADER_PADDING_TOP } from '@/constants/appLimits';
 import { useThemeColors } from '@/hooks/use-theme-colors';
 import { useTranslations } from '@/hooks/use-translation';
 import { useAuthStore } from '@/modules/Auth/auth-store';
@@ -28,7 +27,6 @@ import {
 	Alert,
 	FlatList,
 	KeyboardAvoidingView,
-	Platform,
 	StyleSheet,
 	Text,
 	TextInput,
@@ -293,7 +291,6 @@ const MessageInput: React.FC<{
 }> = ({ value, onChangeText, onSend, onAttach, onTyping, isSending }) => {
 	const colors = useThemeColors()
 	const { t } = useTranslations()
-	const insets = useSafeAreaInsets()
 
 	const handleChangeText = (text: string) => {
 		onChangeText(text)
@@ -301,12 +298,12 @@ const MessageInput: React.FC<{
 	}
 
 	return (
-		<View style={[styles.inputContainer, { backgroundColor: colors.background, borderTopColor: colors.borderColor, paddingBottom: Math.max(insets.bottom, 16) }]}>
+		<View style={[styles.inputContainer, { backgroundColor: colors.background, borderTopColor: colors.borderColor }]}>
 			<TouchableOpacity onPress={onAttach} style={styles.attachButton}>
 				<Text style={[styles.attachIcon, { color: colors.textMuted }]}>+</Text>
 			</TouchableOpacity>
 			<TextInput
-				style={[styles.textInput, { backgroundColor: colors.profileBackground, color: colors.text }]}
+				style={[styles.textInput, { backgroundColor: colors.background, color: colors.text, borderColor: colors.textMuted, borderWidth: 1 }]}
 				placeholder={t('chat_room.type_message')}
 				placeholderTextColor={colors.textMuted}
 				value={value}
@@ -337,6 +334,7 @@ const ChatRoomPage: React.FC = () => {
 	const colors = useThemeColors()
 	const { t } = useTranslations()
 	const flatListRef = useRef<FlatList>(null)
+	const insets = useSafeAreaInsets()
 
 	const [inputText, setInputText] = useState('')
 	const [isSending, setIsSending] = useState(false)
@@ -795,8 +793,9 @@ const ChatRoomPage: React.FC = () => {
 
 	return (
 		<KeyboardAvoidingView
-			style={[styles.container, { backgroundColor: colors.profileBackground }]}
-			behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+			style={[styles.container, { backgroundColor: colors.profileBackground, paddingTop: insets.top, paddingBottom: insets.bottom }]}
+			behavior='padding'
+			
 			keyboardVerticalOffset={0}
 		>
 			<ChatHeader
@@ -888,9 +887,7 @@ const styles = StyleSheet.create({
 	header: {
 		flexDirection: 'row',
 		alignItems: 'center',
-		paddingTop: HEADER_PADDING_TOP,
-		paddingBottom: 12,
-		paddingHorizontal: 12,
+		paddingHorizontal: 10,
 		borderBottomWidth: 1,
 	},
 	headerBackButton: {
@@ -1081,7 +1078,7 @@ const styles = StyleSheet.create({
 	// Quick Replies
 	quickRepliesContainer: {
 		flexDirection: 'row',
-		paddingHorizontal: 12,
+		paddingHorizontal: 10,
 		paddingVertical: 10,
 		gap: 8,
 		borderTopWidth: 1,
@@ -1102,7 +1099,7 @@ const styles = StyleSheet.create({
 		alignItems: 'flex-end',
 		paddingHorizontal: 12,
 		paddingTop: 10,
-		paddingBottom: 16,
+		paddingBottom: 10,
 		gap: 10,
 		borderTopWidth: 1,
 	},
@@ -1135,6 +1132,7 @@ const styles = StyleSheet.create({
 	sendIcon: {
 		color: '#fff',
 		fontSize: 16,
+		transform: [{ rotate: '-20deg' }],
 	},
 
 	// Load More
@@ -1152,7 +1150,6 @@ const styles = StyleSheet.create({
 	},
 	deletingOverlay: {
 		position: 'absolute',
-		top: HEADER_PADDING_TOP + 10,
 		right: 48,
 		zIndex: 20,
 	},

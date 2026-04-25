@@ -9,11 +9,13 @@ import { router } from 'expo-router'
 import { ArrowLeft, ChevronRight } from 'lucide-react-native'
 import React, { useCallback } from 'react'
 import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { SvgUri } from 'react-native-svg'
 
 const CategoriesPage: React.FC = () => {
 	const { t, locale } = useTranslations()
 	const colors = useThemeColors()
+	const insets = useSafeAreaInsets()
 
 	// Fetch categories from API
 	const { data: categoriesRes, isLoading, isRefetching, refetch } = useCategoriesQuery()
@@ -52,7 +54,7 @@ const CategoriesPage: React.FC = () => {
 				<FlatList
 					data={categories}
 					keyExtractor={item => String(item.id)}
-					contentContainerStyle={styles.listContainer}
+					contentContainerStyle={[styles.listContainer, { paddingBottom: insets.bottom }]}
 					showsVerticalScrollIndicator={false}
 					refreshControl={
 						<RefreshControl
@@ -131,7 +133,7 @@ const styles = StyleSheet.create({
 	listContainer: {
 		paddingHorizontal: 16,
 		paddingVertical: 12,
-		paddingBottom: 36,
+		paddingBottom: 16,
 	},
 	row: {
 		flexDirection: 'row',

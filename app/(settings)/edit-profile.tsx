@@ -6,9 +6,11 @@ import {
 } from '@/api/hooks'
 import FormInput from '@/components/FormElements/FormInput'
 import RemoteImage from '@/components/shared/RemoteImage'
-import { AppLimits, HEADER_PADDING_TOP } from '@/constants/appLimits'
+import ThemedScrollView from '@/components/themed-scrollview'
+import { AppLimits } from '@/constants/appLimits'
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
+import { useSafeAreaEdgeInsets } from '@/hooks/useSafeAreaEdgeInsets'
 import { useAuthStore } from '@/modules/Auth/auth-store'
 import { useQueryClient } from '@tanstack/react-query'
 import * as ImagePicker from 'expo-image-picker'
@@ -21,11 +23,10 @@ import {
 	Alert,
 	KeyboardAvoidingView,
 	Platform,
-	ScrollView,
 	StyleSheet,
 	Text,
 	TouchableOpacity,
-	View,
+	View
 } from 'react-native'
 
 interface EditProfileFormData {
@@ -41,6 +42,7 @@ const EditProfilePage = () => {
 	const colors = useThemeColors()
 	const queryClient = useQueryClient()
 	const logout = useAuthStore((s) => s.logout)
+	const insets = useSafeAreaEdgeInsets()
 
 	// Displayed profile image URL (from server or just-uploaded URL)
 	const [displayImageUrl, setDisplayImageUrl] = useState<string | null>(null)
@@ -231,8 +233,8 @@ const EditProfilePage = () => {
 	// ── Loading skeleton ──────────────────────────────────────────────────────
 	if (profileLoading) {
 		return (
-			<View style={[styles.container, { backgroundColor: colors.profileBackground }]}>
-				<View style={[styles.header, { backgroundColor: colors.background, borderBottomColor: colors.borderColor }]}>
+			<View style={[styles.container, { backgroundColor: colors.profileBackground, paddingTop: insets.top, paddingBottom: insets.bottom }]}>
+				<View style={[styles.header, { backgroundColor: colors.background, borderBottomColor: colors.borderColor, paddingTop: insets.top }]}>
 					<TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
 						<ArrowLeft size={24} color={colors.text} />
 					</TouchableOpacity>
@@ -247,7 +249,7 @@ const EditProfilePage = () => {
 	}
 
 	return (
-		<View style={[styles.container, { backgroundColor: colors.profileBackground }]}>
+		<View style={[styles.container, { backgroundColor: colors.profileBackground, paddingTop: insets.top, paddingBottom: insets.bottom }]}>
 			{/* Header */}
 			<View style={[styles.header, { backgroundColor: colors.background, borderBottomColor: colors.borderColor }]}>
 				<TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
@@ -258,14 +260,21 @@ const EditProfilePage = () => {
 			</View>
 
 			<KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.keyboardView}>
-				<ScrollView
+				<ThemedScrollView
 					style={styles.scrollView}
 					contentContainerStyle={styles.scrollContent}
 					showsVerticalScrollIndicator={false}
 					keyboardShouldPersistTaps='handled'
+					withSafeBottom
 				>
+					{/* <ScrollView
+						style={styles.scrollView}
+						contentContainerStyle={styles.scrollContent}
+						showsVerticalScrollIndicator={false}
+						keyboardShouldPersistTaps='handled'
+					> */}
 					{/* Profile Photo Card */}
-					<View style={[styles.card, { backgroundColor: colors.background }]}>
+					<View style={[styles.card, { backgroundColor: colors.profileCard }]}>
 						<Text style={[styles.cardTitle, { color: colors.text }]}>
 							{t('edit_profile.profile_photo')}
 						</Text>
@@ -300,7 +309,7 @@ const EditProfilePage = () => {
 					</View>
 
 					{/* Personal Information Card */}
-					<View style={[styles.card, { backgroundColor: colors.background }]}>
+					<View style={[styles.card, { backgroundColor: colors.profileCard }]}>
 						<Text style={[styles.cardTitle, { color: colors.text }]}>
 							{t('edit_profile.personal_info')}
 						</Text>
@@ -397,30 +406,31 @@ const EditProfilePage = () => {
 							{t('edit_profile.delete_account')}
 						</Text>
 					</TouchableOpacity>
-				</ScrollView>
+					{/* </ScrollView> */}
 
-				{/* Save Button */}
-				<View style={[styles.bottomContainer, { backgroundColor: colors.profileBackground }]}>
-					<TouchableOpacity
-						style={[
-							styles.saveButton,
-							{ backgroundColor: colors.primaryColor },
-							(isBusy || !isDirty) && styles.saveButtonDisabled,
-						]}
-						onPress={handleSubmit(onSubmit)}
-						disabled={isBusy || !isDirty}
-						activeOpacity={0.8}
-					>
-						{isBusy ? (
-							<ActivityIndicator size='small' color='#fff' />
-						) : (
-							<Check size={20} color='#fff' />
-						)}
-						<Text style={styles.saveButtonText}>
-							{isBusy ? t('edit_profile.saving') : t('edit_profile.save_changes')}
-						</Text>
-					</TouchableOpacity>
-				</View>
+					{/* Save Button */}
+					<View style={[styles.bottomContainer, { backgroundColor: colors.profileBackground }]}>
+						<TouchableOpacity
+							style={[
+								styles.saveButton,
+								{ backgroundColor: colors.primaryColor },
+								(isBusy || !isDirty) && styles.saveButtonDisabled,
+							]}
+							onPress={handleSubmit(onSubmit)}
+							disabled={isBusy || !isDirty}
+							activeOpacity={0.8}
+						>
+							{isBusy ? (
+								<ActivityIndicator size='small' color='#fff' />
+							) : (
+								<Check size={20} color='#fff' />
+							)}
+							<Text style={styles.saveButtonText}>
+								{isBusy ? t('edit_profile.saving') : t('edit_profile.save_changes')}
+							</Text>
+						</TouchableOpacity>
+					</View>
+				</ThemedScrollView>
 			</KeyboardAvoidingView>
 		</View>
 	)
@@ -439,8 +449,6 @@ const styles = StyleSheet.create({
 		flexDirection: 'row',
 		alignItems: 'center',
 		justifyContent: 'space-between',
-		paddingTop: HEADER_PADDING_TOP,
-		paddingBottom: 16,
 		paddingHorizontal: 16,
 		borderBottomWidth: 1,
 	},
@@ -454,7 +462,10 @@ const styles = StyleSheet.create({
 	headerRight: { width: 40 },
 	keyboardView: { flex: 1 },
 	scrollView: { flex: 1 },
-	scrollContent: { padding: 16, paddingBottom: 24 },
+	scrollContent:
+	{
+		padding: 10,
+	},
 	card: { borderRadius: 16, padding: 20, marginBottom: 16 },
 	cardTitle: { fontSize: 16, fontWeight: '600', marginBottom: 20 },
 	photoContainer: { alignItems: 'center' },
@@ -502,8 +513,6 @@ const styles = StyleSheet.create({
 	},
 	deleteButtonText: { fontSize: 15, fontWeight: '600' },
 	bottomContainer: {
-		padding: 16,
-		paddingBottom: Platform.OS === 'ios' ? 34 : 16,
 	},
 	saveButton: {
 		flexDirection: 'row',

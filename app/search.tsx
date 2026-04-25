@@ -1,6 +1,6 @@
 import { useCategoriesQuery, useInfiniteProductsQuery } from '@/api/hooks'
 import ProductCard from '@/components/shared/Cards/ProductCard'
-import { HEADER_HEIGHT, HEADER_PADDING_TOP } from '@/constants/appLimits'
+import { HEADER_HEIGHT } from '@/constants/appLimits'
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
 import { useAuthStore } from '@/modules/Auth/auth-store'
@@ -19,6 +19,7 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 interface ProductItem {
     id: number
@@ -44,6 +45,7 @@ const DEBOUNCE_MS = 400
 const SearchPage: React.FC = () => {
     const { t, locale } = useTranslations()
     const colors = useThemeColors()
+    const insets = useSafeAreaInsets()
     const user = useAuthStore((s) => s.user)
     const { categoryId } = useLocalSearchParams<{ categoryId?: string }>()
 
@@ -194,7 +196,7 @@ const SearchPage: React.FC = () => {
     }
 
     return (
-        <View style={[styles.container, { backgroundColor: colors.profileBackground }]}>
+        <View style={[styles.container, { backgroundColor: colors.profileBackground, paddingTop: insets.top }]}>
             <View style={[styles.searchHeader, { borderBottomColor: colors.borderColor, backgroundColor: colors.background }]}>
                 <TouchableOpacity onPress={() => router.back()} hitSlop={12}>
                     <ArrowLeft size={24} color={colors.text} />
@@ -219,7 +221,7 @@ const SearchPage: React.FC = () => {
                 data={products}
                 keyExtractor={(item) => item.id.toString()}
                 showsVerticalScrollIndicator={false}
-                contentContainerStyle={styles.listContent}
+                contentContainerStyle={[styles.listContent, { paddingBottom: insets.bottom }]}
                 renderItem={({ item }) => (
                     <ProductCard
                         title={item.title ?? ''}
@@ -285,9 +287,7 @@ const styles = StyleSheet.create({
     },
     searchHeader: {
         height: HEADER_HEIGHT,
-        paddingTop: HEADER_PADDING_TOP,
-        paddingHorizontal: 16,
-        paddingBottom: 10,
+        paddingHorizontal: 10,
         flexDirection: 'row',
         alignItems: 'center',
         gap: 12,
@@ -297,7 +297,7 @@ const styles = StyleSheet.create({
         height: 44,
         borderWidth: 1,
         borderRadius: 12,
-        paddingHorizontal: 12,
+        paddingHorizontal: 10,
         flexDirection: 'row',
         alignItems: 'center',
         gap: 8,
@@ -312,14 +312,14 @@ const styles = StyleSheet.create({
         paddingBottom: 4,
     },
     categoriesContainer: {
-        paddingHorizontal: 12,
+        paddingHorizontal: 10,
         gap: 8,
     },
     categoryChip: {
         height: 34,
         borderRadius: 18,
         borderWidth: 1,
-        paddingHorizontal: 14,
+        paddingHorizontal: 10,
         justifyContent: 'center',
         alignItems: 'center',
     },
@@ -331,10 +331,10 @@ const styles = StyleSheet.create({
         fontSize: 13,
         fontWeight: '500',
         paddingTop: 12,
-        paddingHorizontal: 16,
+        paddingHorizontal: 10,
     },
     listContent: {
-        paddingBottom: 24,
+        paddingBottom: 16,
     },
     loadingOverlay: {
         ...StyleSheet.absoluteFillObject,

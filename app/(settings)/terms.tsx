@@ -1,4 +1,5 @@
 import { useTermsQuery } from '@/api/hooks'
+import ThemedScrollView from '@/components/themed-scrollview'
 import { HEADER_PADDING_TOP } from '@/constants/appLimits'
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
@@ -6,7 +7,7 @@ import { useColor } from '@/hooks/useColor'
 import { router } from 'expo-router'
 import { ArrowLeft } from 'lucide-react-native'
 import React from 'react'
-import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 
 const TermsPage: React.FC = () => {
 	const { t } = useTranslations()
@@ -33,7 +34,7 @@ const TermsPage: React.FC = () => {
 					<ActivityIndicator size='large' color={colors.primaryColor} />
 				</View>
 			) : (
-				<ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+				<ThemedScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false} withSafeBottom>
 					{termsData?.last_updated && (
 						<View style={styles.metaContainer}>
 							<Text style={[styles.metaLabel, { color: colors.textMuted }]}>Last Updated</Text>
@@ -68,7 +69,7 @@ const TermsPage: React.FC = () => {
 							))}
 						</View>
 					))}
-				</ScrollView>
+				</ThemedScrollView>
 			)}
 		</View>
 	)
@@ -92,7 +93,7 @@ const styles = StyleSheet.create({
 	headerRight: { width: 40 },
 	loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
 	scrollView: { flex: 1 },
-	scrollContent: { padding: 16, paddingBottom: 40 },
+	scrollContent: { padding: 16, paddingBottom: 16 },
 	metaContainer: { marginBottom: 12 },
 	metaLabel: { fontSize: 12, fontWeight: '500' },
 	metaValue: { fontSize: 14, fontWeight: '600', marginTop: 2 },

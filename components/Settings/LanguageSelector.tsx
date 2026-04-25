@@ -6,6 +6,7 @@ import { useTranslations } from '@/hooks/use-translation';
 import { Check } from 'lucide-react-native';
 import React from 'react';
 import { StyleSheet, TouchableOpacity } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface LanguageSelectorProps {
   isVisible: boolean;
@@ -26,7 +27,7 @@ const languages: LanguageOption[] = [
 export function LanguageSelector({ isVisible, onClose }: LanguageSelectorProps) {
   const colors = useThemeColors();
   const { locale, changeLng, t } = useTranslations();
-
+  const insets = useSafeAreaInsets();
   const handleLanguageSelect = (languageCode: string) => {
     changeLng(languageCode);
     onClose();
@@ -36,21 +37,21 @@ export function LanguageSelector({ isVisible, onClose }: LanguageSelectorProps) 
     <BottomSheet
       isVisible={isVisible}
       onClose={onClose}
-      snapPoints={[0.3]}
+      snapPoints={[0.4]}
       style={{ backgroundColor: colors.background }}
       enableBackdropDismiss={true}
-      // title={t('profile.select_language')}
+    // title={t('profile.select_language')}
     >
-      <View style={styles.container}>
+      <View style={[styles.container]}>
         {languages.map((language) => {
           const isSelected = locale === language.code;
-          
+
           return (
             <TouchableOpacity
               key={language.code}
               style={[
                 styles.languageItem,
-                { 
+                {
                   backgroundColor: 'transparent',
                   borderColor: isSelected ? colors.primaryColor : colors.muted,
                 },
@@ -66,7 +67,7 @@ export function LanguageSelector({ isVisible, onClose }: LanguageSelectorProps) 
                   {language.nativeName}
                 </Text>
               </View>
-              
+
               {isSelected && (
                 <Check size={20} color={colors.primaryColor} strokeWidth={2.5} />
               )}

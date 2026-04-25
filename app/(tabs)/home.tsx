@@ -111,7 +111,7 @@ export default function HomeScreen() {
       />
 
       {/* ── Floating Action Button ─────────────────────────────────────── */}
-      <View style={styles.fabContainer}>
+      <View style={[styles.fabContainer, { bottom: insets.bottom }]}>
         <TouchableOpacity
           style={[styles.fab, { backgroundColor: colors.primaryColor }]}
           onPress={openSheet}
@@ -119,7 +119,7 @@ export default function HomeScreen() {
         >
           <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 2 }}>
             <Feather name="plus" size={28} color="#fff" />
-            <Text style={{ color: '#fff', fontSize: 16 }}>E'lon</Text>
+            <Text style={{ color: '#fff', fontSize: 16 }}>{t('post.post')}</Text>
           </View>
         </TouchableOpacity>
       </View>

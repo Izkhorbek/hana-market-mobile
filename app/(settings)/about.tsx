@@ -1,4 +1,5 @@
 import { useAboutUsQuery } from '@/api/hooks'
+import ThemedScrollView from '@/components/themed-scrollview'
 import { HEADER_PADDING_TOP } from '@/constants/appLimits'
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
@@ -16,7 +17,6 @@ import {
 import React from 'react'
 import {
 	ActivityIndicator,
-	ScrollView,
 	StyleSheet,
 	Text,
 	TouchableOpacity,
@@ -96,7 +96,7 @@ const AboutPage: React.FC = () => {
 					<ActivityIndicator size='large' color={colors.primaryColor} />
 				</View>
 			) : (
-				<ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+				<ThemedScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false} withSafeBottom>
 					{/* App Logo & Info Card */}
 					<View style={[styles.logoCard, { backgroundColor: cardColor }]}>
 						<View style={[styles.logoContainer, { backgroundColor: colors.primaryColor }]}>
@@ -194,7 +194,7 @@ const AboutPage: React.FC = () => {
 							)}
 						</View>
 					</View>
-				</ScrollView>
+				</ThemedScrollView>
 			)}
 		</View>
 	)
@@ -218,7 +218,7 @@ const styles = StyleSheet.create({
 	headerRight: { width: 40 },
 	loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
 	scrollView: { flex: 1 },
-	scrollContent: { padding: 16, paddingBottom: 40 },
+	scrollContent: { padding: 16, paddingBottom: 16 },
 	logoCard: { borderRadius: 16, padding: 24, alignItems: 'center', marginBottom: 16 },
 	logoContainer: { width: 72, height: 72, borderRadius: 18, justifyContent: 'center', alignItems: 'center', marginBottom: 16 },
 	appName: { fontSize: 24, fontWeight: '700', marginBottom: 4 },

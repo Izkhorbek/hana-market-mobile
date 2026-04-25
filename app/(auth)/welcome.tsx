@@ -16,6 +16,7 @@ const WelcomePage = () => {
     <ThemedScrollView
       style={styles.container}
       contentContainerStyle={styles.contentContainer}
+      withSafeBottom
     >
       {/* Logo Section */}
       <ThemedView style={styles.logoSection}>
@@ -68,7 +69,7 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     paddingHorizontal: 24,
     paddingTop: 80,
-    paddingBottom: 40,
+    paddingBottom: 0,
     justifyContent: 'space-between',
   },
   logoSection: {
