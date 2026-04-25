@@ -6,7 +6,10 @@
   },
   "cSpell.ignoreRandomStrings": false,
   "cSpell.enabled": false,
-  "cSpell.checkOnlyEnabledFileTypes": false,
-  "cSpell.diagnosticLevel": "Hint",
-  "chat.editor.fontSize": 14
+  "editor.quickSuggestions": {
+    "comments": false,
+    "strings": false,
+    "other": true
+  },
+  "chat.editor.fontSize": 18
 }
