@@ -8,8 +8,9 @@ import * as Location from 'expo-location'
 import { router } from 'expo-router'
 import { ArrowLeft, Check, Home, MapPin, Navigation } from 'lucide-react-native'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { Alert, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import MapView, { Circle, Marker } from 'react-native-maps'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { googleMapStyle } from '../../components/Maps/googleMapStyle'
 
 interface LocationData {
@@ -40,6 +41,7 @@ const ManageNeighborhoodPage = () => {
 	const { t } = useTranslations()
 	const colors = useThemeColors()
 	const colorScheme = useColorScheme()
+	const insets = useSafeAreaInsets()
 	const mapRef = useRef<MapView>(null)
 	const storeUser = useAuthStore((s) => s.user)
 
@@ -355,6 +357,7 @@ const ManageNeighborhoodPage = () => {
 					{
 						backgroundColor: colors.background,
 						shadowColor: colorScheme === 'dark' ? '#000' : '#000',
+						paddingBottom: Math.max(insets.bottom, 24),
 					},
 				]}
 			>
@@ -566,7 +569,7 @@ const styles = StyleSheet.create({
 		borderTopRightRadius: 24,
 		paddingHorizontal: 20,
 		paddingTop: 24,
-		paddingBottom: Platform.OS === 'ios' ? 40 : 24,
+		paddingBottom: 24,
 		shadowOffset: { width: 0, height: -4 },
 		shadowOpacity: 0.1,
 		shadowRadius: 12,

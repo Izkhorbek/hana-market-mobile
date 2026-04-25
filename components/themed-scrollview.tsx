@@ -1,24 +1,31 @@
-import { useThemeColor } from '@/hooks/use-theme-color';
 import React from 'react';
 import { ScrollView, type ScrollViewProps } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export type ThemedScrollViewProps = ScrollViewProps & {
   lightColor?: string;
   darkColor?: string;
-}
+  withSafeBottom?: boolean;
+  extraBottom?: number;
+};
 
 const ThemedScrollView = ({
-  style,
-  lightColor,
-  darkColor,
+  withSafeBottom = false,
+  extraBottom = 16,
+  contentContainerStyle,
   ...rest
 }: ThemedScrollViewProps) => {
-  const color = useThemeColor({ light: lightColor, dark: darkColor }, 'background');
-  return <ScrollView
-    style={[{ backgroundColor: color }, style]}
-    {...rest}
-  />
-}
+  const insets = useSafeAreaInsets();
 
+  return (
+    <ScrollView
+      contentContainerStyle={[
+        contentContainerStyle,
+        withSafeBottom ? { paddingBottom: insets.bottom + extraBottom } : null,
+      ]}
+      {...rest}
+    />
+  );
+};
 
 export default ThemedScrollView

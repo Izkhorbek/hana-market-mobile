@@ -25,8 +25,9 @@ import {
     StyleSheet,
     Text,
     TouchableOpacity,
-    View,
+    View
 } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 type ProductStatus = 'active' | 'reserved' | 'sold' | 'hidden'
 
@@ -44,6 +45,7 @@ const EditProductPage = () => {
     const { t } = useTranslations()
     const primaryColor = useColor('primaryColor')
     const router = useRouter()
+    const insets = useSafeAreaInsets()
 
     const [location, setLocation] = useState<{
         latitude: number
@@ -169,7 +171,7 @@ const EditProductPage = () => {
     return (
         <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
             <EditProductHeader productTitle={product?.title} onShare={handleShare} />
-            <ScrollView style={[styles.container, { backgroundColor: colors.background }]} showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+            <ScrollView style={[styles.container, { backgroundColor: colors.background }]} showsVerticalScrollIndicator={false} contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 24 }]}>
                 <View style={styles.imageSection}>
                     <RemoteImage src={mainImage} style={styles.mainImage} resizeMode="cover" />
                     {productImages.length > 1 && (

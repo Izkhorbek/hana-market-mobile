@@ -35,6 +35,7 @@ import {
 	TouchableOpacity,
 	View
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 // Transform ChatMessage (from store) to DisplayMessage
 const transformStoreMessage = (message: ChatMessage, currentUserId: number, index: number): DisplayMessage => ({
@@ -292,6 +293,7 @@ const MessageInput: React.FC<{
 }> = ({ value, onChangeText, onSend, onAttach, onTyping, isSending }) => {
 	const colors = useThemeColors()
 	const { t } = useTranslations()
+	const insets = useSafeAreaInsets()
 
 	const handleChangeText = (text: string) => {
 		onChangeText(text)
@@ -299,7 +301,7 @@ const MessageInput: React.FC<{
 	}
 
 	return (
-		<View style={[styles.inputContainer, { backgroundColor: colors.background, borderTopColor: colors.borderColor }]}>
+		<View style={[styles.inputContainer, { backgroundColor: colors.background, borderTopColor: colors.borderColor, paddingBottom: Math.max(insets.bottom, 16) }]}>
 			<TouchableOpacity onPress={onAttach} style={styles.attachButton}>
 				<Text style={[styles.attachIcon, { color: colors.textMuted }]}>+</Text>
 			</TouchableOpacity>
@@ -1100,7 +1102,7 @@ const styles = StyleSheet.create({
 		alignItems: 'flex-end',
 		paddingHorizontal: 12,
 		paddingTop: 10,
-		paddingBottom: Platform.OS === 'ios' ? 34 : 16,
+		paddingBottom: 16,
 		gap: 10,
 		borderTopWidth: 1,
 	},
@@ -1158,7 +1160,7 @@ const styles = StyleSheet.create({
 		position: 'absolute',
 		left: 16,
 		right: 16,
-		bottom: Platform.OS === 'ios' ? 96 : 84,
+		bottom: 84,
 		borderRadius: 12,
 		paddingVertical: 12,
 		paddingHorizontal: 14,

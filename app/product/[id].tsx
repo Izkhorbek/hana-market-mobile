@@ -39,6 +39,7 @@ import Animated, {
 	withDelay,
 	withTiming
 } from 'react-native-reanimated'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 // Animation configuration
 const ANIMATION_CONFIG = {
@@ -160,6 +161,7 @@ const ProductDetailPage: React.FC = () => {
 	const productId = id ? parseInt(id, 10) : 0
 	const colors = useThemeColors()
 	const { t } = useTranslations()
+	const insets = useSafeAreaInsets()
 	const [isLiked, setIsLiked] = useState(false)
 	const isLikedRef = useRef(false)
 	const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
@@ -684,7 +686,7 @@ const ProductDetailPage: React.FC = () => {
 					</Animated.View>
 				</View>
 
-				<View style={[styles.content, { backgroundColor: colors.profileBackground }]}>
+				<View style={[styles.content, { backgroundColor: colors.profileBackground, paddingBottom: insets.bottom + 80 }]}>
 					{/* Seller Row */}
 					<AnimatedTouchableOpacity
 						style={[styles.sellerRow, { borderBottomColor: colors.borderColor }, sellerRowStyle]}
@@ -864,7 +866,7 @@ const ProductDetailPage: React.FC = () => {
 			<Animated.View
 				style={[
 					styles.bottomBar,
-					{ backgroundColor: colors.background, borderTopColor: colors.borderColor },
+					{ backgroundColor: colors.background, borderTopColor: colors.borderColor, paddingBottom: Math.max(insets.bottom, 20) },
 					bottomBarStyle,
 				]}
 			>
@@ -1007,7 +1009,7 @@ const styles = StyleSheet.create({
 	content: {
 		paddingHorizontal: 16,
 		paddingTop: 12,
-		paddingBottom: 120,
+		paddingBottom: 16,
 	},
 	sellerRow: {
 		flexDirection: 'row',
@@ -1128,7 +1130,7 @@ const styles = StyleSheet.create({
 		bottom: 0,
 		paddingHorizontal: 16,
 		paddingTop: 14,
-		paddingBottom: Platform.OS === 'ios' ? 34 : 20,
+		paddingBottom: 20,
 		flexDirection: 'row',
 		gap: 12,
 		borderTopWidth: 1,

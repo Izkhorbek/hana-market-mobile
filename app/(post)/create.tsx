@@ -10,6 +10,7 @@ import { useLocalSearchParams } from 'expo-router'
 import { Briefcase, Car, Package } from 'lucide-react-native'
 import React, { useState } from 'react'
 import { KeyboardAvoidingView, Platform, StyleSheet, TouchableOpacity } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 type CategoryType = 'things' | 'cars' | 'works'
 
@@ -22,6 +23,7 @@ const CreatePost = () => {
   const [selectedCategory, setSelectedCategory] = useState<CategoryType>(initialType)
   const colors = useThemeColors()
   const { t } = useTranslations()
+  const insets = useSafeAreaInsets()
 
   const categories = [
     { id: 'things' as CategoryType, icon: Package, labelKey: 'post.things' },
@@ -35,7 +37,7 @@ const CreatePost = () => {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
     >
-      <ThemedScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+      <ThemedScrollView style={[styles.container, { paddingBottom: insets.bottom }]} showsVerticalScrollIndicator={false}>
         <ThemedText style={[styles.sectionTitle, { color: colors.text }]}>
           {t('post.select_type')}
         </ThemedText>

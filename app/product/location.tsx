@@ -7,6 +7,7 @@ import { useLocalSearchParams } from 'expo-router'
 import { MapPin, Navigation } from 'lucide-react-native'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { Alert, Linking, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 export default function ProductLocationPage() {
     const { latitude, longitude, title, moljal } = useLocalSearchParams<{
@@ -18,6 +19,7 @@ export default function ProductLocationPage() {
 
     const colors = useThemeColors()
     const { t } = useTranslations()
+    const insets = useSafeAreaInsets()
 
     const lat = Number(latitude)
     const lng = Number(longitude)
@@ -148,6 +150,7 @@ export default function ProductLocationPage() {
                     {
                         backgroundColor: colors.background,
                         borderColor: colors.borderColor,
+                        bottom: insets.bottom + 16,
                     },
                 ]}
             >
@@ -182,7 +185,7 @@ const styles = StyleSheet.create({
     },
     infoCard: {
         position: 'absolute',
-        bottom: 36,
+        bottom: 16,
         left: 16,
         right: 16,
         flexDirection: 'row',

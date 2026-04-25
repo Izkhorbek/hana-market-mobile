@@ -565,7 +565,6 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   formContent: {
-    paddingHorizontal: 12,
     paddingTop: 8,
     paddingBottom: 100, // Space for fixed button
   },

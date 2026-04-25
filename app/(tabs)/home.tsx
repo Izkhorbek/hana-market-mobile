@@ -20,9 +20,10 @@ import {
   useColorScheme,
   View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
-type PostType = 'things' | 'cars' | 'works';
+type PostType = 'all' | 'things' | 'cars' | 'works';
 
 interface CategoryOption {
   id: PostType;
@@ -39,8 +40,8 @@ export default function HomeScreen() {
   const colors = useThemeColors();
   const colorScheme = useColorScheme();
   const { t } = useTranslations();
-
-  const [activeFilter, setActiveFilter] = useState('things');
+  const insets = useSafeAreaInsets();
+  const [activeFilter, setActiveFilter] = useState('all');
   const [sheetVisible, setSheetVisible] = useState(false);
 
   // Slide-up animation
@@ -138,7 +139,7 @@ export default function HomeScreen() {
         <Animated.View
           style={[
             styles.sheet,
-            { backgroundColor: colors.background, transform: [{ translateY: slideAnim }] },
+            { backgroundColor: colors.background, transform: [{ translateY: slideAnim }], paddingBottom: insets.bottom },
           ]}
         >
           {/* Drag handle */}
