@@ -6,6 +6,7 @@ import type {
     PaginatedResponse,
     ProductListParams,
 } from '../../types';
+import ENDPOINT from '../endpoints';
 
 export const categoryService = {
   /**
@@ -13,7 +14,7 @@ export const categoryService = {
    * GET /api/product/categories
    */
   getAll: () => {
-    return axiosInstance.get<ApiResponse<Category[]>>('/product/categories');
+    return axiosInstance.get<ApiResponse<Category[]>>(ENDPOINT.CATEGORY.ALL);
   },
 
   /**
@@ -21,7 +22,7 @@ export const categoryService = {
    * GET /api/product/categories/tree
    */
   getTree: () => {
-    return axiosInstance.get<ApiResponse<CategoryTreeItem[]>>('/product/categories/tree');
+    return axiosInstance.get<ApiResponse<CategoryTreeItem[]>>(ENDPOINT.CATEGORY.TREE);
   },
 
   /**
@@ -29,7 +30,7 @@ export const categoryService = {
    * GET /api/product/categories/{categoryId}
    */
   getById: (categoryId: number) => {
-    return axiosInstance.get<ApiResponse<Category>>(`/product/categories/${categoryId}`);
+    return axiosInstance.get<ApiResponse<Category>>(`${ENDPOINT.CATEGORY.BY_ID}/${categoryId}`);
   },
 
   /**
@@ -37,7 +38,7 @@ export const categoryService = {
    * GET /api/product/categories/{categoryId}/products
    */
   getProductsByCategory: (categoryId: number, params: Omit<ProductListParams, 'user_lat' | 'user_long'> & { user_lat: number; user_long: number }) => {
-    return axiosInstance.get<ApiResponse<PaginatedResponse<any>>>(`/product/categories/${categoryId}/products`, { params });
+    return axiosInstance.get<ApiResponse<PaginatedResponse<any>>>(`${ENDPOINT.CATEGORY.BY_ID}/${categoryId}/products`, { params });
   },
 
   /**
@@ -45,6 +46,6 @@ export const categoryService = {
    * GET /api/product/categories/{parentId}/subcategories
    */
   getSubcategories: (parentId: number) => {
-    return axiosInstance.get<ApiResponse<Category[]>>(`/product/categories/${parentId}/subcategories`);
+    return axiosInstance.get<ApiResponse<Category[]>>(`${ENDPOINT.CATEGORY.BY_ID}/${parentId}/subcategories`);
   },
 };

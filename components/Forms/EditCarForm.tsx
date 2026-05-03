@@ -2,13 +2,11 @@ import FormCheckbox from '@/components/FormElements/FormCheckbox';
 import FormInput from '@/components/FormElements/FormInput';
 import { useTranslations } from '@/hooks/use-translation';
 import { useColor } from '@/hooks/useColor';
-import { MapPin } from 'lucide-react-native';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import FormRow from '../FormElements/FormRow';
 import RadioButtonGroup, { RadioOption } from '../FormElements/RadioButtonGroup';
-import MapModal from '../MapModal';
 
 export interface EditCarFormValues {
     brand: string;
@@ -21,7 +19,6 @@ export interface EditCarFormValues {
     currency: string;
     negotiable: boolean;
     condition: string;
-    location: string;
     landmark: string;
     additionalNotes: string;
 }
@@ -29,8 +26,6 @@ export interface EditCarFormValues {
 interface EditCarFormProps {
     form: UseFormReturn<any>;
     product: any;
-    location: { latitude: number; longitude: number; address?: string } | null;
-    onLocationChange: (location: { latitude: number; longitude: number; address?: string }) => void;
 }
 
 // Helper functions to convert enum values to form values
@@ -61,11 +56,10 @@ function getConditionValue(value?: number): string {
     }
 }
 
-const EditCarForm: React.FC<EditCarFormProps> = ({ form, product, location, onLocationChange }) => {
+const EditCarForm: React.FC<EditCarFormProps> = ({ form, product }) => {
     const { t } = useTranslations();
     const primaryColor = useColor('primaryColor');
     const textColor = useColor('text');
-    const [isMapModalVisible, setIsMapModalVisible] = useState(false);
 
     const fuelTypeOptions: RadioOption[] = [
         { value: 'petrol', label: t('car.petrol') },
@@ -104,17 +98,6 @@ const EditCarForm: React.FC<EditCarFormProps> = ({ form, product, location, onLo
             form.setValue('additionalNotes', product.description || '');
         }
     }, [product]);
-
-    const handleOpenMap = () => {
-        setIsMapModalVisible(true);
-    };
-
-    const handleLocationSelect = (selectedLocation: { latitude: number; longitude: number; address?: string }) => {
-        onLocationChange(selectedLocation);
-        setIsMapModalVisible(false);
-        const locationValue = selectedLocation.address?.trim() || `${selectedLocation.latitude},${selectedLocation.longitude}`;
-        form.setValue('landmark', selectedLocation.address || locationValue, { shouldValidate: true });
-    };
 
     return (
         <View style={styles.container}>
@@ -306,13 +289,6 @@ const EditCarForm: React.FC<EditCarFormProps> = ({ form, product, location, onLo
                             }}
                         />
                     </View>
-                    <TouchableOpacity
-                        style={[styles.mapButton, { backgroundColor: primaryColor }]}
-                        onPress={handleOpenMap}
-                        activeOpacity={0.7}
-                    >
-                        <MapPin size={24} color="#fff" strokeWidth={2} />
-                    </TouchableOpacity>
                 </FormRow>
             </View>
 
@@ -330,15 +306,6 @@ const EditCarForm: React.FC<EditCarFormProps> = ({ form, product, location, onLo
                     rows={4}
                 />
             </View>
-
-            {/* Map Modal */}
-            <MapModal
-                visible={isMapModalVisible}
-                mode="SELECT"
-                initialLocation={location || undefined}
-                onClose={() => setIsMapModalVisible(false)}
-                onLocationSelect={handleLocationSelect}
-            />
         </View>
     );
 };
@@ -389,14 +356,6 @@ const styles = StyleSheet.create({
     },
     locationInputWrapper: {
         flex: 1,
-    },
-    mapButton: {
-        width: 52,
-        height: 52,
-        borderRadius: 12,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginTop: 30,
     },
 });
 

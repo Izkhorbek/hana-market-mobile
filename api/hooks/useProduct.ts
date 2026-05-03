@@ -1,9 +1,10 @@
-import { useInfiniteQuery, useMutation, UseMutationOptions, useQuery, UseQueryOptions } from '@tanstack/react-query';
+import { useInfiniteQuery, useMutation, UseMutationOptions, useQuery, useQueryClient, UseQueryOptions } from '@tanstack/react-query';
 import { AxiosResponse } from 'axios';
 import type {
   ApiResponse,
   DraftImageDto,
   PaginatedResponse,
+  ProductEditResponseDto,
   ProductImageDto,
   ProductLikeDto,
   ProductListParams,
@@ -48,6 +49,25 @@ export const useProductQuery = ({
 };
 
 /**
+ * Hook to query single edit product
+ */
+export const useEditProductQuery = ({
+  id,
+  querySettings = {}
+}: {
+  id: number;
+  querySettings?: Omit<UseQueryOptions<AxiosResponse<ApiResponse<ProductEditResponseDto>>>, 'queryKey' | 'queryFn'>;
+}) => {
+  return useQuery({
+    queryKey: ['EDIT_PRODUCT', id],
+    queryFn: () => productService.getByIdToEdit(id),
+    enabled: !!id,
+    ...querySettings,
+  });
+};
+
+
+/**
  * Hook to query product images
  */
 export const useProductImagesQuery = ({
@@ -71,9 +91,16 @@ export const useProductImagesQuery = ({
 export const useCreateProductMutation = (
   options?: UseMutationOptions<AxiosResponse<ApiResponse<{}>>, Error, FormData>
 ) => {
+  const queryClient = useQueryClient();
   return useMutation<AxiosResponse<ApiResponse<{}>>, Error, FormData>({
     mutationFn: (data) => productService.create(data),
     ...options,
+    onSuccess: (data, variables, onMutateResult, context) => {
+      // Refresh the home page product list (and any other product queries)
+      queryClient.invalidateQueries({ queryKey: ['PRODUCTS_INFINITE'] });
+      queryClient.invalidateQueries({ queryKey: ['PRODUCTS'] });
+      options?.onSuccess?.(data, variables, onMutateResult, context);
+    },
   });
 };
 

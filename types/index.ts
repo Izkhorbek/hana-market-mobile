@@ -12,8 +12,9 @@ import {
   EWorkCondition,
   EWorkerType,
   EWorkSalaryType,
-  EWorkType
-} from "@/constants/enums";
+  EWorkType,
+} from '@/constants/enums';
+import { List } from 'lucide-react-native';
 
 export interface ApiResponse<T> {
   success: boolean;
@@ -21,6 +22,64 @@ export interface ApiResponse<T> {
   data?: T;
   errors: string[];
   status_code: number;
+}
+
+// ==================== TELEMETRY ====================
+
+/**
+ * Mobile log payload sent to POST /telemetry/log.
+ * Mirrors backend MobileLogDto.
+ */
+export interface MobileLogDto {
+  /** Severity level: "info", "warn", "error", "fatal" */
+  level: string;
+
+  /** Stable, machine-readable error code (e.g. "OTP_PARSE_FAILED", "PRODUCT_LOAD_TIMEOUT"). Max 120 chars. */
+  code?: string;
+
+  /** Human-readable message. Max 2000 chars. */
+  message: string;
+
+  /** Stack trace (truncated by client if long). Max 8000 chars. */
+  stack?: string;
+
+  /** Trace id correlating this event with a specific backend request. Max 64 chars. */
+  trace_id?: string;
+
+  /** Screen / route name where the issue occurred. Max 120 chars. */
+  screen?: string;
+
+  /** Mobile app version (e.g. "1.4.2"). Max 40 chars. */
+  app_version?: string;
+
+  /** Platform: "android", "ios", "web". Max 20 chars. */
+  platform?: string;
+
+  /** OS version (e.g. "Android 14", "iOS 17.2"). Max 60 chars. */
+  os_version?: string;
+
+  /** Device model (e.g. "Samsung A52", "iPhone 13"). Max 100 chars. */
+  device?: string;
+
+  /** Free-form structured context (will be serialized to JSON in logs). Keep < 4 KB serialized. */
+  extra?: Record<string, any>;
+}
+
+export interface EnumResponse {
+    /// <summary>
+    /// Numeric value (DB da saqlanadi)
+    /// </summary>
+    value: number ;
+
+    /// <summary>
+    /// Enum name (C# code)
+    /// </summary>
+    name: string;
+
+    /// <summary>
+    /// User-friendly description (frontend uchun)
+    /// </summary>
+    description: string;
 }
 
 // ==================== AUTH TYPES ====================
@@ -31,6 +90,34 @@ export interface UserCreateReqDto {
 
 export interface UserRequestDto {
   phone_number: string;
+}
+
+// New OTP-based auth contract.
+// Server now exposes /auth/request-otp and /auth/verify-otp. Registration is
+// implicit on first successful verify.
+export interface RequestOtpRequest {
+  phone_number: string;
+}
+
+export interface VerifyOtpRequest {
+  phone_number: string;
+  code: string;
+}
+
+// Refresh access token using a previously issued refresh token.
+// Backend contract: POST /auth/refresh { refresh_token } -> new tokens in
+// X-Access-Token / X-Expires-At / X-Refresh-Token / X-Refresh-Token-Expires-At
+// response headers (refresh-token rotation).
+export interface RefreshTokenRequest {
+  refresh_token: string;
+}
+
+// Token bundle returned (via response headers) by verify-otp and refresh.
+export interface AuthTokens {
+  access_token: string;
+  expires_at: string | null;
+  refresh_token: string | null;
+  refresh_token_expires_at: string | null;
 }
 
 export interface BlockedInfo {
@@ -78,33 +165,33 @@ export interface UpdateLocationRequest {
 // ==================== CHAT TYPES ====================
 // Types for UI display
 export interface DisplayMessage {
-	id: string
-	localId?: string
-	text: string
-	timestamp: string
-	isMe: boolean
-	status?: 'pending' | 'sent' | 'delivered' | 'read'
-	failed?: boolean
-	imageUrl?: string
-	fileUrl?: string
+  id: string;
+  localId?: string;
+  text: string;
+  timestamp: string;
+  isMe: boolean;
+  status?: 'pending' | 'sent' | 'delivered' | 'read';
+  failed?: boolean;
+  imageUrl?: string;
+  fileUrl?: string;
 }
 
 export interface ChatData {
-	id: number
-	name: string
-	avatar?: string
-	trustScore: string
-	isOnline: boolean
-	otherUserId: number
-	product: {
-		id: number
-		title: string
-		price: string
-		image: string
-    status: string
-		isSold?: boolean,
-    isReserved?: boolean,
-	}
+  id: number;
+  name: string;
+  avatar?: string;
+  trustScore: string;
+  isOnline: boolean;
+  otherUserId: number;
+  product: {
+    id: number;
+    title: string;
+    price: string;
+    image: string;
+    status: string;
+    isSold?: boolean;
+    isReserved?: boolean;
+  };
 }
 
 export interface ChatProductInfoDto {
@@ -177,7 +264,6 @@ export interface CreateChatRoomRequest {
 
 export interface MarkAsReadRequest {
   chat_room_id: number;
-  message_ids: number[];
 }
 
 export interface UnreadCountResponse {
@@ -199,20 +285,18 @@ export interface ChatMessagesParams {
   pageSize?: number;
 }
 
-export interface SendMessageRequest
-{
+export interface SendMessageRequest {
   chat_room_id: number;
-  content: string;             
-  type: string;           // Default: Text
+  content: string;
+  type: string; // Default: Text
   attachmentUrl?: string;
 }
 
-export interface MessageReceivedEvent{
+export interface MessageReceivedEvent {
   message: ChatMessageDto;
   chat_room: ChatRoomDto;
 }
-export interface UnreadCountResponse
-{
+export interface UnreadCountResponse {
   total_unread: number;
   unread_per_chat: Record<number, number>;
 }
@@ -276,14 +360,22 @@ export interface ProductCreateRequest {
 
 export interface ProductUpdateRequest {
   category_id?: number;
+  product_type?: EProductType;
   title?: string;
   description?: string;
+  currency_type?: ECurrencyType;
   price_uzs?: number;
+  price_usd?: number;
   is_free?: boolean;
   is_negotiable?: boolean;
-  latitude?: number;
-  longitude?: number;
   moljal?: string;
+  status?: string;
+  car_brand?: string;
+  car_model?: string;
+  work_type?: EWorkType;
+  work_condition?: EWorkCondition;
+  car_data?: CarData; // JSON.stringify(CarData)
+  work_data?: WorkData; // JSON.stringify(WorkData)
 }
 
 export interface ProductListParams {
@@ -362,45 +454,102 @@ export interface MyProductDto {
   price: string | null;
 }
 
-export  interface SingleProductResponseDto
+export interface SingleProductResponseDto {
+  id: number;
+  user_id: number;
+  seller: User;
+
+  category_id: number;
+  category_name_uz?: string;
+  category_name_ru?: string;
+
+  product_type?: EProductType;
+  product_type_name?: string;
+
+  title: string;
+  description?: string;
+  price: string;
+  is_free: boolean;
+  is_negotiable: boolean;
+  main_image_url: string;
+  moljal?: string;
+  status: string;
+  latitude: number;
+  longitude: number;
+  distance: string;
+  car_brand?: string;
+  car_model?: string;
+  work_condition?: string;
+  work_type?: string;
+  created_ago: string;
+  views_count: number;
+  likes_count: number;
+  is_liked: boolean;
+
+  images: string[];
+
+  car_data?: CarData;
+
+  work_data?: WorkData;
+}
+
+export interface ProductEditResponseDto
 {
-     id: number;
+    id: number;
     user_id: number;
-    seller: User;
 
     category_id: number;
     category_name_uz?: string;
     category_name_ru?: string;
 
-    product_type?: EProductType;
-    product_type_name?: string;
+    product_type: EProductType;
 
     title: string;
     description?: string;
-    price: string;
-    is_free: boolean;
-    is_negotiable: boolean;
-    main_image_url: string;
     moljal?: string;
     status: string;
-    latitude: number;
-    longitude: number;
-    distance: string;
+    view_count: number;
+    like_count: number;
+    // ===== CURRENCY AND PRICE (raw) =====
+    currency_type?: ECurrencyType;
+    price_uzs?: number;
+    price_usd?: number;
+
+    is_free?: boolean;
+    is_negotiable?: boolean;
+
+    // ===== LOCATION (raw) =====
+    latitude?: number;
+    longitude?: number;
+
+    // ===== MAIN IMAGE =====
+    main_image_url?: string;
+
+    // ===== CAR =====
     car_brand?: string;
     car_model?: string;
-    work_condition?: string;
-    work_type?: string;
-    created_ago: string;
-    views_count: number;
-    likes_count: number;
-    is_liked: boolean;
-    
-    images: string[];
-
     car_data?: CarData;
 
+    // ===== WORK =====
+    work_type?: EWorkType;
+    work_condition?: EWorkCondition;
     work_data?: WorkData;
+
+    created_ago: string;
+    // ===== IMAGES =====
+    images: ProductEditImageDto[];
 }
+
+ /// <summary>
+ /// Lightweight image item used in <see cref="ProductEditResponseDto"/> so
+ /// the client can identify each image (for delete/reorder operations).
+ /// </summary>
+ export interface ProductEditImageDto
+ {
+     id: number;
+     image_url: string;
+     sort_order: number;
+ }
 
 // ==================== CATEGORY TYPES ====================
 
@@ -566,4 +715,40 @@ export interface FeedbackRequest {
 
 export interface FeedbackResponse {
   feedback_id: number;
+}
+
+// ==================== LOG TYPES ====================
+export interface MobileLogDto {
+  /** Severity level: "info", "warn", "error", "fatal" */
+  level: string;
+
+  /** Stable, machine-readable error code (e.g. "OTP_PARSE_FAILED", "PRODUCT_LOAD_TIMEOUT"). Max 120 chars. */
+  code?: string;
+
+  /** Human-readable message. Max 2000 chars. */
+  message: string;
+
+  /** Stack trace (truncated by client if long). Max 8000 chars. */
+  stack?: string;
+
+  /** Trace id correlating this event with a specific backend request. Max 64 chars. */
+  trace_id?: string;
+
+  /** Screen / route name where the issue occurred. Max 120 chars. */
+  screen?: string;
+
+  /** Mobile app version (e.g. "1.4.2"). Max 40 chars. */
+  app_version?: string;
+
+  /** Platform: "android", "ios", "web". Max 20 chars. */
+  platform?: string;
+
+  /** OS version (e.g. "Android 14", "iOS 17.2"). Max 60 chars. */
+  os_version?: string;
+
+  /** Device model (e.g. "Samsung A52", "iPhone 13"). Max 100 chars. */
+  device?: string;
+
+  /** Free-form structured context (will be serialized to JSON in logs). Keep < 4 KB serialized. */
+  extra?: Record<string, any>;
 }

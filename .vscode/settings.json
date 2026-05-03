@@ -1,15 +1,29 @@
 {
-  "editor.codeActionsOnSave": {
-    "source.fixAll": "explicit",
-    "source.organizeImports": "explicit",
-    "source.sortMembers": "explicit"
-  },
-  "cSpell.ignoreRandomStrings": false,
-  "cSpell.enabled": false,
-  "editor.quickSuggestions": {
-    "comments": false,
-    "strings": false,
-    "other": true
-  },
-  "chat.editor.fontSize": 18
-}
+    "editor.formatOnSave": true,
+    "files.autoSave": "afterDelay",
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+    "eslint.format.enable": true,
+    "[typescriptreact]": {
+        "editor.defaultFormatter": "rvest.vs-code-prettier-eslint"
+    }
+} // {
+//   "editor.codeActionsOnSave": {
+//     "source.fixAll": "explicit",
+//     "source.organizeImports": "explicit",
+//     "source.sortMembers": "explicit"
+//   },
+//   "cSpell.ignoreRandomStrings": false,
+//   "cSpell.enabled": false,
+//   "editor.quickSuggestions": {
+//     "comments": false,
+//     "strings": false,
+//     "other": true
+//   },
+//   "chat.editor.fontSize": 24,
+//   "prettier.enable": false,
+//   "editor.autoClosingQuotes": "languageDefined",
+//   "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+//   "[typescriptreact]": {
+//     "editor.defaultFormatter": "vscode.typescript-language-features"
+//   }
+// }

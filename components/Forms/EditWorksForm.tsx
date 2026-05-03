@@ -1,42 +1,31 @@
-import FormDatePicker from '@/components/FormElements/FormDatePicker';
 import FormInput from '@/components/FormElements/FormInput';
 import FormSelect from '@/components/FormElements/FormSelect';
 import { OptionType } from '@/components/ui/combobox';
 import { useTranslations } from '@/hooks/use-translation';
 import { useColor } from '@/hooks/useColor';
-import { MapPin } from 'lucide-react-native';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import FormRow from '../FormElements/FormRow';
 import RadioButtonGroup, { RadioOption } from '../FormElements/RadioButtonGroup';
-import MapModal from '../MapModal';
 
 export interface EditWorksFormValues {
     workerType: string;
     workType: string;
     workTitle: string;
     workCondition: string;
-    workingStartDateTime: Date | undefined;
     salaryType: string;
     salaryAmount: string;
     currency: string;
-    paymentType: string;
-    paymentTime: string;
     jobDescription: string;
     employerName: string;
-    workplaceInfo: string;
-    location: string;
     landmark: string;
     employerPhone: string;
-    webLinks: string;
 }
 
 interface EditWorksFormProps {
     form: UseFormReturn<any>;
     product: any;
-    location: { latitude: number; longitude: number; address?: string } | null;
-    onLocationChange: (location: { latitude: number; longitude: number; address?: string }) => void;
 }
 
 // Helper functions to convert enum values to form values
@@ -78,30 +67,10 @@ function getSalaryTypeValue(value?: number): string {
     }
 }
 
-function getPaymentTypeValue(value?: number): string {
-    switch (value) {
-        case 1000: return 'cash';
-        case 1010: return 'bank_transfer';
-        case 1020: return 'mobile_payment';
-        default: return 'cash';
-    }
-}
-
-function getPaymentTimeValue(value?: number): string {
-    switch (value) {
-        case 1000: return 'immediately';
-        case 1010: return 'weekly';
-        case 1020: return 'monthly';
-        case 1030: return 'after_completion';
-        default: return 'monthly';
-    }
-}
-
-const EditWorksForm: React.FC<EditWorksFormProps> = ({ form, product, location, onLocationChange }) => {
+const EditWorksForm: React.FC<EditWorksFormProps> = ({ form, product }) => {
     const { t } = useTranslations();
     const primaryColor = useColor('primaryColor');
     const textColor = useColor('text');
-    const [isMapModalVisible, setIsMapModalVisible] = useState(false);
 
     // Options for radio buttons and selects
     const workerTypeOptions: RadioOption[] = [
@@ -130,21 +99,6 @@ const EditWorksForm: React.FC<EditWorksFormProps> = ({ form, product, location, 
         { value: 'freelancer', label: t('work.freelancer') },
     ];
 
-    // Payment time options for select
-    const paymentTimeOptions: OptionType[] = [
-        { value: 'immediately', label: t('work.payment_immediately') },
-        { value: 'weekly', label: t('work.payment_weekly') },
-        { value: 'monthly', label: t('work.payment_monthly') },
-        { value: 'after_completion', label: t('work.payment_after_completion') },
-    ];
-
-    // Payment type options for select
-    const paymentTypeOptions: OptionType[] = [
-        { value: 'cash', label: t('work.payment_cash') },
-        { value: 'bank_transfer', label: t('work.payment_bank_transfer') },
-        { value: 'mobile_payment', label: t('work.payment_mobile_payment') },
-    ];
-
     const currency = form.watch('currency');
 
     // Set initial values from product
@@ -157,32 +111,12 @@ const EditWorksForm: React.FC<EditWorksFormProps> = ({ form, product, location, 
             form.setValue('salaryType', getSalaryTypeValue(product.work_data?.salary_type));
             form.setValue('salaryAmount', product.work_data?.salary_amount?.toString() || '');
             form.setValue('currency', product.currency_type === 1010 ? 'USD' : 'UZS');
-            form.setValue('paymentType', getPaymentTypeValue(product.work_data?.payment_type));
-            form.setValue('paymentTime', getPaymentTimeValue(product.work_data?.payment_time));
             form.setValue('jobDescription', product.description || '');
             form.setValue('employerName', product.work_data?.employer_information || '');
-            form.setValue('workplaceInfo', product.work_data?.workplace_information || '');
             form.setValue('employerPhone', product.work_data?.phone_number || '');
             form.setValue('landmark', product.moljal || '');
-            form.setValue('webLinks', product.work_data?.work_ethics || '');
-
-            // Set working start date if available
-            if (product.work_data?.working_start_date) {
-                form.setValue('workingStartDateTime', new Date(product.work_data.working_start_date));
-            }
         }
     }, [product]);
-
-    const handleOpenMap = () => {
-        setIsMapModalVisible(true);
-    };
-
-    const handleLocationSelect = (selectedLocation: { latitude: number; longitude: number; address?: string }) => {
-        onLocationChange(selectedLocation);
-        setIsMapModalVisible(false);
-        const locationValue = selectedLocation.address?.trim() || `${selectedLocation.latitude},${selectedLocation.longitude}`;
-        form.setValue('landmark', selectedLocation.address || locationValue, { shouldValidate: true });
-    };
 
     return (
         <View style={styles.container}>
@@ -237,19 +171,6 @@ const EditWorksForm: React.FC<EditWorksFormProps> = ({ form, product, location, 
                         options={workConditionOptions}
                     />
                 </View>
-
-                <FormDatePicker
-                    control={form.control}
-                    name='workingStartDateTime'
-                    mode="datetime"
-                    label={t('work.job_period_date_time')}
-                    placeholder={t('work.job_period_date_time_placeholder')}
-                    minimumDate={new Date()}
-                    required
-                    rules={{
-                        required: t('work.errors.job_period_date_time'),
-                    }}
-                />
             </View>
 
             {/* Section 3: Salary Details */}
@@ -318,30 +239,6 @@ const EditWorksForm: React.FC<EditWorksFormProps> = ({ form, product, location, 
                         </TouchableOpacity>
                     </View>
                 </View>
-
-                <FormSelect
-                    control={form.control}
-                    name="paymentTime"
-                    label={t('work.payment_time')}
-                    placeholder={t('work.payment_time_placeholder')}
-                    options={paymentTimeOptions}
-                    required
-                    rules={{
-                        required: t('work.errors.payment_time'),
-                    }}
-                />
-
-                <FormSelect
-                    control={form.control}
-                    name="paymentType"
-                    label={t('work.payment_type')}
-                    placeholder={t('work.payment_type_placeholder')}
-                    options={paymentTypeOptions}
-                    required
-                    rules={{
-                        required: t('work.errors.payment_type'),
-                    }}
-                />
             </View>
 
             {/* Section 4: Job Description */}
@@ -407,52 +304,8 @@ const EditWorksForm: React.FC<EditWorksFormProps> = ({ form, product, location, 
                             }}
                         />
                     </View>
-                    <TouchableOpacity
-                        style={[
-                            styles.mapButton,
-                            {
-                                borderColor: primaryColor,
-                                backgroundColor: primaryColor,
-                            }
-                        ]}
-                        onPress={handleOpenMap}
-                        activeOpacity={0.7}
-                    >
-                        <MapPin size={20} color="#fff" strokeWidth={2} />
-                    </TouchableOpacity>
                 </FormRow>
-
-                <FormInput
-                    control={form.control}
-                    name="workplaceInfo"
-                    label={t('work.workplace_info')}
-                    placeholder={t('work.workplace_info_placeholder')}
-                    required
-                    rules={{
-                        required: t('work.errors.workplace_info'),
-                    }}
-                />
-
-                <View style={styles.socialMediaInputWrapper}>
-                    <FormInput
-                        control={form.control}
-                        name="webLinks"
-                        label={t('work.web_links')}
-                        placeholder={t('work.web_links_placeholder')}
-                        type="textarea"
-                        rows={3}
-                    />
-                </View>
             </View>
-
-            {/* Map Modal */}
-            <MapModal
-                visible={isMapModalVisible}
-                mode="SELECT"
-                initialLocation={location || undefined}
-                onClose={() => setIsMapModalVisible(false)}
-                onLocationSelect={handleLocationSelect}
-            />
         </View>
     );
 };
@@ -509,14 +362,6 @@ const styles = StyleSheet.create({
     },
     locationInputWrapper: {
         flex: 1,
-    },
-    mapButton: {
-        width: 52,
-        height: 52,
-        borderRadius: 12,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginTop: 30,
     },
     socialMediaInputWrapper: {
         marginTop: 8,

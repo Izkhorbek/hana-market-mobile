@@ -1,33 +1,39 @@
 import { Platform, StatusBar } from "react-native";
-      
+
 // Platform-aware layout constants
-export const HEADER_HEIGHT = Platform.OS === 'ios' ? 90 : 70;
-export const HEADER_PADDING_TOP = Platform.OS === 'ios' ? 56 : 30;
-export const TAB_FOOTER_HEIGHT = Platform.OS === 'ios' ? 100 : 90;
+export const HEADER_HEIGHT = Platform.OS === "ios" ? 90 : 70;
+export const HEADER_PADDING_TOP = Platform.OS === "ios" ? 56 : 30;
+export const TAB_FOOTER_HEIGHT = Platform.OS === "ios" ? 100 : 90;
 
 // Dynamic safe area values - get actual values at app startup
-const STATUS_BAR_HEIGHT = StatusBar.currentHeight ?? (Platform.OS === 'ios' ? 44 : 0);
+const STATUS_BAR_HEIGHT =
+  StatusBar.currentHeight ?? (Platform.OS === "ios" ? 44 : 0);
 const STICKY_HEADER_HEIGHT = STATUS_BAR_HEIGHT + 56;
 
- export type MessageTypeString = 'text' | 'image' | 'file';
-
+export type MessageTypeString = "text" | "image" | "file";
 
 export const AppLimits = {
   STATUS_BAR_HEIGHT: STATUS_BAR_HEIGHT,
   STICKY_HEADER_CONTENT_HEIGHT: 56,
   STICKY_HEADER_HEIGHT: STATUS_BAR_HEIGHT + 56,
-  HERO_HEIGHT: Platform.OS === 'ios' ? 400 : 300,
+  HERO_HEIGHT: Platform.OS === "ios" ? 400 : 300,
   // Extra px the image container extends below the clip area for parallax travel
   PARALLAX_EXTRA: 100,
   // Image moves up at 30% of scroll speed (PARALLAX_EXTRA must be >= HERO_HEIGHT * PARALLAX_FACTOR)
   PARALLAX_FACTOR: 0.3,
-  STICKY_THRESHOLD: Platform.OS === 'ios' ? 400 : 300 - STICKY_HEADER_HEIGHT,
+  STICKY_THRESHOLD: Platform.OS === "ios" ? 400 : 300 - STICKY_HEADER_HEIGHT,
 
   Image: {
     MAX_FILE_SIZE_BYTES: 5 * 1024 * 1024, // 5MB
     MAX_FILE_SIZE_MB: 5,
-    ALLOWED_CONTENT_TYPES: ['image/jpeg', 'image/png', 'image/jpg', 'image/gif', 'image/webp'],
-    ALLOWED_FILE_EXTENSIONS: ['jpeg', 'png', 'jpg', 'gif', 'webp'],
+    ALLOWED_CONTENT_TYPES: [
+      "image/jpeg",
+      "image/png",
+      "image/jpg",
+      "image/gif",
+      "image/webp",
+    ],
+    ALLOWED_FILE_EXTENSIONS: ["jpeg", "png", "jpg", "gif", "webp"],
     MAX_IMAGES_PER_PRODUCT: 5,
     MIN_WIDTH_PIXELS: 100,
     MAX_WIDTH_PIXELS: 4000,
@@ -55,17 +61,17 @@ export const AppLimits = {
   },
 
   Product: {
-    MIN_TITLE_LENGTH: 5,
+    MIN_TITLE_LENGTH: 2,
     MAX_TITLE_LENGTH: 100,
     MIN_MOLJAL_LENGTH: 0,
-    MAX_MOLJAL_LENGTH: 50,
+    MAX_MOLJAL_LENGTH: 70,
     MIN_DESCRIPTION_LENGTH: 1,
     MAX_DESCRIPTION_LENGTH: 1000,
     MIN_PRICE_UZS: 0.01,
     MAX_PRICE_UZS: 999999999.99,
     MIN_PRICE_USD: 0.01,
     MAX_PRICE_USD: 999999999.99,
-    ALLOWED_STATUSES: ['active', 'reserved', 'sold'] as const,
+    ALLOWED_STATUSES: ["active", "reserved", "sold"] as const,
   },
 
   Pagination: {
@@ -79,18 +85,22 @@ export const AppLimits = {
     MAX_MESSAGES_PER_PAGE: 20,
     MAXIMUM_RECEIVE_MESSAGE_SIZE: 1024 * 1024, // 1MB
     MESSAGE_TYPES: {
-      TEXT: 'text',
-      IMAGE: 'image',
-      FILE: 'file',
+      TEXT: "text",
+      IMAGE: "image",
+      FILE: "file",
     } as const,
-    },
+  },
   ProductStatusColors: {
-    active: '',
-    reserved: 'green',
-    sold: 'black',
+    active: "",
+    reserved: "green",
+    sold: "black",
   } as const,
   Home: {
     SHEET_HEIGHT: 340,
   } as const,
 
+  Otp: {
+    CODE_LENGTH: 4,
+    RESEND_COOLDOWN_SECONDS: 120,
+  } as const,
 } as const;

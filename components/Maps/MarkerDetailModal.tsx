@@ -4,6 +4,7 @@ import { Text } from '@/components/ui/text';
 import { View } from '@/components/ui/view';
 import { useThemeColors } from '@/hooks/use-theme-colors';
 import { useTranslations } from '@/hooks/use-translation';
+import { logger } from '@/utils/logger';
 import * as Location from 'expo-location';
 import { navigate } from 'expo-router/build/global-state/routing';
 import { Navigation, X } from 'lucide-react-native';
@@ -44,6 +45,7 @@ export function MarkerDetailModal({ marker, isVisible, onClose }: MarkerDetailMo
         });
       } catch (error) {
         console.error('Error getting user location:', error);
+        logger.warn(error, { code: 'LOCATION_FETCH_FAILED', screen: 'MarkerDetailModal' });
       } finally {
         setIsLoadingLocation(false);
       }
@@ -122,6 +124,7 @@ export function MarkerDetailModal({ marker, isVisible, onClose }: MarkerDetailMo
         [{ text: 'OK' }],
       );
       console.error('Error opening maps:', error);
+      logger.warn(error, { code: 'OPEN_MAPS_FAILED', screen: 'MarkerDetailModal' });
     }
   }, [userLocation, marker, t]);
 

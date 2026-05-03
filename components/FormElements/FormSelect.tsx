@@ -8,13 +8,13 @@ import {
   ComboboxTrigger,
   ComboboxValue,
   OptionType,
-} from '@/components/ui/combobox';
-import { useThemeColors } from '@/hooks/use-theme-colors';
-import { useTranslations } from '@/hooks/use-translation';
-import { useColor } from '@/hooks/useColor';
-import React from 'react';
-import { Control, Controller } from 'react-hook-form';
-import { Dimensions, StyleSheet, Text, View } from 'react-native';
+} from "@/components/ui/combobox";
+import { useThemeColors } from "@/hooks/use-theme-colors";
+import { useTranslations } from "@/hooks/use-translation";
+import { useColor } from "@/hooks/useColor";
+import React from "react";
+import { Control, Controller } from "react-hook-form";
+import { Dimensions, StyleSheet, Text, View } from "react-native";
 
 interface FormSelectProps {
   options?: OptionType[];
@@ -29,26 +29,31 @@ interface FormSelectProps {
 
 const FormSelect = ({
   options = [],
-  placeholder = 'Select...',
-  inputPlaceholder = '',
+  placeholder = "Select...",
+  inputPlaceholder = "",
   control,
-  name = 'category',
+  name = "category",
   label,
   required = false,
   rules,
 }: FormSelectProps) => {
   const { t } = useTranslations();
-  const colors = useThemeColors()
-  const backgroundColor = useColor('background');
-  const textColor = useColor('text');
-  const destructiveColor = useColor('destructive');
+  const colors = useThemeColors();
+  const backgroundColor = useColor("background");
+  const textColor = useColor("text");
+  const destructiveColor = useColor("destructive");
 
   return (
     <View style={styles.container}>
       {label && (
         <View style={styles.labelContainer}>
           <Text style={[styles.label, { color: textColor }]}>{label}</Text>
-          {required && <Text style={[styles.asterisk, { color: destructiveColor }]}> *</Text>}
+          {required && (
+            <Text style={[styles.asterisk, { color: destructiveColor }]}>
+              {" "}
+              *
+            </Text>
+          )}
         </View>
       )}
       <Controller
@@ -58,24 +63,43 @@ const FormSelect = ({
         render={({ field, fieldState: { error } }) => (
           <>
             <Combobox
-              value={field.value ? (options.find((o) => o.value === field.value) ?? null) : null}
-              onValueChange={(option) => field.onChange(option?.value ?? '')}
+              value={
+                field.value
+                  ? (options.find((o) => o.value === field.value) ?? null)
+                  : null
+              }
+              onValueChange={(option) => field.onChange(option?.value ?? "")}
             >
-              <ComboboxTrigger style={[
-                styles.trigger,
-                {
-                  backgroundColor: backgroundColor,
-                  borderColor: error ? destructiveColor : colors.borderColor,
-                }
-              ]}>
-                <ComboboxValue placeholder={placeholder} style={styles.valueText} />
+              <ComboboxTrigger
+                style={[
+                  styles.trigger,
+                  {
+                    backgroundColor: backgroundColor,
+                    borderColor: error ? destructiveColor : colors.borderColor,
+                  },
+                ]}
+              >
+                <ComboboxValue
+                  placeholder={placeholder}
+                  style={styles.valueText}
+                />
               </ComboboxTrigger>
-              <ComboboxContent maxHeight={Dimensions.get('window').height / 2}>
-                {inputPlaceholder && <ComboboxInput placeholder={inputPlaceholder} />}
+              <ComboboxContent maxHeight={Dimensions.get("window").height / 2}>
+                {inputPlaceholder && (
+                  <ComboboxInput placeholder={inputPlaceholder} />
+                )}
                 <ComboboxList style={styles.list}>
-                  {options.length === 0 && <ComboboxEmpty>{t('form_elements.select.no_framework_found')}</ComboboxEmpty>}
+                  {options.length === 0 && (
+                    <ComboboxEmpty>
+                      {t("form_elements.select.no_framework_found")}
+                    </ComboboxEmpty>
+                  )}
                   {options.map((option) => (
-                    <ComboboxItem key={option.value} value={option.value} style={styles.item}>
+                    <ComboboxItem
+                      key={option.value}
+                      value={option.value}
+                      style={styles.item}
+                    >
                       {option.label}
                     </ComboboxItem>
                   ))}
@@ -91,50 +115,50 @@ const FormSelect = ({
         )}
       />
     </View>
-  )
-}
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
     marginVertical: 8,
   },
   labelContainer: {
-    flexDirection: 'row',
+    flexDirection: "row",
     marginBottom: 8,
   },
   label: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   asterisk: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   trigger: {
     height: 52,
     borderRadius: 12,
     borderWidth: 1,
-    overflow: 'hidden',
+    overflow: "hidden",
     paddingHorizontal: 16,
   },
   valueText: {
     fontSize: 16,
   },
   list: {
-    overflow: 'hidden',
+    overflow: "hidden",
     borderRadius: 12,
   },
-  item:{
+  item: {
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
+    borderBottomColor: "#E0E0E0",
   },
   errorText: {
     fontSize: 12,
     marginTop: 4,
     marginLeft: 4,
   },
-})
+});
 
-export default FormSelect
+export default FormSelect;

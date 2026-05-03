@@ -1,87 +1,107 @@
-import { useCreateProductMutation } from '@/api/hooks';
-import FormInput from '@/components/FormElements/FormInput';
-import FormSelect from '@/components/FormElements/FormSelect';
-import { OptionType } from '@/components/ui/combobox';
-import { ECategoryType, ECurrencyType, EProductType, EWorkCondition, EWorkerType, EWorkSalaryType, EWorkType } from '@/constants/enums';
-import { useTranslations } from '@/hooks/use-translation';
-import { useColor } from '@/hooks/useColor';
-import { resolveEnum } from '@/utils/enumHelpers';
-import { useRouter } from 'expo-router';
-import { MapPin } from 'lucide-react-native';
-import React, { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { ActivityIndicator, Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import FormRow from '../FormElements/FormRow';
-import ImageUploader, { DraftImageItem } from '../FormElements/ImageUploader';
-import RadioButtonGroup, { RadioOption } from '../FormElements/RadioButtonGroup';
-import MapModal from '../MapModal';
-
+import { useCreateProductMutation } from "@/api/hooks";
+import FormInput from "@/components/FormElements/FormInput";
+import FormSelect from "@/components/FormElements/FormSelect";
+import { OptionType } from "@/components/ui/combobox";
+import {
+  ECategoryType,
+  ECurrencyType,
+  EProductType,
+  EWorkCondition,
+  EWorkerType,
+  EWorkSalaryType,
+  EWorkType,
+} from "@/constants/enums";
+import { useTranslations } from "@/hooks/use-translation";
+import { useColor } from "@/hooks/useColor";
+import { parseApiError } from "@/utils/apiError";
+import { resolveEnum } from "@/utils/enumHelpers";
+import {
+  getCurrentLocationSafe,
+  showLocationErrorAlert,
+} from "@/utils/location";
+import { useRouter } from "expo-router";
+import React, { useRef, useState } from "react";
+import { useForm } from "react-hook-form";
+import {
+  ActivityIndicator,
+  Alert,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import FormRow from "../FormElements/FormRow";
+import ImageUploader, { DraftImageItem } from "../FormElements/ImageUploader";
+import RadioButtonGroup, {
+  RadioOption,
+} from "../FormElements/RadioButtonGroup";
 
 const CreateWorksForm = () => {
   const { t } = useTranslations();
-  const primaryColor = useColor('primaryColor');
-  const textColor = useColor('text');
-  const subTextColor = useColor('subText');
-  const surfaceColor = useColor('background');
-  const sectionTintColor = useColor('profileBackground');
-  const borderColor = useColor('borderColor');
+  const primaryColor = useColor("primaryColor");
+  const textColor = useColor("text");
+  const subTextColor = useColor("subText");
+  const surfaceColor = useColor("background");
+  const sectionTintColor = useColor("profileBackground");
+  const borderColor = useColor("border");
+  const mutedTextColor = useColor("textMuted");
+
   const router = useRouter();
-  // const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>({ latitude: 41.311081, longitude: 69.240562 }); // Default to Tashkent for testing
-  const [location, setLocation] = useState<{ latitude: number; longitude: number }>({ latitude: 41.311081, longitude: 69.240562 }); // Default to Tashkent for testing
-  const [isMapModalVisible, setIsMapModalVisible] = useState(false);
+  const [isResolvingLocation, setIsResolvingLocation] = useState(false);
+  const isSubmittingRef = useRef(false);
 
   // Options for radio buttons and selects
   const workerTypeOptions: RadioOption[] = [
     {
-      value: 'employee',
-      label: t('work.employee'),
+      value: "employee",
+      label: t("work.employee"),
     },
     {
-      value: 'assistant',
-      label: t('work.assistant'),
+      value: "assistant",
+      label: t("work.assistant"),
     },
     {
-      value: 'teacher',
-      label: t('work.teacher'),
+      value: "teacher",
+      label: t("work.teacher"),
     },
   ];
 
   const workConditionOptions: RadioOption[] = [
     {
-      value: 'temporary',
-      label: t('work.temporary'),
+      value: "temporary",
+      label: t("work.temporary"),
     },
     {
-      value: 'one_month',
-      label: t('work.one_month'),
+      value: "one_month",
+      label: t("work.one_month"),
     },
     {
-      value: 'long_term',
-      label: t('work.long_term'),
+      value: "long_term",
+      label: t("work.long_term"),
     },
   ];
 
   const salaryTypeOptions: RadioOption[] = [
     {
-      value: 'hourly',
-      label: t('work.hourly'),
+      value: "hourly",
+      label: t("work.hourly"),
     },
     {
-      value: 'daily',
-      label: t('work.daily'),
+      value: "daily",
+      label: t("work.daily"),
     },
     {
-      value: 'per_task',
-      label: t('work.per_task'),
+      value: "per_task",
+      label: t("work.per_task"),
     },
   ];
 
-  // Ish turlari uchun options 
+  // Ish turlari uchun options
   const workTypeOptions: OptionType[] = [
-    { value: 'full_time', label: t('work.full_time') },
-    { value: 'part_time', label: t('work.part_time') },
-    { value: 'contract', label: t('work.contract') },
-    { value: 'freelancer', label: t('work.freelancer') },
+    { value: "full_time", label: t("work.full_time") },
+    { value: "part_time", label: t("work.part_time") },
+    { value: "contract", label: t("work.contract") },
+    { value: "freelancer", label: t("work.freelancer") },
   ];
 
   // const paymentTimeOptions: OptionType[] = [
@@ -103,108 +123,135 @@ const CreateWorksForm = () => {
       images: [],
       workerType: workerTypeOptions[0].value,
       workType: workTypeOptions[0].value,
-      workTitle: 'sample work title',
+      workTitle: "",
       workCondition: workConditionOptions[0].value,
-      workingStartDateTime: undefined as Date | undefined,
+      // workingStartDateTime: undefined as Date | undefined,
       salaryType: salaryTypeOptions[0].value,
-      salaryAmount: '452000',
+      salaryAmount: "",
       currency: ECurrencyType[ECurrencyType.UZS],
-      paymentType: 'cash',
-      paymentTime: 'immediately',
-      jobDescription: 'sample job description',
-      employerName: 'sample employer name',
-      workplaceInfo: '',
-      location: 'sample location',
-      landmark: 'sample landmark',
-      employerPhone: '+998901234567',
-      webLinks: '',
+      // paymentType: "cash",
+      // paymentTime: "immediately",
+      jobDescription: "",
+      employerName: "",
+      employerPhone: "",
+      // workplaceInfo: "",
+      landmark: "",
+      // webLinks: "",
     },
   });
 
-  const { formState: { errors } } = form;
-
-  const currency = form.watch('currency');
+  const currency = form.watch("currency");
 
   const { mutate: createProduct, isPending } = useCreateProductMutation({
     onSuccess: () => {
-      Alert.alert(
-        t('post.success'),
-        t('post.product_created_successfully'),
-        [
-          {
-            text: t('common.ok'),
-            onPress: () => router.back(),
-          },
-        ]
-      );
+      Alert.alert(t("post.success"), t("post.product_created_successfully"), [
+        {
+          text: t("common.ok"),
+          onPress: () => router.back(),
+        },
+      ]);
       form.reset();
     },
     onError: (error: any) => {
-      console.error('Error creating product:', error);
-      const message = error?.response?.data?.message || error?.message || t('post.error_creating_product');
-      Alert.alert(t('post.error'), message);
+      const message = parseApiError(error, t("post.error_creating_product"));
+      Alert.alert(t("post.error"), message);
     },
   });
 
-
-
-  const handleOpenMap = () => {
-    setIsMapModalVisible(true);
+  const onInvalid = (formErrors: Record<string, any>) => {
+    const messages = Object.values(formErrors)
+      .map((err) => `• ${err?.message}`)
+      .filter(Boolean)
+      .join("\n");
+    if (messages) {
+      Alert.alert(t("post.error"), messages);
+    }
   };
 
-  const handleLocationSelect = (selectedLocation: { latitude: number; longitude: number }) => {
-    setLocation(selectedLocation);
-    setIsMapModalVisible(false);
-  };
+  const handleSubmit = form.handleSubmit(async (data) => {
+    if (isSubmittingRef.current) return;
+    isSubmittingRef.current = true;
 
+    try {
+    // ── Resolve current location automatically ──
+    setIsResolvingLocation(true);
+    const locationResult = await getCurrentLocationSafe();
+    setIsResolvingLocation(false);
 
-  const handleSubmit = form.handleSubmit((data) => {
-
-    if (data.landmark.trim() === '') {
-      Alert.alert(t('post.error'), t('post.please_enter_landmark'));
+    if (!locationResult.ok) {
+      showLocationErrorAlert(locationResult, t);
       return;
     }
+    const coords = locationResult.coords;
 
     // ── Enum resolution (lowercase form value → numeric enum) ──
     const workerTypeValue = resolveEnum(EWorkerType, data.workerType);
     const workTypeValue = resolveEnum(EWorkType, data.workType);
     const workConditionValue = resolveEnum(EWorkCondition, data.workCondition);
     const salaryTypeValue = resolveEnum(EWorkSalaryType, data.salaryType);
-    const currencyValue = resolveEnum(ECurrencyType, data.currency) ?? ECurrencyType.UZS;
+    const currencyValue =
+      resolveEnum(ECurrencyType, data.currency) ?? ECurrencyType.UZS;
 
     // Validate all required enum fields
-    if (workerTypeValue === undefined) { Alert.alert(t('post.error'), t('work.errors.worker_type')); return; }
-    if (workTypeValue === undefined) { Alert.alert(t('post.error'), t('work.errors.work_type')); return; }
-    if (workConditionValue === undefined) { Alert.alert(t('post.error'), t('work.errors.work_condition')); return; }
-    if (salaryTypeValue === undefined) { Alert.alert(t('post.error'), t('work.errors.salary_type')); return; }
+    if (workerTypeValue === undefined) {
+      Alert.alert(t("post.error"), t("work.errors.worker_type"));
+      return;
+    }
+    if (workTypeValue === undefined) {
+      Alert.alert(t("post.error"), t("work.errors.work_type"));
+      return;
+    }
+    if (workConditionValue === undefined) {
+      Alert.alert(t("post.error"), t("work.errors.work_condition"));
+      return;
+    }
+    if (salaryTypeValue === undefined) {
+      Alert.alert(t("post.error"), t("work.errors.salary_type"));
+      return;
+    }
     const formData = new FormData();
 
     // Product type & category
-    formData.append('product_type', EProductType.WORK.toString());
-    formData.append('category_id', ECategoryType.WORKS.toString());
+    formData.append("product_type", EProductType.WORK.toString());
+    formData.append("category_id", ECategoryType.WORKS.toString());
 
     // Basic fields
-    formData.append('title', data.workTitle);
-    formData.append('description', data.jobDescription || '');
-    formData.append('work_type', workTypeValue.toString());
-    formData.append('work_condition', workConditionValue.toString());
+    formData.append("title", data.workTitle);
+    formData.append("description", data.jobDescription || "");
+    
+    const currencyType =
+      data.currency === "USD" ? ECurrencyType.USD : ECurrencyType.UZS;
+    formData.append("currency_type", currencyType.toString());
+
+    const priceField = data.currency === "USD" ? "price_usd" : "price_uzs";
+    formData.append(priceField, data.salaryAmount);
+
+    formData.append("work_type", workTypeValue.toString());
+    formData.append("work_condition", workConditionValue.toString());
 
     // Work data
-    formData.append('work_data.worker_type', workerTypeValue.toString());
-    formData.append('work_data.salary_type', salaryTypeValue.toString());
-    formData.append('work_data.salary_amount', data.salaryAmount);
-    formData.append('work_data.employer_information', data.employerName || '');
-    formData.append('work_data.phone_number', data.employerPhone || '');
+    formData.append("work_data.worker_type", workerTypeValue.toString());
+    formData.append("work_data.salary_type", salaryTypeValue.toString());
+    formData.append("work_data.salary_amount", data.salaryAmount);
+    const normalizedPhone = (data.employerPhone || "").replace(/\D/g, "");
+    const phoneE164 = normalizedPhone
+      ? `+998${normalizedPhone.replace(/^998/, "")}`
+      : "";
+    formData.append("work_data.phone_number", phoneE164);
+    formData.append("work_data.employer_information", data.employerName || "");
 
     // Currency & price
-    formData.append('currency_type', currencyValue.toString());
-    formData.append(currencyValue === ECurrencyType.USD ? 'price_usd' : 'price_uzs', data.salaryAmount);
-    formData.append('is_free', 'false');
+    formData.append("currency_type", currencyValue.toString());
+    formData.append(
+      currencyValue === ECurrencyType.USD ? "price_usd" : "price_uzs",
+      data.salaryAmount,
+    );
+    formData.append("is_free", "false");
 
-    // Location
-    formData.append('latitude', location.latitude.toString());
-    formData.append('longitude', location.longitude.toString());
-    formData.append('moljal', data.landmark || '');
+    // Location (auto-resolved on Post)
+    formData.append("latitude", coords.latitude.toString());
+    formData.append("longitude", coords.longitude.toString());
+    formData.append("moljal", data.landmark || "");
 
     // Images
     const images: DraftImageItem[] = data.images;
@@ -213,21 +260,30 @@ const CreateWorksForm = () => {
       draft_image_url: img.draft_image_url,
       sort_order: index,
     }));
-    formData.append('images_json', JSON.stringify(draft_images));
-
-    console.log('Work form data to submit:', formData);
+    formData.append("images_json", JSON.stringify(draft_images));
     createProduct(formData);
-  });
+    } finally {
+      setIsResolvingLocation(false);
+      isSubmittingRef.current = false;
+    }
+  }, onInvalid);
 
   return (
     <View style={styles.container}>
       <View style={styles.formContent}>
         {/* Section 1: Job Images (Optional) */}
-        <View style={[styles.section, { backgroundColor: sectionTintColor, borderColor }]}>
+        <View
+          style={[
+            styles.section,
+            { backgroundColor: sectionTintColor, borderColor },
+          ]}
+        >
           <View style={styles.sectionHeader}>
-            <View style={[styles.sectionAccent, { backgroundColor: primaryColor }]} />
+            <View
+              style={[styles.sectionAccent, { backgroundColor: primaryColor }]}
+            />
             <Text style={[styles.sectionTitle, { color: textColor }]}>
-              {t('work.job_images')}
+              {t("work.job_images")}
             </Text>
           </View>
           <ImageUploader
@@ -235,17 +291,25 @@ const CreateWorksForm = () => {
             name="images"
             maxImages={5}
             rules={{
-              validate: (value: string[]) => value.length > 0 || t('work.errors.images'),
+              validate: (value: string[]) =>
+                value.length > 0 || t("work.errors.images"),
             }}
           />
         </View>
 
         {/* Section 2: Worker Type */}
-        <View style={[styles.section, { backgroundColor: surfaceColor, borderColor }]}>
+        <View
+          style={[
+            styles.section,
+            { backgroundColor: surfaceColor, borderColor },
+          ]}
+        >
           <View style={styles.sectionHeader}>
-            <View style={[styles.sectionAccent, { backgroundColor: primaryColor }]} />
+            <View
+              style={[styles.sectionAccent, { backgroundColor: primaryColor }]}
+            />
             <Text style={[styles.sectionTitle, { color: textColor }]}>
-              {t('work.worker_type')}
+              {t("work.worker_type")}
             </Text>
           </View>
           <RadioButtonGroup
@@ -256,40 +320,48 @@ const CreateWorksForm = () => {
         </View>
 
         {/* Section 3: Job Information */}
-        <View style={[styles.section, { backgroundColor: sectionTintColor, borderColor }]}>
+        <View
+          style={[
+            styles.section,
+            { backgroundColor: sectionTintColor, borderColor },
+          ]}
+        >
           <View style={styles.sectionHeader}>
-            <View style={[styles.sectionAccent, { backgroundColor: primaryColor }]} />
+            <View
+              style={[styles.sectionAccent, { backgroundColor: primaryColor }]}
+            />
             <Text style={[styles.sectionTitle, { color: textColor }]}>
-              {t('work.job_information')}
+              {t("work.job_information")}
             </Text>
           </View>
 
           <FormInput
             control={form.control}
             name="workTitle"
-            label={t('work.job_title')}
-            placeholder={t('work.job_title_placeholder')}
+            label={t("work.job_title")}
+            placeholder={t("work.job_title_placeholder")}
+            placeholderTextColor={mutedTextColor}
             required
             rules={{
-              required: t('work.errors.job_title'),
+              required: t("work.errors.job_title"),
             }}
           />
 
           <FormSelect
             control={form.control}
             name="workType"
-            label={t('work.job_type')}
-            placeholder={t('work.job_type_select')}
+            label={t("work.job_type")}
+            placeholder={t("work.job_type_select")}
             options={workTypeOptions}
             required
             rules={{
-              required: t('work.errors.job_type'),
+              required: t("work.errors.job_type"),
             }}
           />
 
           <View style={styles.radioSection}>
             <Text style={[styles.radioLabel, { color: subTextColor }]}>
-              {t('work.job_deadlines')}
+              {t("work.job_deadlines")}
             </Text>
             <RadioButtonGroup
               control={form.control}
@@ -315,17 +387,24 @@ const CreateWorksForm = () => {
         </View>
 
         {/* Section 4: Salary Details */}
-        <View style={[styles.section, { backgroundColor: surfaceColor, borderColor }]}>
+        <View
+          style={[
+            styles.section,
+            { backgroundColor: surfaceColor, borderColor },
+          ]}
+        >
           <View style={styles.sectionHeader}>
-            <View style={[styles.sectionAccent, { backgroundColor: primaryColor }]} />
+            <View
+              style={[styles.sectionAccent, { backgroundColor: primaryColor }]}
+            />
             <Text style={[styles.sectionTitle, { color: textColor }]}>
-              {t('work.salary_details')}
+              {t("work.salary_details")}
             </Text>
           </View>
 
           <View style={styles.radioSection}>
             <Text style={[styles.radioLabel, { color: subTextColor }]}>
-              {t('work.salary_type')}
+              {t("work.salary_type")}
             </Text>
             <RadioButtonGroup
               control={form.control}
@@ -339,12 +418,13 @@ const CreateWorksForm = () => {
               <FormInput
                 control={form.control}
                 name="salaryAmount"
-                label={t('work.salary_amount')}
-                placeholder={t('work.salary_amount_placeholder')}
+                label={t("work.salary_amount")}
+                placeholder={t("work.salary_amount_placeholder")}
+                placeholderTextColor={mutedTextColor}
                 keyboardType="numeric"
                 required
                 rules={{
-                  required: t('work.errors.salary_amount'),
+                  required: t("work.errors.salary_amount"),
                 }}
               />
             </View>
@@ -353,33 +433,43 @@ const CreateWorksForm = () => {
                 style={[
                   styles.currencyButton,
                   {
-                    backgroundColor: currency === 'UZS' ? primaryColor : 'transparent',
+                    backgroundColor:
+                      currency === "UZS" ? primaryColor : "transparent",
                     borderColor: primaryColor,
-                  }
+                  },
                 ]}
-                onPress={() => form.setValue('currency', 'UZS')}
+                onPress={() => form.setValue("currency", "UZS")}
                 activeOpacity={0.7}
               >
-                <Text style={[
-                  styles.currencyButtonText,
-                  { color: currency === 'UZS' ? '#fff' : primaryColor }
-                ]}>UZS</Text>
+                <Text
+                  style={[
+                    styles.currencyButtonText,
+                    { color: currency === "UZS" ? "#fff" : primaryColor },
+                  ]}
+                >
+                  UZS
+                </Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[
                   styles.currencyButton,
                   {
-                    backgroundColor: currency === 'USD' ? primaryColor : 'transparent',
+                    backgroundColor:
+                      currency === "USD" ? primaryColor : "transparent",
                     borderColor: primaryColor,
-                  }
+                  },
                 ]}
-                onPress={() => form.setValue('currency', 'USD')}
+                onPress={() => form.setValue("currency", "USD")}
                 activeOpacity={0.7}
               >
-                <Text style={[
-                  styles.currencyButtonText,
-                  { color: currency === 'USD' ? '#fff' : primaryColor }
-                ]}>USD</Text>
+                <Text
+                  style={[
+                    styles.currencyButtonText,
+                    { color: currency === "USD" ? "#fff" : primaryColor },
+                  ]}
+                >
+                  USD
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -390,6 +480,7 @@ const CreateWorksForm = () => {
             name="paymentTime"
             label={t('work.payment_time')}
             placeholder={t('work.payment_time_placeholder')}
+            placeholderTextColor={mutedTextColor}
             options={paymentTimeOptions}
             required
             rules={{
@@ -402,6 +493,7 @@ const CreateWorksForm = () => {
             name="paymentType"
             label={t('work.payment_type')}
             placeholder={t('work.payment_type_placeholder')}
+            placeholderTextColor={mutedTextColor}
             options={paymentTypeOptions}
             required
             rules={{
@@ -409,37 +501,51 @@ const CreateWorksForm = () => {
             }}
           />
           */}
-
         </View>
 
         {/* Section 5: Job Description */}
-        <View style={[styles.section, { backgroundColor: sectionTintColor, borderColor }]}>
+        <View
+          style={[
+            styles.section,
+            { backgroundColor: sectionTintColor, borderColor },
+          ]}
+        >
           <View style={styles.sectionHeader}>
-            <View style={[styles.sectionAccent, { backgroundColor: primaryColor }]} />
+            <View
+              style={[styles.sectionAccent, { backgroundColor: primaryColor }]}
+            />
             <Text style={[styles.sectionTitle, { color: textColor }]}>
-              {t('work.job_description')}
+              {t("work.job_description")}
             </Text>
           </View>
 
           <FormInput
             control={form.control}
             name="jobDescription"
-            placeholder={t('work.job_description_placeholder')}
+            placeholder={t("work.job_description_placeholder")}
+            placeholderTextColor={mutedTextColor}
             type="textarea"
             rows={5}
             required
             rules={{
-              required: t('work.errors.job_description'),
+              required: t("work.errors.job_description"),
             }}
           />
         </View>
 
         {/* Section 6: Employer Information */}
-        <View style={[styles.section, { backgroundColor: surfaceColor, borderColor }]}>
+        <View
+          style={[
+            styles.section,
+            { backgroundColor: surfaceColor, borderColor },
+          ]}
+        >
           <View style={styles.sectionHeader}>
-            <View style={[styles.sectionAccent, { backgroundColor: primaryColor }]} />
+            <View
+              style={[styles.sectionAccent, { backgroundColor: primaryColor }]}
+            />
             <Text style={[styles.sectionTitle, { color: textColor }]}>
-              {t('work.employer_information')}
+              {t("work.employer_information")}
             </Text>
           </View>
 
@@ -447,11 +553,12 @@ const CreateWorksForm = () => {
           <FormInput
             control={form.control}
             name="employerName"
-            label={t('work.employer_name')}
-            placeholder={t('work.employer_name_placeholder')}
+            label={t("work.employer_name")}
+            placeholder={t("work.employer_name_placeholder")}
+            placeholderTextColor={mutedTextColor}
             required
             rules={{
-              required: t('work.errors.employer_name'),
+              required: t("work.errors.employer_name"),
             }}
           />
 
@@ -460,12 +567,21 @@ const CreateWorksForm = () => {
             <FormInput
               control={form.control}
               name="employerPhone"
-              label={t('work.employer_phone')}
-              placeholder={t('work.employer_phone_placeholder')}
+              label={t("work.employer_phone")}
+              placeholder={t("work.employer_phone_placeholder")}
+              placeholderTextColor={mutedTextColor}
               required
               keyboardType="phone-pad"
+              maxLength={13}
               rules={{
-                required: t('work.errors.employer_phone'),
+                required: t("work.errors.employer_phone"),
+                validate: (value: string) => {
+                  const digits = (value || "").replace(/\D/g, "").replace(/^998/, "");
+                  return (
+                    /^(33|50|55|66|67|7[0135789]|88|9[0134578])\d{7}$/.test(digits) ||
+                    t("work.errors.employer_phone_invalid")
+                  );
+                },
               }}
             />
           </View>
@@ -474,27 +590,15 @@ const CreateWorksForm = () => {
               <FormInput
                 control={form.control}
                 name="landmark"
-                label={t('work.landmark')}
-                placeholder={t('work.landmark_placeholder')}
+                label={t("work.landmark")}
+                placeholder={t("work.landmark_placeholder")}
+                placeholderTextColor={mutedTextColor}
                 required
                 rules={{
-                  required: t('work.errors.landmark'),
+                  required: t("work.errors.landmark"),
                 }}
               />
             </View>
-            <TouchableOpacity
-              style={[
-                styles.mapButton,
-                {
-                  borderColor: primaryColor,
-                  backgroundColor: primaryColor,
-                }
-              ]}
-              onPress={handleOpenMap}
-              activeOpacity={0.7}
-            >
-              <MapPin size={20} color="#fff" strokeWidth={2} />
-            </TouchableOpacity>
           </FormRow>
 
           {/*
@@ -503,6 +607,7 @@ const CreateWorksForm = () => {
             name="workplaceInfo"
             label={t('work.workplace_info')}
             placeholder={t('work.workplace_info_placeholder')}
+            placeholderTextColor={mutedTextColor}
             required
             rules={{
               required: t('work.errors.workplace_info'),
@@ -518,6 +623,7 @@ const CreateWorksForm = () => {
               name="webLinks"
               label={t('work.web_links')}
               placeholder={t('work.web_links_placeholder')}
+              placeholderTextColor={mutedTextColor}
               type="textarea"
               rows={3}
             />
@@ -532,30 +638,24 @@ const CreateWorksForm = () => {
           style={[
             styles.postButton,
             {
-              backgroundColor: isPending ? primaryColor + '80' : primaryColor,
-              opacity: isPending ? 0.7 : 1,
-            }
+              backgroundColor:
+                isPending || isResolvingLocation
+                  ? primaryColor + "80"
+                  : primaryColor,
+              opacity: isPending || isResolvingLocation ? 0.7 : 1,
+            },
           ]}
           onPress={handleSubmit}
-          disabled={isPending}
+          disabled={isPending || isResolvingLocation}
           activeOpacity={0.8}
         >
-          {isPending ? (
+          {isPending || isResolvingLocation ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text style={styles.postButtonText}>{t('work.post_job')}</Text>
+            <Text style={styles.postButtonText}>{t("work.post_job")}</Text>
           )}
         </TouchableOpacity>
       </View>
-
-      {/* Map Modal */}
-      <MapModal
-        visible={isMapModalVisible}
-        mode="SELECT"
-        initialLocation={location || undefined}
-        onClose={() => setIsMapModalVisible(false)}
-        onLocationSelect={handleLocationSelect}
-      />
     </View>
   );
 };
@@ -576,8 +676,8 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 12,
   },
   sectionAccent: {
@@ -588,19 +688,19 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 17,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   radioSection: {
     marginTop: 14,
   },
   radioLabel: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: "500",
     marginBottom: 8,
   },
   priceInputContainer: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
+    flexDirection: "row",
+    alignItems: "flex-end",
     gap: 12,
     marginVertical: 10,
   },
@@ -609,7 +709,7 @@ const styles = StyleSheet.create({
     marginBottom: 0,
   },
   currencyButtons: {
-    flexDirection: 'column',
+    flexDirection: "column",
     gap: 6,
   },
   currencyButton: {
@@ -617,19 +717,19 @@ const styles = StyleSheet.create({
     height: 23,
     borderRadius: 8,
     borderWidth: 1.5,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   currencyButtonText: {
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   phoneInputWrapper: {
     marginTop: 10,
   },
   locationContainer: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
+    flexDirection: "row",
+    alignItems: "flex-end",
     gap: 12,
   },
   locationInputWrapper: {
@@ -643,11 +743,11 @@ const styles = StyleSheet.create({
     height: 52,
     borderRadius: 12,
     borderWidth: 2,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   buttonContainer: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 0,
     left: 0,
     right: 0,
@@ -657,13 +757,13 @@ const styles = StyleSheet.create({
   postButton: {
     height: 52,
     borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   postButtonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 });
 

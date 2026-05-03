@@ -1,5 +1,6 @@
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useThemeColors } from '@/hooks/use-theme-colors';
+import { logger } from '@/utils/logger';
 import * as Location from 'expo-location';
 import { Home, Minus, Plus } from 'lucide-react-native';
 import React, { useEffect, useRef, useState } from 'react';
@@ -165,6 +166,7 @@ const GoogleMap = ({
       }
     } catch (error) {
       console.error('Error initializing location:', error);
+      logger.warn(error, { code: 'LOCATION_INIT_FAILED', screen: 'GoogleMap' });
     }
   };
 
@@ -213,6 +215,7 @@ const GoogleMap = ({
 
     } catch (error) {
       console.error('Error getting location:', error);
+      logger.warn(error, { code: 'LOCATION_FETCH_FAILED', screen: 'GoogleMap' });
       Alert.alert('Error', 'Could not get your current location.');
     }
   };

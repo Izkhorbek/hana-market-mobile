@@ -1,13 +1,14 @@
-import { ThemedText } from '@/components/themed-text'
-import { ThemedView } from '@/components/themed-view'
-import CustomAlert from '@/components/ui/CustomAlert'
-import { useThemeColors } from '@/hooks/use-theme-colors'
-import { useTranslations } from '@/hooks/use-translation'
-import { userApi } from '@/modules/Auth/api'
-import { useAuthStore } from '@/modules/Auth/auth-store'
-import Ionicons from '@expo/vector-icons/Ionicons'
-import { useRouter } from 'expo-router'
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import { ThemedText } from "@/components/themed-text";
+import { ThemedView } from "@/components/themed-view";
+import CustomAlert from "@/components/ui/CustomAlert";
+import { AppLimits } from "@/constants/appLimits";
+import { useThemeColors } from "@/hooks/use-theme-colors";
+import { useTranslations } from "@/hooks/use-translation";
+import { userApi } from "@/modules/Auth/api";
+import { useAuthStore } from "@/modules/Auth/auth-store";
+import Ionicons from "@expo/vector-icons/Ionicons";
+import { useRouter } from "expo-router";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -18,169 +19,244 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  View
-} from 'react-native'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
+  View,
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const AuthPage = () => {
-  const router = useRouter()
-  const colors = useThemeColors()
-  const { t } = useTranslations()
-  const insets = useSafeAreaInsets()
+  const router = useRouter();
+  const colors = useThemeColors();
+  const { t } = useTranslations();
+  const insets = useSafeAreaInsets();
 
-  const { login } = useAuthStore()
+  const { requestOtp, verifyOtp } = useAuthStore();
 
-  const [phoneNumber, setPhoneNumber] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
-  const phoneInputRef = useRef<TextInput>(null)
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const phoneInputRef = useRef<TextInput>(null);
 
-  const [showLocationAlert, setShowLocationAlert] = useState(false)
-  const [showUserNotFoundAlert, setShowUserNotFoundAlert] = useState(false)
+  const [showLocationAlert, setShowLocationAlert] = useState(false);
+  const [otpError, setOtpError] = useState("");
 
-  const [step, setStep] = useState<'phone' | 'otp' | 'username'>('phone')
-  const [otpCode, setOtpCode] = useState(['', '', '', ''])
-  const [otpFocused, setOtpFocused] = useState(-1)
-  const [countdown, setCountdown] = useState(0)
-  const otpRefs = useRef<(TextInput | null)[]>([null, null, null, null])
+  const [step, setStep] = useState<"phone" | "otp" | "username">("phone");
+  const [otpCode, setOtpCode] = useState(
+    new Array(AppLimits.Otp.CODE_LENGTH).fill(""),
+  );
+  const [otpFocused, setOtpFocused] = useState(-1);
+  const [countdown, setCountdown] = useState(0);
+  const otpRefs = useRef<(TextInput | null)[]>(
+    new Array(AppLimits.Otp.CODE_LENGTH).fill(null),
+  );
 
-  const [username, setUsername] = useState('')
-  const [usernameError, setUsernameError] = useState('')
-  const usernameInputRef = useRef<TextInput>(null)
+  const [username, setUsername] = useState("");
+  const [usernameError, setUsernameError] = useState("");
+  const usernameInputRef = useRef<TextInput>(null);
 
   // Focus phone input on mount
   useEffect(() => {
-    setTimeout(() => phoneInputRef.current?.focus(), 100)
-  }, [])
+    setTimeout(() => phoneInputRef.current?.focus(), 100);
+  }, []);
 
   // Countdown timer for OTP resend
   useEffect(() => {
-    if (step !== 'otp' || countdown <= 0) return
-    const timer = setInterval(() => setCountdown(prev => prev - 1), 1000)
-    return () => clearInterval(timer)
-  }, [step, countdown])
+    if (step !== "otp" || countdown <= 0) return;
+    const timer = setInterval(() => setCountdown((prev) => prev - 1), 1000);
+    return () => clearInterval(timer);
+  }, [step, countdown]);
 
   const formatPhone = (raw: string): string => {
-    const digits = raw.replace(/\D/g, '')
-    if (digits.length <= 2) return digits
-    if (digits.length <= 5) return `${digits.slice(0, 2)} ${digits.slice(2)}`
+    const digits = raw.replace(/\D/g, "");
+    if (digits.length <= 2) return digits;
+    if (digits.length <= 5) return `${digits.slice(0, 2)} ${digits.slice(2)}`;
     if (digits.length <= 7)
-      return `${digits.slice(0, 2)} ${digits.slice(2, 5)} ${digits.slice(5)}`
-    return `${digits.slice(0, 2)} ${digits.slice(2, 5)} ${digits.slice(5, 7)} ${digits.slice(7, 9)}`
-  }
+      return `${digits.slice(0, 2)} ${digits.slice(2, 5)} ${digits.slice(5)}`;
+    return `${digits.slice(0, 2)} ${digits.slice(2, 5)} ${digits.slice(5, 7)} ${digits.slice(7, 9)}`;
+  };
 
   const handlePhoneChange = (text: string) => {
-    const digits = text.replace(/\D/g, '')
+    const digits = text.replace(/\D/g, "");
     if (digits.length <= 9) {
-      setPhoneNumber(digits)
+      setPhoneNumber(digits);
     }
-  }
+  };
 
   const handleOtpInput = (index: number, value: string) => {
-    const digit = value.replace(/\D/g, '').slice(-1)
-    const newCode = [...otpCode]
-    newCode[index] = digit
-    setOtpCode(newCode)
-    if (digit && index < 3) otpRefs.current[index + 1]?.focus()
-  }
+    const digit = value.replace(/\D/g, "").slice(-1);
+    const newCode = [...otpCode];
+    newCode[index] = digit;
+    setOtpCode(newCode);
+    if (otpError) setOtpError("");
+    if (digit && index < AppLimits.Otp.CODE_LENGTH - 1)
+      otpRefs.current[index + 1]?.focus();
+  };
 
-  const validateUsername = (value: string) => /^[a-zA-Z0-9_]{3,20}$/.test(value)
+  const validateUsername = (value: string) =>
+    /^[a-zA-Z0-9_]{3,20}$/.test(value);
 
   const handleUsernameChange = (text: string) => {
-    setUsername(text)
+    setUsername(text);
     if (text && !validateUsername(text)) {
-      setUsernameError(t('alert.username_invalid'))
+      setUsernameError(t("alert.username_invalid"));
     } else {
-      setUsernameError('')
+      setUsernameError("");
     }
-  }
+  };
 
-  // Step 1: call login — success → OTP step; any non-blocked error → user not found → register
+  // Step 1: request an OTP. On success move to OTP step. On 403/blocked,
+  // surface the server message; everything else shows a generic error.
+  // There is no longer a "user not found" branch — verify-otp implicitly
+  // registers a brand-new phone server-side.
   const handleSend = useCallback(async () => {
-    if (phoneNumber.length !== 9 || isLoading) return
-    setIsLoading(true)
+    if (phoneNumber.length !== 9 || isLoading) return;
+    setIsLoading(true);
     try {
-      await login(`+998${phoneNumber}`)
-      setIsLoading(false)
-      setStep('otp')
-      setCountdown(240)
-      setTimeout(() => otpRefs.current[0]?.focus(), 200)
+      await requestOtp(`+998${phoneNumber}`);
+      setStep("otp");
+      setOtpCode(new Array(AppLimits.Otp.CODE_LENGTH).fill(""));
+      setOtpError("");
+      setCountdown(AppLimits.Otp.RESEND_COOLDOWN_SECONDS);
+      setTimeout(() => otpRefs.current[0]?.focus(), 200);
     } catch (error: any) {
-      setIsLoading(false)
-      const status = error?.response?.status
-      const message: string = error?.response?.data?.message || error?.message || ''
-      if (status === 403 || message.toLowerCase().includes('block')) {
-        Alert.alert(t('auth.verification.error_title'), message || t('auth.verification.error_generic'))
-        return
+      const status = error?.response?.status;
+      const message: string =
+        error?.response?.data?.message ||
+        error?.response?.data?.errors?.[0] ||
+        error?.message ||
+        "";
+      if (status === 403 || message.toLowerCase().includes("block")) {
+        Alert.alert(
+          t("auth.verification.error_title"),
+          t("auth.verification.error_generic"),
+        );
+        return;
       }
-      // User not found — show alert, then redirect to register on confirm
-      setShowUserNotFoundAlert(true)
+      if (status === 429 || message.toLowerCase().includes("rate")) {
+        Alert.alert(
+          t("auth.verification.error_title"),
+          t("auth.verification.error_generic"),
+        );
+        return;
+      }
+      Alert.alert(
+        t("auth.verification.error_title"),
+        t("auth.verification.error_generic"),
+      );
+    } finally {
+      setIsLoading(false);
     }
-  }, [phoneNumber, isLoading, login, router, t])
+  }, [phoneNumber, isLoading, requestOtp, t]);
 
-  const handleResend = useCallback(() => {
-    if (countdown > 0 || isLoading) return
-    setOtpCode(['', '', '', ''])
-    setCountdown(240)
-    setTimeout(() => otpRefs.current[0]?.focus(), 100)
-  }, [countdown, isLoading])
+  const handleResend = useCallback(async () => {
+    if (countdown > 0 || isLoading) return;
+    setOtpCode(new Array(AppLimits.Otp.CODE_LENGTH).fill(""));
+    setOtpError("");
+    setIsLoading(true);
+    try {
+      await requestOtp(`+998${phoneNumber}`);
+      setCountdown(AppLimits.Otp.RESEND_COOLDOWN_SECONDS);
+      setTimeout(() => otpRefs.current[0]?.focus(), 100);
+    } catch (error: any) {
+      const message: string =
+        error?.response?.data?.message ||
+        error?.response?.data?.errors?.[0] ||
+        error?.message ||
+        "";
+      Alert.alert(
+        t("auth.verification.error_title"),
+        t("auth.verification.error_generic"),
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  }, [countdown, isLoading, phoneNumber, requestOtp, t]);
 
-  // Step 2: token already stored from handleSend — check username, then navigate home
-  const handleDone = useCallback(() => {
-    if (otpCode.join('').length !== 4 || isLoading) return
-    const loggedInUser = useAuthStore.getState().user
-    if (loggedInUser && (!loggedInUser.username || loggedInUser.username === 'unknown')) {
-      setStep('username')
-      setTimeout(() => usernameInputRef.current?.focus(), 200)
-      return
+  // Step 2: verify the OTP. On success the store has a token + user. We then
+  // route through username/location prompts as needed.
+  const handleDone = useCallback(async () => {
+    const code = otpCode.join("");
+    if (code.length !== AppLimits.Otp.CODE_LENGTH || isLoading) return;
+    setIsLoading(true);
+    try {
+      await verifyOtp(`+998${phoneNumber}`, code);
+      const loggedInUser = useAuthStore.getState().user;
+      if (
+        loggedInUser &&
+        (!loggedInUser.username || loggedInUser.username === "unknown")
+      ) {
+        setStep("username");
+        setTimeout(() => usernameInputRef.current?.focus(), 200);
+        return;
+      }
+      if (
+        loggedInUser &&
+        (loggedInUser.latitude == null || loggedInUser.longitude == null)
+      ) {
+        setShowLocationAlert(true);
+        return;
+      }
+      router.replace("/(tabs)/home");
+    } catch (error: any) {
+      const message: string =
+        error?.response?.data?.message ||
+        error?.response?.data?.errors?.[0] ||
+        error?.message ||
+        "";
+      setOtpError(t("auth.verification.error_generic"));
+    } finally {
+      setIsLoading(false);
     }
-    if (loggedInUser && (loggedInUser.latitude == null || loggedInUser.longitude == null)) {
-      setShowLocationAlert(true)
-      return
-    }
-    router.replace('/(tabs)/home')
-  }, [otpCode, isLoading, router])
+  }, [otpCode, isLoading, phoneNumber, verifyOtp, router, t]);
 
   // Step 3: save username then navigate home
   const handleSaveUsername = useCallback(async () => {
-    if (!validateUsername(username) || isLoading) return
-    setIsLoading(true)
+    if (!validateUsername(username) || isLoading) return;
+    setIsLoading(true);
     try {
-      await userApi.updateUser({ username })
-      setIsLoading(false)
-      const loggedInUser = useAuthStore.getState().user
-      if (loggedInUser && (loggedInUser.latitude == null || loggedInUser.longitude == null)) {
-        setShowLocationAlert(true)
-        return
+      await userApi.updateUser({ username });
+      setIsLoading(false);
+      const loggedInUser = useAuthStore.getState().user;
+      if (
+        loggedInUser &&
+        (loggedInUser.latitude == null || loggedInUser.longitude == null)
+      ) {
+        setShowLocationAlert(true);
+        return;
       }
-      router.replace('/(tabs)/home')
+      router.replace("/(tabs)/home");
     } catch (error: any) {
-      setIsLoading(false)
-      const message = error?.response?.data?.errors?.[0] || error?.message || t('auth.register.error_generic')
-      setUsernameError(message)
+      setIsLoading(false);
+      const message =
+        error?.response?.data?.errors?.[0] ||
+        error?.message ||
+        t("auth.register.error_generic");
+      setUsernameError(t("auth.register.error_generic"));
     }
-  }, [username, isLoading, router, t])
+  }, [username, isLoading, router, t]);
 
-  const isSendEnabled = phoneNumber.length === 9 && !isLoading
-  const isDoneEnabled = otpCode.join('').length === 4 && !isLoading
-  const isUsernameReady = validateUsername(username) && !isLoading
+  const isSendEnabled = phoneNumber.length === 9 && !isLoading;
+  const isDoneEnabled =
+    otpCode.join("").length === AppLimits.Otp.CODE_LENGTH && !isLoading;
+  const isUsernameReady = validateUsername(username) && !isLoading;
 
   const handleSetupLocation = () => {
-    setShowLocationAlert(false)
-    router.replace('/(auth)/location-permission')
-  }
+    setShowLocationAlert(false);
+    router.replace("/(auth)/location-permission");
+  };
 
   const handleSkipLocation = () => {
-    setShowLocationAlert(false)
-    router.replace('/(tabs)/home')
-  }
+    setShowLocationAlert(false);
+    router.replace("/(tabs)/home");
+  };
 
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'padding'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+      behavior={Platform.OS === "ios" ? "padding" : "padding"}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
     >
-      <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
+      <ThemedView
+        style={[styles.container, { backgroundColor: colors.background }]}
+      >
         <ScrollView
           style={{ flex: 1 }}
           contentContainerStyle={styles.scrollContent}
@@ -190,16 +266,16 @@ const AuthPage = () => {
           <TouchableOpacity
             style={styles.backButton}
             onPress={() => {
-              if (step === 'username') {
-                setStep('otp')
-                setUsername('')
-                setUsernameError('')
-              } else if (step === 'otp') {
-                setStep('phone')
-                setOtpCode(['', '', '', ''])
-                setCountdown(0)
+              if (step === "username") {
+                setStep("otp");
+                setUsername("");
+                setUsernameError("");
+              } else if (step === "otp") {
+                setStep("phone");
+                setOtpCode(new Array(AppLimits.Otp.CODE_LENGTH).fill(""));
+                setCountdown(0);
               } else {
-                router.back()
+                router.back();
               }
             }}
             activeOpacity={0.7}
@@ -208,39 +284,45 @@ const AuthPage = () => {
           </TouchableOpacity>
 
           <ThemedText type="title" style={styles.title}>
-            {step === 'phone'
-              ? t('auth.verification.title')
-              : step === 'otp'
-                ? t('auth.verification.otp_title')
-                : t('auth.register.username_title')}
+            {step === "phone"
+              ? t("auth.verification.title")
+              : step === "otp"
+                ? t("auth.verification.otp_title")
+                : t("auth.register.username_title")}
           </ThemedText>
 
           {/* Phone Input */}
-          <View style={[styles.inputContainer, { borderColor: colors.borderColor }]}>
-            <Text style={[styles.phonePrefix, { color: colors.text }]}>+998</Text>
+          <View
+            style={[styles.inputContainer, { borderColor: colors.borderColor }]}
+          >
+            <Text style={[styles.phonePrefix, { color: colors.text }]}>
+              +998
+            </Text>
             <TextInput
               ref={phoneInputRef}
               style={[styles.phoneNumber, { color: colors.text }]}
               value={formatPhone(phoneNumber)}
-              onChangeText={step === 'phone' ? handlePhoneChange : undefined}
-              placeholder={t('auth.verification.phone_placeholder')}
+              onChangeText={step === "phone" ? handlePhoneChange : undefined}
+              placeholder={t("auth.verification.phone_placeholder")}
               placeholderTextColor={colors.subText}
               keyboardType="phone-pad"
               maxLength={12}
-              editable={step === 'phone'}
+              editable={step === "phone"}
             />
           </View>
 
           {/* Username Step */}
-          {step === 'username' && (
+          {step === "username" && (
             <>
               <Text style={[styles.otpSubtitle, { color: colors.subText }]}>
-                {t('auth.register.username_subtitle')}
+                {t("auth.register.username_subtitle")}
               </Text>
               <View
                 style={[
                   styles.inputContainer,
-                  { borderColor: usernameError ? '#EF4444' : colors.borderColor },
+                  {
+                    borderColor: usernameError ? "#EF4444" : colors.borderColor,
+                  },
                 ]}
               >
                 <TextInput
@@ -248,7 +330,7 @@ const AuthPage = () => {
                   style={[styles.phoneNumber, { color: colors.text }]}
                   value={username}
                   onChangeText={handleUsernameChange}
-                  placeholder={t('alert.username_placeholder')}
+                  placeholder={t("alert.username_placeholder")}
                   placeholderTextColor={colors.subText}
                   autoCapitalize="none"
                   autoCorrect={false}
@@ -262,20 +344,25 @@ const AuthPage = () => {
           )}
 
           {/* OTP Verification */}
-          {step === 'otp' && (
+          {step === "otp" && (
             <>
               <Text style={[styles.otpSubtitle, { color: colors.subText }]}>
-                {t('auth.verification.otp_subtitle')}
+                {t("auth.verification.otp_subtitle")}
               </Text>
               <View style={styles.otpContainer}>
                 {[0, 1, 2, 3].map((i) => (
                   <TextInput
                     key={i}
-                    ref={(ref) => { otpRefs.current[i] = ref }}
+                    ref={(ref) => {
+                      otpRefs.current[i] = ref;
+                    }}
                     style={[
                       styles.otpBox,
                       {
-                        borderColor: otpFocused === i ? colors.primaryColor : colors.borderColor,
+                        borderColor:
+                          otpFocused === i
+                            ? colors.primaryColor
+                            : colors.borderColor,
                         color: colors.text,
                         backgroundColor: colors.card,
                       },
@@ -285,8 +372,12 @@ const AuthPage = () => {
                     onFocus={() => setOtpFocused(i)}
                     onBlur={() => setOtpFocused(-1)}
                     onKeyPress={({ nativeEvent }) => {
-                      if (nativeEvent.key === 'Backspace' && !otpCode[i] && i > 0) {
-                        otpRefs.current[i - 1]?.focus()
+                      if (
+                        nativeEvent.key === "Backspace" &&
+                        !otpCode[i] &&
+                        i > 0
+                      ) {
+                        otpRefs.current[i - 1]?.focus();
                       }
                     }}
                     keyboardType="numeric"
@@ -296,6 +387,13 @@ const AuthPage = () => {
                   />
                 ))}
               </View>
+              {otpError ? (
+                <Text
+                  style={[styles.errorText, { color: colors.red || "#e54343" }]}
+                >
+                  {otpError}
+                </Text>
+              ) : null}
               <TouchableOpacity
                 onPress={handleResend}
                 disabled={countdown > 0 || isLoading}
@@ -304,12 +402,15 @@ const AuthPage = () => {
                 <Text
                   style={[
                     styles.resendText,
-                    { color: countdown > 0 ? colors.subText : colors.primaryColor },
+                    {
+                      color:
+                        countdown > 0 ? colors.subText : colors.primaryColor,
+                    },
                   ]}
                 >
                   {countdown > 0
-                    ? `${t('auth.verification.resend_in')} ${countdown}s`
-                    : t('auth.verification.resend_code')}
+                    ? `${t("auth.verification.resend_in")} ${Math.floor(countdown / 60)}:${String(countdown % 60).padStart(2, "0")}`
+                    : t("auth.verification.resend_code")}
                 </Text>
               </TouchableOpacity>
             </>
@@ -317,12 +418,21 @@ const AuthPage = () => {
         </ScrollView>
 
         {/* Action Button — pinned above keyboard */}
-        <View style={[styles.doneButtonWrapper, { marginBottom: insets.bottom + 16 }]}>
-          {step === 'phone' && (
+        <View
+          style={[
+            styles.doneButtonWrapper,
+            { marginBottom: insets.bottom + 16 },
+          ]}
+        >
+          {step === "phone" && (
             <TouchableOpacity
               style={[
                 styles.doneButton,
-                { backgroundColor: isSendEnabled ? colors.primaryColor : colors.borderColor },
+                {
+                  backgroundColor: isSendEnabled
+                    ? colors.primaryColor
+                    : colors.borderColor,
+                },
               ]}
               onPress={handleSend}
               disabled={!isSendEnabled}
@@ -331,17 +441,26 @@ const AuthPage = () => {
               {isLoading ? (
                 <ActivityIndicator color="#fff" />
               ) : (
-                <Text style={[styles.doneButtonText, { color: isSendEnabled ? '#fff' : colors.subText }]}>
-                  {t('auth.verification.send')}
+                <Text
+                  style={[
+                    styles.doneButtonText,
+                    { color: isSendEnabled ? "#fff" : colors.subText },
+                  ]}
+                >
+                  {t("auth.verification.send")}
                 </Text>
               )}
             </TouchableOpacity>
           )}
-          {step === 'otp' && (
+          {step === "otp" && (
             <TouchableOpacity
               style={[
                 styles.doneButton,
-                { backgroundColor: isDoneEnabled ? colors.primaryColor : colors.borderColor },
+                {
+                  backgroundColor: isDoneEnabled
+                    ? colors.primaryColor
+                    : colors.borderColor,
+                },
               ]}
               onPress={handleDone}
               disabled={!isDoneEnabled}
@@ -350,17 +469,26 @@ const AuthPage = () => {
               {isLoading ? (
                 <ActivityIndicator color="#fff" />
               ) : (
-                <Text style={[styles.doneButtonText, { color: isDoneEnabled ? '#fff' : colors.subText }]}>
-                  {t('auth.verification.done')}
+                <Text
+                  style={[
+                    styles.doneButtonText,
+                    { color: isDoneEnabled ? "#fff" : colors.subText },
+                  ]}
+                >
+                  {t("auth.verification.done")}
                 </Text>
               )}
             </TouchableOpacity>
           )}
-          {step === 'username' && (
+          {step === "username" && (
             <TouchableOpacity
               style={[
                 styles.doneButton,
-                { backgroundColor: isUsernameReady ? colors.primaryColor : colors.borderColor },
+                {
+                  backgroundColor: isUsernameReady
+                    ? colors.primaryColor
+                    : colors.borderColor,
+                },
               ]}
               onPress={handleSaveUsername}
               disabled={!isUsernameReady}
@@ -369,8 +497,13 @@ const AuthPage = () => {
               {isLoading ? (
                 <ActivityIndicator color="#fff" />
               ) : (
-                <Text style={[styles.doneButtonText, { color: isUsernameReady ? '#fff' : colors.subText }]}>
-                  {t('auth.register.button')}
+                <Text
+                  style={[
+                    styles.doneButtonText,
+                    { color: isUsernameReady ? "#fff" : colors.subText },
+                  ]}
+                >
+                  {t("auth.register.button")}
                 </Text>
               )}
             </TouchableOpacity>
@@ -379,34 +512,19 @@ const AuthPage = () => {
       </ThemedView>
 
       <CustomAlert
-        visible={showUserNotFoundAlert}
-        type="warning"
-        title="Foydalanuvchi topilmadi"
-        message={`Foydalanuvchi topilmadi.\nIltimos ro'yxatdan o'ting.`}
-        primaryButtonText="Ro'yxatdan o'tish"
-        secondaryButtonText={t('profile.logout_cancel')}
-        onPrimaryPress={() => {
-          setShowUserNotFoundAlert(false)
-          router.push({ pathname: '/(auth)/register', params: { phone: phoneNumber } })
-        }}
-        onSecondaryPress={() => setShowUserNotFoundAlert(false)}
-        onDismiss={() => setShowUserNotFoundAlert(false)}
-      />
-
-      <CustomAlert
         visible={showLocationAlert}
         type="warning"
-        title={t('alert.location_required_title')}
-        message={t('alert.location_required_message')}
-        primaryButtonText={t('alert.setup_location')}
-        secondaryButtonText={t('alert.skip')}
+        title={t("alert.location_required_title")}
+        message={t("alert.location_required_message")}
+        primaryButtonText={t("alert.setup_location")}
+        secondaryButtonText={t("alert.skip")}
         onPrimaryPress={handleSetupLocation}
         onSecondaryPress={handleSkipLocation}
         onDismiss={handleSkipLocation}
       />
     </KeyboardAvoidingView>
-  )
-}
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -421,20 +539,20 @@ const styles = StyleSheet.create({
   backButton: {
     width: 40,
     height: 40,
-    justifyContent: 'center',
-    alignItems: 'flex-start',
+    justifyContent: "center",
+    alignItems: "flex-start",
     marginBottom: 16,
   },
   title: {
     fontSize: 28,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     lineHeight: 36,
     marginBottom: 32,
   },
   inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     borderWidth: 1,
     borderRadius: 12,
     paddingHorizontal: 16,
@@ -443,7 +561,7 @@ const styles = StyleSheet.create({
   },
   phonePrefix: {
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: "500",
     marginRight: 8,
   },
   phoneNumber: {
@@ -458,48 +576,48 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   otpContainer: {
-    flexDirection: 'row',
-    gap: 12,
+    flexDirection: "row",
+    gap: 8,
     marginBottom: 8,
   },
   otpBox: {
     flex: 1,
-    height: 64,
+    height: 56,
     borderWidth: 1.5,
     borderRadius: 12,
-    fontSize: 24,
-    fontWeight: '600',
-    textAlign: 'center',
+    fontSize: 22,
+    fontWeight: "600",
+    textAlign: "center",
   },
   resendContainer: {
-    alignItems: 'center',
+    alignItems: "center",
     paddingVertical: 12,
   },
   errorText: {
-    color: '#EF4444',
+    color: "#EF4444",
     fontSize: 12,
     marginBottom: 16,
   },
   resendText: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   doneButtonWrapper: {
     paddingHorizontal: 24,
     marginBottom: 16,
   },
   doneButton: {
-    width: '100%',
+    width: "100%",
     paddingVertical: 16,
     borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     minHeight: 52,
   },
   doneButtonText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
-})
+});
 
-export default AuthPage
+export default AuthPage;

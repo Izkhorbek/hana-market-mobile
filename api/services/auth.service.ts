@@ -1,23 +1,49 @@
-import type { ApiResponse, User, UserCreateReqDto, UserRequestDto } from '../../types';
+import type {
+  ApiResponse,
+  RefreshTokenRequest,
+  RequestOtpRequest,
+  User,
+  VerifyOtpRequest,
+} from '../../types';
 import axiosInstance from '../api';
 import ENDPOINT from '../endpoints';
 
 export const authService = {
   /**
-   * Register a new user
-   * POST /api/auth/register
+   * Request an OTP for a phone number.
+   * POST /api/auth/request-otp
+   * Server will SMS a 6-digit code. No token is issued at this step.
    */
-  register: (data: UserCreateReqDto) => {
-    return axiosInstance.post<ApiResponse<{}>>(ENDPOINT.AUTH.REGISTER, data);
+  requestOtp: (data: RequestOtpRequest) => {
+    return axiosInstance.post<ApiResponse<{}>>(ENDPOINT.AUTH.REQUEST_OTP, data);
   },
 
   /**
-   * Login user
-   * POST /api/auth/login
-   * Token returned in response headers: X-Access-Token
+   * Verify an OTP and authenticate the user.
+   * POST /api/auth/verify-otp
+   * Implicitly registers the user on first successful verify.
+   * Tokens returned in response headers:
+   *   X-Access-Token, X-Expires-At, X-Refresh-Token, X-Refresh-Token-Expires-At
    */
-  login: (data: UserRequestDto) => {
-    return axiosInstance.post<ApiResponse<User>>(ENDPOINT.AUTH.LOGIN, data);
+  verifyOtp: (data: VerifyOtpRequest) => {
+    return axiosInstance.post<ApiResponse<User>>(
+      ENDPOINT.AUTH.VERIFY_OTP,
+      data,
+    );
+  },
+
+  /**
+   * Exchange a refresh token for a new access/refresh token pair.
+   * POST /api/auth/refresh
+   * New tokens are returned in the same X-* response headers as verify-otp.
+   * Skip the auth interceptor's refresh-on-401 retry for this call to avoid
+   * infinite loops.
+   */
+  refreshToken: (data: RefreshTokenRequest) => {
+    return axiosInstance.post<ApiResponse<{}>>(ENDPOINT.AUTH.REFRESH, data, {
+      // @ts-expect-error custom flag consumed by api.ts interceptor
+      _skipAuthRefresh: true,
+    });
   },
 
   /**

@@ -2,6 +2,7 @@ import type {
   ApiResponse,
   DraftImageDto,
   PaginatedResponse,
+  ProductEditResponseDto,
   ProductImageDto,
   ProductLikeDto,
   ProductListParams,
@@ -24,6 +25,14 @@ export const productService = {
    */
   getById: (id: number) => {
     return axiosInstance.get<ApiResponse<any>>(ENDPOINT.PRODUCT.BY_ID(id));
+  },
+
+    /**
+   * Get product by ID for editing (includes additional fields)
+   * GET /api/product/{id}/edit
+   */
+  getByIdToEdit: (id: number) => {
+    return axiosInstance.get<ApiResponse<ProductEditResponseDto>>(ENDPOINT.PRODUCT.BY_ID_TO_EDIT(id));
   },
 
   /**

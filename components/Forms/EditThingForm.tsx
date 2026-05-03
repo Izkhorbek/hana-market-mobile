@@ -5,13 +5,11 @@ import FormSelect from '@/components/FormElements/FormSelect';
 import { useTranslations } from '@/hooks/use-translation';
 import { useColor } from '@/hooks/useColor';
 import { Category } from '@/types';
-import { MapPin } from 'lucide-react-native';
-import React, { useEffect, useState } from 'react';
-import { Controller, UseFormReturn } from 'react-hook-form';
+import React, { useEffect } from 'react';
+import { UseFormReturn } from 'react-hook-form';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import FormRow from '../FormElements/FormRow';
 import RadioButtonGroup, { RadioOption } from '../FormElements/RadioButtonGroup';
-import MapModal from '../MapModal';
 
 export interface EditThingFormValues {
     title: string;
@@ -21,22 +19,18 @@ export interface EditThingFormValues {
     price: string;
     currency: string;
     canDeal: boolean;
-    location: string;
     landmark: string;
 }
 
 interface EditThingFormProps {
     form: UseFormReturn<any>;
     product: any;
-    location: { latitude: number; longitude: number; address?: string } | null;
-    onLocationChange: (location: { latitude: number; longitude: number; address?: string }) => void;
 }
 
-const EditThingForm: React.FC<EditThingFormProps> = ({ form, product, location, onLocationChange }) => {
+const EditThingForm: React.FC<EditThingFormProps> = ({ form, product }) => {
     const { t, locale } = useTranslations();
     const primaryColor = useColor('primaryColor');
     const textColor = useColor('text');
-    const [isMapModalVisible, setIsMapModalVisible] = useState(false);
     const { data: categories } = useCategoriesQuery();
 
     const categoryOptions = categories?.data?.data?.map((category: Category) => ({
@@ -55,11 +49,8 @@ const EditThingForm: React.FC<EditThingFormProps> = ({ form, product, location, 
         },
     ];
 
-    const { formState: { errors } } = form;
     const sellingMethod = form.watch('sellingMethod');
-    const currency = form.watch('currency');
-
-    // Clear price validation error when user switches to 'free'
+    const currency = form.watch('currency');    // Clear price validation error when user switches to 'free'
     useEffect(() => {
         if (sellingMethod === 'free') {
             form.clearErrors('price');
@@ -77,23 +68,8 @@ const EditThingForm: React.FC<EditThingFormProps> = ({ form, product, location, 
             form.setValue('currency', product.currency_type === 1010 ? 'USD' : 'UZS');
             form.setValue('canDeal', product.is_negotiable || false);
             form.setValue('landmark', product.moljal || '');
-            if (product.moljal) {
-                form.setValue('location', product.moljal);
-            }
         }
     }, [product]);
-
-    const handleOpenMap = () => {
-        setIsMapModalVisible(true);
-    };
-
-    const handleLocationSelect = (selectedLocation: { latitude: number; longitude: number; address?: string }) => {
-        onLocationChange(selectedLocation);
-        setIsMapModalVisible(false);
-        const locationValue = selectedLocation.address?.trim() || `${selectedLocation.latitude},${selectedLocation.longitude}`;
-        form.setValue('location', locationValue, { shouldValidate: true });
-        form.setValue('landmark', selectedLocation.address || locationValue, { shouldValidate: true });
-    };
 
     return (
         <View style={styles.container}>
@@ -220,13 +196,7 @@ const EditThingForm: React.FC<EditThingFormProps> = ({ form, product, location, 
                     {t('post.meeting')}
                 </Text>
 
-                {/* Hidden field: validates that user picked a location from the map */}
-                <Controller
-                    control={form.control}
-                    name="location"
-                    rules={{ required: t('post.errors.location') }}
-                    render={() => <></>}
-                />
+                {/* Hidden field removed: location is auto-resolved on Post */}
 
                 <FormRow>
                     <View style={styles.locationInputWrapper}>
@@ -241,29 +211,8 @@ const EditThingForm: React.FC<EditThingFormProps> = ({ form, product, location, 
                             }}
                         />
                     </View>
-                    <TouchableOpacity
-                        style={[styles.mapButton, { backgroundColor: primaryColor }]}
-                        onPress={handleOpenMap}
-                        activeOpacity={0.7}
-                    >
-                        <MapPin size={24} color="#fff" strokeWidth={2} />
-                    </TouchableOpacity>
                 </FormRow>
-                {errors.location && (
-                    <Text style={{ color: '#e53935', fontSize: 12, marginTop: 4 }}>
-                        {errors.location.message as string}
-                    </Text>
-                )}
             </View>
-
-            {/* Map Modal */}
-            <MapModal
-                visible={isMapModalVisible}
-                mode="SELECT"
-                initialLocation={location || undefined}
-                onClose={() => setIsMapModalVisible(false)}
-                onLocationSelect={handleLocationSelect}
-            />
         </View>
     );
 };
@@ -303,14 +252,6 @@ const styles = StyleSheet.create({
     },
     locationInputWrapper: {
         flex: 1,
-    },
-    mapButton: {
-        width: 52,
-        height: 52,
-        borderRadius: 12,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginTop: 30,
     },
 });
 

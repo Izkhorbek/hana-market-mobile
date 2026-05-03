@@ -20,7 +20,7 @@ import {
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
-type TabType = 'active' | 'sold' | 'hidden'
+type TabType = 'active' | 'reserved' | 'sold' | 'hidden'
 
 interface TabItem {
 	key: TabType
@@ -81,6 +81,7 @@ const MyListingsPage = () => {
 
 	const tabs: TabItem[] = [
 		{ key: 'active', label: t('my_listings.tab_active') },
+		{ key: 'reserved', label: t('my_listings.tab_reserved') },
 		{ key: 'sold', label: t('my_listings.tab_sold') },
 		{ key: 'hidden', label: t('my_listings.tab_hidden') },
 	]
@@ -181,6 +182,8 @@ const MyListingsPage = () => {
 									{ color: isActive ? colors.text : colors.textMuted },
 									isActive && styles.activeTabText,
 								]}
+								numberOfLines={1}
+								ellipsizeMode="tail"
 							>
 								{tab.label}
 							</Text>

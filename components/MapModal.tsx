@@ -1,6 +1,7 @@
 import { HEADER_PADDING_TOP } from '@/constants/appLimits';
 import { useTranslations } from '@/hooks/use-translation';
 import { useColor } from '@/hooks/useColor';
+import { logger } from '@/utils/logger';
 import * as Location from 'expo-location';
 import { Crosshair, MapPin, Navigation } from 'lucide-react-native';
 import React, { useEffect, useRef, useState } from 'react';
@@ -77,6 +78,7 @@ const MapModal: React.FC<MapModalProps> = ({
       return status === 'granted';
     } catch (error) {
       console.error('Error requesting location permission:', error);
+      logger.warn(error, { code: 'LOCATION_PERMISSION_FAILED', screen: 'MapModal' });
       return false;
     }
   };
@@ -115,6 +117,7 @@ const MapModal: React.FC<MapModalProps> = ({
       Alert.alert(t('map.location_selected'));
     } catch (error) {
       console.error('Error getting location:', error);
+      logger.warn(error, { code: 'LOCATION_FETCH_FAILED', screen: 'MapModal' });
       Alert.alert(
         t('common.error'),
         'Failed to get current location'
@@ -144,6 +147,7 @@ const MapModal: React.FC<MapModalProps> = ({
       }
     } catch (error) {
       console.error('Reverse Geocoding Error:', error);
+      logger.warn(error, { code: 'REVERSE_GEOCODE_FAILED', screen: 'MapModal' });
     }
     return '';
   };

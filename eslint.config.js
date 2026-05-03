@@ -5,6 +5,10 @@ const expoConfig = require('eslint-config-expo/flat');
 export default defineConfig([
   expoConfig,
   {
-    ignores: ['dist/*']
+    ignores: ['dist/*'],
+    rules: {
+      quotes: ['error', 'single', { avoidEscape: true, allowTemplateLiterals: true }],
+      semi: ['error', 'never'],
+    },
   },
-]);
+])
