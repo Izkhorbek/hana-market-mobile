@@ -6,19 +6,45 @@
   "build": {
     "development": {
       "developmentClient": true,
-      "distribution": "internal"
+      "distribution": "internal",
+      "env": {
+        "APP_ENV": "development"
+      }
     },
     "preview": {
-      "distribution": "internal"
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "APP_ENV": "staging"
+      }
     },
     "production": {
       "autoIncrement": true,
       "android": {
-        "buildType": "apk"
+        "buildType": "app-bundle"
+      },
+      "env": {
+        "APP_ENV": "production"
       }
     }
   },
   "submit": {
-    "production": {}
+    "production": {
+      "android": {
+        "//": "Place a Google Play service-account JSON at the path below (gitignored). See https://docs.expo.dev/submit/android/",
+        "serviceAccountKeyPath": "./google-play-service-account.json",
+        "track": "internal",
+        "releaseStatus": "draft",
+        "changesNotSentForReview": false
+      },
+      "ios": {
+        "//": "Set ASC_API_KEY_PATH / ASC_API_KEY_ID / ASC_API_ISSUER_ID env vars on your build machine, OR replace with appleId/appleTeamId/ascAppId. See https://docs.expo.dev/submit/ios/",
+        "ascApiKeyPath": "./asc-api-key.p8",
+        "ascApiKeyId": "REPLACE_ME",
+        "ascApiIssuerId": "REPLACE_ME"
+      }
+    }
   }
-} 
+}

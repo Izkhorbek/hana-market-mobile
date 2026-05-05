@@ -1,6 +1,6 @@
 import { useThemeColors } from '@/hooks/use-theme-colors';
 import { useColor } from '@/hooks/useColor';
-import { LucideProps } from 'lucide-react-native';
+import type { LucideProps } from 'lucide-react-native';
 import React from 'react';
 import { Control, Controller } from 'react-hook-form';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';

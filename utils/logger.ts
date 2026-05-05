@@ -21,6 +21,7 @@ import { telemetryService } from '@/api/services';
 import type { MobileLogDto } from '@/types';
 import Constants from 'expo-constants';
 import { Platform } from 'react-native';
+import { addSentryBreadcrumb } from './sentry';
 
 // ── Backend field limits ────────────────────────────────────────────────────
 const LIMITS = {
@@ -186,6 +187,16 @@ const log = (
       const out = level === 'error' || level === 'fatal' ? console.error : console.log;
       out(`[${level.toUpperCase()}]${payload.code ? ` ${payload.code}` : ''} ${payload.message}`, options?.extra ?? '');
     }
+
+    // Drop a Sentry breadcrumb so when a *real* native crash later occurs,
+    // the engineering team can see what business-level events preceded it.
+    // We do NOT call Sentry.captureException here — Sentry already catches
+    // uncaught errors via its own global handlers. Avoiding double-reporting.
+    addSentryBreadcrumb(
+      level === 'warn' ? 'warning' : level,
+      payload.code ? `${payload.code}: ${payload.message}` : payload.message,
+      { screen: payload.screen, ...options?.extra },
+    );
 
     send(payload);
   } catch {

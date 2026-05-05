@@ -299,6 +299,7 @@ const AuthPage = () => {
               +998
             </Text>
             <TextInput
+              testID="auth-phone-input"
               ref={phoneInputRef}
               style={[styles.phoneNumber, { color: colors.text }]}
               value={formatPhone(phoneNumber)}
@@ -353,6 +354,7 @@ const AuthPage = () => {
                 {[0, 1, 2, 3].map((i) => (
                   <TextInput
                     key={i}
+                    testID={`auth-otp-${i}`}
                     ref={(ref) => {
                       otpRefs.current[i] = ref;
                     }}
@@ -426,6 +428,7 @@ const AuthPage = () => {
         >
           {step === "phone" && (
             <TouchableOpacity
+              testID="auth-send-btn"
               style={[
                 styles.doneButton,
                 {
@@ -454,6 +457,7 @@ const AuthPage = () => {
           )}
           {step === "otp" && (
             <TouchableOpacity
+              testID="auth-done-btn"
               style={[
                 styles.doneButton,
                 {

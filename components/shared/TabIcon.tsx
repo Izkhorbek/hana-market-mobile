@@ -1,6 +1,6 @@
 import { Colors } from '@/constants/theme'
 import { useThemeColors } from '@/hooks/use-theme-colors'
-import { LucideIcon } from 'lucide-react-native'
+import type { LucideIcon } from 'lucide-react-native'
 import React from 'react'
 import { StyleSheet } from 'react-native'
 import { ThemedText } from '../themed-text'

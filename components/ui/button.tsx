@@ -4,7 +4,7 @@ import { Text } from '@/components/ui/text';
 import { useColor } from '@/hooks/useColor';
 import { CORNERS, FONT_SIZE, HEIGHT } from '@/theme/globals';
 import * as Haptics from 'expo-haptics';
-import { LucideProps } from 'lucide-react-native';
+import type { LucideProps } from 'lucide-react-native';
 import { forwardRef } from 'react';
 import {
   Pressable,

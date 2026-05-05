@@ -1,5 +1,5 @@
 import { useColor } from '@/hooks/useColor';
-import { LucideProps } from 'lucide-react-native';
+import type { LucideProps } from 'lucide-react-native';
 import React from 'react';
 
 export type Props = LucideProps & {

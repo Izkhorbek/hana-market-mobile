@@ -7,6 +7,7 @@ import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useModeToggle } from '@/hooks/useModeToggle';
 import { ThemeProvider } from '@/theme/theme-provider';
 import { installGlobalErrorHandlers } from '@/utils/globalErrorHandlers';
+import { initSentry, sentryWrap } from '@/utils/sentry';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { Stack } from 'expo-router';
 import { Sun } from 'lucide-react-native';
@@ -17,10 +18,14 @@ import { SafeAreaProvider, initialWindowMetrics } from 'react-native-safe-area-c
 
 if (__DEV__) { require('../ReactotronConfig'); }
 
+// Initialize Sentry FIRST so it can capture even errors thrown by our other
+// init steps below. No-op if no DSN is configured.
+initSentry();
+
 // Install global JS error / unhandled rejection reporters as early as possible.
 installGlobalErrorHandlers();
 
-export default function RootLayout() {
+function RootLayout() {
 	const colorScheme = useColorScheme()
 	const { toggleMode } = useModeToggle()
 
@@ -63,3 +68,7 @@ export default function RootLayout() {
 		</GlobalErrorBoundary>
 	)
 }
+// Wrap the root with Sentry's HOC so it can intercept render errors at the
+// top of the tree and attach navigation breadcrumbs. No-op when Sentry is
+// disabled (no DSN configured).
+export default sentryWrap(RootLayout);

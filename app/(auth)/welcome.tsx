@@ -35,6 +35,7 @@ const WelcomePage = () => {
       {/* Button Section */}
       <ThemedView style={styles.buttonSection}>
         <TouchableOpacity
+          testID="welcome-get-started"
           style={styles.getStartedButton}
           activeOpacity={0.8}
           onPress={() => router.push('/(auth)/auth')}

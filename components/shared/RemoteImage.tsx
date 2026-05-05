@@ -11,9 +11,6 @@ import {
   ViewStyle,
 } from 'react-native';
 
-// Bundler resolves require() at build time — this is the correct way to use local assets
-const FALLBACK_IMAGE = require('@/assets/images/not_exists_image.png');
-
 // Blurhash placeholder - neutral gray for smooth loading
 const DEFAULT_BLURHASH = 'L6PZfSi_.AyE_3t7t7R**0o#DgR4';
 

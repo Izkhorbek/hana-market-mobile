@@ -2,13 +2,15 @@ import { authLogout, getAuthToken, refreshAuthToken } from '@/api/auth-bridge';
 import { logger } from '@/utils/logger';
 import axios, { AxiosError, AxiosRequestConfig } from 'axios';
 
-//const PROD_API_URL = "http://46.8.176.21/api";
-// Android emulator: 10.0.2.2, iOS simulator: localhost, physical device: machine's local IP
-//const DEV_API_URL = 'http://10.0.2.2:5000/api'; // only if backend runs locally on dev machine
-const DEV_API_URL = 'http://192.168.0.111:5000/api'; // real device on same Wi-Fi (local backend)
-//const DEV_API_URL = PROD_API_URL; // remote backend — use production server in dev too
+// API base URL is sourced from EXPO_PUBLIC_API_URL (see .env.example).
+// In production builds, plain HTTP is blocked at the platform level
+// (Android network_security_config + iOS ATS), so this MUST be HTTPS.
+//
+// Local dev fallback: real device on same Wi-Fi as a dev backend.
+// Android emulator alternative: http://10.0.2.2:5000/api
+const DEV_API_URL_FALLBACK = 'http://192.168.0.111:5000/api';
 
-const API_URL = DEV_API_URL;
+const API_URL = process.env.EXPO_PUBLIC_API_URL || DEV_API_URL_FALLBACK;
 
 // Static files (wwwroot) are served from the server root, not under /api
 export const IMAGE_BASE_URL = API_URL.replace(/\/api\/?$/, '');

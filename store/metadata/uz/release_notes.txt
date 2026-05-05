@@ -1,0 +1,6 @@
+Versiya 1.0.0
+• Birinchi relyaz
+• Yaqin atrofdagi e'lonlar
+• Sotuvchilar bilan real vaqtda chat
+• Bir daqiqada e'lon berish
+• O'zbek, rus va ingliz tillari

@@ -111,8 +111,9 @@ export default function HomeScreen() {
       />
 
       {/* ── Floating Action Button ─────────────────────────────────────── */}
-      <View style={[styles.fabContainer, { bottom: insets.bottom }]}>
+      <View style={[styles.fabContainer, { bottom: insets.bottom }]} testID="home-screen">
         <TouchableOpacity
+          testID="home-fab-post"
           style={[styles.fab, { backgroundColor: colors.primaryColor }]}
           onPress={openSheet}
           activeOpacity={0.85}

@@ -1,0 +1,6 @@
+Version 1.0.0
+• Initial release
+• Browse listings near you
+• Real-time chat with sellers
+• Post your own items in under a minute
+• English, Russian, and Uzbek

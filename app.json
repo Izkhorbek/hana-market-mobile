@@ -10,26 +10,17 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "config": {
-        "googleMapsApiKey": "YOUR_GOOGLE_MAPS_IOS_API_KEY"
-      }
+      "bundleIdentifier": "com.asilbek1510.hanamarket"
     },
     "androidStatusBar": {
       "translucent": false,
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#E6F4FE"
     },
     "androidNavigationBar": {
-      "visible": "transparent", // "immersive", "transparent", "hidden"
       "enforceContrast": true
     },
     "jsEngine": "hermes",
     "android": {
-      "config": {
-        "googleMaps": {
-          "apiKey": "YOUR_GOOGLE_MAPS_ANDROID_API_KEY"
-        }
-      },
-      "usesCleartextTraffic": true,
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -50,11 +41,12 @@
         "expo-splash-screen",
         {
           "image": "./assets/images/splash-icon.png",
-          "imageWidth": 200,
+          "imageWidth": 220,
           "resizeMode": "contain",
-          "backgroundColor": "#ffffff",
+          "backgroundColor": "#E6F4FE",
           "dark": {
-            "backgroundColor": "#000000"
+            "image": "./assets/images/splash-icon.png",
+            "backgroundColor": "#0F1419"
           }
         }
       ],
