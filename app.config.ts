@@ -68,9 +68,6 @@ export default ({ config }: ConfigContext): ExpoConfig => {
   // local "no map needed" workflows still build.
   const android: ExpoConfig['android'] = {
     ...(json.android ?? {}),
-    // Allow plain HTTP only in non-production builds (some staging APIs may
-    // not have TLS yet). Production must always be HTTPS-only.
-    usesCleartextTraffic: !isProduction,
     permissions: [
       'ACCESS_COARSE_LOCATION',
       'ACCESS_FINE_LOCATION',

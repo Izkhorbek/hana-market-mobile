@@ -5,6 +5,7 @@ import type {
   User,
   VerifyOtpRequest,
 } from '../../types';
+import type { AxiosResponse } from 'axios';
 import axiosInstance from '../api';
 import ENDPOINT from '../endpoints';
 
@@ -39,11 +40,13 @@ export const authService = {
    * Skip the auth interceptor's refresh-on-401 retry for this call to avoid
    * infinite loops.
    */
-  refreshToken: (data: RefreshTokenRequest) => {
+  refreshToken: (
+    data: RefreshTokenRequest,
+  ): Promise<AxiosResponse<ApiResponse<{}>>> => {
     return axiosInstance.post<ApiResponse<{}>>(ENDPOINT.AUTH.REFRESH, data, {
       // @ts-expect-error custom flag consumed by api.ts interceptor
       _skipAuthRefresh: true,
-    });
+    }) as Promise<AxiosResponse<ApiResponse<{}>>>;
   },
 
   /**
