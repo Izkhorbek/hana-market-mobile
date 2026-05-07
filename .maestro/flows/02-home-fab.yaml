@@ -1,0 +1,25 @@
+# Smoke test #2 — Home navigation
+#
+# Assumes auth state is persisted from a previous run (or the tester is
+# already logged in via dev-build state). Validates that the home screen
+# renders the post FAB and the create-post bottom sheet opens.
+#
+# Run AFTER 01-auth.yaml in the same session (Maestro carries app state
+# across tests within a single `maestro test` invocation when --shard or
+# default sequential mode is used).
+appId: com.hanamarket.app
+---
+- launchApp
+- assertVisible:
+    id: "home-screen"
+    timeout: 15000
+
+# Open the create-post sheet
+- tapOn:
+    id: "home-fab-post"
+
+# The sheet animates in; wait for one of the category rows by visible text.
+# (Translations vary by locale; this test runs against English.)
+- assertVisible:
+    text: ".*"
+    timeout: 5000

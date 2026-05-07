@@ -8,7 +8,7 @@ import axios, { AxiosError, AxiosRequestConfig } from 'axios';
 //
 // Local dev fallback: real device on same Wi-Fi as a dev backend.
 // Android emulator alternative: http://10.0.2.2:5000/api
-const DEV_API_URL_FALLBACK = 'http://192.168.0.111:5000/api';
+const DEV_API_URL_FALLBACK='http://192.168.0.111:5000/api';
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL || DEV_API_URL_FALLBACK;
 
@@ -61,9 +61,6 @@ const runSingleFlightRefresh = (): Promise<string | null> => {
 // Response interceptor for global error handling + transparent token refresh
 axiosInstance.interceptors.response.use(
   (response) => {
-    if (response.data?.success === false) {
-      console.log('API Error:', response.data?.message || 'Unknown error');
-    }
     return response;
   },
   async (error: AxiosError) => {
@@ -71,11 +68,6 @@ axiosInstance.interceptors.response.use(
     const url = originalConfig.url || 'unknown';
     const method = originalConfig.method?.toUpperCase() || 'unknown';
     const status = error.response?.status ?? 'no response';
-
-    console.error(`[API Error] ${method} ${url} → ${status}`, {
-      message: error.message,
-      data: error.response?.data,
-    });
 
     // Report to backend telemetry — skip the telemetry endpoint itself to
     // avoid an infinite loop, and skip 401s which are handled below.
@@ -124,7 +116,6 @@ axiosInstance.interceptors.response.use(
             return axiosInstance.request(originalConfig);
           }
         } catch (refreshErr) {
-          console.error('[API] Token refresh failed', refreshErr);
           logger.error('AUTH_REFRESH_FAILED', refreshErr, { extra: { url } });
         }
         // Refresh failed → end the session.
@@ -133,10 +124,6 @@ axiosInstance.interceptors.response.use(
         // Refresh disabled / already retried / no token → log out.
         authLogout();
       }
-    } else if (error.request) {
-      console.error('Network Error:', error.message);
-    } else {
-      console.error('Error:', error.message);
     }
 
     return Promise.reject(error);

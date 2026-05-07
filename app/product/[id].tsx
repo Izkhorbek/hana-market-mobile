@@ -258,6 +258,8 @@ const ProductDetailPage: React.FC = () => {
   const productCreated = product?.created_ago ?? "";
   const isNegotiable = product?.is_negotiable ?? false;
   const productStatus = product?.status ?? "sold";
+  const isSoldOrReserved =
+    productStatus === "sold" || productStatus === "reserved";
   const productIsLiked = product?.is_liked ?? false;
   const normalizedProductType = Number(product?.product_type);
   const carData = product?.car_data;
@@ -662,7 +664,7 @@ const ProductDetailPage: React.FC = () => {
       router.push("/(auth)/auth");
       return;
     }
-    if (isMyProduct) return;
+    if (isMyProduct || isSoldOrReserved) return;
     if (!productSellerId) return;
     createChat(
       { seller_id: productSellerId, product_id: productId },
@@ -676,7 +678,14 @@ const ProductDetailPage: React.FC = () => {
         },
       },
     );
-  }, [isAuthenticated, isMyProduct, productSellerId, productId, createChat]);
+  }, [
+    isAuthenticated,
+    isMyProduct,
+    isSoldOrReserved,
+    productSellerId,
+    productId,
+    createChat,
+  ]);
 
   const handleShare = useCallback(async () => {
     try {
@@ -1161,16 +1170,18 @@ const ProductDetailPage: React.FC = () => {
             fill={isLiked ? colors.primaryColor : "transparent"}
           />
         </TouchableOpacity>
+
+        //
         <TouchableOpacity
           style={[
             styles.chatButton,
             {
               backgroundColor: colors.primaryColor,
-              opacity: chatPending || isMyProduct ? 0.45 : 1,
+              opacity: chatPending || isMyProduct || isSoldOrReserved ? 0.45 : 1,
             },
           ]}
           onPress={handleChat}
-          disabled={chatPending || isMyProduct}
+          disabled={chatPending || isMyProduct || isSoldOrReserved}
         >
           <MessageCircle size={20} color="#fff" />
           <Text style={styles.chatButtonText}>

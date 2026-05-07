@@ -371,7 +371,6 @@ class SignalRService {
     this.connection.on(
       SignalREvents.UserStatusChanged,
       (payload: UserStatusPayload) => {
-        console.log('[SignalR] UserStatusChanged:', payload);
         this.userStatusListeners.forEach((cb) => cb(payload));
       },
     );
@@ -380,7 +379,6 @@ class SignalRService {
     this.connection.on(
       SignalREvents.ReceiveMessage,
       (payload: ReceiveMessagePayload) => {
-        console.log('[SignalR] ReceiveMessage:', payload);
         this.receiveMessageListeners.forEach((cb) => cb(payload));
       },
     );
@@ -389,7 +387,6 @@ class SignalRService {
     this.connection.on(
       SignalREvents.MessagesRead,
       (payload: MessagesReadPayload) => {
-        console.log('[SignalR] MessagesRead:', payload);
         this.messagesReadListeners.forEach((cb) => cb(payload));
       },
     );
@@ -398,14 +395,12 @@ class SignalRService {
     this.connection.on(
       SignalREvents.UserTyping,
       (payload: UserTypingPayload) => {
-        console.log('[SignalR] UserTyping:', payload);
         this.userTypingListeners.forEach((cb) => cb(payload));
       },
     );
 
     // Error event
     this.connection.on(SignalREvents.Error, (error: SignalRError) => {
-      console.error('[SignalR] Error from server:', error);
       logger.error('SIGNALR_SERVER_ERROR', error?.message ?? 'SignalR server error', {
         extra: { error },
       });

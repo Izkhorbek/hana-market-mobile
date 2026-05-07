@@ -24,6 +24,7 @@ const sharp = require('sharp');
 
 const ROOT = path.resolve(__dirname, '..');
 const SRC = path.join(ROOT, 'assets/images/logo.png');
+const SPLASH_SRC = path.join(ROOT, 'assets/images/splash-wordmark.svg');
 const OUT = path.join(ROOT, 'assets/images');
 
 // Brand background — taken from app.json adaptiveIcon.backgroundColor.
@@ -43,6 +44,11 @@ const hexToRgba = (hex, alpha = 1) => {
 
 if (!fs.existsSync(SRC)) {
   console.error(`Source logo not found: ${SRC}`);
+  process.exit(1);
+}
+
+if (!fs.existsSync(SPLASH_SRC)) {
+  console.error(`Splash source not found: ${SPLASH_SRC}`);
   process.exit(1);
 }
 
@@ -71,18 +77,11 @@ if (!fs.existsSync(SRC)) {
     .toFile(path.join(OUT, 'icon.png'));
   console.log('  -> icon.png (1024x1024 opaque)');
 
-  // 2) Splash logo — 1024x1024, transparent bg (background colour comes from
-  // expo-splash-screen plugin in app.json). Logo at ~40% so there's breathing
-  // room when the splash plugin centres it on the screen.
-  await sharp(SRC)
-    .resize(420, 420, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } })
-    .extend({
-      top: 302, bottom: 302, left: 302, right: 302,
-      background: { r: 0, g: 0, b: 0, alpha: 0 },
-    })
+  // 2) Splash logo — transparent wordmark so only the text sits on the splash background.
+  await sharp(SPLASH_SRC)
+    .resize(1024, 1024, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } })
     .png({ compressionLevel: 9 })
     .toFile(path.join(OUT, 'splash-icon.png'));
-  console.log('  -> splash-icon.png (1024x1024 transparent)');
 
   // 3) Android adaptive icon foreground — 512x512, logo in inner 66% safe area
   // (Android crops the outer 33% for various mask shapes — circle, squircle, etc.)

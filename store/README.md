@@ -38,7 +38,7 @@ store/
 - [ ] Generate App Store promotional text and keywords (`metadata/<lang>/`).
 
 ### Google Play
-- [ ] Create app in Play Console with package `com.asilbek1510.hanamarket`.
+- [ ] Create app in Play Console with package `com.hanamarket.app`.
 - [ ] Fill in Data Safety form (see `PRIVACY_POLICY.md` for the disclosure list).
 - [ ] Set Content Rating questionnaire (likely "Everyone" or "Teen").
 - [ ] Upload screenshots (min 2, max 8 per device type).
@@ -46,7 +46,7 @@ store/
 - [ ] Run `eas submit --profile production --platform android`.
 
 ### Apple App Store
-- [ ] Create app in App Store Connect with bundle id `com.asilbek1510.hanamarket`.
+- [ ] Create app in App Store Connect with bundle id `com.hanamarket.app`.
 - [ ] Fill in App Privacy questionnaire (mirror `PRIVACY_POLICY.md`).
 - [ ] Set Age Rating (4+ unless chat moderation flags it higher).
 - [ ] Upload screenshots for required device sizes (see `SCREENSHOTS.md`).

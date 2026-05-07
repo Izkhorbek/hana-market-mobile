@@ -1,0 +1,50 @@
+# Smoke test #1 — Auth flow
+#
+# Validates the most critical path: a brand-new user can sign in with phone +
+# OTP and land on the home screen. If this breaks, the entire app is unusable
+# — every other flow depends on being authenticated.
+#
+# Requires: a backend that accepts ${E2E_TEST_PHONE} and returns a fixed OTP
+# of ${E2E_TEST_OTP}. Configure these as test-only credentials on the server,
+# never reuse them in production.
+appId: com.hanamarket.app
+env:
+  E2E_TEST_PHONE: "901234567"
+  E2E_TEST_OTP: "1234"
+---
+- launchApp:
+    clearState: true
+    permissions:
+      location: deny
+      notifications: deny
+
+# Welcome screen → tap "Get started"
+- assertVisible:
+    id: "welcome-get-started"
+- tapOn:
+    id: "welcome-get-started"
+
+# Phone entry
+- assertVisible:
+    id: "auth-phone-input"
+- tapOn:
+    id: "auth-phone-input"
+- inputText: ${E2E_TEST_PHONE}
+- tapOn:
+    id: "auth-send-btn"
+
+# OTP entry — Maestro types one digit per box
+- assertVisible:
+    id: "auth-otp-0"
+- tapOn:
+    id: "auth-otp-0"
+- inputText: ${E2E_TEST_OTP}
+- tapOn:
+    id: "auth-done-btn"
+
+# Verify we land on the home screen (FAB is the only home-only element)
+- assertVisible:
+    id: "home-screen"
+    timeout: 15000
+- assertVisible:
+    id: "home-fab-post"

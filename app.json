@@ -10,7 +10,7 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.asilbek1510.hanamarket"
+      "bundleIdentifier": "com.hanamarket.app"
     },
     "androidStatusBar": {
       "translucent": false,
@@ -29,7 +29,7 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.asilbek1510.hanamarket"
+      "package": "com.hanamarket.app"
     },
     "web": {
       "output": "static",
@@ -43,10 +43,10 @@
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 220,
           "resizeMode": "contain",
-          "backgroundColor": "#E6F4FE",
+          "backgroundColor": "#FFFFFF",
           "dark": {
             "image": "./assets/images/splash-icon.png",
-            "backgroundColor": "#0F1419"
+            "backgroundColor": "#FFFFFF"
           }
         }
       ],

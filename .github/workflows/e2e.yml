@@ -1,0 +1,79 @@
+name: E2E (Maestro)
+
+# Runs the Maestro smoke suite on every PR and on pushes to `develop` / `main`.
+# We use EAS Build to produce a real APK signed against the staging backend,
+# then download it onto a GitHub-hosted Android emulator and let Maestro
+# Cloud / the local CLI drive it.
+#
+# Why EAS Build instead of `expo run:android` in CI:
+#   • The CI runner doesn't have to install the Android SDK + Gradle cache,
+#     which is slow and flaky.
+#   • The same artifact that ships to internal testers is what we test —
+#     no "works in dev, breaks in release" surprises.
+
+on:
+  pull_request:
+    branches: [develop, main]
+  push:
+    branches: [develop, main]
+  workflow_dispatch:
+
+jobs:
+  e2e-android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Setup EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      # Build a preview APK (staging APP_ENV) and download the artifact path.
+      # `--non-interactive --wait` blocks until the build is ready.
+      - name: Build preview APK
+        id: build
+        run: |
+          BUILD_URL=$(eas build --profile preview --platform android --non-interactive --wait --json | jq -r '.[0].artifacts.buildUrl')
+          echo "url=$BUILD_URL" >> $GITHUB_OUTPUT
+
+      - name: Download APK
+        run: curl -L "${{ steps.build.outputs.url }}" -o app.apk
+
+      - name: Install Maestro CLI
+        run: |
+          curl -Ls "https://get.maestro.mobile.dev" | bash
+          echo "$HOME/.maestro/bin" >> $GITHUB_PATH
+
+      # Run the suite against an Android emulator launched by reactivecircus.
+      - name: Run Maestro tests
+        uses: reactivecircus/android-emulator-runner@v2
+        env:
+          E2E_TEST_PHONE: ${{ secrets.E2E_TEST_PHONE }}
+          E2E_TEST_OTP: ${{ secrets.E2E_TEST_OTP }}
+        with:
+          api-level: 33
+          arch: x86_64
+          profile: pixel_6
+          script: |
+            adb install -r app.apk
+            maestro test .maestro/flows
+
+      - name: Upload Maestro screenshots on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: maestro-failure-${{ github.run_id }}
+          path: ~/.maestro/tests/**

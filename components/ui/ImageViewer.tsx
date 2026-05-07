@@ -1,11 +1,11 @@
-import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useResponsive } from '@/hooks/useResponsive'
 import { useSafeAreaEdgeInsets } from '@/hooks/useSafeAreaEdgeInsets'
 import { X } from 'lucide-react-native'
-import React, { useCallback, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import {
     Dimensions,
     FlatList,
+    ListRenderItemInfo,
     Modal,
     StatusBar,
     StyleSheet,
@@ -20,8 +20,6 @@ import {
     GestureHandlerRootView,
 } from 'react-native-gesture-handler'
 import Animated, {
-    interpolate,
-    runOnJS,
     useAnimatedStyle,
     useSharedValue,
     withSpring
@@ -51,10 +49,9 @@ interface ZoomableImageProps {
     uri: string
     width: number
     height: number
-    onSwipeDown?: () => void
 }
 
-const ZoomableImage: React.FC<ZoomableImageProps> = ({ uri, width, height, onSwipeDown }) => {
+const ZoomableImage: React.FC<ZoomableImageProps> = ({ uri, width, height }) => {
     const scale = useSharedValue(1)
     const savedScale = useSharedValue(1)
     const translateX = useSharedValue(0)
@@ -125,31 +122,24 @@ const ZoomableImage: React.FC<ZoomableImageProps> = ({ uri, width, height, onSwi
 
     const panGesture = Gesture.Pan()
         .minDistance(10)
-        .onUpdate((e) => {
+        .manualActivation(true)
+        .onTouchesMove((_, stateManager) => {
             if (scale.value > MIN_SCALE) {
-                // When zoomed, pan the image
-                translateX.value = savedTranslateX.value + e.translationX
-                translateY.value = savedTranslateY.value + e.translationY
+                stateManager.activate()
             } else {
-                // When not zoomed, allow vertical swipe to close
-                translateY.value = e.translationY
+                stateManager.fail()
             }
         })
-        .onEnd((e) => {
-            if (scale.value > MIN_SCALE) {
-                const clamped = clampTranslate(translateX.value, translateY.value, scale.value)
-                translateX.value = withSpring(clamped.x, SPRING_CONFIG)
-                translateY.value = withSpring(clamped.y, SPRING_CONFIG)
-                savedTranslateX.value = clamped.x
-                savedTranslateY.value = clamped.y
-            } else {
-                // Check for swipe down to close
-                if (e.translationY > 100 && e.velocityY > 0 && onSwipeDown) {
-                    runOnJS(onSwipeDown)()
-                } else {
-                    translateY.value = withSpring(0, SPRING_CONFIG)
-                }
-            }
+        .onUpdate((e) => {
+            translateX.value = savedTranslateX.value + e.translationX
+            translateY.value = savedTranslateY.value + e.translationY
+        })
+        .onEnd(() => {
+            const clamped = clampTranslate(translateX.value, translateY.value, scale.value)
+            translateX.value = withSpring(clamped.x, SPRING_CONFIG)
+            translateY.value = withSpring(clamped.y, SPRING_CONFIG)
+            savedTranslateX.value = clamped.x
+            savedTranslateY.value = clamped.y
         })
 
     const doubleTapGesture = Gesture.Tap()
@@ -183,20 +173,12 @@ const ZoomableImage: React.FC<ZoomableImageProps> = ({ uri, width, height, onSwi
     )
 
     const animatedStyle = useAnimatedStyle(() => {
-        const opacity = interpolate(
-            Math.abs(translateY.value),
-            [0, 200],
-            [1, 0.5],
-            'clamp'
-        )
-
         return {
             transform: [
                 { translateX: translateX.value },
                 { translateY: translateY.value },
                 { scale: scale.value },
             ],
-            opacity: scale.value > MIN_SCALE ? 1 : opacity,
         }
     })
 
@@ -219,18 +201,51 @@ const ImageViewer: React.FC<ImageViewerProps> = ({
     initialIndex = 0,
     onClose,
 }) => {
-    const colors = useThemeColors()
     const insets = useSafeAreaEdgeInsets()
     const { ms, fs } = useResponsive()
     const [currentIndex, setCurrentIndex] = useState(initialIndex)
-    const flatListRef = useRef<FlatList>(null)
+    const flatListRef = useRef<FlatList<string>>(null)
+    const thumbnailListRef = useRef<FlatList<string>>(null)
+    const showThumbnailSwiper = images.length > 1
 
     const viewabilityConfig = useRef({ viewAreaCoveragePercentThreshold: 50 })
+
+    const scrollToIndex = useCallback((index: number, animated = true) => {
+        flatListRef.current?.scrollToIndex({ index, animated })
+    }, [])
+
+    const scrollThumbnailsToIndex = useCallback((index: number, animated = true) => {
+        if (!showThumbnailSwiper) {
+            return
+        }
+
+        thumbnailListRef.current?.scrollToIndex({
+            index,
+            animated,
+            viewPosition: 0.5,
+        })
+    }, [showThumbnailSwiper])
+
+    useEffect(() => {
+        if (!visible || images.length === 0) {
+            return
+        }
+
+        const nextIndex = Math.min(Math.max(initialIndex, 0), images.length - 1)
+        setCurrentIndex(nextIndex)
+
+        requestAnimationFrame(() => {
+            scrollToIndex(nextIndex, false)
+            scrollThumbnailsToIndex(nextIndex, false)
+        })
+    }, [images.length, initialIndex, scrollThumbnailsToIndex, scrollToIndex, visible])
 
     const onViewableItemsChanged = useRef(
         ({ viewableItems }: { viewableItems: ViewToken[] }) => {
             if (viewableItems.length > 0 && viewableItems[0].index != null) {
-                setCurrentIndex(viewableItems[0].index)
+                const nextIndex = viewableItems[0].index
+                setCurrentIndex(nextIndex)
+                scrollThumbnailsToIndex(nextIndex)
             }
         }
     )
@@ -246,11 +261,43 @@ const ImageViewer: React.FC<ImageViewerProps> = ({
                     uri={item}
                     width={SCREEN_WIDTH}
                     height={SCREEN_HEIGHT - (insets.top + insets.bottom + 20)}
-                    onSwipeDown={handleClose}
                 />
             </View>
         ),
         [handleClose]
+    )
+
+    const handleThumbnailPress = useCallback((index: number) => {
+        setCurrentIndex(index)
+        scrollToIndex(index)
+        scrollThumbnailsToIndex(index)
+    }, [scrollThumbnailsToIndex, scrollToIndex])
+
+    const renderThumbnail = useCallback(
+        ({ item, index }: ListRenderItemInfo<string>) => {
+            const isActive = index === currentIndex
+
+            return (
+                <TouchableOpacity
+                    activeOpacity={0.85}
+                    onPress={() => handleThumbnailPress(index)}
+                    style={[
+                        styles.thumbnailButton,
+                        {
+                            borderColor: isActive ? '#fff' : 'rgba(255,255,255,0.28)',
+                            opacity: isActive ? 1 : 0.72,
+                        },
+                    ]}
+                >
+                    <RemoteImage
+                        src={item}
+                        style={styles.thumbnailImage}
+                        transition={120}
+                    />
+                </TouchableOpacity>
+            )
+        },
+        [currentIndex, handleThumbnailPress]
     )
 
     const keyExtractor = useCallback((_: string, idx: number) => String(idx), [])
@@ -259,6 +306,15 @@ const ImageViewer: React.FC<ImageViewerProps> = ({
         (_: ArrayLike<string> | null | undefined, index: number) => ({
             length: SCREEN_WIDTH,
             offset: SCREEN_WIDTH * index,
+            index,
+        }),
+        []
+    )
+
+    const getThumbnailItemLayout = useCallback(
+        (_: ArrayLike<string> | null | undefined, index: number) => ({
+            length: 72,
+            offset: 72 * index,
             index,
         }),
         []
@@ -318,24 +374,28 @@ const ImageViewer: React.FC<ImageViewerProps> = ({
                     windowSize={3}
                 />
 
-                {/* Pagination Dots */}
-                {/* {images.length > 1 && (
-                    <View style={[styles.pagination, { paddingBottom: insets.bottom + ms(20) }]}>
-                        {images.map((_, index) => (
-                            <View
-                                key={index}
-                                style={[
-                                    styles.dot,
-                                    {
-                                        width: index === currentIndex ? ms(20) : ms(8),
-                                        height: ms(8),
-                                        backgroundColor: index === currentIndex ? '#fff' : 'rgba(255,255,255,0.5)',
-                                    },
-                                ]}
-                            />
-                        ))}
+                {showThumbnailSwiper && (
+                    <View
+                        style={[
+                            styles.thumbnailRail,
+                            {
+                                paddingBottom: insets.bottom + ms(18),
+                                backgroundColor: 'rgba(0,0,0,0.22)',
+                            },
+                        ]}
+                    >
+                        <FlatList
+                            ref={thumbnailListRef}
+                            data={images}
+                            renderItem={renderThumbnail}
+                            keyExtractor={keyExtractor}
+                            horizontal
+                            showsHorizontalScrollIndicator={false}
+                            contentContainerStyle={styles.thumbnailListContent}
+                            getItemLayout={getThumbnailItemLayout}
+                        />
                     </View>
-                )} */}
+                )}
             </GestureHandlerRootView>
         </Modal>
     )
@@ -394,17 +454,26 @@ const styles = StyleSheet.create({
     zoomImage: {
         backgroundColor: 'transparent',
     },
-    pagination: {
+    thumbnailRail: {
         position: 'absolute',
         bottom: 0,
         left: 0,
         right: 0,
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: 6,
     },
-    dot: {
-        borderRadius: 4,
+    thumbnailListContent: {
+        paddingHorizontal: 12,
+        gap: 8,
+    },
+    thumbnailButton: {
+        width: 64,
+        height: 64,
+        borderRadius: 16,
+        borderWidth: 2,
+        overflow: 'hidden',
+        backgroundColor: 'rgba(255,255,255,0.08)',
+    },
+    thumbnailImage: {
+        width: '100%',
+        height: '100%',
     },
 })

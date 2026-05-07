@@ -8,7 +8,10 @@
     "android": "expo run:android",
     "ios": "expo run:ios",
     "web": "expo start --web",
-    "lint": "expo lint"
+    "lint": "expo lint",
+    "e2e": "maestro test .maestro/flows",
+    "e2e:auth": "maestro test .maestro/flows/01-auth.yaml",
+    "e2e:record": "maestro test --format junit --output .maestro/report.xml .maestro/flows"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",

@@ -21,7 +21,8 @@ const WelcomePage = () => {
       {/* Logo Section */}
       <ThemedView style={styles.logoSection}>
         <Image source={Logo} style={styles.logo} />
-        {/* Text Section */}
+      </ThemedView>
+       {/* Text Section */}
         <ThemedView style={styles.textSection}>
           <ThemedText type="title" style={styles.title}>
             {t('auth.welcome_page.title')}
@@ -30,8 +31,7 @@ const WelcomePage = () => {
             {t('auth.welcome_page.description')}
           </ThemedText>
         </ThemedView>
-      </ThemedView>
-
+        
       {/* Button Section */}
       <ThemedView style={styles.buttonSection}>
         <TouchableOpacity

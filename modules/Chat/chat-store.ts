@@ -634,17 +634,16 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
   // Event Handlers (using API snake_case format)
   _handleReceiveMessage: (payload) => {
-    console.log('[ChatStore] _handleReceiveMessage called with:', payload);
-
     // Extract message and chat_room from wrapped payload (backend format)
     const messageData = payload.message;
     const chatRoomData = payload.chat_room;
 
     if (!messageData) {
-      console.error('[ChatStore] Invalid payload - no message data:', payload);        logger.warn('Invalid SignalR message payload', {
-          code: 'CHAT_INVALID_PAYLOAD',
-          extra: { payloadKeys: Object.keys(payload ?? {}) },
-        });      return;
+      logger.warn('Invalid SignalR message payload', {
+        code: 'CHAT_INVALID_PAYLOAD',
+        extra: { payloadKeys: Object.keys(payload ?? {}) },
+      });
+      return;
     }
 
     // Get current user ID to determine is_mine locally (don't trust backend's is_mine in broadcast)
@@ -668,13 +667,6 @@ export const useChatStore = create<ChatState>((set, get) => ({
     };
 
     const chatRoomId = messageData.chat_room_id;
-    console.log(
-      '[ChatStore] Adding message to chat room:',
-      chatRoomId,
-      'isMine:',
-      isMine,
-      message,
-    );
 
     // Check if this is our own sent message (replace temp message instead of
     // adding a duplicate). Match the OLDEST pending temp message of the same
@@ -697,10 +689,6 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
     if (tempMessageIndex !== -1) {
       // Replace temp message with real message from server
-      console.log(
-        '[ChatStore] Replacing temp message at index:',
-        tempMessageIndex,
-      );
       set((state) => ({
         messages: {
           ...state.messages,
@@ -743,7 +731,6 @@ export const useChatStore = create<ChatState>((set, get) => ({
       });
     } else if (chatRoomData) {
       // New chat room - add it to the list
-      console.log('[ChatStore] Adding new chat room to list:', chatRoomId);
       get().setChatList([chatRoomData, ...chatList]);
     }
 
@@ -816,7 +803,6 @@ export const useChatStore = create<ChatState>((set, get) => ({
     // Connection state changes
     unsubscribes.push(
       signalRService.onConnectionStateChange((state) => {
-        console.log('[ChatStore] Connection state changed:', state);
         get().setConnectionState(state);
       }),
     );
@@ -824,7 +810,6 @@ export const useChatStore = create<ChatState>((set, get) => ({
     // Receive message
     unsubscribes.push(
       signalRService.onReceiveMessage((payload) => {
-        console.log('[ChatStore] Received message event:', payload);
         get()._handleReceiveMessage(payload);
       }),
     );

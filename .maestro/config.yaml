@@ -1,0 +1,14 @@
+# Maestro flows shared across all suites.
+#
+# Anything you reference here as ${VAR} can be supplied by the runner via
+# `maestro test -e VAR=value`. CI passes them from secrets; locally you can
+# also create `.maestro/.env` (gitignored) and run `maestro test --env-file`.
+appId: com.hanamarket.app
+---
+# Common steps that every flow shares.
+- launchApp:
+    clearState: true
+    permissions:
+      location: deny      # avoid the OS dialog blocking the test
+      notifications: deny
+      camera: deny

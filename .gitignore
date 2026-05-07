@@ -53,6 +53,10 @@ android/sentry.properties
 google-play-service-account.json
 asc-api-key*.p8
 store/screenshots/
+
+# Maestro local env / generated reports
+.maestro/.env
+.maestro/report.xml
 ios/sentry.properties
 
 .env.local
