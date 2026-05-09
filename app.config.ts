@@ -14,43 +14,49 @@
  *   so editing static fields (icons, splash, etc.) in `app.json` keeps working.
  */
 
-import type { ConfigContext, ExpoConfig } from 'expo/config';
-import baseConfig from './app.json';
+import type { ConfigContext, ExpoConfig } from 'expo/config'
+import baseConfig from './app.json'
 
 export default ({ config }: ConfigContext): ExpoConfig => {
   // `baseConfig.expo` is the same object you'd see in app.json. We merge it
   // with anything Expo CLI passes in (config) and our overrides.
-  const json = (baseConfig as { expo: ExpoConfig }).expo;
+  const json = (baseConfig as { expo: ExpoConfig }).expo
 
-  const sentryDsn = process.env.EXPO_PUBLIC_SENTRY_DSN ?? '';
-  const sentryOrg = process.env.EXPO_PUBLIC_SENTRY_ORG ?? '';
-  const sentryProject = process.env.EXPO_PUBLIC_SENTRY_PROJECT ?? '';
+  const sentryDsn = process.env.EXPO_PUBLIC_SENTRY_DSN ?? ''
+  const sentryOrg = process.env.EXPO_PUBLIC_SENTRY_ORG ?? ''
+  const sentryProject = process.env.EXPO_PUBLIC_SENTRY_PROJECT ?? ''
   const sentryEnableInDev =
-    process.env.EXPO_PUBLIC_SENTRY_ENABLE_IN_DEV === '1';
+    process.env.EXPO_PUBLIC_SENTRY_ENABLE_IN_DEV === '1'
 
-  const googleMapsKeyAndroid = process.env.GOOGLE_MAPS_API_KEY_ANDROID ?? '';
-  const googleMapsKeyIos = process.env.GOOGLE_MAPS_API_KEY_IOS ?? '';
+  const googleMapsKeyAndroid = process.env.GOOGLE_MAPS_API_KEY_ANDROID ?? ''
+  const googleMapsKeyIos = process.env.GOOGLE_MAPS_API_KEY_IOS ?? ''
 
   const appEnv =
     process.env.APP_ENV ??
-    (process.env.NODE_ENV === 'production' ? 'production' : 'development');
-  const isProduction = appEnv === 'production';
+    (process.env.NODE_ENV === 'production' ? 'production' : 'development')
+  const isProduction = appEnv === 'production'
 
   // Network security / certificate pinning. Hostname is derived from the API
   // URL so we never have to keep two env vars in sync.
-  const apiUrl = process.env.EXPO_PUBLIC_API_URL ?? '';
-  let apiHost = '';
+  const apiUrl = process.env.EXPO_PUBLIC_API_URL ?? ''
+  let apiHost = ''
+  let apiProtocol = ''
   try {
-    if (apiUrl) apiHost = new URL(apiUrl).hostname;
+    if (apiUrl) {
+      const parsedApiUrl = new URL(apiUrl)
+      apiHost = parsedApiUrl.hostname
+      apiProtocol = parsedApiUrl.protocol
+    }
   } catch {
-    apiHost = '';
+    apiHost = ''
+    apiProtocol = ''
   }
-  const apiPinSha256 = process.env.API_PIN_SHA256 ?? '';
-  const apiBackupPinSha256 = process.env.API_BACKUP_PIN_SHA256 ?? '';
+  const apiPinSha256 = process.env.API_PIN_SHA256 ?? ''
+  const apiBackupPinSha256 = process.env.API_BACKUP_PIN_SHA256 ?? ''
 
   // Only register the Sentry build-time plugin when org/project are configured
   // — otherwise EAS will fail trying to upload source maps with empty creds.
-  const sentryPlugin: any[] = [];
+  const sentryPlugin: any[] = []
   if (sentryOrg && sentryProject) {
     sentryPlugin.push([
       '@sentry/react-native/expo',
@@ -60,7 +66,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
         // SENTRY_AUTH_TOKEN is read from the environment by the plugin itself
         // during EAS builds. Never put it in this file.
       },
-    ]);
+    ])
   }
 
   // Inject Google Maps keys from env. Without these, react-native-maps shows a
@@ -83,7 +89,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
         ? { googleMaps: { apiKey: googleMapsKeyAndroid } }
         : {}),
     },
-  };
+  }
 
   const ios: ExpoConfig['ios'] = {
     ...(json.ios ?? {}),
@@ -107,7 +113,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
         ? { NSAppTransportSecurity: { NSAllowsArbitraryLoads: false } }
         : {}),
     },
-  };
+  }
 
   return {
     ...config,
@@ -121,6 +127,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
         './plugins/with-network-security',
         {
           apiHost,
+          apiProtocol,
           pinSha256: apiPinSha256,
           backupPinSha256: apiBackupPinSha256,
           // Allow plain HTTP to RFC1918 / localhost in non-prod builds so the
@@ -145,5 +152,5 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       supportEmail:
         process.env.EXPO_PUBLIC_SUPPORT_EMAIL ?? 'support@hanamarket.uz',
     },
-  };
-};
+  }
+}

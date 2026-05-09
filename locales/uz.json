@@ -61,8 +61,9 @@
   },
   "auth": {
     "welcome_page": {
-      "title": "Hana Market ga xush kelibsiz",
-      "description": "Qo'shnilar bilan ishonchli va erkin savdo qiling",
+      "App_name": "Hana Market",
+      "title": "ga xush kelibsiz!",
+      "description": "Qo'shnilar bilan ishonchli va erkin savdo",
       "get_started": "Boshlash",
       "already_have_account": "Akkauntingiz bormi?",
       "login_link": "Kirish"
@@ -75,6 +76,7 @@
       "verify": "Tasdiqlash",
       "resend_in": "Qayta yuborish:",
       "phone_placeholder": "00 000 00 00",
+      "phone_invalid_operator": "Faqat O'zbekiston mobil operator raqamini kiriting.",
       "code_placeholder": "Tasdiqlash kodini kiriting",
       "resend_code": "Kodni qayta yuborish",
       "done": "Tayyor",

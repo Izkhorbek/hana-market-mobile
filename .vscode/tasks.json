@@ -1,0 +1,29 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Build Android APK (release)",
+			"type": "shell",
+			"command": "cd android; .\\gradlew.bat assembleRelease",
+			"group": "build"
+		},
+		{
+			"label": "Build iOS IPA (preview)",
+			"type": "shell",
+			"command": "npx eas build -p ios --profile preview",
+			"group": "build"
+		},
+		{
+			"label": "Build iOS Simulator (preview)",
+			"type": "shell",
+			"command": "npx eas build -p ios --profile preview-simulator",
+			"group": "build"
+		},
+		{
+			"label": "Build iOS IPA (production)",
+			"type": "shell",
+			"command": "npx eas build -p ios --profile production",
+			"group": "build"
+		}
+	]
+}

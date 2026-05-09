@@ -1,15 +1,15 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { create } from 'zustand';
-import { createJSONStorage, persist } from 'zustand/middleware';
+import AsyncStorage from '@react-native-async-storage/async-storage'
+import { create } from 'zustand'
+import { createJSONStorage, persist } from 'zustand/middleware'
 
 import {
   setLogoutFn,
   setRefreshTokenFn,
   setTokenGetter,
-} from '@/api/auth-bridge';
-import { secureTokenStore } from '@/utils/secureTokenStore';
-import { setSentryUser } from '@/utils/sentry';
-import { authApi as localAuthApi, userApi as localUserApi } from './api';
+} from '@/api/auth-bridge'
+import { secureTokenStore } from '@/utils/secureTokenStore'
+import { setSentryUser } from '@/utils/sentry'
+import { authApi as localAuthApi, userApi as localUserApi } from './api'
 
 // ── Types ──
 export interface User {
@@ -71,8 +71,8 @@ interface AuthState {
 }
 
 const hasValidUserId = (user: User | null | undefined): user is User => {
-  return !!user && typeof user.id === 'number' && user.id > 0;
-};
+  return !!user && typeof user.id === 'number' && user.id > 0
+}
 
 // Pull a single header in a case-insensitive way. Axios normalizes header
 // keys to lowercase, but we defensively try common variants.
@@ -80,19 +80,19 @@ const readHeader = (
   headers: Record<string, any> | undefined,
   name: string,
 ): string | null => {
-  if (!headers) return null;
+  if (!headers) return null
   const variants = [
     name,
     name.toLowerCase(),
     name.toUpperCase(),
     name.replace(/-/g, ''),
-  ];
+  ]
   for (const k of variants) {
-    const v = headers[k];
-    if (typeof v === 'string' && v.length > 0) return v;
+    const v = headers[k]
+    if (typeof v === 'string' && v.length > 0) return v
   }
-  return null;
-};
+  return null
+}
 
 // Extract our 4 auth headers from a verify-otp / refresh response.
 const extractAuthTokens = (response: { headers?: any }) => ({
@@ -103,7 +103,7 @@ const extractAuthTokens = (response: { headers?: any }) => ({
     response.headers,
     'x-refresh-token-expires-at',
   ),
-});
+})
 
 // ── Store ──
 
@@ -126,18 +126,20 @@ export const useAuthStore = create<AuthState>()(
         // Fire-and-forget from the store's perspective: the SMS is the only
         // side-effect. Errors propagate so the screen can show a localized
         // message to the user.
-        await localAuthApi.requestOtp(phoneNumber);
+        await localAuthApi.requestOtp(phoneNumber)
       },
 
       verifyOtp: async (phoneNumber, code) => {
-        const response = await localAuthApi.verifyOtp(phoneNumber, code);
-        const tokens = extractAuthTokens(response);
-        const userData = response.data?.data as User | undefined;
+        const response = await localAuthApi.verifyOtp(phoneNumber, code)
+
+        console.log('Received response from verifyOtp:', response)
+        const tokens = extractAuthTokens(response)
+        const userData = response.data?.data as User | undefined
 
         if (!tokens.token) {
           // Server accepted the OTP but didn't return a token — treat as auth
           // failure rather than silently leaving the user in a half-state.
-          throw new Error('Authentication failed: no access token returned');
+          throw new Error('Authentication failed: no access token returned')
         }
 
         set({
@@ -148,7 +150,7 @@ export const useAuthStore = create<AuthState>()(
           isAuthenticated: true,
           // Never write id=0 placeholder user into persisted auth state.
           user: hasValidUserId(userData) ? userData : get().user,
-        });
+        })
 
         // Persist tokens to the OS keychain (fire-and-forget; vault swallows
         // its own errors so a keychain failure won't break the login flow).
@@ -157,20 +159,20 @@ export const useAuthStore = create<AuthState>()(
           refreshToken: tokens.refreshToken,
           expiresAt: tokens.expiresAt,
           refreshTokenExpiresAt: tokens.refreshTokenExpiresAt,
-        });
+        })
 
         if (!hasValidUserId(userData)) {
-          await get().fetchUser();
+          await get().fetchUser()
         }
       },
 
       refreshTokens: async () => {
-        const current = get().refreshToken;
-        if (!current) return null;
+        const current = get().refreshToken
+        if (!current) return null
         try {
-          const response = await localAuthApi.refresh(current);
-          const tokens = extractAuthTokens(response);
-          if (!tokens.token) return null;
+          const response = await localAuthApi.refresh(current)
+          const tokens = extractAuthTokens(response)
+          if (!tokens.token) return null
 
           const nextState = {
             token: tokens.token,
@@ -180,31 +182,31 @@ export const useAuthStore = create<AuthState>()(
             expiresAt: tokens.expiresAt ?? get().expiresAt,
             refreshTokenExpiresAt:
               tokens.refreshTokenExpiresAt ?? get().refreshTokenExpiresAt,
-          };
+          }
 
-          set({ ...nextState, isAuthenticated: true });
-          void secureTokenStore.write(nextState);
+          set({ ...nextState, isAuthenticated: true })
+          void secureTokenStore.write(nextState)
 
-          return tokens.token;
+          return tokens.token
         } catch {
-          return null;
+          return null
         }
       },
 
       fetchUser: async () => {
         try {
-          const response = await localUserApi.getUser();
-          set({ user: response.data.data });
+          const response = await localUserApi.getUser()
+          set({ user: response.data.data })
           // Tag Sentry events with the (non-PII) user identity for triage.
           if (response.data.data) {
             setSentryUser({
               id: response.data.data.id,
               username: response.data.data.username,
-            });
+            })
           }
         } catch {
           // Token may be expired and refresh failed — log out
-          get().logout();
+          get().logout()
         }
       },
 
@@ -219,9 +221,9 @@ export const useAuthStore = create<AuthState>()(
           longitude,
           search_radius_km: searchRadiusKm,
           address_name: addressName,
-        });
+        })
         // Update local user state with new location data
-        const currentUser = get().user;
+        const currentUser = get().user
         if (currentUser) {
           set({
             user: {
@@ -232,9 +234,9 @@ export const useAuthStore = create<AuthState>()(
               address_name: addressName,
             },
             locationGranted: true,
-          });
+          })
         } else {
-          set({ locationGranted: true });
+          set({ locationGranted: true })
         }
       },
 
@@ -242,8 +244,8 @@ export const useAuthStore = create<AuthState>()(
 
       logout: () => {
         // Lazy import to break circular dependency
-        const { useChatStore } = require('@/modules/Chat/chat-store');
-        useChatStore.getState().reset();
+        const { useChatStore } = require('@/modules/Chat/chat-store')
+        useChatStore.getState().reset()
 
         // Clear auth state
         set({
@@ -254,14 +256,14 @@ export const useAuthStore = create<AuthState>()(
           user: null,
           isAuthenticated: false,
           locationGranted: false,
-        });
+        })
 
         // Wipe the keychain entry. Fire-and-forget — vault swallows errors.
-        void secureTokenStore.clear();
+        void secureTokenStore.clear()
 
         // Detach the Sentry identity so subsequent crashes aren't attributed
         // to the wrong user on a shared device.
-        setSentryUser(null);
+        setSentryUser(null)
       },
     }),
     {
@@ -281,18 +283,18 @@ export const useAuthStore = create<AuthState>()(
         if (error || !state) {
           // Even on AsyncStorage failure we still try to load tokens so a
           // returning user isn't unnecessarily logged out.
-          void hydrateTokensFromVault();
-          return;
+          void hydrateTokensFromVault()
+          return
         }
 
         // Load tokens from the keychain BEFORE marking hydrated, so the
         // axios interceptor never sees a transient null token for an
         // authenticated user.
-        void hydrateTokensFromVault(state);
+        void hydrateTokensFromVault(state)
       },
     },
   ),
-);
+)
 
 /**
  * Pull tokens out of the OS keychain into the in-memory zustand state, then
@@ -302,17 +304,17 @@ export const useAuthStore = create<AuthState>()(
  */
 async function hydrateTokensFromVault(rehydrated?: AuthState) {
   try {
-    const vaultTokens = await secureTokenStore.read();
+    const vaultTokens = await secureTokenStore.read()
 
     // ── Legacy migration ────────────────────────────────────────────────
     // Old builds wrote tokens into the AsyncStorage blob. If the vault is
     // empty but the rehydrated state still carries them, copy across once
     // so users aren't logged out when they update the app. The next persist
     // cycle (driven by `partialize`) will strip them from AsyncStorage.
-    const legacyToken = rehydrated?.token ?? null;
-    const legacyRefresh = rehydrated?.refreshToken ?? null;
+    const legacyToken = rehydrated?.token ?? null
+    const legacyRefresh = rehydrated?.refreshToken ?? null
     const shouldMigrate =
-      !vaultTokens.token && (legacyToken || legacyRefresh);
+      !vaultTokens.token && (legacyToken || legacyRefresh)
 
     if (shouldMigrate && rehydrated) {
       const migrated = {
@@ -320,9 +322,9 @@ async function hydrateTokensFromVault(rehydrated?: AuthState) {
         refreshToken: legacyRefresh,
         expiresAt: rehydrated.expiresAt ?? null,
         refreshTokenExpiresAt: rehydrated.refreshTokenExpiresAt ?? null,
-      };
-      await secureTokenStore.write(migrated);
-      useAuthStore.setState(migrated);
+      }
+      await secureTokenStore.write(migrated)
+      useAuthStore.setState(migrated)
     } else if (vaultTokens.token) {
       // Normal path — vault wins over whatever (shouldn't be) in AsyncStorage.
       useAuthStore.setState({
@@ -331,25 +333,25 @@ async function hydrateTokensFromVault(rehydrated?: AuthState) {
         expiresAt: vaultTokens.expiresAt,
         refreshTokenExpiresAt: vaultTokens.refreshTokenExpiresAt,
         isAuthenticated: true,
-      });
+      })
     }
   } finally {
     // If we restored a token but the persisted user is missing/placeholder,
     // refresh it from the server (preserves the existing post-rehydrate
     // recovery behavior).
-    const s = useAuthStore.getState();
+    const s = useAuthStore.getState()
     const shouldRefreshUser =
-      !!s.token && s.isAuthenticated && (!s.user || !hasValidUserId(s.user));
+      !!s.token && s.isAuthenticated && (!s.user || !hasValidUserId(s.user))
 
     if (shouldRefreshUser) {
-      s.fetchUser().finally(() => s.setHydrated(true));
+      s.fetchUser().finally(() => s.setHydrated(true))
     } else {
-      s.setHydrated(true);
+      s.setHydrated(true)
     }
   }
 }
 
 // Register bridge functions — breaks the circular dependency with api/api.ts
-setTokenGetter(() => useAuthStore.getState().token);
-setLogoutFn(() => useAuthStore.getState().logout());
-setRefreshTokenFn(() => useAuthStore.getState().refreshTokens());
+setTokenGetter(() => useAuthStore.getState().token)
+setLogoutFn(() => useAuthStore.getState().logout())
+setRefreshTokenFn(() => useAuthStore.getState().refreshTokens())

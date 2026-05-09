@@ -1,0 +1,31 @@
+# Smoke test #3 — Invalid auth phone prefix
+#
+# Verifies that unsupported Uzbekistan mobile prefixes are blocked locally
+# before OTP submission.
+appId: com.hanamarket.app
+---
+- launchApp:
+    clearState: true
+    permissions:
+      location: deny
+      notifications: deny
+
+- assertVisible:
+    id: "welcome-get-started"
+- tapOn:
+    id: "welcome-get-started"
+
+- assertVisible:
+    id: "auth-phone-input"
+- tapOn:
+    id: "auth-phone-input"
+- inputText: "96"
+
+- assertVisible:
+    id: "auth-phone-error"
+
+- assertNotVisible:
+    id: "auth-phone-operator"
+
+- assertNotVisible:
+    id: "auth-otp-0"

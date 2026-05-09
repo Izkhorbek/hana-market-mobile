@@ -1,17 +1,19 @@
-import ThemedScrollView from '@/components/themed-scrollview';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Logo } from '@/constants/images';
-import { Colors } from '@/constants/theme';
-import { useTranslations } from '@/hooks/use-translation';
-import { Link, useRouter } from 'expo-router';
-import React from 'react';
-import { Image, StyleSheet, TouchableOpacity } from 'react-native';
+import ThemedScrollView from '@/components/themed-scrollview'
+import { ThemedText } from '@/components/themed-text'
+import { ThemedView } from '@/components/themed-view'
+import { Logo } from '@/constants/images'
+import { Colors } from '@/constants/theme'
+import { useThemeColors } from '@/hooks/use-theme-colors'
+import { useTranslations } from '@/hooks/use-translation'
+import { Link, useRouter } from 'expo-router'
+import React from 'react'
+import { Image, StyleSheet, TouchableOpacity } from 'react-native'
 
 const WelcomePage = () => {
-  const router = useRouter();
-  const { t } = useTranslations();
+  const router = useRouter()
+  const { t } = useTranslations()
 
+  const colors = useThemeColors()
   return (
     <ThemedScrollView
       style={styles.container}
@@ -22,10 +24,11 @@ const WelcomePage = () => {
       <ThemedView style={styles.logoSection}>
         <Image source={Logo} style={styles.logo} />
       </ThemedView>
+      
        {/* Text Section */}
         <ThemedView style={styles.textSection}>
-          <ThemedText type="title" style={styles.title}>
-            {t('auth.welcome_page.title')}
+         <ThemedText type="title" style={[styles.title, {color: colors.primaryColor}]}>
+            {t('auth.welcome_page.App_name')} {t('auth.welcome_page.title')}
           </ThemedText>
           <ThemedText type="default" style={styles.subtitle}>
             {t('auth.welcome_page.description')}
@@ -62,8 +65,8 @@ const WelcomePage = () => {
         </ThemedView>
       </ThemedView>
     </ThemedScrollView>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -136,6 +139,6 @@ const styles = StyleSheet.create({
     width: 200,
     height: 200,
   },
-});
+})
 
-export default WelcomePage;
+export default WelcomePage

@@ -1,6 +1,7 @@
-import { authLogout, getAuthToken, refreshAuthToken } from '@/api/auth-bridge';
-import { logger } from '@/utils/logger';
-import axios, { AxiosError, AxiosRequestConfig } from 'axios';
+import Constants from 'expo-constants'
+import { authLogout, getAuthToken, refreshAuthToken } from '@/api/auth-bridge'
+import { logger } from '@/utils/logger'
+import axios, { AxiosError, AxiosRequestConfig } from 'axios'
 
 // API base URL is sourced from EXPO_PUBLIC_API_URL (see .env.example).
 // In production builds, plain HTTP is blocked at the platform level
@@ -8,12 +9,23 @@ import axios, { AxiosError, AxiosRequestConfig } from 'axios';
 //
 // Local dev fallback: real device on same Wi-Fi as a dev backend.
 // Android emulator alternative: http://10.0.2.2:5000/api
-const DEV_API_URL_FALLBACK='http://192.168.0.111:5000/api';
+const DEV_API_URL_FALLBACK='http://192.168.0.111:5000/api'
 
-const API_URL = process.env.EXPO_PUBLIC_API_URL || DEV_API_URL_FALLBACK;
+const appEnv = String(Constants.expoConfig?.extra?.appEnv ?? 'development')
+const isProductionApp = appEnv === 'production'
+const configuredApiUrl = process.env.EXPO_PUBLIC_API_URL?.trim()
+const API_URL = DEV_API_URL_FALLBACK //configuredApiUrl || (isProductionApp ? '' : DEV_API_URL_FALLBACK)
+
+if (!API_URL) {
+  throw new Error('Missing EXPO_PUBLIC_API_URL for production build')
+}
+
+if (isProductionApp && !/^https:\/\//i.test(API_URL)) {
+  throw new Error('EXPO_PUBLIC_API_URL must use HTTPS for production builds')
+}
 
 // Static files (wwwroot) are served from the server root, not under /api
-export const IMAGE_BASE_URL = API_URL.replace(/\/api\/?$/, '');
+export const IMAGE_BASE_URL = API_URL.replace(/\/api\/?$/, '')
 
 // Internal flag attached to a request to opt out of the auto-refresh-on-401
 // loop. Used by the /auth/refresh and /auth/logout calls themselves.
@@ -28,55 +40,55 @@ const axiosInstance = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-});
+})
 
 // Request interceptor to inject auth token
 axiosInstance.interceptors.request.use(
   (config) => {
-    const token = getAuthToken();
+    const token = getAuthToken()
     if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+      config.headers.Authorization = `Bearer ${token}`
     }
-    return config;
+    return config
   },
   (error) => {
-    return Promise.reject(error);
+    return Promise.reject(error)
   },
-);
+)
 
 // ── Single-flight refresh ──
 // If multiple requests fail with 401 concurrently, only one refresh call is
 // made and all callers wait on the same promise.
-let refreshInFlight: Promise<string | null> | null = null;
+let refreshInFlight: Promise<string | null> | null = null
 
 const runSingleFlightRefresh = (): Promise<string | null> => {
   if (!refreshInFlight) {
     refreshInFlight = refreshAuthToken().finally(() => {
-      refreshInFlight = null;
-    });
+      refreshInFlight = null
+    })
   }
-  return refreshInFlight;
-};
+  return refreshInFlight
+}
 
 // Response interceptor for global error handling + transparent token refresh
 axiosInstance.interceptors.response.use(
   (response) => {
-    return response;
+    return response
   },
   async (error: AxiosError) => {
-    const originalConfig = (error.config || {}) as RetriableConfig;
-    const url = originalConfig.url || 'unknown';
-    const method = originalConfig.method?.toUpperCase() || 'unknown';
-    const status = error.response?.status ?? 'no response';
+    const originalConfig = (error.config || {}) as RetriableConfig
+    const url = originalConfig.url || 'unknown'
+    const method = originalConfig.method?.toUpperCase() || 'unknown'
+    const status = error.response?.status ?? 'no response'
 
     // Report to backend telemetry — skip the telemetry endpoint itself to
     // avoid an infinite loop, and skip 401s which are handled below.
-    const isTelemetryCall = url.includes('telemetry/log');
-    const numericStatus = typeof status === 'number' ? status : undefined;
+    const isTelemetryCall = url.includes('telemetry/log')
+    const numericStatus = typeof status === 'number' ? status : undefined
     if (!isTelemetryCall && numericStatus !== 401) {
-      const isNetwork = !error.response;
-      const isServer = !!numericStatus && numericStatus >= 500;
-      const code = isNetwork ? 'API_NETWORK_ERROR' : `API_HTTP_${numericStatus}`;
+      const isNetwork = !error.response
+      const isServer = !!numericStatus && numericStatus >= 500
+      const code = isNetwork ? 'API_NETWORK_ERROR' : `API_HTTP_${numericStatus}`
       const opts = {
         extra: {
           method,
@@ -86,17 +98,17 @@ axiosInstance.interceptors.response.use(
             (error.response?.data as any)?.message ??
             (error.response?.data as any)?.errors?.[0],
         },
-      };
+      }
       if (isServer) {
-        logger.error(code, error, opts);
+        logger.error(code, error, opts)
       } else {
         // Network / 4xx → warn (4xx is usually user/validation, network is transient)
-        logger.warn(error, { code, ...opts });
+        logger.warn(error, { code, ...opts })
       }
     }
 
     if (error.response) {
-      const responseStatus = error.response.status;
+      const responseStatus = error.response.status
 
       if (
         responseStatus === 401 &&
@@ -105,29 +117,29 @@ axiosInstance.interceptors.response.use(
         // Only attempt refresh when we still have a session to refresh from.
         getAuthToken()
       ) {
-        originalConfig._retried = true;
+        originalConfig._retried = true
         try {
-          const newToken = await runSingleFlightRefresh();
+          const newToken = await runSingleFlightRefresh()
           if (newToken) {
             originalConfig.headers = {
               ...(originalConfig.headers || {}),
               Authorization: `Bearer ${newToken}`,
-            };
-            return axiosInstance.request(originalConfig);
+            }
+            return axiosInstance.request(originalConfig)
           }
         } catch (refreshErr) {
-          logger.error('AUTH_REFRESH_FAILED', refreshErr, { extra: { url } });
+          logger.error('AUTH_REFRESH_FAILED', refreshErr, { extra: { url } })
         }
         // Refresh failed → end the session.
-        authLogout();
+        authLogout()
       } else if (responseStatus === 401) {
         // Refresh disabled / already retried / no token → log out.
-        authLogout();
+        authLogout()
       }
     }
 
-    return Promise.reject(error);
+    return Promise.reject(error)
   },
-);
+)
 
-export default axiosInstance;
+export default axiosInstance

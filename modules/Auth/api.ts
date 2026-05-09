@@ -1,5 +1,5 @@
-import axiosInstance from "@/api/api";
-import ENDPOINT from "@/api/endpoints";
+import axiosInstance from '@/api/api'
+import ENDPOINT from '@/api/endpoints'
 
 // Auth wire-format helpers used by the auth store.
 // Backend contract: OTP-only flow with refresh-token rotation.
@@ -26,7 +26,7 @@ export const authApi = {
       // an infinite loop when the refresh token itself is rejected.
       { _skipAuthRefresh: true } as any,
     ),
-};
+}
 
 // ── User API ──
 
@@ -50,8 +50,8 @@ export const userApi = {
 
   uploadProfileImage: (formData: FormData) =>
     axiosInstance.post(ENDPOINT.USER.UPLOAD_PROFILE_IMAGE, formData, {
-      headers: { "Content-Type": "multipart/form-data" },
+      headers: { 'Content-Type': 'multipart/form-data' },
     }),
 
   deleteUser: () => axiosInstance.post(ENDPOINT.USER.DELETE),
-};
+}

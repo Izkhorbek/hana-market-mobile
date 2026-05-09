@@ -61,7 +61,8 @@
   },
   "auth": {
     "welcome_page": {
-      "title": "Добро пожаловать в Hana Market",
+      "App_name": "Hana Market",
+      "title": "Добро пожаловать",
       "description": "Торгуйте с соседями уверенно и свободно",
       "get_started": "Начать",
       "already_have_account": "Уже есть аккаунт?",
@@ -75,6 +76,7 @@
       "verify": "Подтвердить",
       "resend_in": "Отправить снова через",
       "phone_placeholder": "00 000 00 00",
+      "phone_invalid_operator": "Введите действительный номер мобильного оператора Узбекистана.",
       "code_placeholder": "Введите код",
       "resend_code": "Отправить снова",
       "done": "Готово",
