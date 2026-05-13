@@ -60,8 +60,6 @@ const EditProductPage = () => {
     const productImages = product?.images || []
     const mainImage = product?.main_image_url
 
-    console.log('Fetched product data:', product)
-
     const { mutate: updateProduct, isPending: isUpdating } = useUpdateProductMutation({
         onSuccess: () => {
             Alert.alert(t('edit_product.success'), t('edit_product.product_updated_successfully'), [
@@ -125,9 +123,9 @@ const EditProductPage = () => {
 
         if (productType === EProductType.THING) {
             updateData.category_id = data.category ? parseInt(data.category, 10) : undefined
-            updateData.title = data.title; 
+            updateData.title = data.title 
             updateData.description = data.description
-            updateData.is_free = data.sellingMethod === 'free'; 
+            updateData.is_free = data.sellingMethod === 'free' 
             updateData.is_negotiable = data.canDeal
             if (data.sellingMethod !== 'free' && data.price) {
                 if (data.currency === 'USD') { 
@@ -140,9 +138,9 @@ const EditProductPage = () => {
                 }
             }
         } else if (productType === EProductType.CAR) {
-            updateData.car_brand = data.brand; 
+            updateData.car_brand = data.brand 
             updateData.car_model = data.model
-            updateData.title = `${data.brand} ${data.model}`; 
+            updateData.title = `${data.brand} ${data.model}` 
             updateData.description = data.additionalNotes
             updateData.is_free = false
             updateData.is_negotiable = data.negotiable
@@ -164,7 +162,7 @@ const EditProductPage = () => {
                 car_condition: getConditionEnum(data.condition),
             }
         } else if (productType === EProductType.WORK) {
-            updateData.title = data.workTitle; 
+            updateData.title = data.workTitle 
             updateData.description = data.jobDescription
             if (data.salaryAmount) {
                 if (data.currency === 'USD') { 
@@ -187,7 +185,6 @@ const EditProductPage = () => {
             }
         }
 
-        console.log('Submitting update with data:', updateData)
         updateProduct({ id: productId, data: updateData })
     }, (formErrors) => {
         const messages = Object.values(formErrors)

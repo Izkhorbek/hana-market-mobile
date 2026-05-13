@@ -3,12 +3,12 @@ import {
   HubConnectionBuilder,
   HubConnectionState,
   LogLevel,
-} from '@microsoft/signalr';
-import { MessageTypeString } from '../../constants/appLimits';
-import { ChatRoomDto } from '../../types';
-import { IMAGE_BASE_URL } from '../api';
-import { getAuthToken } from '../auth-bridge';
-import { logger } from '@/utils/logger';
+} from '@microsoft/signalr'
+import { MessageTypeString } from '../../constants/appLimits'
+import { ChatRoomDto } from '../../types'
+import { IMAGE_BASE_URL } from '../api'
+import { getAuthToken } from '../auth-bridge'
+import { logger } from '@/utils/logger'
 
 // Event names matching backend
 export const SignalREvents = {
@@ -17,7 +17,7 @@ export const SignalREvents = {
   MessagesRead: 'MessagesRead',
   UserTyping: 'UserTyping',
   Error: 'Error',
-} as const;
+} as const
 
 // SignalR event payloads (matching API documentation - snake_case from backend)
 export interface UserStatusPayload {
@@ -73,7 +73,7 @@ export const HubMethods = {
   StopTyping: 'StopTyping',
   JoinChatRoom: 'JoinChatRoom',
   LeaveChatRoom: 'LeaveChatRoom',
-} as const;
+} as const
 
 // Send message request (matching API format)
 export interface SendMessageRequest {
@@ -92,26 +92,26 @@ export interface MarkMessagesAsReadRequest {
 type EventCallback<T> = (payload: T) => void;
 
 class SignalRService {
-  private connection: HubConnection | null = null;
-  private reconnectAttempts = 0;
-  private maxReconnectAttempts = 5;
-  private reconnectInterval = 5000;
-  private isConnecting = false;
+  private connection: HubConnection | null = null
+  private reconnectAttempts = 0
+  private maxReconnectAttempts = 5
+  private reconnectInterval = 5000
+  private isConnecting = false
   // Single in-flight connect promise so concurrent callers wait for the same
   // negotiation instead of racing and seeing "Not connected".
-  private connectPromise: Promise<void> | null = null;
+  private connectPromise: Promise<void> | null = null
 
   // Event listeners
-  private userStatusListeners: EventCallback<UserStatusPayload>[] = [];
-  private receiveMessageListeners: EventCallback<ReceiveMessagePayload>[] = [];
-  private messagesReadListeners: EventCallback<MessagesReadPayload>[] = [];
-  private userTypingListeners: EventCallback<UserTypingPayload>[] = [];
-  private errorListeners: EventCallback<SignalRError>[] = [];
-  private connectionStateListeners: EventCallback<HubConnectionState>[] = [];
+  private userStatusListeners: EventCallback<UserStatusPayload>[] = []
+  private receiveMessageListeners: EventCallback<ReceiveMessagePayload>[] = []
+  private messagesReadListeners: EventCallback<MessagesReadPayload>[] = []
+  private userTypingListeners: EventCallback<UserTypingPayload>[] = []
+  private errorListeners: EventCallback<SignalRError>[] = []
+  private connectionStateListeners: EventCallback<HubConnectionState>[] = []
 
   private getHubUrl(): string {
     // SignalR hub URL from API documentation
-    return `${IMAGE_BASE_URL}/hubs/chat`;
+    return `${IMAGE_BASE_URL}/hubs/chat`
   }
 
   /**
@@ -121,28 +121,28 @@ class SignalRService {
    */
   connect(): Promise<void> {
     if (this.connection?.state === HubConnectionState.Connected) {
-      return Promise.resolve();
+      return Promise.resolve()
     }
 
     if (this.connectPromise) {
-      return this.connectPromise;
+      return this.connectPromise
     }
 
     this.connectPromise = this.doConnect().finally(() => {
-      this.connectPromise = null;
-    });
+      this.connectPromise = null
+    })
 
-    return this.connectPromise;
+    return this.connectPromise
   }
 
   private async doConnect(): Promise<void> {
-    this.isConnecting = true;
-    const token = getAuthToken();
+    this.isConnecting = true
+    const token = getAuthToken()
 
     if (!token) {
-      console.warn('[SignalR] No auth token available, cannot connect');
-      this.isConnecting = false;
-      throw new Error('No auth token available for SignalR connection');
+      console.warn('[SignalR] No auth token available, cannot connect')
+      this.isConnecting = false
+      throw new Error('No auth token available for SignalR connection')
     }
 
     try {
@@ -153,33 +153,32 @@ class SignalRService {
         .withAutomaticReconnect({
           nextRetryDelayInMilliseconds: (retryContext) => {
             // Custom reconnect strategy: 0, 2s, 5s, 10s, 30s
-            const delays = [0, 2000, 5000, 10000, 30000];
+            const delays = [0, 2000, 5000, 10000, 30000]
             return delays[
               Math.min(retryContext.previousRetryCount, delays.length - 1)
-            ];
+            ]
           },
         })
         .configureLogging(LogLevel.Information)
-        .build();
+        .build()
 
       // Set up connection lifecycle handlers
-      this.setupConnectionHandlers();
+      this.setupConnectionHandlers()
 
       // Set up event handlers
-      this.setupEventHandlers();
+      this.setupEventHandlers()
 
       // Start connection
-      await this.connection.start();
-      console.log('[SignalR] Connected successfully');
-      this.reconnectAttempts = 0;
-      this.notifyConnectionState(HubConnectionState.Connected);
+      await this.connection.start()
+      this.reconnectAttempts = 0
+      this.notifyConnectionState(HubConnectionState.Connected)
     } catch (error) {
-      console.error('[SignalR] Connection failed:', error);
-      logger.error('SIGNALR_CONNECT_FAILED', error);
-      this.handleConnectionError();
-      throw error;
+      console.error('[SignalR] Connection failed:', error)
+      logger.error('SIGNALR_CONNECT_FAILED', error)
+      this.handleConnectionError()
+      throw error
     } finally {
-      this.isConnecting = false;
+      this.isConnecting = false
     }
   }
 
@@ -189,14 +188,14 @@ class SignalRService {
   async disconnect(): Promise<void> {
     if (this.connection) {
       try {
-        await this.connection.stop();
-        console.log('[SignalR] Disconnected');
+        await this.connection.stop()
+        console.log('[SignalR] Disconnected')
       } catch (error) {
-        console.error('[SignalR] Error disconnecting:', error);
-        logger.warn(error, { code: 'SIGNALR_DISCONNECT_FAILED' });
+        console.error('[SignalR] Error disconnecting:', error)
+        logger.warn(error, { code: 'SIGNALR_DISCONNECT_FAILED' })
       }
-      this.connection = null;
-      this.notifyConnectionState(HubConnectionState.Disconnected);
+      this.connection = null
+      this.notifyConnectionState(HubConnectionState.Disconnected)
     }
   }
 
@@ -204,12 +203,11 @@ class SignalRService {
    * Clear all event listeners (call before re-registering to prevent duplicates)
    */
   clearAllListeners(): void {
-    console.log('[SignalR] Clearing all event listeners');
-    this.userStatusListeners = [];
-    this.receiveMessageListeners = [];
-    this.messagesReadListeners = [];
-    this.userTypingListeners = [];
-    this.errorListeners = [];
+    this.userStatusListeners = []
+    this.receiveMessageListeners = []
+    this.messagesReadListeners = []
+    this.userTypingListeners = []
+    this.errorListeners = []
     // Note: connectionStateListeners are NOT cleared as they're needed for reconnect handling
   }
 
@@ -217,14 +215,14 @@ class SignalRService {
    * Get current connection state
    */
   getConnectionState(): HubConnectionState {
-    return this.connection?.state ?? HubConnectionState.Disconnected;
+    return this.connection?.state ?? HubConnectionState.Disconnected
   }
 
   /**
    * Check if connected
    */
   isConnected(): boolean {
-    return this.connection?.state === HubConnectionState.Connected;
+    return this.connection?.state === HubConnectionState.Connected
   }
 
   // ========== Hub Methods (Invoke on Server) ==========
@@ -243,8 +241,8 @@ class SignalRService {
       content,
       type,
       attachmentUrl,
-    };
-    await this.invokeMethod(HubMethods.SendMessage, request);
+    }
+    await this.invokeMethod(HubMethods.SendMessage, request)
   }
 
   /**
@@ -254,158 +252,157 @@ class SignalRService {
   async markMessagesAsRead(chatRoomId: number): Promise<void> {
     const request: MarkMessagesAsReadRequest = {
       chat_room_id: chatRoomId,
-    };
-    await this.invokeMethod(HubMethods.MarkMessagesAsRead, request);
+    }
+    await this.invokeMethod(HubMethods.MarkMessagesAsRead, request)
   }
 
   /**
    * Notify that user started typing
    */
   async startTyping(chatRoomId: number): Promise<void> {
-    await this.invokeMethod(HubMethods.StartTyping, chatRoomId);
+    await this.invokeMethod(HubMethods.StartTyping, chatRoomId)
   }
 
   /**
    * Notify that user stopped typing
    */
   async stopTyping(chatRoomId: number): Promise<void> {
-    await this.invokeMethod(HubMethods.StopTyping, chatRoomId);
+    await this.invokeMethod(HubMethods.StopTyping, chatRoomId)
   }
 
   /**
    * Join a chat room to receive real-time updates
    */
   async joinChatRoom(chatRoomId: number): Promise<void> {
-    await this.invokeMethod(HubMethods.JoinChatRoom, chatRoomId);
+    await this.invokeMethod(HubMethods.JoinChatRoom, chatRoomId)
   }
 
   /**
    * Leave a chat room
    */
   async leaveChatRoom(chatRoomId: number): Promise<void> {
-    await this.invokeMethod(HubMethods.LeaveChatRoom, chatRoomId);
+    await this.invokeMethod(HubMethods.LeaveChatRoom, chatRoomId)
   }
 
   // ========== Event Subscriptions ==========
 
   onUserStatusChanged(callback: EventCallback<UserStatusPayload>): () => void {
-    this.userStatusListeners.push(callback);
+    this.userStatusListeners.push(callback)
     return () => {
       this.userStatusListeners = this.userStatusListeners.filter(
         (cb) => cb !== callback,
-      );
-    };
+      )
+    }
   }
 
   onReceiveMessage(callback: EventCallback<ReceiveMessagePayload>): () => void {
-    this.receiveMessageListeners.push(callback);
+    this.receiveMessageListeners.push(callback)
     return () => {
       this.receiveMessageListeners = this.receiveMessageListeners.filter(
         (cb) => cb !== callback,
-      );
-    };
+      )
+    }
   }
 
   onMessagesRead(callback: EventCallback<MessagesReadPayload>): () => void {
-    this.messagesReadListeners.push(callback);
+    this.messagesReadListeners.push(callback)
     return () => {
       this.messagesReadListeners = this.messagesReadListeners.filter(
         (cb) => cb !== callback,
-      );
-    };
+      )
+    }
   }
 
   onUserTyping(callback: EventCallback<UserTypingPayload>): () => void {
-    this.userTypingListeners.push(callback);
+    this.userTypingListeners.push(callback)
     return () => {
       this.userTypingListeners = this.userTypingListeners.filter(
         (cb) => cb !== callback,
-      );
-    };
+      )
+    }
   }
 
   onError(callback: EventCallback<SignalRError>): () => void {
-    this.errorListeners.push(callback);
+    this.errorListeners.push(callback)
     return () => {
-      this.errorListeners = this.errorListeners.filter((cb) => cb !== callback);
-    };
+      this.errorListeners = this.errorListeners.filter((cb) => cb !== callback)
+    }
   }
 
   onConnectionStateChange(
     callback: EventCallback<HubConnectionState>,
   ): () => void {
-    this.connectionStateListeners.push(callback);
+    this.connectionStateListeners.push(callback)
     return () => {
       this.connectionStateListeners = this.connectionStateListeners.filter(
         (cb) => cb !== callback,
-      );
-    };
+      )
+    }
   }
 
   // ========== Private Methods ==========
 
   private setupConnectionHandlers(): void {
-    if (!this.connection) return;
+    if (!this.connection) return
 
     this.connection.onreconnecting((error) => {
-      console.log('[SignalR] Reconnecting...', error);
-      this.notifyConnectionState(HubConnectionState.Reconnecting);
-    });
+      logger.warn('[SignalR] Reconnecting...', { extra: { error } })
+      this.notifyConnectionState(HubConnectionState.Reconnecting)
+    })
 
     this.connection.onreconnected((connectionId) => {
-      console.log('[SignalR] Reconnected with ID:', connectionId);
-      this.reconnectAttempts = 0;
-      this.notifyConnectionState(HubConnectionState.Connected);
-    });
+      this.reconnectAttempts = 0
+      this.notifyConnectionState(HubConnectionState.Connected)
+    })
 
     this.connection.onclose((error) => {
-      console.log('[SignalR] Connection closed', error);
-      this.notifyConnectionState(HubConnectionState.Disconnected);
-    });
+      logger.error('[SignalR] Connection closed', { extra: { error } })
+      this.notifyConnectionState(HubConnectionState.Disconnected)
+    })
   }
 
   private setupEventHandlers(): void {
-    if (!this.connection) return;
+    if (!this.connection) return
 
     // UserStatusChanged event
     this.connection.on(
       SignalREvents.UserStatusChanged,
       (payload: UserStatusPayload) => {
-        this.userStatusListeners.forEach((cb) => cb(payload));
+        this.userStatusListeners.forEach((cb) => cb(payload))
       },
-    );
+    )
 
     // ReceiveMessage event
     this.connection.on(
       SignalREvents.ReceiveMessage,
       (payload: ReceiveMessagePayload) => {
-        this.receiveMessageListeners.forEach((cb) => cb(payload));
+        this.receiveMessageListeners.forEach((cb) => cb(payload))
       },
-    );
+    )
 
     // MessagesRead event
     this.connection.on(
       SignalREvents.MessagesRead,
       (payload: MessagesReadPayload) => {
-        this.messagesReadListeners.forEach((cb) => cb(payload));
+        this.messagesReadListeners.forEach((cb) => cb(payload))
       },
-    );
+    )
 
     // UserTyping event
     this.connection.on(
       SignalREvents.UserTyping,
       (payload: UserTypingPayload) => {
-        this.userTypingListeners.forEach((cb) => cb(payload));
+        this.userTypingListeners.forEach((cb) => cb(payload))
       },
-    );
+    )
 
     // Error event
     this.connection.on(SignalREvents.Error, (error: SignalRError) => {
       logger.error('SIGNALR_SERVER_ERROR', error?.message ?? 'SignalR server error', {
         extra: { error },
-      });
-      this.errorListeners.forEach((cb) => cb(error));
-    });
+      })
+      this.errorListeners.forEach((cb) => cb(error))
+    })
   }
 
   /**
@@ -423,42 +420,39 @@ class SignalRService {
     ) {
       console.warn(
         `[SignalR] ${method}: connection not ready (state=${this.connection?.state}). Awaiting connect...`,
-      );
+      )
       try {
-        await this.connect();
+        await this.connect()
       } catch (err) {
-        console.error(`[SignalR] ${method}: connect attempt failed`, err);
-        throw new Error('Not connected to SignalR hub');
+        console.error(`[SignalR] ${method}: connect attempt failed`, err)
+        throw new Error('Not connected to SignalR hub')
       }
       if (!this.isConnected()) {
-        throw new Error('Not connected to SignalR hub');
+        throw new Error('Not connected to SignalR hub')
       }
     }
 
     try {
-      await this.connection!.invoke(method, ...args);
+      await this.connection!.invoke(method, ...args)
     } catch (error) {
-      console.error(`[SignalR] Error invoking ${method}:`, error);
-      throw error;
+      console.error(`[SignalR] Error invoking ${method}:`, error)
+      throw error
     }
   }
 
   private handleConnectionError(): void {
-    this.reconnectAttempts++;
+    this.reconnectAttempts++
     if (this.reconnectAttempts < this.maxReconnectAttempts) {
-      console.log(
-        `[SignalR] Retrying connection (${this.reconnectAttempts}/${this.maxReconnectAttempts})`,
-      );
-      setTimeout(() => this.connect(), this.reconnectInterval);
+      setTimeout(() => this.connect(), this.reconnectInterval)
     } else {
-      console.error('[SignalR] Max reconnection attempts reached');
+      logger.error('[SignalR] Max reconnection attempts reached')
     }
   }
 
   private notifyConnectionState(state: HubConnectionState): void {
-    this.connectionStateListeners.forEach((cb) => cb(state));
+    this.connectionStateListeners.forEach((cb) => cb(state))
   }
 }
 
 // Export singleton instance
-export const signalRService = new SignalRService();
+export const signalRService = new SignalRService()

@@ -67,8 +67,6 @@ const MyListingsPage = () => {
 	// Get products array from response
 	const allProducts = myProductsResponse?.data?.data || []
 
-	console.log('Fetched my products:', allProducts) // Debug log to check API response
-
 	// Filter products by status based on active tab
 	const filteredProducts = useMemo(() => {
 		return allProducts.filter((product: MyProductDto) => product.status === activeTab)

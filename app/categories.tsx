@@ -21,8 +21,6 @@ const CategoriesPage: React.FC = () => {
 	const { data: categoriesRes, isLoading, isRefetching, refetch } = useCategoriesQuery()
 	const categories = categoriesRes?.data?.data ?? []
 
-	console.log('Fetched categories:', categories) // Debug log to check fetched data
-
 	// Navigate to search with preselected category
 	const handleCategoryPress = useCallback((category: Category) => {
 		router.push({

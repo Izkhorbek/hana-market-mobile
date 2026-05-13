@@ -22,12 +22,12 @@
     "jsEngine": "hermes",
     "android": {
       "adaptiveIcon": {
-        // "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.hanamarket.app"
+      "package": "com.hanamarket.app",
+      "versionCode": 1
     },
     "web": {
       "output": "static",

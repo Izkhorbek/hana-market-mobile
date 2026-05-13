@@ -1,12 +1,12 @@
-import { useThemeColors } from '@/hooks/use-theme-colors';
-import { useTranslations } from '@/hooks/use-translation';
-import { useRouter } from 'expo-router';
-import { ArrowLeft } from 'lucide-react-native';
-import React from 'react';
-import { Platform, StyleSheet, TouchableOpacity } from 'react-native';
-import { ThemedText } from '../themed-text';
-import { ThemedView } from '../themed-view';
-import { HEADER_HEIGHT } from '@/constants/appLimits';
+import { useThemeColors } from '@/hooks/use-theme-colors'
+import { useTranslations } from '@/hooks/use-translation'
+import { useRouter } from 'expo-router'
+import { ArrowLeft } from 'lucide-react-native'
+import React from 'react'
+import { Platform, StyleSheet, TouchableOpacity } from 'react-native'
+import { ThemedText } from '../themed-text'
+import { ThemedView } from '../themed-view'
+import { HEADER_HEIGHT } from '@/constants/appLimits'
 
 const CreateHeader = () => {
   const colors = useThemeColors()
@@ -36,8 +36,8 @@ const CreateHeader = () => {
 const styles = StyleSheet.create({
   container: {
     height: HEADER_HEIGHT,
-    display: "flex",
-    flexDirection: "row",
+    display: 'flex',
+    flexDirection: 'row',
     alignItems: 'flex-end',
     justifyContent: 'space-between',
     paddingBottom: 5,

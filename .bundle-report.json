@@ -9709,6 +9709,9 @@ the current version. Please update. Support for old versions may be purchased
         "/assets/images/logo.png": {
           "size": 211
         },
+         "/assets/images/icon.png": {
+          "size": 211
+        },
         "/app/(post)/_layout.tsx": {
           "size": 851
         },

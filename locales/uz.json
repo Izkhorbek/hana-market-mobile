@@ -40,6 +40,7 @@
     "enable_location": "Iltimos, sozlamalar orqali joylashuvni yoqing"
   },
   "home": {
+    "address_not_set": "Manzil...",
     "create": "Joylash",
     "free": "Bepul",
     "empty_state": "Mahsulotlar topilmadi",

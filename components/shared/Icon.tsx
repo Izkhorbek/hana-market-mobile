@@ -1,5 +1,5 @@
-import { Logo } from "@/constants/icons"
-import { ViewProps } from "react-native"
+import { Logo } from '@/constants/icons'
+import { ViewProps } from 'react-native'
 
 export const icons = {
   logo: Logo,

@@ -1,13 +1,13 @@
-import { useThemeColors } from "@/hooks/use-theme-colors";
-import React from 'react';
-import { Control, Controller } from "react-hook-form";
+import { useThemeColors } from '@/hooks/use-theme-colors'
+import React from 'react'
+import { Control, Controller } from 'react-hook-form'
 import {
   StyleSheet,
   Text,
   TextInput,
   TextInputProps,
   View,
-} from "react-native";
+} from 'react-native'
 
 interface FormInputProps extends TextInputProps {
   control?: Control<any>;
@@ -15,33 +15,33 @@ interface FormInputProps extends TextInputProps {
   label?: string;
   required?: boolean;
   error?: string;
-  type?: "input" | "textarea";
+  type?: 'input' | 'textarea';
   rows?: number;
   rules?: any;
 }
 
 const FormInput = ({
   control,
-  name = "input",
+  name = 'input',
   label,
   required = false,
   error,
   placeholder,
-  type = "input",
+  type = 'input',
   rows = 4,
   rules,
   ...props
 }: FormInputProps) => {
-  const colors = useThemeColors();
+  const colors = useThemeColors()
 
-  const isTextarea = type === "textarea";
+  const isTextarea = type === 'textarea'
   // Format integer-style numeric inputs with thousand separators while keeping
   // the raw digits in form state (so backend always receives "200000").
   const isNumericInteger =
-    props.keyboardType === "numeric" || props.keyboardType === "number-pad";
+    props.keyboardType === 'numeric' || props.keyboardType === 'number-pad'
 
   const formatNumber = (raw: string) =>
-    raw ? Number(raw).toLocaleString("en-US") : "";
+    raw ? Number(raw).toLocaleString('en-US') : ''
 
   return (
     <View style={styles.container}>
@@ -50,7 +50,7 @@ const FormInput = ({
           <Text style={[styles.label, { color: colors.text }]}>{label}</Text>
           {required && (
             <Text style={[styles.asterisk, { color: colors.destructive }]}>
-              {" "}
+              {' '}
               *
             </Text>
           )}
@@ -80,21 +80,21 @@ const FormInput = ({
               onChangeText={(text) => {
                 if (isNumericInteger) {
                   // Strip everything that is not a digit; store raw digits.
-                  const cleaned = text.replace(/[^0-9]/g, "");
-                  onChange(cleaned);
-                  return;
+                  const cleaned = text.replace(/[^0-9]/g, '')
+                  onChange(cleaned)
+                  return
                 }
-                onChange(text);
+                onChange(text)
               }}
               onBlur={onBlur}
               value={
                 isNumericInteger
-                  ? formatNumber(value ?? "")
-                  : (value ?? "")
+                  ? formatNumber(value ?? '')
+                  : (value ?? '')
               }
               multiline={isTextarea}
               numberOfLines={isTextarea ? rows : undefined}
-              textAlignVertical={isTextarea ? "top" : "center"}
+              textAlignVertical={isTextarea ? 'top' : 'center'}
               {...props}
             />
             {(error || fieldError?.message) && (
@@ -106,24 +106,24 @@ const FormInput = ({
         )}
       />
     </View>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
   container: {
     marginVertical: 0,
   },
   labelContainer: {
-    flexDirection: "row",
+    flexDirection: 'row',
     marginBottom: 8,
   },
   label: {
     fontSize: 14,
-    fontWeight: "500",
+    fontWeight: '500',
   },
   asterisk: {
     fontSize: 14,
-    fontWeight: "500",
+    fontWeight: '500',
   },
   input: {
     height: 52,
@@ -145,6 +145,6 @@ const styles = StyleSheet.create({
     marginTop: 4,
     marginLeft: 4,
   },
-});
+})
 
-export default FormInput;
+export default FormInput

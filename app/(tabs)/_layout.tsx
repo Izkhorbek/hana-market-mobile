@@ -1,20 +1,20 @@
-import { HapticTab } from '@/components/haptic-tab';
-import HomeHeader from '@/components/headers/HomeHeader';
-import TabIcon from '@/components/shared/TabIcon';
-import { useThemeColors } from '@/hooks/use-theme-colors';
-import { useTranslations } from '@/hooks/use-translation';
-import { Tabs } from 'expo-router';
-import { House, Map, MessageSquare, UserRound } from 'lucide-react-native';
-import React from 'react';
-import { StyleSheet } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { HapticTab } from '@/components/haptic-tab'
+import HomeHeader from '@/components/headers/HomeHeader'
+import TabIcon from '@/components/shared/TabIcon'
+import { useThemeColors } from '@/hooks/use-theme-colors'
+import { useTranslations } from '@/hooks/use-translation'
+import { Tabs } from 'expo-router'
+import { House, Map, MessageSquare, UserRound } from 'lucide-react-native'
+import React from 'react'
+import { StyleSheet } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
-const TAB_BAR_BASE_HEIGHT = 60;
+const TAB_BAR_BASE_HEIGHT = 60
 
 export default function TabLayout() {
-  const colors = useThemeColors();
-  const { t } = useTranslations();
-  const insets = useSafeAreaInsets();
+  const colors = useThemeColors()
+  const { t } = useTranslations()
+  const insets = useSafeAreaInsets()
 
   return (
     <Tabs
@@ -43,7 +43,7 @@ export default function TabLayout() {
         options={{
           headerShown: true,
           header() {
-            return <HomeHeader />;
+            return <HomeHeader />
           },
           tabBarIcon: ({ color, focused }) => (
             <TabIcon Icon={House} focused={focused} title={t('tabs.home')} color={color} />
@@ -78,5 +78,5 @@ export default function TabLayout() {
         }}
       />
     </Tabs>
-  );
+  )
 }

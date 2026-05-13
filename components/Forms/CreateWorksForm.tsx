@@ -30,6 +30,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import FormRow from "../FormElements/FormRow";
 import ImageUploader, { DraftImageItem } from "../FormElements/ImageUploader";
 import RadioButtonGroup, {
@@ -39,6 +40,7 @@ import RadioButtonGroup, {
 const CreateWorksForm = () => {
   const { t } = useTranslations();
   const primaryColor = useColor("primaryColor");
+  const insets = useSafeAreaInsets();
   const textColor = useColor("text");
   const subTextColor = useColor("subText");
   const surfaceColor = useColor("background");
@@ -270,7 +272,7 @@ const CreateWorksForm = () => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.formContent}>
+      <View style={[styles.formContent, { paddingBottom: insets.bottom + 100 }]}>
         {/* Section 1: Job Images (Optional) */}
         <View
           style={[
@@ -633,7 +635,7 @@ const CreateWorksForm = () => {
       </View>
 
       {/* Fixed Bottom Post Button */}
-      <View style={styles.buttonContainer}>
+      <View style={[styles.buttonContainer, { paddingBottom: insets.bottom + 16 }]}>
         <TouchableOpacity
           style={[
             styles.postButton,
@@ -751,7 +753,6 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    marginBottom: 16,
     paddingVertical: 12,
   },
   postButton: {

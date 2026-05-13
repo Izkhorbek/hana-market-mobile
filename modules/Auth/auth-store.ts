@@ -132,7 +132,6 @@ export const useAuthStore = create<AuthState>()(
       verifyOtp: async (phoneNumber, code) => {
         const response = await localAuthApi.verifyOtp(phoneNumber, code)
 
-        console.log('Received response from verifyOtp:', response)
         const tokens = extractAuthTokens(response)
         const userData = response.data?.data as User | undefined
 

@@ -264,7 +264,6 @@ const AuthPage = () => {
     if (code.length !== AppLimits.Otp.CODE_LENGTH || isLoading) return
     setIsLoading(true)
     try {
-      console.log('Verifying OTP with code:', phoneNumber, code)
       await verifyOtp(`+998${phoneNumber}`, code)
       const loggedInUser = useAuthStore.getState().user
       if (

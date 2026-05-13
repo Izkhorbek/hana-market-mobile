@@ -161,7 +161,6 @@ const SettingsPage: React.FC = () => {
 	const updateNotification = (key: keyof NotificationSettings, value: boolean) => {
 		setNotifications(prev => ({ ...prev, [key]: value }))
 		// TODO: Save to backend/storage
-		console.log(`Notification setting ${key} changed to:`, value)
 	}
 
 	// Privacy handlers
@@ -175,7 +174,6 @@ const SettingsPage: React.FC = () => {
 	const updateAccount = (key: keyof AccountSettings, value: boolean) => {
 		setAccount(prev => ({ ...prev, [key]: value }))
 		// TODO: Save to backend/storage
-		console.log(`Account setting ${key} changed to:`, value)
 	}
 
 	const handleBlockedUsers = () => {

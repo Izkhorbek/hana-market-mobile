@@ -1,18 +1,18 @@
-import HanaLogoPlaceholder from '@/components/shared/HanaLogoPlaceholder';
-import { useThemeColors } from '@/hooks/use-theme-colors';
-import { resolveImageUrl } from '@/utils/imageUrl';
-import { Image, ImageContentFit, ImageStyle } from 'expo-image';
-import React, { useEffect, useState } from 'react';
+import HanaLogoPlaceholder from '@/components/shared/HanaLogoPlaceholder'
+import { useThemeColors } from '@/hooks/use-theme-colors'
+import { resolveImageUrl } from '@/utils/imageUrl'
+import { Image, ImageContentFit, ImageStyle } from 'expo-image'
+import React, { useEffect, useState } from 'react'
 import {
   ActivityIndicator,
   StyleProp,
   StyleSheet,
   View,
   ViewStyle,
-} from 'react-native';
+} from 'react-native'
 
 // Blurhash placeholder - neutral gray for smooth loading
-const DEFAULT_BLURHASH = 'L6PZfSi_.AyE_3t7t7R**0o#DgR4';
+const DEFAULT_BLURHASH = 'L6PZfSi_.AyE_3t7t7R**0o#DgR4'
 
 interface RemoteImageProps {
   /** Server-relative path or full URL, e.g. "/product_images/abc.jpg" */
@@ -44,27 +44,27 @@ const RemoteImage: React.FC<RemoteImageProps> = ({
   cachePolicy = 'memory-disk',
   transition = 200,
 }) => {
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(false)
 
-  const uri = resolveImageUrl(src);
-  const colors = useThemeColors();
+  const uri = resolveImageUrl(src)
+  const colors = useThemeColors()
 
   // Map resizeMode to expo-image contentFit
   const getContentFit = (): ImageContentFit => {
     switch (resizeMode) {
-      case 'stretch': return 'fill';
-      case 'center': return 'none'; // none = no scaling, centered
-      default: return resizeMode;
+      case 'stretch': return 'fill'
+      case 'center': return 'none' // none = no scaling, centered
+      default: return resizeMode
     }
-  };
-  const contentFit = getContentFit();
+  }
+  const contentFit = getContentFit()
 
   // Reset error/loading whenever the resolved URI changes (e.g. after upload)
   useEffect(() => {
-    setLoading(true);
-    setError(false);
-  }, [uri]);
+    setLoading(true)
+    setError(false)
+  }, [uri])
 
   // ── No URL or failed to load → show local fallback image ─────────────────
   if (!loading && (!uri || error)) {
@@ -72,7 +72,7 @@ const RemoteImage: React.FC<RemoteImageProps> = ({
       <View style={[styles.wrapper, styles.placeholder, containerStyle, style as ViewStyle]}>
         <HanaLogoPlaceholder />
       </View>
-    );
+    )
   }
 
   // ── Remote image with expo-image (cached) ─────────────────────────────────
@@ -93,11 +93,11 @@ const RemoteImage: React.FC<RemoteImageProps> = ({
         cachePolicy={cachePolicy}
         recyclingKey={uri}
         onLoad={() => setLoading(false)}
-        onError={() => { setLoading(false); setError(true); }}
+        onError={() => { setLoading(false); setError(true) }}
       />
     </View>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
   wrapper: {
@@ -116,6 +116,6 @@ const styles = StyleSheet.create({
   hidden: {
     opacity: 0,
   },
-});
+})
 
-export default RemoteImage;
+export default RemoteImage

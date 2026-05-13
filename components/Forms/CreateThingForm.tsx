@@ -1,19 +1,19 @@
-import { useCategoriesQuery, useCreateProductMutation } from "@/api/hooks";
-import FormCheckbox from "@/components/FormElements/FormCheckbox";
-import FormInput from "@/components/FormElements/FormInput";
-import FormSelect from "@/components/FormElements/FormSelect";
-import { ECurrencyType, EProductType } from "@/constants/enums";
-import { useThemeColors } from "@/hooks/use-theme-colors";
-import { useTranslations } from "@/hooks/use-translation";
-import { parseApiError } from "@/utils/apiError";
+import { useCategoriesQuery, useCreateProductMutation } from '@/api/hooks'
+import FormCheckbox from '@/components/FormElements/FormCheckbox'
+import FormInput from '@/components/FormElements/FormInput'
+import FormSelect from '@/components/FormElements/FormSelect'
+import { ECurrencyType, EProductType } from '@/constants/enums'
+import { useThemeColors } from '@/hooks/use-theme-colors'
+import { useTranslations } from '@/hooks/use-translation'
+import { parseApiError } from '@/utils/apiError'
 import {
   getCurrentLocationSafe,
   showLocationErrorAlert,
-} from "@/utils/location";
-import { Category } from "@/types";
-import { useRouter } from "expo-router";
-import React, { useEffect, useRef, useState } from "react";
-import { useForm } from "react-hook-form";
+} from '@/utils/location'
+import { Category } from '@/types'
+import { useRouter } from 'expo-router'
+import React, { useEffect, useRef, useState } from 'react'
+import { useForm } from 'react-hook-form'
 import {
   ActivityIndicator,
   Alert,
@@ -21,165 +21,165 @@ import {
   Text,
   TouchableOpacity,
   View,
-} from "react-native";
-import FormRow from "../FormElements/FormRow";
-import ImageUploader, { DraftImageItem } from "../FormElements/ImageUploader";
+} from 'react-native'
+import FormRow from '../FormElements/FormRow'
+import ImageUploader, { DraftImageItem } from '../FormElements/ImageUploader'
 import RadioButtonGroup, {
   RadioOption,
-} from "../FormElements/RadioButtonGroup";
+} from '../FormElements/RadioButtonGroup'
 
 const CreateThingForm = () => {
-  const { t, locale } = useTranslations();
-  const colors = useThemeColors();
+  const { t, locale } = useTranslations()
+  const colors = useThemeColors()
 
-  const router = useRouter();
-  const [isResolvingLocation, setIsResolvingLocation] = useState(false);
-  const isSubmittingRef = useRef(false);
-  const { data: categories } = useCategoriesQuery();
+  const router = useRouter()
+  const [isResolvingLocation, setIsResolvingLocation] = useState(false)
+  const isSubmittingRef = useRef(false)
+  const { data: categories } = useCategoriesQuery()
 
   const categoryOptions =
     categories?.data?.data?.map((category: Category) => ({
       value: category.id.toString(),
-      label: locale === "ru" ? category.name_ru : category.name_uz,
-    })) || [];
+      label: locale === 'ru' ? category.name_ru : category.name_uz,
+    })) || []
 
   const sellingMethodOptions: RadioOption[] = [
     {
-      value: "for_sale",
-      label: t("post.for_sale"),
+      value: 'for_sale',
+      label: t('post.for_sale'),
     },
     {
-      value: "free",
-      label: t("post.free"),
+      value: 'free',
+      label: t('post.free'),
     },
-  ];
+  ]
 
   const form = useForm({
     defaultValues: {
       images: [],
-      title: "",
-      category: "",
-      description: "",
+      title: '',
+      category: '',
+      description: '',
       sellingMethod: sellingMethodOptions[0].value, // Default to "For Sale"
-      price: "",
+      price: '',
       currency: ECurrencyType[ECurrencyType.UZS],
       canDeal: false,
   
-      landmark: "", // moljal
+      landmark: '', // moljal
     },
-  });
+  })
 
-  const sellingMethod = form.watch("sellingMethod");
-  const currency = form.watch("currency");
+  const sellingMethod = form.watch('sellingMethod')
+  const currency = form.watch('currency')
 
   // Clear price validation error when user switches to 'free'
   useEffect(() => {
-    if (sellingMethod === "free") {
-      form.clearErrors("price");
+    if (sellingMethod === 'free') {
+      form.clearErrors('price')
     }
-  }, [sellingMethod]);
+  }, [sellingMethod])
 
   const { mutate: createProduct, isPending: isCreating } =
     useCreateProductMutation({
       onSuccess: () => {
-        Alert.alert(t("post.success"), t("post.product_created_successfully"), [
+        Alert.alert(t('post.success'), t('post.product_created_successfully'), [
           {
-            text: t("common.ok"),
+            text: t('common.ok'),
             onPress: () => router.back(),
           },
-        ]);
-        form.reset();
+        ])
+        form.reset()
       },
       onError: (error: any) => {
-        const message = parseApiError(error, t("post.error_creating_product"));
-        Alert.alert(t("post.error"), message);
+        const message = parseApiError(error, t('post.error_creating_product'))
+        Alert.alert(t('post.error'), message)
       },
-    });
+    })
 
-  const watchedImages: DraftImageItem[] = form.watch("images");
-  const isUploading = watchedImages.some((img) => img.uploading);
-  const isPending = isCreating || isUploading || isResolvingLocation;
+  const watchedImages: DraftImageItem[] = form.watch('images')
+  const isUploading = watchedImages.some((img) => img.uploading)
+  const isPending = isCreating || isUploading || isResolvingLocation
 
   const onInvalid = (formErrors: Record<string, any>) => {
     const messages = Object.values(formErrors)
       .map((err) => `• ${err?.message}`)
       .filter(Boolean)
-      .join("\n");
+      .join('\n')
     if (messages) {
-      Alert.alert(t("post.error"), messages);
+      Alert.alert(t('post.error'), messages)
     }
-  };
+  }
 
   const handleSubmit = form.handleSubmit(async (data) => {
-    if (isSubmittingRef.current) return;
-    isSubmittingRef.current = true;
+    if (isSubmittingRef.current) return
+    isSubmittingRef.current = true
 
     try {
       // ── Resolve current location automatically ──
-      setIsResolvingLocation(true);
-      const locationResult = await getCurrentLocationSafe();
-      setIsResolvingLocation(false);
+      setIsResolvingLocation(true)
+      const locationResult = await getCurrentLocationSafe()
+      setIsResolvingLocation(false)
 
       if (!locationResult.ok) {
-        showLocationErrorAlert(locationResult, t);
-        return;
+        showLocationErrorAlert(locationResult, t)
+        return
       }
-      const coords = locationResult.coords;
+      const coords = locationResult.coords
 
-      const images: DraftImageItem[] = data.images;
+      const images: DraftImageItem[] = data.images
 
       // Create FormData for product creation
-      const formData = new FormData();
+      const formData = new FormData()
 
       // Add product type
-      formData.append("product_type", EProductType.THING.toString());
+      formData.append('product_type', EProductType.THING.toString())
 
       // Add basic fields
-      formData.append("title", data.title);
-      formData.append("description", data.description || "");
+      formData.append('title', data.title)
+      formData.append('description', data.description || '')
 
       // Add category if selected
       if (data.category) {
-        formData.append("category_id", data.category);
+        formData.append('category_id', data.category)
       }
 
       // Add pricing based on selling method
-      const isFree = data.sellingMethod === "free";
-      formData.append("is_free", isFree.toString());
+      const isFree = data.sellingMethod === 'free'
+      formData.append('is_free', isFree.toString())
 
       if (isFree) {
-        formData.append("currency_type", ECurrencyType.UZS.toString());
+        formData.append('currency_type', ECurrencyType.UZS.toString())
       } else {
         const currencyType =
-          data.currency === "USD" ? ECurrencyType.USD : ECurrencyType.UZS;
-        formData.append("currency_type", currencyType.toString());
+          data.currency === 'USD' ? ECurrencyType.USD : ECurrencyType.UZS
+        formData.append('currency_type', currencyType.toString())
 
-        const priceField = data.currency === "USD" ? "price_usd" : "price_uzs";
-        formData.append(priceField, data.price);
+        const priceField = data.currency === 'USD' ? 'price_usd' : 'price_uzs'
+        formData.append(priceField, data.price)
 
-        formData.append("is_negotiable", data.canDeal.toString());
+        formData.append('is_negotiable', data.canDeal.toString())
       }
 
       // Add location (auto-resolved on Post)
-      formData.append("latitude", coords.latitude.toString());
-      formData.append("longitude", coords.longitude.toString());
-      formData.append("moljal", data.landmark || "");
+      formData.append('latitude', coords.latitude.toString())
+      formData.append('longitude', coords.longitude.toString())
+      formData.append('moljal', data.landmark || '')
 
       // Add pre-uploaded draft images as JSON
       const draft_images = images.map((img, index) => ({
         draft_uuid: img.draft_uuid,
         draft_image_url: img.draft_image_url,
         sort_order: index, // You can implement sorting logic if needed
-      }));
+      }))
 
-      formData.append("images_json", JSON.stringify(draft_images));
+      formData.append('images_json', JSON.stringify(draft_images))
 
-      createProduct(formData);
+      createProduct(formData)
     } finally {
-      setIsResolvingLocation(false);
-      isSubmittingRef.current = false;
+      setIsResolvingLocation(false)
+      isSubmittingRef.current = false
     }
-  }, onInvalid);
+  }, onInvalid)
 
   return (
     <View style={styles.container}>
@@ -202,7 +202,7 @@ const CreateThingForm = () => {
               ]}
             />
             <Text style={[styles.sectionTitle, { color: colors.text }]}>
-              {t("post.images")}
+              {t('post.images')}
             </Text>
           </View>
           <ImageUploader
@@ -211,10 +211,10 @@ const CreateThingForm = () => {
             maxImages={5}
             rules={{
               validate: (value: DraftImageItem[]) => {
-                if (value.length === 0) return t("post.errors.images");
+                if (value.length === 0) return t('post.errors.images')
                 if (value.some((img) => img.uploading))
-                  return t("post.errors.images_uploading");
-                return true;
+                  return t('post.errors.images_uploading')
+                return true
               },
             }}
           />
@@ -235,38 +235,38 @@ const CreateThingForm = () => {
               ]}
             />
             <Text style={[styles.sectionTitle, { color: colors.text }]}>
-              {t("post.item_details")}
+              {t('post.item_details')}
             </Text>
           </View>
 
           <FormInput
             control={form.control}
             name="title"
-            label={t("post.title")}
-            placeholder={t("post.title_placeholder")}
+            label={t('post.title')}
+            placeholder={t('post.title_placeholder')}
             required
             rules={{
-              required: t("post.errors.title"),
+              required: t('post.errors.title'),
             }}
           />
 
           <FormSelect
             control={form.control}
             name="category"
-            label={t("post.category")}
-            placeholder={t("post.category")}
+            label={t('post.category')}
+            placeholder={t('post.category')}
             options={categoryOptions}
             required
             rules={{
-              required: t("post.errors.category"),
+              required: t('post.errors.category'),
             }}
           />
 
           <FormInput
             control={form.control}
             name="description"
-            label={t("post.description")}
-            placeholder={t("post.description_placeholder")}
+            label={t('post.description')}
+            placeholder={t('post.description_placeholder')}
             type="textarea"
             rows={5}
           />
@@ -290,7 +290,7 @@ const CreateThingForm = () => {
               ]}
             />
             <Text style={[styles.sectionTitle, { color: colors.text }]}>
-              {t("post.selling_methods")}
+              {t('post.selling_methods')}
             </Text>
           </View>
 
@@ -300,28 +300,28 @@ const CreateThingForm = () => {
             options={sellingMethodOptions}
           />
 
-          {sellingMethod === "for_sale" && (
+          {sellingMethod === 'for_sale' && (
             <>
               <FormRow>
                 <View style={styles.priceInputWrapper}>
                   <FormInput
                     control={form.control}
                     name="price"
-                    label={t("post.price")}
-                    placeholder={t("post.price_placeholder")}
+                    label={t('post.price')}
+                    placeholder={t('post.price_placeholder')}
                     keyboardType="numeric"
                     required
                     rules={{
                       required:
-                        sellingMethod === "for_sale"
-                          ? t("post.errors.price")
+                        sellingMethod === 'for_sale'
+                          ? t('post.errors.price')
                           : false,
                       validate: (value: string) => {
-                        if (sellingMethod !== "for_sale") return true;
-                        const num = parseFloat(value);
+                        if (sellingMethod !== 'for_sale') return true
+                        const num = parseFloat(value)
                         if (isNaN(num) || num <= 0)
-                          return t("post.errors.price_invalid");
-                        return true;
+                          return t('post.errors.price_invalid')
+                        return true
                       },
                     }}
                   />
@@ -332,13 +332,13 @@ const CreateThingForm = () => {
                       styles.currencyButton,
                       {
                         backgroundColor:
-                          currency === "UZS"
+                          currency === 'UZS'
                             ? colors.primaryColor
-                            : "transparent",
+                            : 'transparent',
                         borderColor: colors.primaryColor,
                       },
                     ]}
-                    onPress={() => form.setValue("currency", "UZS")}
+                    onPress={() => form.setValue('currency', 'UZS')}
                     activeOpacity={0.7}
                   >
                     <Text
@@ -346,7 +346,7 @@ const CreateThingForm = () => {
                         styles.currencyButtonText,
                         {
                           color:
-                            currency === "UZS" ? "#fff" : colors.primaryColor,
+                            currency === 'UZS' ? '#fff' : colors.primaryColor,
                         },
                       ]}
                     >
@@ -358,13 +358,13 @@ const CreateThingForm = () => {
                       styles.currencyButton,
                       {
                         backgroundColor:
-                          currency === "USD"
+                          currency === 'USD'
                             ? colors.primaryColor
-                            : "transparent",
+                            : 'transparent',
                         borderColor: colors.primaryColor,
                       },
                     ]}
-                    onPress={() => form.setValue("currency", "USD")}
+                    onPress={() => form.setValue('currency', 'USD')}
                     activeOpacity={0.7}
                   >
                     <Text
@@ -372,7 +372,7 @@ const CreateThingForm = () => {
                         styles.currencyButtonText,
                         {
                           color:
-                            currency === "USD" ? "#fff" : colors.primaryColor,
+                            currency === 'USD' ? '#fff' : colors.primaryColor,
                         },
                       ]}
                     >
@@ -384,7 +384,7 @@ const CreateThingForm = () => {
               <FormCheckbox
                 control={form.control}
                 name="canDeal"
-                label={t("post.can_deal")}
+                label={t('post.can_deal')}
               />
             </>
           )}
@@ -405,7 +405,7 @@ const CreateThingForm = () => {
               ]}
             />
             <Text style={[styles.sectionTitle, { color: colors.text }]}>
-              {t("post.meeting")}
+              {t('post.meeting')}
             </Text>
           </View>
 
@@ -416,12 +416,12 @@ const CreateThingForm = () => {
               <FormInput
                 control={form.control}
                 name="landmark"
-                label={t("post.landmark")}
-                placeholder={t("post.landmark_placeholder")}
+                label={t('post.landmark')}
+                placeholder={t('post.landmark_placeholder')}
                 placeholderTextColor={colors.textMuted}
                 required
                 rules={{
-                  required: t("post.errors.landmark"),
+                  required: t('post.errors.landmark'),
                 }}
               />
             </View>
@@ -436,7 +436,7 @@ const CreateThingForm = () => {
             styles.postButton,
             {
               backgroundColor: isPending
-                ? colors.primaryColor + "80"
+                ? colors.primaryColor + '80'
                 : colors.primaryColor,
               opacity: isPending ? 0.7 : 1,
             },
@@ -448,13 +448,13 @@ const CreateThingForm = () => {
           {isPending ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text style={styles.postButtonText}>{t("post.post_button")}</Text>
+            <Text style={styles.postButtonText}>{t('post.post_button')}</Text>
           )}
         </TouchableOpacity>
       </View>
     </View>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -472,8 +472,8 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   sectionHeader: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 12,
   },
   sectionAccent: {
@@ -484,18 +484,18 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 17,
-    fontWeight: "600",
+    fontWeight: '600',
   },
   priceInputContainer: {
-    flexDirection: "row",
-    alignItems: "flex-start",
+    flexDirection: 'row',
+    alignItems: 'flex-start',
     gap: 12,
   },
   priceInputWrapper: {
     flex: 1,
   },
   currencyButtons: {
-    flexDirection: "column",
+    flexDirection: 'column',
     gap: 6,
     marginTop: 30, // Align with input (label height + margin)
   },
@@ -504,16 +504,16 @@ const styles = StyleSheet.create({
     height: 23,
     borderRadius: 8,
     borderWidth: 1.5,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   currencyButtonText: {
     fontSize: 12,
-    fontWeight: "600",
+    fontWeight: '600',
   },
   locationInputContainer: {
-    flexDirection: "row",
-    alignItems: "flex-start",
+    flexDirection: 'row',
+    alignItems: 'flex-start',
     gap: 12,
   },
   locationInputWrapper: {
@@ -523,12 +523,12 @@ const styles = StyleSheet.create({
     width: 52,
     height: 52,
     borderRadius: 12,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
     marginTop: 30, // Align with input (label height + margin)
   },
   buttonContainer: {
-    position: "absolute",
+    position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
@@ -538,14 +538,14 @@ const styles = StyleSheet.create({
   postButton: {
     height: 52,
     borderRadius: 12,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   postButtonText: {
-    color: "#fff",
+    color: '#fff',
     fontSize: 16,
-    fontWeight: "600",
+    fontWeight: '600',
   },
-});
+})
 
-export default CreateThingForm;
+export default CreateThingForm

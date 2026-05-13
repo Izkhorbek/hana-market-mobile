@@ -8,6 +8,8 @@ import React from 'react'
 import { StyleSheet, TouchableOpacity } from 'react-native'
 import { ThemedText } from '../themed-text'
 import { ThemedView } from '../themed-view'
+import { useAuthStore } from '@/modules/Auth/auth-store'
+import { useTranslations } from '@/hooks/use-translation'
 
 const HomeHeader = () => {
 	const colors = useThemeColors()
@@ -24,6 +26,17 @@ const HomeHeader = () => {
 		router.push('/categories')
 	}
 
+	const { t } = useTranslations()
+
+	const user =  useAuthStore((s) => s.user)
+
+	const length = user?.address_name?.split(',').length || 0
+
+	// format city name from address, if address is not set show "Address..."
+	// address format is "street, neighborhood, city, region"
+	let currentCity = length > 2 ? user?.address_name?.split(',')[length - 2] : t('home.address_not_set')
+	currentCity = currentCity?.trim() || t('home.address_not_set')
+	
 	return (
 		<ThemedView
 			style={[
@@ -37,7 +50,7 @@ const HomeHeader = () => {
 				activeOpacity={0.7}
 			>
 				<MapPin size={24} color={colors.primaryColor} />
-				<ThemedText style={[styles.currentCity, { color: colors.blackIcon }]}>Toshkent</ThemedText>
+				<ThemedText style={[styles.currentCity, { color: colors.blackIcon }]}>{currentCity}</ThemedText>
 				<ChevronDown size={24} color={colors.textMuted} />
 			</TouchableOpacity>
 			<ThemedView style={styles.searchContainer}>

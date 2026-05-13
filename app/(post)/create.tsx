@@ -33,9 +33,9 @@ const CreatePost = () => {
 
   return (
     <KeyboardAvoidingView
-      style={[{ flex: 1, paddingBottom: insets.bottom + 10 }]}
+      style={[{ flex: 1, paddingBottom: insets.bottom }]}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : -insets.bottom}
     >
       <ThemedScrollView style={styles.container}>
         <ThemedText style={[styles.sectionTitle, { color: colors.text }]}>

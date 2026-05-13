@@ -1,11 +1,11 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import Reactotron from "reactotron-react-native";
-import axiosInstance from "./api/api";
+import AsyncStorage from '@react-native-async-storage/async-storage'
+import Reactotron from 'reactotron-react-native'
+import axiosInstance from './api/api'
 
 if (__DEV__) {
   Reactotron.setAsyncStorageHandler(AsyncStorage)
     .configure({
-      name: "Hana Market",
+      name: 'Hana Market',
     })
     .useReactNative({
       asyncStorage: false,
@@ -16,12 +16,12 @@ if (__DEV__) {
       errors: { veto: () => false },
       overlay: false,
     })
-    .connect();
+    .connect()
 
   // Log API requests
   axiosInstance.interceptors.request.use((config) => {
     Reactotron.display({
-      name: "⬆️ API Request",
+      name: '⬆️ API Request',
       preview: `${config.method?.toUpperCase()} ${config.url}`,
       value: {
         url: config.baseURL + config.url,
@@ -29,28 +29,28 @@ if (__DEV__) {
         params: config.params,
         data: config.data,
       },
-    });
-    return config;
-  });
+    })
+    return config
+  })
 
   // Log API responses and errors
   axiosInstance.interceptors.response.use(
     (response) => {
       Reactotron.display({
-        name: "⬇️ API Response",
+        name: '⬇️ API Response',
         preview: `${response.status} ${response.config.method?.toUpperCase()} ${response.config.url}`,
         value: {
           status: response.status,
           url: response.config.url,
           data: response.data,
         },
-      });
-      return response;
+      })
+      return response
     },
     (error) => {
       Reactotron.display({
-        name: "❌ API Error",
-        preview: `${error.config?.method?.toUpperCase()} ${error.config?.url} → ${error.response?.status ?? "Network Error"}`,
+        name: '❌ API Error',
+        preview: `${error.config?.method?.toUpperCase()} ${error.config?.url} → ${error.response?.status ?? 'Network Error'}`,
         value: {
           message: error.message,
           status: error.response?.status,
@@ -58,11 +58,10 @@ if (__DEV__) {
           url: error.config?.url,
         },
         important: true,
-      });
-      return Promise.reject(error);
+      })
+      return Promise.reject(error)
     }
-  );
+  )
 
-  console.tron = Reactotron;
-  console.log("[Reactotron] Connected — open Reactotron desktop app");
+  console.tron = Reactotron
 }

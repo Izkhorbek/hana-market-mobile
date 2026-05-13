@@ -1,14 +1,14 @@
 
-import ProductsList from '@/components/Lists/ProductsList';
-import { ThemedView } from '@/components/themed-view';
-import { AppLimits } from '@/constants/appLimits';
-import { useThemeColors } from '@/hooks/use-theme-colors';
-import { useTranslations } from '@/hooks/use-translation';
-import Feather from '@expo/vector-icons/Feather';
-import { router } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import { Briefcase, Car, ChevronRight, Package } from 'lucide-react-native';
-import { useRef, useState } from 'react';
+import ProductsList from '@/components/Lists/ProductsList'
+import { ThemedView } from '@/components/themed-view'
+import { AppLimits } from '@/constants/appLimits'
+import { useThemeColors } from '@/hooks/use-theme-colors'
+import { useTranslations } from '@/hooks/use-translation'
+import Feather from '@expo/vector-icons/Feather'
+import { router } from 'expo-router'
+import { StatusBar } from 'expo-status-bar'
+import { Briefcase, Car, ChevronRight, Package } from 'lucide-react-native'
+import { useRef, useState } from 'react'
 import {
   Animated,
   Modal,
@@ -19,8 +19,8 @@ import {
   TouchableOpacity,
   useColorScheme,
   View,
-} from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+} from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 type PostType = 'all' | 'things' | 'cars' | 'works';
@@ -37,26 +37,26 @@ interface CategoryOption {
 
 
 export default function HomeScreen() {
-  const colors = useThemeColors();
-  const colorScheme = useColorScheme();
-  const { t } = useTranslations();
-  const insets = useSafeAreaInsets();
-  const [activeFilter, setActiveFilter] = useState('all');
-  const [sheetVisible, setSheetVisible] = useState(false);
+  const colors = useThemeColors()
+  const colorScheme = useColorScheme()
+  const { t } = useTranslations()
+  const insets = useSafeAreaInsets()
+  const [activeFilter, setActiveFilter] = useState('all')
+  const [sheetVisible, setSheetVisible] = useState(false)
 
   // Slide-up animation
   const slideAnim = useRef(new Animated.Value(AppLimits.Home.
-    SHEET_HEIGHT)).current;
+    SHEET_HEIGHT)).current
 
   const openSheet = () => {
-    setSheetVisible(true);
+    setSheetVisible(true)
     Animated.spring(slideAnim, {
       toValue: 0,
       useNativeDriver: true,
       damping: 20,
       stiffness: 200,
-    }).start();
-  };
+    }).start()
+  }
 
   const closeSheet = (onDone?: () => void) => {
     Animated.timing(slideAnim, {
@@ -64,17 +64,17 @@ export default function HomeScreen() {
       duration: 220,
       useNativeDriver: true,
     }).start(() => {
-      setSheetVisible(false);
-      slideAnim.setValue(AppLimits.Home.SHEET_HEIGHT);
-      onDone?.();
-    });
-  };
+      setSheetVisible(false)
+      slideAnim.setValue(AppLimits.Home.SHEET_HEIGHT)
+      onDone?.()
+    })
+  }
 
   const handleSelect = (type: PostType) => {
     closeSheet(() => {
-      router.push({ pathname: '/(post)/create', params: { type } });
-    });
-  };
+      router.push({ pathname: '/(post)/create', params: { type } })
+    })
+  }
 
   const categories: CategoryOption[] = [
     {
@@ -101,7 +101,7 @@ export default function HomeScreen() {
       iconBg: '#FFF3E0',
       iconColor: '#FF9500',
     },
-  ];
+  ]
 
   return (
     <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
@@ -161,8 +161,8 @@ export default function HomeScreen() {
           {/* Post Category rows */}
           <View style={styles.categoryList}>
             {categories.map((cat, index) => {
-              const { Icon } = cat;
-              const isLast = index === categories.length - 1;
+              const { Icon } = cat
+              const isLast = index === categories.length - 1
               return (
                 <TouchableOpacity
                   key={cat.id}
@@ -192,7 +192,7 @@ export default function HomeScreen() {
                   {/* Chevron */}
                   <ChevronRight size={18} color={colors.icon} strokeWidth={2} />
                 </TouchableOpacity>
-              );
+              )
             })}
           </View>
 
@@ -203,7 +203,7 @@ export default function HomeScreen() {
 
       <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
     </ThemedView>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -312,4 +312,4 @@ const styles = StyleSheet.create({
   iosBottom: {
     height: 20,
   },
-});
+})

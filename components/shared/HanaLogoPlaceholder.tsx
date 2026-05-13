@@ -1,5 +1,5 @@
-import React from 'react';
-import Svg, { Defs, LinearGradient, Path, Rect, Stop } from 'react-native-svg';
+import React from 'react'
+import Svg, { Defs, LinearGradient, Path, Rect, Stop } from 'react-native-svg'
 
 interface HanaLogoPlaceholderProps {
     size?: number;
@@ -8,8 +8,8 @@ interface HanaLogoPlaceholderProps {
 }
 
 const HanaLogoPlaceholder = ({ size, width, height }: HanaLogoPlaceholderProps) => {
-    const w = width ?? size ?? '100%';
-    const h = height ?? size ?? '100%';
+    const w = width ?? size ?? '100%'
+    const h = height ?? size ?? '100%'
 
     return (
         <Svg width={w} height={h} viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet" fill="none">
@@ -27,10 +27,10 @@ const HanaLogoPlaceholder = ({ size, width, height }: HanaLogoPlaceholderProps) 
                 fill="white"
             />
         </Svg>
-    );
-};
+    )
+}
 
-export default HanaLogoPlaceholder;
+export default HanaLogoPlaceholder
 
 // // Usage
 // import HanaLogoPlaceholder from '@/components/shared/HanaLogoPlaceholder';

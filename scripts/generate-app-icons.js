@@ -23,7 +23,7 @@ const fs = require('fs')
 const sharp = require('sharp')
 
 const ROOT = path.resolve(__dirname, '..')
-const SRC = path.join(ROOT, 'assets/images/logo.png')
+const SRC = path.join(ROOT, 'assets/images/icon.png')
 const SPLASH_SRC = path.join(ROOT, 'assets/images/splash-wordmark.svg')
 const OUT = path.join(ROOT, 'assets/images')
 

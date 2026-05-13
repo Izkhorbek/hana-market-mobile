@@ -136,7 +136,6 @@ const OfflineBanner: React.FC<OfflineBannerProps> = ({
             ]}
         >
             <View style={styles.bannerContent}>
-                {/* <Text style={styles.bannerIcon}>📡</Text> */}
                 <View style={styles.bannerTextContainer}>
                     <Text style={styles.bannerTitle}>No Internet Connection</Text>
                     <Text style={styles.bannerSubtitle}>

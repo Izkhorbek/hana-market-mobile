@@ -1,10 +1,10 @@
-import { HEADER_PADDING_TOP } from '@/constants/appLimits';
-import { useTranslations } from '@/hooks/use-translation';
-import { useColor } from '@/hooks/useColor';
-import { logger } from '@/utils/logger';
-import * as Location from 'expo-location';
-import { Crosshair, MapPin, Navigation } from 'lucide-react-native';
-import React, { useEffect, useRef, useState } from 'react';
+import { HEADER_PADDING_TOP } from '@/constants/appLimits'
+import { useTranslations } from '@/hooks/use-translation'
+import { useColor } from '@/hooks/useColor'
+import { logger } from '@/utils/logger'
+import * as Location from 'expo-location'
+import { Crosshair, MapPin, Navigation } from 'lucide-react-native'
+import React, { useEffect, useRef, useState } from 'react'
 import {
   ActivityIndicator,
   Alert,
@@ -15,8 +15,8 @@ import {
   Text,
   TouchableOpacity,
   View,
-} from 'react-native';
-import MapView, { MapPressEvent, Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+} from 'react-native'
+import MapView, { MapPressEvent, Marker, PROVIDER_GOOGLE } from 'react-native-maps'
 interface MapModalProps {
   visible: boolean;
   mode: 'SELECT' | 'VIEW';
@@ -31,7 +31,7 @@ const DEFAULT_LOCATION = {
   longitude: 69.2401,
   latitudeDelta: 0.0922,
   longitudeDelta: 0.0421,
-};
+}
 
 const MapModal: React.FC<MapModalProps> = ({
   visible,
@@ -41,26 +41,26 @@ const MapModal: React.FC<MapModalProps> = ({
   onLocationSelect,
   productAddress,
 }) => {
-  const { t } = useTranslations();
-  const primaryColor = useColor('primaryColor');
-  const textColor = useColor('text');
-  const backgroundColor = useColor('background');
-  const mapRef = useRef<MapView>(null);
+  const { t } = useTranslations()
+  const primaryColor = useColor('primaryColor')
+  const textColor = useColor('text')
+  const backgroundColor = useColor('background')
+  const mapRef = useRef<MapView>(null)
 
   const [selectedLocation, setSelectedLocation] = useState({
     latitude: initialLocation?.latitude || DEFAULT_LOCATION.latitude,
     longitude: initialLocation?.longitude || DEFAULT_LOCATION.longitude,
-  });
+  })
 
-  const [isLoadingLocation, setIsLoadingLocation] = useState(false);
-  const [isConfirming, setIsConfirming] = useState(false);
+  const [isLoadingLocation, setIsLoadingLocation] = useState(false)
+  const [isConfirming, setIsConfirming] = useState(false)
 
   useEffect(() => {
     if (initialLocation) {
       setSelectedLocation({
         latitude: initialLocation.latitude,
         longitude: initialLocation.longitude,
-      });
+      })
 
       // Animate to new location when it changes
       mapRef.current?.animateToRegion({
@@ -68,72 +68,72 @@ const MapModal: React.FC<MapModalProps> = ({
         longitude: initialLocation.longitude,
         latitudeDelta: DEFAULT_LOCATION.latitudeDelta,
         longitudeDelta: DEFAULT_LOCATION.longitudeDelta,
-      }, 1000);
+      }, 1000)
     }
-  }, [initialLocation]);
+  }, [initialLocation])
 
   const requestLocationPermission = async () => {
     try {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      return status === 'granted';
+      const { status } = await Location.requestForegroundPermissionsAsync()
+      return status === 'granted'
     } catch (error) {
-      console.error('Error requesting location permission:', error);
-      logger.warn(error, { code: 'LOCATION_PERMISSION_FAILED', screen: 'MapModal' });
-      return false;
+      console.error('Error requesting location permission:', error)
+      logger.warn(error, { code: 'LOCATION_PERMISSION_FAILED', screen: 'MapModal' })
+      return false
     }
-  };
+  }
 
   const getCurrentLocation = async () => {
-    setIsLoadingLocation(true);
+    setIsLoadingLocation(true)
     try {
-      const hasPermission = await requestLocationPermission();
+      const hasPermission = await requestLocationPermission()
 
       if (!hasPermission) {
         Alert.alert(
           t('map.permission_denied'),
           t('map.enable_location')
-        );
-        setIsLoadingLocation(false);
-        return;
+        )
+        setIsLoadingLocation(false)
+        return
       }
 
       const location = await Location.getCurrentPositionAsync({
         accuracy: Location.Accuracy.High,
-      });
+      })
 
       const newLocation = {
         latitude: location.coords.latitude,
         longitude: location.coords.longitude,
-      };
+      }
 
-      setSelectedLocation(newLocation);
+      setSelectedLocation(newLocation)
 
       mapRef.current?.animateToRegion({
         ...newLocation,
         latitudeDelta: DEFAULT_LOCATION.latitudeDelta,
         longitudeDelta: DEFAULT_LOCATION.longitudeDelta,
-      }, 1000);
+      }, 1000)
 
-      Alert.alert(t('map.location_selected'));
+      Alert.alert(t('map.location_selected'))
     } catch (error) {
-      console.error('Error getting location:', error);
-      logger.warn(error, { code: 'LOCATION_FETCH_FAILED', screen: 'MapModal' });
+      console.error('Error getting location:', error)
+      logger.warn(error, { code: 'LOCATION_FETCH_FAILED', screen: 'MapModal' })
       Alert.alert(
         t('common.error'),
         'Failed to get current location'
-      );
+      )
     } finally {
-      setIsLoadingLocation(false);
+      setIsLoadingLocation(false)
     }
-  };
+  }
 
   const getAddressFromCoords = async (latitude: number, longitude: number): Promise<string> => {
     try {
       // Bu expo-location metodi internetga bog'langan holda ishlaydi
-      const locationResults = await Location.reverseGeocodeAsync({ latitude, longitude });
+      const locationResults = await Location.reverseGeocodeAsync({ latitude, longitude })
 
       if (locationResults.length > 0) {
-        const address = locationResults[0];
+        const address = locationResults[0]
         // Manzilni chiroyli formatlash
         const formattedAddress = [
           address.name,
@@ -141,73 +141,73 @@ const MapModal: React.FC<MapModalProps> = ({
           address.district,
           address.city,
           address.region
-        ].filter(Boolean).join(', '); // Bo'sh bo'lmaganlarini vergul bilan birlashtirish
+        ].filter(Boolean).join(', ') // Bo'sh bo'lmaganlarini vergul bilan birlashtirish
 
-        return formattedAddress;
+        return formattedAddress
       }
     } catch (error) {
-      console.error('Reverse Geocoding Error:', error);
-      logger.warn(error, { code: 'REVERSE_GEOCODE_FAILED', screen: 'MapModal' });
+      console.error('Reverse Geocoding Error:', error)
+      logger.warn(error, { code: 'REVERSE_GEOCODE_FAILED', screen: 'MapModal' })
     }
-    return '';
-  };
+    return ''
+  }
 
   const openInGoogleMaps = () => {
     const scheme = Platform.select({
       ios: 'maps:0,0?q=',
       android: 'geo:0,0?q=',
-    });
-    const latLng = `${selectedLocation.latitude},${selectedLocation.longitude}`;
-    const label = productAddress || 'Product Location';
+    })
+    const latLng = `${selectedLocation.latitude},${selectedLocation.longitude}`
+    const label = productAddress || 'Product Location'
     const url = Platform.select({
       ios: `${scheme}${label}@${latLng}`,
       android: `${scheme}${latLng}(${label})`,
-    });
+    })
 
     if (url) {
       Linking.openURL(url).catch(() => {
-        Alert.alert(t('common.error'), 'Could not open maps');
-      });
+        Alert.alert(t('common.error'), 'Could not open maps')
+      })
     }
-  };
+  }
 
   const handleConfirm = async () => {
     if (onLocationSelect) {
-      setIsConfirming(true); // Loadingni yoqamiz
+      setIsConfirming(true) // Loadingni yoqamiz
       try {
         // Manzil nomini olamiz
         const addressName = await getAddressFromCoords(
           selectedLocation.latitude,
           selectedLocation.longitude
-        );
+        )
 
         // Parent komponentga hammasini qaytaramiz
         onLocationSelect({
           latitude: selectedLocation.latitude,
           longitude: selectedLocation.longitude,
           address: addressName || t('map.unknown_location') // Agar manzil topilmasa default text
-        });
+        })
 
-        onClose();
+        onClose()
       } catch (error) {
-        Alert.alert(t('common.error'), 'Failed to get address details');
+        Alert.alert(t('common.error'), 'Failed to get address details')
       } finally {
-        setIsConfirming(false);
+        setIsConfirming(false)
       }
     } else {
-      onClose();
+      onClose()
     }
-  };
+  }
 
   const handleMapPress = (event: MapPressEvent) => {
     if (mode === 'SELECT') {
-      const { coordinate } = event.nativeEvent;
+      const { coordinate } = event.nativeEvent
       setSelectedLocation({
         latitude: coordinate.latitude,
         longitude: coordinate.longitude,
-      });
+      })
     }
-  };
+  }
 
   return (
     <Modal
@@ -253,7 +253,7 @@ const MapModal: React.FC<MapModalProps> = ({
               draggable={mode === 'SELECT'}
               onDragEnd={(e) => {
                 if (mode === 'SELECT') {
-                  setSelectedLocation(e.nativeEvent.coordinate);
+                  setSelectedLocation(e.nativeEvent.coordinate)
                 }
               }}
             />
@@ -336,8 +336,8 @@ const MapModal: React.FC<MapModalProps> = ({
         )}
       </View>
     </Modal>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -427,6 +427,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
   },
-});
+})
 
-export default MapModal;
+export default MapModal

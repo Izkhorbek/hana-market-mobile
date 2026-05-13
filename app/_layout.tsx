@@ -4,15 +4,13 @@ import { GlobalErrorBoundary } from '@/components/providers/GlobalErrorBoundary'
 import { NetworkProvider } from '@/components/providers/NetworkProvider'
 import '@/constants/localization'
 import { useColorScheme } from '@/hooks/use-color-scheme'
-import { useModeToggle } from '@/hooks/useModeToggle'
 import { ThemeProvider } from '@/theme/theme-provider'
 import { installGlobalErrorHandlers } from '@/utils/globalErrorHandlers'
 import { initSentry, sentryWrap } from '@/utils/sentry'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { Stack } from 'expo-router'
-import { Sun } from 'lucide-react-native'
 import React from 'react'
-import { StatusBar, View } from 'react-native'
+import { StatusBar } from 'react-native'
 import 'react-native-reanimated'
 import { SafeAreaProvider, initialWindowMetrics } from 'react-native-safe-area-context'
 
@@ -27,7 +25,6 @@ installGlobalErrorHandlers()
 
 function RootLayout() {
 	const colorScheme = useColorScheme()
-	const { toggleMode } = useModeToggle()
 
 	useThemeNavigationBar()
 
@@ -52,16 +49,6 @@ function RootLayout() {
 							</Stack>
 						</NetworkProvider>
 						<StatusBar barStyle={colorScheme === 'dark' ? 'light-content' : 'dark-content'} />
-						{/* <View
-							style={{
-								position: 'absolute',
-								padding: 5,
-								bottom: '50%',
-								right: 0,
-							}}
-						>
-							<Sun onPress={toggleMode} size={24} color={colorScheme === 'dark' ? 'white' : 'black'} />
-						</View> */}
 					</ThemeProvider>
 				</SafeAreaProvider>
 			</QueryClientProvider>

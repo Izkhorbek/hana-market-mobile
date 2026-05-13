@@ -12,6 +12,7 @@ import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import MapView, { Circle, Marker } from 'react-native-maps'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { googleMapStyle } from '../../components/Maps/googleMapStyle'
+import { logger } from '@sentry/react-native'
 
 interface LocationData {
 	latitude: number
@@ -152,9 +153,9 @@ const ManageNeighborhoodPage = () => {
 				longitudeDelta: calculateDelta(radius),
 			})
 
-			console.log('Current GPS location obtained:', { latitude, longitude })
 
 		} catch (error) {
+			logger.error('Error getting current GPS location:', { extra: { error } })
 			setGpsLocation(storedLocation)
 		}
 	}

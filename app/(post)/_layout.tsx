@@ -1,12 +1,12 @@
-import CreateHeader from '@/components/headers/CreateHeader';
-import { useColorScheme } from '@/hooks/use-color-scheme';
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { Stack } from 'expo-router';
-import React from 'react';
-import { StatusBar } from 'react-native';
+import CreateHeader from '@/components/headers/CreateHeader'
+import { useColorScheme } from '@/hooks/use-color-scheme'
+import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native'
+import { Stack } from 'expo-router'
+import React from 'react'
+import { StatusBar } from 'react-native'
 
 const PostLayout = () => {
-  const colorScheme = useColorScheme();
+  const colorScheme = useColorScheme()
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <Stack>

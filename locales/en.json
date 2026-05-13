@@ -40,6 +40,7 @@
 		"enable_location": "Please enable location services in Settings"
 	},
 	"home": {
+		"address_not_set": "Address...",
 		"create": "Post",
 		"free": "Free",
 		"empty_state": "No products found",
