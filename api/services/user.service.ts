@@ -5,9 +5,9 @@ import type {
   UpdateLocationRequest,
   UpdateProfileRequest,
   User,
-} from '../../types';
-import axiosInstance from '../api';
-import ENDPOINT from '../endpoints';
+} from '../../types'
+import axiosInstance from '../api'
+import ENDPOINT from '../endpoints'
 
 export const userService = {
   /**
@@ -15,7 +15,7 @@ export const userService = {
    * GET /api/user/my
    */
   getProfile: () => {
-    return axiosInstance.get<ApiResponse<User>>(ENDPOINT.USER.MY);
+    return axiosInstance.get<ApiResponse<User>>(ENDPOINT.USER.MY)
   },
 
   /**
@@ -23,7 +23,7 @@ export const userService = {
    * POST /api/user/update
    */
   updateProfile: (data: UpdateProfileRequest) => {
-    return axiosInstance.post<ApiResponse<{}>>(ENDPOINT.USER.UPDATE_PROFILE, data);
+    return axiosInstance.post<ApiResponse<{}>>(ENDPOINT.USER.UPDATE_PROFILE, data)
   },
 
   /**
@@ -33,7 +33,7 @@ export const userService = {
   uploadProfileImage: (data: FormData) => {
     return axiosInstance.post<ApiResponse<string>>(ENDPOINT.USER.UPLOAD_PROFILE_IMAGE, data, {
       headers: { 'Content-Type': 'multipart/form-data' },
-    });
+    })
   },
 
   /**
@@ -41,7 +41,7 @@ export const userService = {
    * POST /api/user/update/location
    */
   updateLocation: (data: UpdateLocationRequest) => {
-    return axiosInstance.post<ApiResponse<string>>(ENDPOINT.USER.UPDATE_LOCATION, data);
+    return axiosInstance.post<ApiResponse<string>>(ENDPOINT.USER.UPDATE_LOCATION, data)
   },
 
   /**
@@ -49,7 +49,7 @@ export const userService = {
    * GET /api/product/likes
    */
   getLikedProducts: () => {
-    return axiosInstance.get<ApiResponse<LikedProductDto[]>>(ENDPOINT.PRODUCT.LIKES);
+    return axiosInstance.get<ApiResponse<LikedProductDto[]>>(ENDPOINT.PRODUCT.LIKES)
   },
 
   /**
@@ -57,7 +57,7 @@ export const userService = {
    * GET /api/product/my
    */
   getMyProducts: () => {
-    return axiosInstance.get<ApiResponse<MyProductDto[]>>(ENDPOINT.PRODUCT.MY);
+    return axiosInstance.get<ApiResponse<MyProductDto[]>>(ENDPOINT.PRODUCT.MY)
   },
 
   /**
@@ -65,6 +65,6 @@ export const userService = {
    * POST /api/user/delete
    */
   deleteAccount: () => {
-    return axiosInstance.post<ApiResponse<{}>>(ENDPOINT.USER.DELETE);
+    return axiosInstance.post<ApiResponse<{}>>(ENDPOINT.USER.DELETE)
   },
-};
+}

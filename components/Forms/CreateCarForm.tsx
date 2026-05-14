@@ -1,6 +1,6 @@
-import { useCreateProductMutation } from "@/api/hooks";
-import FormCheckbox from "@/components/FormElements/FormCheckbox";
-import FormInput from "@/components/FormElements/FormInput";
+import { useCreateProductMutation } from '@/api/hooks'
+import FormCheckbox from '@/components/FormElements/FormCheckbox'
+import FormInput from '@/components/FormElements/FormInput'
 import {
   ECarCondition,
   ECarFuelType,
@@ -8,18 +8,18 @@ import {
   ECategoryType,
   ECurrencyType,
   EProductType,
-} from "@/constants/enums";
-import { useTranslations } from "@/hooks/use-translation";
-import { useColor } from "@/hooks/useColor";
-import { parseApiError } from "@/utils/apiError";
-import { resolveEnum } from "@/utils/enumHelpers";
+} from '@/constants/enums'
+import { useTranslations } from '@/hooks/use-translation'
+import { useColor } from '@/hooks/useColor'
+import { parseApiError } from '@/utils/apiError'
+import { resolveEnum } from '@/utils/enumHelpers'
 import {
   getCurrentLocationSafe,
   showLocationErrorAlert,
-} from "@/utils/location";
-import { useRouter } from "expo-router";
-import React, { useRef, useState } from "react";
-import { useForm } from "react-hook-form";
+} from '@/utils/location'
+import { useRouter } from 'expo-router'
+import React, { useRef, useState } from 'react'
+import { useForm } from 'react-hook-form'
 import {
   ActivityIndicator,
   Alert,
@@ -27,184 +27,186 @@ import {
   Text,
   TouchableOpacity,
   View,
-} from "react-native";
-import FormRow from "../FormElements/FormRow";
-import ImageUploader, { DraftImageItem } from "../FormElements/ImageUploader";
+} from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import FormRow from '../FormElements/FormRow'
+import ImageUploader, { DraftImageItem } from '../FormElements/ImageUploader'
 import RadioButtonGroup, {
   RadioOption,
-} from "../FormElements/RadioButtonGroup";
+} from '../FormElements/RadioButtonGroup'
 
 const CreateCarForm = () => {
-  const { t } = useTranslations();
-  const primaryColor = useColor("primaryColor");
-  const textColor = useColor("text");
-  const subTextColor = useColor("subText");
-  const surfaceColor = useColor("background");
-  const sectionTintColor = useColor("profileBackground");
-  const borderColor = useColor("border");
-  const mutedTextColor = useColor("textMuted");
+  const { t } = useTranslations()
+  const primaryColor = useColor('primaryColor')
+  const textColor = useColor('text')
+  const insets = useSafeAreaInsets()
+  const subTextColor = useColor('subText')
+  const surfaceColor = useColor('background')
+  const sectionTintColor = useColor('profileBackground')
+  const borderColor = useColor('border')
+  const mutedTextColor = useColor('textMuted')
 
-  const router = useRouter();
-  const [isResolvingLocation, setIsResolvingLocation] = useState(false);
-  const isSubmittingRef = useRef(false);
+  const router = useRouter()
+  const [isResolvingLocation, setIsResolvingLocation] = useState(false)
+  const isSubmittingRef = useRef(false)
 
   const fuelTypeOptions: RadioOption[] = [
-    { value: "petrol", label: t("car.petrol") },
-    { value: "gas", label: t("car.gas") },
-    { value: "hybrid", label: t("car.hybrid") },
-    { value: "electric", label: t("car.electric") },
-  ];
+    { value: 'petrol', label: t('car.petrol') },
+    { value: 'gas', label: t('car.gas') },
+    { value: 'hybrid', label: t('car.hybrid') },
+    { value: 'electric', label: t('car.electric') },
+  ]
 
   const transmissionOptions: RadioOption[] = [
-    { value: "automatic", label: t("car.automatic") },
-    { value: "manual", label: t("car.manual") },
-  ];
+    { value: 'automatic', label: t('car.automatic') },
+    { value: 'manual', label: t('car.manual') },
+  ]
 
   const conditionOptions: RadioOption[] = [
-    { value: "new", label: t("car.new") },
-    { value: "used", label: t("car.used") },
-    { value: "broken", label: t("car.needs_repair") },
-  ];
+    { value: 'new', label: t('car.new') },
+    { value: 'used', label: t('car.used') },
+    { value: 'broken', label: t('car.needs_repair') },
+  ]
 
   const form = useForm({
     defaultValues: {
       images: [],
-      brand: "",
-      model: "",
-      year: "",
-      mileage: "",
+      brand: '',
+      model: '',
+      year: '',
+      mileage: '',
       fuelType: fuelTypeOptions[0].value, // Default to first fuel type option
       transmission: transmissionOptions[0].value, // Default to first transmission option
-      price: "",
+      price: '',
       currency: ECurrencyType[ECurrencyType.UZS], // "UZS"
       negotiable: false,
       condition: conditionOptions[0].value, // Default to first condition option
-      landmark: "",
-      additionalNotes: "",
+      landmark: '',
+      additionalNotes: '',
     },
-  });
+  })
 
-  const fuelType = form.watch("fuelType");
-  const transmission = form.watch("transmission");
-  const condition = form.watch("condition");
-  const currency = form.watch("currency");
+  const fuelType = form.watch('fuelType')
+  const transmission = form.watch('transmission')
+  const condition = form.watch('condition')
+  const currency = form.watch('currency')
 
   const { mutate: createProduct, isPending } = useCreateProductMutation({
     onSuccess: () => {
-      Alert.alert(t("post.success"), t("post.product_created_successfully"), [
+      Alert.alert(t('post.success'), t('post.product_created_successfully'), [
         {
-          text: t("common.ok"),
+          text: t('common.ok'),
           onPress: () => router.back(),
         },
-      ]);
-      form.reset();
+      ])
+      form.reset()
     },
     onError: (error: any) => {
-      const message = parseApiError(error, t("post.error_creating_product"));
-      Alert.alert(t("post.error"), message);
+      const message = parseApiError(error, t('post.error_creating_product'))
+      Alert.alert(t('post.error'), message)
     },
-  });
+  })
 
   const onInvalid = (formErrors: Record<string, any>) => {
     const messages = Object.values(formErrors)
       .map((err) => `• ${err?.message}`)
       .filter(Boolean)
-      .join("\n");
+      .join('\n')
     if (messages) {
-      Alert.alert(t("post.error"), messages);
+      Alert.alert(t('post.error'), messages)
     }
-  };
+  }
 
   const handleSubmit = form.handleSubmit(async (data) => {
-    if (isSubmittingRef.current) return;
-    isSubmittingRef.current = true;
+    if (isSubmittingRef.current) return
+    isSubmittingRef.current = true
 
     try {
     // ── Resolve current location automatically ──
-    setIsResolvingLocation(true);
-    const locationResult = await getCurrentLocationSafe();
-    setIsResolvingLocation(false);
+    setIsResolvingLocation(true)
+    const locationResult = await getCurrentLocationSafe()
+    setIsResolvingLocation(false)
 
     if (!locationResult.ok) {
-      showLocationErrorAlert(locationResult, t);
-      return;
+      showLocationErrorAlert(locationResult, t)
+      return
     }
-    const coords = locationResult.coords;
+    const coords = locationResult.coords
 
     // ── Enum resolution ──
-    const fuelTypeValue = resolveEnum(ECarFuelType, data.fuelType);
+    const fuelTypeValue = resolveEnum(ECarFuelType, data.fuelType)
     const transmissionValue = resolveEnum(
       ECarTransmissionType,
       data.transmission,
-    );
-    const conditionValue = resolveEnum(ECarCondition, data.condition);
+    )
+    const conditionValue = resolveEnum(ECarCondition, data.condition)
 
     if (fuelTypeValue === undefined) {
-      Alert.alert(t("post.error"), "Invalid fuel type selected");
-      return;
+      Alert.alert(t('post.error'), 'Invalid fuel type selected')
+      return
     }
     if (transmissionValue === undefined) {
-      Alert.alert(t("post.error"), "Invalid transmission selected");
-      return;
+      Alert.alert(t('post.error'), 'Invalid transmission selected')
+      return
     }
     if (conditionValue === undefined) {
-      Alert.alert(t("post.error"), "Invalid condition selected");
-      return;
+      Alert.alert(t('post.error'), 'Invalid condition selected')
+      return
     }
 
-    const formData = new FormData();
+    const formData = new FormData()
 
     // Add product type
-    formData.append("product_type", EProductType.CAR.toString());
+    formData.append('product_type', EProductType.CAR.toString())
 
     // Add category
-    formData.append("category_id", ECategoryType.CARS.toString()); // Assuming 100 is the category ID for cars, adjust as needed
+    formData.append('category_id', ECategoryType.CARS.toString()) // Assuming 100 is the category ID for cars, adjust as needed
     // Add car brand and model
-    formData.append("car_brand", data.brand);
-    formData.append("car_model", data.model);
-    formData.append("title", `${data.brand} ${data.model}`);
-    formData.append("description", data.additionalNotes || "");
+    formData.append('car_brand', data.brand)
+    formData.append('car_model', data.model)
+    formData.append('title', `${data.brand} ${data.model}`)
+    formData.append('description', data.additionalNotes || '')
 
     // Add car-specific data
-    formData.append("car_data.year", data.year);
-    formData.append("car_data.mileage", data.mileage);
+    formData.append('car_data.year', data.year)
+    formData.append('car_data.mileage', data.mileage)
 
-    formData.append("car_data.fuel_type", fuelTypeValue.toString());
-    formData.append("car_data.car_transmission", transmissionValue.toString());
-    formData.append("car_data.car_condition", conditionValue.toString());
+    formData.append('car_data.fuel_type', fuelTypeValue.toString())
+    formData.append('car_data.car_transmission', transmissionValue.toString())
+    formData.append('car_data.car_condition', conditionValue.toString())
 
     // Add pricing
     const currencyType =
-      data.currency === "USD" ? ECurrencyType.USD : ECurrencyType.UZS;
-    formData.append("currency_type", currencyType.toString());
-    const priceField = data.currency === "USD" ? "price_usd" : "price_uzs";
-    formData.append(priceField, data.price);
-    formData.append("is_negotiable", data.negotiable.toString());
-    formData.append("is_free", "false");
+      data.currency === 'USD' ? ECurrencyType.USD : ECurrencyType.UZS
+    formData.append('currency_type', currencyType.toString())
+    const priceField = data.currency === 'USD' ? 'price_usd' : 'price_uzs'
+    formData.append(priceField, data.price)
+    formData.append('is_negotiable', data.negotiable.toString())
+    formData.append('is_free', 'false')
 
     // Add location (auto-resolved on Post)
-    formData.append("latitude", coords.latitude.toString());
-    formData.append("longitude", coords.longitude.toString());
-    formData.append("moljal", data.landmark || "");
+    formData.append('latitude', coords.latitude.toString())
+    formData.append('longitude', coords.longitude.toString())
+    formData.append('moljal', data.landmark || '')
 
     // Add images
-    const images: DraftImageItem[] = data.images;
+    const images: DraftImageItem[] = data.images
 
     const draft_images = images.map((img, index) => ({
       draft_uuid: img.draft_uuid,
       draft_image_url: img.draft_image_url,
       sort_order: index, // You can implement sorting logic if needed
-    }));
+    }))
 
-    formData.append("images_json", JSON.stringify(draft_images));
+    formData.append('images_json', JSON.stringify(draft_images))
 
     // Submit the form data
-    createProduct(formData);
+    createProduct(formData)
     } finally {
-      setIsResolvingLocation(false);
-      isSubmittingRef.current = false;
+      setIsResolvingLocation(false)
+      isSubmittingRef.current = false
     }
-  }, onInvalid);
+  }, onInvalid)
 
   return (
     <View style={styles.container}>
@@ -221,7 +223,7 @@ const CreateCarForm = () => {
               style={[styles.sectionAccent, { backgroundColor: primaryColor }]}
             />
             <Text style={[styles.sectionTitle, { color: textColor }]}>
-              {t("car.upload_images")}
+              {t('car.upload_images')}
             </Text>
           </View>
           <ImageUploader
@@ -230,7 +232,7 @@ const CreateCarForm = () => {
             maxImages={5}
             rules={{
               validate: (value: string[]) =>
-                value.length > 0 || t("car.errors.images"),
+                value.length > 0 || t('car.errors.images'),
             }}
           />
         </View>
@@ -247,29 +249,29 @@ const CreateCarForm = () => {
               style={[styles.sectionAccent, { backgroundColor: primaryColor }]}
             />
             <Text style={[styles.sectionTitle, { color: textColor }]}>
-              {t("car.car_information")}
+              {t('car.car_information')}
             </Text>
           </View>
 
           <FormInput
             control={form.control}
             name="brand"
-            label={t("car.car_brand")}
-            placeholder={t("car.car_brand_placeholder")}
+            label={t('car.car_brand')}
+            placeholder={t('car.car_brand_placeholder')}
             required
             rules={{
-              required: t("car.errors.brand"),
+              required: t('car.errors.brand'),
             }}
           />
 
           <FormInput
             control={form.control}
             name="model"
-            label={t("car.car_model")}
-            placeholder={t("car.car_model_placeholder")}
+            label={t('car.car_model')}
+            placeholder={t('car.car_model_placeholder')}
             required
             rules={{
-              required: t("car.errors.model"),
+              required: t('car.errors.model'),
             }}
           />
 
@@ -278,21 +280,21 @@ const CreateCarForm = () => {
               <FormInput
                 control={form.control}
                 name="year"
-                label={t("car.year")}
-                placeholder={t("car.year_placeholder")}
+                label={t('car.year')}
+                placeholder={t('car.year_placeholder')}
                 keyboardType="numeric"
                 required
                 rules={{
-                  required: t("car.errors.year"),
+                  required: t('car.errors.year'),
                   pattern: {
                     value: /^\d{4}$/,
-                    message: t("car.errors.year_invalid"),
+                    message: t('car.errors.year_invalid'),
                   },
                   validate: (value: string) => {
-                    const year = parseInt(value, 10);
+                    const year = parseInt(value, 10)
                     if (year < 1900 || year > new Date().getFullYear() + 1)
-                      return t("car.errors.year_range");
-                    return true;
+                      return t('car.errors.year_range')
+                    return true
                   },
                 }}
               />
@@ -301,18 +303,18 @@ const CreateCarForm = () => {
               <FormInput
                 control={form.control}
                 name="mileage"
-                label={t("car.mileage")}
-                placeholder={t("car.mileage_placeholder")}
+                label={t('car.mileage')}
+                placeholder={t('car.mileage_placeholder')}
                 placeholderTextColor={mutedTextColor}
                 keyboardType="numeric"
                 required
                 rules={{
-                  required: t("car.errors.mileage"),
+                  required: t('car.errors.mileage'),
                   validate: (value: string) => {
-                    const num = parseInt(value, 10);
+                    const num = parseInt(value, 10)
                     if (isNaN(num) || num < 0)
-                      return t("car.errors.mileage_invalid");
-                    return true;
+                      return t('car.errors.mileage_invalid')
+                    return true
                   },
                 }}
               />
@@ -321,7 +323,7 @@ const CreateCarForm = () => {
 
           <View style={styles.radioSection}>
             <Text style={[styles.radioLabel, { color: subTextColor }]}>
-              {t("car.fuel_type")}
+              {t('car.fuel_type')}
             </Text>
             <RadioButtonGroup
               control={form.control}
@@ -332,7 +334,7 @@ const CreateCarForm = () => {
 
           <View style={styles.radioSection}>
             <Text style={[styles.radioLabel, { color: subTextColor }]}>
-              {t("car.transmission")}
+              {t('car.transmission')}
             </Text>
             <RadioButtonGroup
               control={form.control}
@@ -354,7 +356,7 @@ const CreateCarForm = () => {
               style={[styles.sectionAccent, { backgroundColor: primaryColor }]}
             />
             <Text style={[styles.sectionTitle, { color: textColor }]}>
-              {t("car.selling_details")}
+              {t('car.selling_details')}
             </Text>
           </View>
 
@@ -363,18 +365,18 @@ const CreateCarForm = () => {
               <FormInput
                 control={form.control}
                 name="price"
-                label={t("car.price")}
-                placeholder={t("car.price_placeholder")}
+                label={t('car.price')}
+                placeholder={t('car.price_placeholder')}
                 placeholderTextColor={mutedTextColor}
                 keyboardType="numeric"
                 required
                 rules={{
-                  required: t("car.errors.price"),
+                  required: t('car.errors.price'),
                   validate: (value: string) => {
-                    const num = parseFloat(value);
+                    const num = parseFloat(value)
                     if (isNaN(num) || num <= 0)
-                      return t("car.errors.price_invalid");
-                    return true;
+                      return t('car.errors.price_invalid')
+                    return true
                   },
                 }}
               />
@@ -385,17 +387,17 @@ const CreateCarForm = () => {
                   styles.currencyButton,
                   {
                     backgroundColor:
-                      currency === "UZS" ? primaryColor : "transparent",
+                      currency === 'UZS' ? primaryColor : 'transparent',
                     borderColor: primaryColor,
                   },
                 ]}
-                onPress={() => form.setValue("currency", "UZS")}
+                onPress={() => form.setValue('currency', 'UZS')}
                 activeOpacity={0.7}
               >
                 <Text
                   style={[
                     styles.currencyButtonText,
-                    { color: currency === "UZS" ? "#fff" : primaryColor },
+                    { color: currency === 'UZS' ? '#fff' : primaryColor },
                   ]}
                 >
                   SUM
@@ -406,17 +408,17 @@ const CreateCarForm = () => {
                   styles.currencyButton,
                   {
                     backgroundColor:
-                      currency === "USD" ? primaryColor : "transparent",
+                      currency === 'USD' ? primaryColor : 'transparent',
                     borderColor: primaryColor,
                   },
                 ]}
-                onPress={() => form.setValue("currency", "USD")}
+                onPress={() => form.setValue('currency', 'USD')}
                 activeOpacity={0.7}
               >
                 <Text
                   style={[
                     styles.currencyButtonText,
-                    { color: currency === "USD" ? "#fff" : primaryColor },
+                    { color: currency === 'USD' ? '#fff' : primaryColor },
                   ]}
                 >
                   USD
@@ -428,12 +430,12 @@ const CreateCarForm = () => {
           <FormCheckbox
             control={form.control}
             name="negotiable"
-            label={t("car.negotiable")}
+            label={t('car.negotiable')}
           />
 
           <View style={styles.radioSection}>
             <Text style={[styles.radioLabel, { color: subTextColor }]}>
-              {t("car.condition")}
+              {t('car.condition')}
             </Text>
             <RadioButtonGroup
               control={form.control}
@@ -447,12 +449,12 @@ const CreateCarForm = () => {
               <FormInput
                 control={form.control}
                 name="landmark"
-                label={t("car.landmark")}
-                placeholder={t("car.landmark_placeholder")}
+                label={t('car.landmark')}
+                placeholder={t('car.landmark_placeholder')}
                 placeholderTextColor={mutedTextColor}
                 required
                 rules={{
-                  required: t("car.errors.landmark"),
+                  required: t('car.errors.landmark'),
                 }}
               />
             </View>
@@ -471,14 +473,14 @@ const CreateCarForm = () => {
               style={[styles.sectionAccent, { backgroundColor: primaryColor }]}
             />
             <Text style={[styles.sectionTitle, { color: textColor }]}>
-              {t("car.additional_notes")}
+              {t('car.additional_notes')}
             </Text>
           </View>
 
           <FormInput
             control={form.control}
             name="additionalNotes"
-            placeholder={t("car.additional_notes_placeholder")}
+            placeholder={t('car.additional_notes_placeholder')}
             placeholderTextColor={mutedTextColor}
             type="textarea"
             rows={4}
@@ -487,14 +489,14 @@ const CreateCarForm = () => {
       </View>
 
       {/* Fixed Bottom Post Button */}
-      <View style={styles.buttonContainer}>
+      <View style={[styles.buttonContainer]}>
         <TouchableOpacity
           style={[
             styles.postButton,
             {
               backgroundColor:
                 isPending || isResolvingLocation
-                  ? primaryColor + "80"
+                  ? primaryColor + '80'
                   : primaryColor,
               opacity: isPending || isResolvingLocation ? 0.7 : 1,
             },
@@ -506,13 +508,13 @@ const CreateCarForm = () => {
           {isPending || isResolvingLocation ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text style={styles.postButtonText}>{t("car.post_car")}</Text>
+            <Text style={styles.postButtonText}>{t('car.post_car')}</Text>
           )}
         </TouchableOpacity>
       </View>
     </View>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -520,7 +522,6 @@ const styles = StyleSheet.create({
   },
   formContent: {
     paddingTop: 8,
-    paddingBottom: 100, // Space for fixed button
   },
   section: {
     marginBottom: 14,
@@ -530,8 +531,8 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   sectionHeader: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 12,
   },
   sectionAccent: {
@@ -542,33 +543,33 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 17,
-    fontWeight: "600",
+    fontWeight: '600',
   },
   radioSection: {
     marginTop: 14,
   },
   radioLabel: {
     fontSize: 14,
-    fontWeight: "500",
+    fontWeight: '500',
     marginBottom: 8,
   },
   rowInputs: {
-    flexDirection: "row",
+    flexDirection: 'row',
     gap: 12,
   },
   halfInput: {
     flex: 1,
   },
   priceInputContainer: {
-    flexDirection: "row",
-    alignItems: "flex-start",
+    flexDirection: 'row',
+    alignItems: 'flex-start',
     gap: 12,
   },
   priceInputWrapper: {
     flex: 1,
   },
   currencyButtons: {
-    flexDirection: "column",
+    flexDirection: 'column',
     gap: 6,
   },
   currencyButton: {
@@ -576,16 +577,16 @@ const styles = StyleSheet.create({
     height: 23,
     borderRadius: 8,
     borderWidth: 1.5,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   currencyButtonText: {
     fontSize: 12,
-    fontWeight: "600",
+    fontWeight: '600',
   },
   locationInputContainer: {
-    flexDirection: "row",
-    alignItems: "flex-start",
+    flexDirection: 'row',
+    alignItems: 'flex-start',
     gap: 12,
     marginTop: 8,
   },
@@ -596,29 +597,24 @@ const styles = StyleSheet.create({
     width: 52,
     height: 52,
     borderRadius: 12,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
     marginTop: 30, // Align with input (label height + margin)
   },
   buttonContainer: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    marginBottom: 16,
     paddingVertical: 12,
   },
   postButton: {
     height: 52,
     borderRadius: 12,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   postButtonText: {
-    color: "#fff",
+    color: '#fff',
     fontSize: 16,
-    fontWeight: "600",
+    fontWeight: '600',
   },
-});
+})
 
-export default CreateCarForm;
+export default CreateCarForm

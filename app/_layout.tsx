@@ -35,18 +35,18 @@ function RootLayout() {
 				<SafeAreaProvider initialMetrics={initialWindowMetrics}>
 					<ThemeProvider>
 						<NetworkProvider>
-							<Stack screenOptions={{ headerShown: false }}>
-								<Stack.Screen name='index' />
-								<Stack.Screen name='(tabs)' />
-								<Stack.Screen name='(post)' />
-								<Stack.Screen name='(settings)' />
-								<Stack.Screen name='(auth)' />
-								<Stack.Screen name='search' />
-								<Stack.Screen name='categories' />
-								<Stack.Screen name='product/[id]' />
-								<Stack.Screen name='product/location' />
-								<Stack.Screen name='chat/[id]' />
-							</Stack>
+						<Stack screenOptions={{ headerShown: false }}>
+							<Stack.Screen name='index' />
+							<Stack.Screen name='(tabs)' />
+							<Stack.Screen name='(post)' />
+							<Stack.Screen name='(settings)' />
+							<Stack.Screen name='(auth)' />
+							<Stack.Screen name='search' />
+							<Stack.Screen name='categories' />
+							<Stack.Screen name='product/[id]' />
+							<Stack.Screen name='product/location' />
+							<Stack.Screen name='chat/[id]' />
+						</Stack>
 						</NetworkProvider>
 						<StatusBar barStyle={colorScheme === 'dark' ? 'light-content' : 'dark-content'} />
 					</ThemeProvider>

@@ -11,6 +11,7 @@ import { ECarCondition, ECarFuelType, ECarTransmissionType, ECurrencyType, EProd
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
 import { useColor } from '@/hooks/useColor'
+import { useKeyboardHeight } from '@/hooks/useKeyboardHeight'
 import { ProductEditImageDto, ProductUpdateRequest } from '@/types'
 import { parseApiError } from '@/utils/apiError'
 import { useLocalSearchParams, useRouter } from 'expo-router'
@@ -49,7 +50,8 @@ const EditProductPage = () => {
     const primaryColor = useColor('primaryColor')
     const router = useRouter()
     const insets = useSafeAreaInsets()
-
+    const { isKeyboardVisible } = useKeyboardHeight()
+    
     const { data: productRes, isLoading: productLoading, isFetching: productFetching, refetch: refetchProduct } = useEditProductQuery({
         id: productId,
         querySettings: { enabled: productId > 0 },
@@ -106,7 +108,7 @@ const EditProductPage = () => {
 
     React.useEffect(() => {
         if (product?.status) { form.setValue('status', product.status as ProductStatus) }
-    }, [product])
+    }, [form, product])
 
     const handleShare = async () => {
         try {
@@ -221,7 +223,9 @@ const EditProductPage = () => {
     }
 
     return (
-        <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+        <KeyboardAvoidingView style={{ flex: 1 }} 
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : isKeyboardVisible ? 0 : -insets.top}>
             <EditProductHeader productTitle={product?.title} onShare={handleShare} />
             <ScrollView
                 style={[styles.container, { backgroundColor: colors.background }]}

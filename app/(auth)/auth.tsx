@@ -4,6 +4,7 @@ import CustomAlert from '@/components/ui/CustomAlert'
 import { AppLimits } from '@/constants/appLimits'
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
+import { useKeyboardHeight } from '@/hooks/useKeyboardHeight'
 import { userApi } from '@/modules/Auth/api'
 import { useAuthStore } from '@/modules/Auth/auth-store'
 import Ionicons from '@expo/vector-icons/Ionicons'
@@ -76,7 +77,8 @@ const AuthPage = () => {
   const colors = useThemeColors()
   const { t } = useTranslations()
   const insets = useSafeAreaInsets()
-
+  const { isKeyboardVisible } = useKeyboardHeight()
+  
   const { requestOtp, verifyOtp } = useAuthStore()
 
   const [phoneNumber, setPhoneNumber] = useState('')
@@ -330,8 +332,8 @@ const AuthPage = () => {
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'padding'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : isKeyboardVisible ? 0 : -insets.top}
     >
       <ThemedView
         style={[styles.container, { backgroundColor: colors.background }]}
@@ -520,8 +522,7 @@ const AuthPage = () => {
         {/* Action Button — pinned above keyboard */}
         <View
           style={[
-            styles.doneButtonWrapper,
-            { marginBottom: insets.bottom + 16 },
+            styles.doneButtonWrapper
           ]}
         >
           {step === 'phone' && (

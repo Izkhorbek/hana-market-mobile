@@ -1,7 +1,7 @@
-import { useCreateProductMutation } from "@/api/hooks";
-import FormInput from "@/components/FormElements/FormInput";
-import FormSelect from "@/components/FormElements/FormSelect";
-import { OptionType } from "@/components/ui/combobox";
+import { useCreateProductMutation } from '@/api/hooks'
+import FormInput from '@/components/FormElements/FormInput'
+import FormSelect from '@/components/FormElements/FormSelect'
+import { OptionType } from '@/components/ui/combobox'
 import {
   ECategoryType,
   ECurrencyType,
@@ -10,18 +10,18 @@ import {
   EWorkerType,
   EWorkSalaryType,
   EWorkType,
-} from "@/constants/enums";
-import { useTranslations } from "@/hooks/use-translation";
-import { useColor } from "@/hooks/useColor";
-import { parseApiError } from "@/utils/apiError";
-import { resolveEnum } from "@/utils/enumHelpers";
+} from '@/constants/enums'
+import { useTranslations } from '@/hooks/use-translation'
+import { useColor } from '@/hooks/useColor'
+import { parseApiError } from '@/utils/apiError'
+import { resolveEnum } from '@/utils/enumHelpers'
 import {
   getCurrentLocationSafe,
   showLocationErrorAlert,
-} from "@/utils/location";
-import { useRouter } from "expo-router";
-import React, { useRef, useState } from "react";
-import { useForm } from "react-hook-form";
+} from '@/utils/location'
+import { useRouter } from 'expo-router'
+import React, { useRef, useState } from 'react'
+import { useForm } from 'react-hook-form'
 import {
   ActivityIndicator,
   Alert,
@@ -29,82 +29,82 @@ import {
   Text,
   TouchableOpacity,
   View,
-} from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import FormRow from "../FormElements/FormRow";
-import ImageUploader, { DraftImageItem } from "../FormElements/ImageUploader";
+} from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import FormRow from '../FormElements/FormRow'
+import ImageUploader, { DraftImageItem } from '../FormElements/ImageUploader'
 import RadioButtonGroup, {
   RadioOption,
-} from "../FormElements/RadioButtonGroup";
+} from '../FormElements/RadioButtonGroup'
 
 const CreateWorksForm = () => {
-  const { t } = useTranslations();
-  const primaryColor = useColor("primaryColor");
-  const insets = useSafeAreaInsets();
-  const textColor = useColor("text");
-  const subTextColor = useColor("subText");
-  const surfaceColor = useColor("background");
-  const sectionTintColor = useColor("profileBackground");
-  const borderColor = useColor("border");
-  const mutedTextColor = useColor("textMuted");
+  const { t } = useTranslations()
+  const primaryColor = useColor('primaryColor')
+  const insets = useSafeAreaInsets()
+  const textColor = useColor('text')
+  const subTextColor = useColor('subText')
+  const surfaceColor = useColor('background')
+  const sectionTintColor = useColor('profileBackground')
+  const borderColor = useColor('border')
+  const mutedTextColor = useColor('textMuted')
 
-  const router = useRouter();
-  const [isResolvingLocation, setIsResolvingLocation] = useState(false);
-  const isSubmittingRef = useRef(false);
+  const router = useRouter()
+  const [isResolvingLocation, setIsResolvingLocation] = useState(false)
+  const isSubmittingRef = useRef(false)
 
   // Options for radio buttons and selects
   const workerTypeOptions: RadioOption[] = [
     {
-      value: "employee",
-      label: t("work.employee"),
+      value: 'employee',
+      label: t('work.employee'),
     },
     {
-      value: "assistant",
-      label: t("work.assistant"),
+      value: 'assistant',
+      label: t('work.assistant'),
     },
     {
-      value: "teacher",
-      label: t("work.teacher"),
+      value: 'teacher',
+      label: t('work.teacher'),
     },
-  ];
+  ]
 
   const workConditionOptions: RadioOption[] = [
     {
-      value: "temporary",
-      label: t("work.temporary"),
+      value: 'temporary',
+      label: t('work.temporary'),
     },
     {
-      value: "one_month",
-      label: t("work.one_month"),
+      value: 'one_month',
+      label: t('work.one_month'),
     },
     {
-      value: "long_term",
-      label: t("work.long_term"),
+      value: 'long_term',
+      label: t('work.long_term'),
     },
-  ];
+  ]
 
   const salaryTypeOptions: RadioOption[] = [
     {
-      value: "hourly",
-      label: t("work.hourly"),
+      value: 'hourly',
+      label: t('work.hourly'),
     },
     {
-      value: "daily",
-      label: t("work.daily"),
+      value: 'daily',
+      label: t('work.daily'),
     },
     {
-      value: "per_task",
-      label: t("work.per_task"),
+      value: 'per_task',
+      label: t('work.per_task'),
     },
-  ];
+  ]
 
   // Ish turlari uchun options
   const workTypeOptions: OptionType[] = [
-    { value: "full_time", label: t("work.full_time") },
-    { value: "part_time", label: t("work.part_time") },
-    { value: "contract", label: t("work.contract") },
-    { value: "freelancer", label: t("work.freelancer") },
-  ];
+    { value: 'full_time', label: t('work.full_time') },
+    { value: 'part_time', label: t('work.part_time') },
+    { value: 'contract', label: t('work.contract') },
+    { value: 'freelancer', label: t('work.freelancer') },
+  ]
 
   // const paymentTimeOptions: OptionType[] = [
   //   { value: 'immediately', label: t('work.payment_immediately') },
@@ -125,154 +125,154 @@ const CreateWorksForm = () => {
       images: [],
       workerType: workerTypeOptions[0].value,
       workType: workTypeOptions[0].value,
-      workTitle: "",
+      workTitle: '',
       workCondition: workConditionOptions[0].value,
       // workingStartDateTime: undefined as Date | undefined,
       salaryType: salaryTypeOptions[0].value,
-      salaryAmount: "",
+      salaryAmount: '',
       currency: ECurrencyType[ECurrencyType.UZS],
       // paymentType: "cash",
       // paymentTime: "immediately",
-      jobDescription: "",
-      employerName: "",
-      employerPhone: "",
+      jobDescription: '',
+      employerName: '',
+      employerPhone: '',
       // workplaceInfo: "",
-      landmark: "",
+      landmark: '',
       // webLinks: "",
     },
-  });
+  })
 
-  const currency = form.watch("currency");
+  const currency = form.watch('currency')
 
   const { mutate: createProduct, isPending } = useCreateProductMutation({
     onSuccess: () => {
-      Alert.alert(t("post.success"), t("post.product_created_successfully"), [
+      Alert.alert(t('post.success'), t('post.product_created_successfully'), [
         {
-          text: t("common.ok"),
+          text: t('common.ok'),
           onPress: () => router.back(),
         },
-      ]);
-      form.reset();
+      ])
+      form.reset()
     },
     onError: (error: any) => {
-      const message = parseApiError(error, t("post.error_creating_product"));
-      Alert.alert(t("post.error"), message);
+      const message = parseApiError(error, t('post.error_creating_product'))
+      Alert.alert(t('post.error'), message)
     },
-  });
+  })
 
   const onInvalid = (formErrors: Record<string, any>) => {
     const messages = Object.values(formErrors)
       .map((err) => `• ${err?.message}`)
       .filter(Boolean)
-      .join("\n");
+      .join('\n')
     if (messages) {
-      Alert.alert(t("post.error"), messages);
+      Alert.alert(t('post.error'), messages)
     }
-  };
+  }
 
   const handleSubmit = form.handleSubmit(async (data) => {
-    if (isSubmittingRef.current) return;
-    isSubmittingRef.current = true;
+    if (isSubmittingRef.current) return
+    isSubmittingRef.current = true
 
     try {
     // ── Resolve current location automatically ──
-    setIsResolvingLocation(true);
-    const locationResult = await getCurrentLocationSafe();
-    setIsResolvingLocation(false);
+    setIsResolvingLocation(true)
+    const locationResult = await getCurrentLocationSafe()
+    setIsResolvingLocation(false)
 
     if (!locationResult.ok) {
-      showLocationErrorAlert(locationResult, t);
-      return;
+      showLocationErrorAlert(locationResult, t)
+      return
     }
-    const coords = locationResult.coords;
+    const coords = locationResult.coords
 
     // ── Enum resolution (lowercase form value → numeric enum) ──
-    const workerTypeValue = resolveEnum(EWorkerType, data.workerType);
-    const workTypeValue = resolveEnum(EWorkType, data.workType);
-    const workConditionValue = resolveEnum(EWorkCondition, data.workCondition);
-    const salaryTypeValue = resolveEnum(EWorkSalaryType, data.salaryType);
+    const workerTypeValue = resolveEnum(EWorkerType, data.workerType)
+    const workTypeValue = resolveEnum(EWorkType, data.workType)
+    const workConditionValue = resolveEnum(EWorkCondition, data.workCondition)
+    const salaryTypeValue = resolveEnum(EWorkSalaryType, data.salaryType)
     const currencyValue =
-      resolveEnum(ECurrencyType, data.currency) ?? ECurrencyType.UZS;
+      resolveEnum(ECurrencyType, data.currency) ?? ECurrencyType.UZS
 
     // Validate all required enum fields
     if (workerTypeValue === undefined) {
-      Alert.alert(t("post.error"), t("work.errors.worker_type"));
-      return;
+      Alert.alert(t('post.error'), t('work.errors.worker_type'))
+      return
     }
     if (workTypeValue === undefined) {
-      Alert.alert(t("post.error"), t("work.errors.work_type"));
-      return;
+      Alert.alert(t('post.error'), t('work.errors.work_type'))
+      return
     }
     if (workConditionValue === undefined) {
-      Alert.alert(t("post.error"), t("work.errors.work_condition"));
-      return;
+      Alert.alert(t('post.error'), t('work.errors.work_condition'))
+      return
     }
     if (salaryTypeValue === undefined) {
-      Alert.alert(t("post.error"), t("work.errors.salary_type"));
-      return;
+      Alert.alert(t('post.error'), t('work.errors.salary_type'))
+      return
     }
-    const formData = new FormData();
+    const formData = new FormData()
 
     // Product type & category
-    formData.append("product_type", EProductType.WORK.toString());
-    formData.append("category_id", ECategoryType.WORKS.toString());
+    formData.append('product_type', EProductType.WORK.toString())
+    formData.append('category_id', ECategoryType.WORKS.toString())
 
     // Basic fields
-    formData.append("title", data.workTitle);
-    formData.append("description", data.jobDescription || "");
+    formData.append('title', data.workTitle)
+    formData.append('description', data.jobDescription || '')
     
     const currencyType =
-      data.currency === "USD" ? ECurrencyType.USD : ECurrencyType.UZS;
-    formData.append("currency_type", currencyType.toString());
+      data.currency === 'USD' ? ECurrencyType.USD : ECurrencyType.UZS
+    formData.append('currency_type', currencyType.toString())
 
-    const priceField = data.currency === "USD" ? "price_usd" : "price_uzs";
-    formData.append(priceField, data.salaryAmount);
+    const priceField = data.currency === 'USD' ? 'price_usd' : 'price_uzs'
+    formData.append(priceField, data.salaryAmount)
 
-    formData.append("work_type", workTypeValue.toString());
-    formData.append("work_condition", workConditionValue.toString());
+    formData.append('work_type', workTypeValue.toString())
+    formData.append('work_condition', workConditionValue.toString())
 
     // Work data
-    formData.append("work_data.worker_type", workerTypeValue.toString());
-    formData.append("work_data.salary_type", salaryTypeValue.toString());
-    formData.append("work_data.salary_amount", data.salaryAmount);
-    const normalizedPhone = (data.employerPhone || "").replace(/\D/g, "");
+    formData.append('work_data.worker_type', workerTypeValue.toString())
+    formData.append('work_data.salary_type', salaryTypeValue.toString())
+    formData.append('work_data.salary_amount', data.salaryAmount)
+    const normalizedPhone = (data.employerPhone || '').replace(/\D/g, '')
     const phoneE164 = normalizedPhone
-      ? `+998${normalizedPhone.replace(/^998/, "")}`
-      : "";
-    formData.append("work_data.phone_number", phoneE164);
-    formData.append("work_data.employer_information", data.employerName || "");
+      ? `+998${normalizedPhone.replace(/^998/, '')}`
+      : ''
+    formData.append('work_data.phone_number', phoneE164)
+    formData.append('work_data.employer_information', data.employerName || '')
 
     // Currency & price
-    formData.append("currency_type", currencyValue.toString());
+    formData.append('currency_type', currencyValue.toString())
     formData.append(
-      currencyValue === ECurrencyType.USD ? "price_usd" : "price_uzs",
+      currencyValue === ECurrencyType.USD ? 'price_usd' : 'price_uzs',
       data.salaryAmount,
-    );
-    formData.append("is_free", "false");
+    )
+    formData.append('is_free', 'false')
 
     // Location (auto-resolved on Post)
-    formData.append("latitude", coords.latitude.toString());
-    formData.append("longitude", coords.longitude.toString());
-    formData.append("moljal", data.landmark || "");
+    formData.append('latitude', coords.latitude.toString())
+    formData.append('longitude', coords.longitude.toString())
+    formData.append('moljal', data.landmark || '')
 
     // Images
-    const images: DraftImageItem[] = data.images;
+    const images: DraftImageItem[] = data.images
     const draft_images = images.map((img, index) => ({
       draft_uuid: img.draft_uuid,
       draft_image_url: img.draft_image_url,
       sort_order: index,
-    }));
-    formData.append("images_json", JSON.stringify(draft_images));
-    createProduct(formData);
+    }))
+    formData.append('images_json', JSON.stringify(draft_images))
+    createProduct(formData)
     } finally {
-      setIsResolvingLocation(false);
-      isSubmittingRef.current = false;
+      setIsResolvingLocation(false)
+      isSubmittingRef.current = false
     }
-  }, onInvalid);
+  }, onInvalid)
 
   return (
     <View style={styles.container}>
-      <View style={[styles.formContent, { paddingBottom: insets.bottom + 100 }]}>
+      <View style={styles.formContent}>
         {/* Section 1: Job Images (Optional) */}
         <View
           style={[
@@ -285,7 +285,7 @@ const CreateWorksForm = () => {
               style={[styles.sectionAccent, { backgroundColor: primaryColor }]}
             />
             <Text style={[styles.sectionTitle, { color: textColor }]}>
-              {t("work.job_images")}
+              {t('work.job_images')}
             </Text>
           </View>
           <ImageUploader
@@ -294,7 +294,7 @@ const CreateWorksForm = () => {
             maxImages={5}
             rules={{
               validate: (value: string[]) =>
-                value.length > 0 || t("work.errors.images"),
+                value.length > 0 || t('work.errors.images'),
             }}
           />
         </View>
@@ -311,7 +311,7 @@ const CreateWorksForm = () => {
               style={[styles.sectionAccent, { backgroundColor: primaryColor }]}
             />
             <Text style={[styles.sectionTitle, { color: textColor }]}>
-              {t("work.worker_type")}
+              {t('work.worker_type')}
             </Text>
           </View>
           <RadioButtonGroup
@@ -333,37 +333,37 @@ const CreateWorksForm = () => {
               style={[styles.sectionAccent, { backgroundColor: primaryColor }]}
             />
             <Text style={[styles.sectionTitle, { color: textColor }]}>
-              {t("work.job_information")}
+              {t('work.job_information')}
             </Text>
           </View>
 
           <FormInput
             control={form.control}
             name="workTitle"
-            label={t("work.job_title")}
-            placeholder={t("work.job_title_placeholder")}
+            label={t('work.job_title')}
+            placeholder={t('work.job_title_placeholder')}
             placeholderTextColor={mutedTextColor}
             required
             rules={{
-              required: t("work.errors.job_title"),
+              required: t('work.errors.job_title'),
             }}
           />
 
           <FormSelect
             control={form.control}
             name="workType"
-            label={t("work.job_type")}
-            placeholder={t("work.job_type_select")}
+            label={t('work.job_type')}
+            placeholder={t('work.job_type_select')}
             options={workTypeOptions}
             required
             rules={{
-              required: t("work.errors.job_type"),
+              required: t('work.errors.job_type'),
             }}
           />
 
           <View style={styles.radioSection}>
             <Text style={[styles.radioLabel, { color: subTextColor }]}>
-              {t("work.job_deadlines")}
+              {t('work.job_deadlines')}
             </Text>
             <RadioButtonGroup
               control={form.control}
@@ -400,13 +400,13 @@ const CreateWorksForm = () => {
               style={[styles.sectionAccent, { backgroundColor: primaryColor }]}
             />
             <Text style={[styles.sectionTitle, { color: textColor }]}>
-              {t("work.salary_details")}
+              {t('work.salary_details')}
             </Text>
           </View>
 
           <View style={styles.radioSection}>
             <Text style={[styles.radioLabel, { color: subTextColor }]}>
-              {t("work.salary_type")}
+              {t('work.salary_type')}
             </Text>
             <RadioButtonGroup
               control={form.control}
@@ -420,13 +420,13 @@ const CreateWorksForm = () => {
               <FormInput
                 control={form.control}
                 name="salaryAmount"
-                label={t("work.salary_amount")}
-                placeholder={t("work.salary_amount_placeholder")}
+                label={t('work.salary_amount')}
+                placeholder={t('work.salary_amount_placeholder')}
                 placeholderTextColor={mutedTextColor}
                 keyboardType="numeric"
                 required
                 rules={{
-                  required: t("work.errors.salary_amount"),
+                  required: t('work.errors.salary_amount'),
                 }}
               />
             </View>
@@ -436,17 +436,17 @@ const CreateWorksForm = () => {
                   styles.currencyButton,
                   {
                     backgroundColor:
-                      currency === "UZS" ? primaryColor : "transparent",
+                      currency === 'UZS' ? primaryColor : 'transparent',
                     borderColor: primaryColor,
                   },
                 ]}
-                onPress={() => form.setValue("currency", "UZS")}
+                onPress={() => form.setValue('currency', 'UZS')}
                 activeOpacity={0.7}
               >
                 <Text
                   style={[
                     styles.currencyButtonText,
-                    { color: currency === "UZS" ? "#fff" : primaryColor },
+                    { color: currency === 'UZS' ? '#fff' : primaryColor },
                   ]}
                 >
                   UZS
@@ -457,17 +457,17 @@ const CreateWorksForm = () => {
                   styles.currencyButton,
                   {
                     backgroundColor:
-                      currency === "USD" ? primaryColor : "transparent",
+                      currency === 'USD' ? primaryColor : 'transparent',
                     borderColor: primaryColor,
                   },
                 ]}
-                onPress={() => form.setValue("currency", "USD")}
+                onPress={() => form.setValue('currency', 'USD')}
                 activeOpacity={0.7}
               >
                 <Text
                   style={[
                     styles.currencyButtonText,
-                    { color: currency === "USD" ? "#fff" : primaryColor },
+                    { color: currency === 'USD' ? '#fff' : primaryColor },
                   ]}
                 >
                   USD
@@ -517,20 +517,20 @@ const CreateWorksForm = () => {
               style={[styles.sectionAccent, { backgroundColor: primaryColor }]}
             />
             <Text style={[styles.sectionTitle, { color: textColor }]}>
-              {t("work.job_description")}
+              {t('work.job_description')}
             </Text>
           </View>
 
           <FormInput
             control={form.control}
             name="jobDescription"
-            placeholder={t("work.job_description_placeholder")}
+            placeholder={t('work.job_description_placeholder')}
             placeholderTextColor={mutedTextColor}
             type="textarea"
             rows={5}
             required
             rules={{
-              required: t("work.errors.job_description"),
+              required: t('work.errors.job_description'),
             }}
           />
         </View>
@@ -547,7 +547,7 @@ const CreateWorksForm = () => {
               style={[styles.sectionAccent, { backgroundColor: primaryColor }]}
             />
             <Text style={[styles.sectionTitle, { color: textColor }]}>
-              {t("work.employer_information")}
+              {t('work.employer_information')}
             </Text>
           </View>
 
@@ -555,12 +555,12 @@ const CreateWorksForm = () => {
           <FormInput
             control={form.control}
             name="employerName"
-            label={t("work.employer_name")}
-            placeholder={t("work.employer_name_placeholder")}
+            label={t('work.employer_name')}
+            placeholder={t('work.employer_name_placeholder')}
             placeholderTextColor={mutedTextColor}
             required
             rules={{
-              required: t("work.errors.employer_name"),
+              required: t('work.errors.employer_name'),
             }}
           />
 
@@ -569,20 +569,20 @@ const CreateWorksForm = () => {
             <FormInput
               control={form.control}
               name="employerPhone"
-              label={t("work.employer_phone")}
-              placeholder={t("work.employer_phone_placeholder")}
+              label={t('work.employer_phone')}
+              placeholder={t('work.employer_phone_placeholder')}
               placeholderTextColor={mutedTextColor}
               required
               keyboardType="phone-pad"
               maxLength={13}
               rules={{
-                required: t("work.errors.employer_phone"),
+                required: t('work.errors.employer_phone'),
                 validate: (value: string) => {
-                  const digits = (value || "").replace(/\D/g, "").replace(/^998/, "");
+                  const digits = (value || '').replace(/\D/g, '').replace(/^998/, '')
                   return (
                     /^(33|50|55|66|67|7[0135789]|88|9[0134578])\d{7}$/.test(digits) ||
-                    t("work.errors.employer_phone_invalid")
-                  );
+                    t('work.errors.employer_phone_invalid')
+                  )
                 },
               }}
             />
@@ -592,12 +592,12 @@ const CreateWorksForm = () => {
               <FormInput
                 control={form.control}
                 name="landmark"
-                label={t("work.landmark")}
-                placeholder={t("work.landmark_placeholder")}
+                label={t('work.landmark')}
+                placeholder={t('work.landmark_placeholder')}
                 placeholderTextColor={mutedTextColor}
                 required
                 rules={{
-                  required: t("work.errors.landmark"),
+                  required: t('work.errors.landmark'),
                 }}
               />
             </View>
@@ -635,14 +635,14 @@ const CreateWorksForm = () => {
       </View>
 
       {/* Fixed Bottom Post Button */}
-      <View style={[styles.buttonContainer, { paddingBottom: insets.bottom + 16 }]}>
+      <View style={[styles.buttonContainer]}>
         <TouchableOpacity
           style={[
             styles.postButton,
             {
               backgroundColor:
                 isPending || isResolvingLocation
-                  ? primaryColor + "80"
+                  ? primaryColor + '80'
                   : primaryColor,
               opacity: isPending || isResolvingLocation ? 0.7 : 1,
             },
@@ -654,13 +654,13 @@ const CreateWorksForm = () => {
           {isPending || isResolvingLocation ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text style={styles.postButtonText}>{t("work.post_job")}</Text>
+            <Text style={styles.postButtonText}>{t('work.post_job')}</Text>
           )}
         </TouchableOpacity>
       </View>
     </View>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -668,7 +668,6 @@ const styles = StyleSheet.create({
   },
   formContent: {
     paddingTop: 8,
-    paddingBottom: 100, // Space for fixed button
   },
   section: {
     marginBottom: 14,
@@ -678,8 +677,8 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   sectionHeader: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 12,
   },
   sectionAccent: {
@@ -690,19 +689,19 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 17,
-    fontWeight: "600",
+    fontWeight: '600',
   },
   radioSection: {
     marginTop: 14,
   },
   radioLabel: {
     fontSize: 14,
-    fontWeight: "500",
+    fontWeight: '500',
     marginBottom: 8,
   },
   priceInputContainer: {
-    flexDirection: "row",
-    alignItems: "flex-end",
+    flexDirection: 'row',
+    alignItems: 'flex-end',
     gap: 12,
     marginVertical: 10,
   },
@@ -711,7 +710,7 @@ const styles = StyleSheet.create({
     marginBottom: 0,
   },
   currencyButtons: {
-    flexDirection: "column",
+    flexDirection: 'column',
     gap: 6,
   },
   currencyButton: {
@@ -719,19 +718,19 @@ const styles = StyleSheet.create({
     height: 23,
     borderRadius: 8,
     borderWidth: 1.5,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   currencyButtonText: {
     fontSize: 12,
-    fontWeight: "600",
+    fontWeight: '600',
   },
   phoneInputWrapper: {
     marginTop: 10,
   },
   locationContainer: {
-    flexDirection: "row",
-    alignItems: "flex-end",
+    flexDirection: 'row',
+    alignItems: 'flex-end',
     gap: 12,
   },
   locationInputWrapper: {
@@ -745,27 +744,23 @@ const styles = StyleSheet.create({
     height: 52,
     borderRadius: 12,
     borderWidth: 2,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   buttonContainer: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
     paddingVertical: 12,
   },
   postButton: {
     height: 52,
     borderRadius: 12,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   postButtonText: {
-    color: "#fff",
+    color: '#fff',
     fontSize: 16,
-    fontWeight: "600",
+    fontWeight: '600',
   },
-});
+})
 
-export default CreateWorksForm;
+export default CreateWorksForm

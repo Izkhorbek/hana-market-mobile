@@ -4,6 +4,7 @@ import { HEADER_PADDING_TOP } from '@/constants/appLimits'
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
 import { useColor } from '@/hooks/useColor'
+import { useKeyboardHeight } from '@/hooks/useKeyboardHeight'
 import type { FeedbackType } from '@/types'
 import { router } from 'expo-router'
 import { ArrowLeft, MessageSquare, Send, Star } from 'lucide-react-native'
@@ -19,6 +20,7 @@ import {
 	TouchableOpacity,
 	View,
 } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 interface FeedbackFormData {
 	feedback_type: FeedbackType
@@ -74,6 +76,8 @@ const FeedbackPage: React.FC = () => {
 	const { t } = useTranslations()
 	const colors = useThemeColors()
 	const cardColor = useColor('profileCard')
+	const insets = useSafeAreaInsets()
+	const { isKeyboardVisible } = useKeyboardHeight()
 
 	const { control, handleSubmit, watch, reset } = useForm<FeedbackFormData>({
 		defaultValues: { feedback_type: undefined as any, rating: 0, message: '' },
@@ -118,7 +122,8 @@ const FeedbackPage: React.FC = () => {
 				<View style={styles.headerRight} />
 			</View>
 
-			<KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.keyboardView}>
+			<KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.keyboardView}
+				keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : isKeyboardVisible ? 0 : -insets.top}>
 				<ThemedScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps='handled' withSafeBottom>
 					{/* Hero Section */}
 					<View style={styles.heroSection}>

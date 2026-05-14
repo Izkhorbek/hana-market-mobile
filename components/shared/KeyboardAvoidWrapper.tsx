@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react'
 import {
     KeyboardAvoidingView,
     Platform,
@@ -6,7 +6,7 @@ import {
     ScrollViewProps,
     StyleSheet,
     ViewStyle,
-} from 'react-native';
+} from 'react-native'
 
 interface KeyboardAvoidWrapperProps {
   children: React.ReactNode;
@@ -62,8 +62,8 @@ const KeyboardAvoidWrapper = ({
         children
       )}
     </KeyboardAvoidingView>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -72,6 +72,6 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
   },
-});
+})
 
-export default KeyboardAvoidWrapper;
+export default KeyboardAvoidWrapper

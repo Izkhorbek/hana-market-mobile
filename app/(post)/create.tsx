@@ -6,10 +6,11 @@ import { ThemedText } from '@/components/themed-text'
 import { ThemedView } from '@/components/themed-view'
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
+import { useKeyboardHeight } from '@/hooks/useKeyboardHeight'
 import { useLocalSearchParams } from 'expo-router'
 import { Briefcase, Car, Package } from 'lucide-react-native'
 import React, { useState } from 'react'
-import { KeyboardAvoidingView, Platform, StyleSheet, TouchableOpacity } from 'react-native'
+import { KeyboardAvoidingView, StyleSheet, TouchableOpacity, Platform } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 type CategoryType = 'things' | 'cars' | 'works'
@@ -23,7 +24,8 @@ const CreatePost = () => {
   const [selectedCategory, setSelectedCategory] = useState<CategoryType>(initialType)
   const colors = useThemeColors()
   const { t } = useTranslations()
-  const insets = useSafeAreaInsets()
+  const insets = useSafeAreaInsets()  
+  const { isKeyboardVisible } = useKeyboardHeight()
 
   const categories = [
     { id: 'things' as CategoryType, icon: Package, labelKey: 'post.things' },
@@ -33,11 +35,15 @@ const CreatePost = () => {
 
   return (
     <KeyboardAvoidingView
-      style={[{ flex: 1, paddingBottom: insets.bottom }]}
+      style={[styles.keyboardContainer]}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : -insets.bottom}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : isKeyboardVisible ? 0 : -insets.top}
     >
-      <ThemedScrollView style={styles.container}>
+      <ThemedScrollView
+        style={styles.container}
+        contentContainerStyle={styles.content}
+        keyboardShouldPersistTaps="handled"
+      >
         <ThemedText style={[styles.sectionTitle, { color: colors.text }]}>
           {t('post.select_type')}
         </ThemedText>
@@ -82,16 +88,21 @@ const CreatePost = () => {
         {selectedCategory === 'cars' && <CreateCarForm />}
         {selectedCategory === 'works' && <CreateWorksForm />}
       </ThemedScrollView>
-    </KeyboardAvoidingView >
+    </KeyboardAvoidingView>
   )
 
 }
 
 const styles = StyleSheet.create({
+  keyboardContainer: {
+    flex: 1,
+  },
   container: {
     flex: 1,
+  },
+  content: {
     paddingHorizontal: 16,
-    paddingTop: 20,
+    paddingTop: 20
   },
   sectionTitle: {
     fontSize: 18,

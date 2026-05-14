@@ -10,6 +10,7 @@ import ThemedScrollView from '@/components/themed-scrollview'
 import { AppLimits } from '@/constants/appLimits'
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
+import { useKeyboardHeight } from '@/hooks/useKeyboardHeight'
 import { useSafeAreaEdgeInsets } from '@/hooks/useSafeAreaEdgeInsets'
 import { useAuthStore } from '@/modules/Auth/auth-store'
 import { useQueryClient } from '@tanstack/react-query'
@@ -43,7 +44,8 @@ const EditProfilePage = () => {
 	const queryClient = useQueryClient()
 	const logout = useAuthStore((s) => s.logout)
 	const insets = useSafeAreaEdgeInsets()
-
+	const { isKeyboardVisible } = useKeyboardHeight()
+	
 	// Displayed profile image URL (from server or just-uploaded URL)
 	const [displayImageUrl, setDisplayImageUrl] = useState<string | null>(null)
 
@@ -259,7 +261,8 @@ const EditProfilePage = () => {
 				<View style={styles.headerRight} />
 			</View>
 
-			<KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.keyboardView}>
+			<KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.keyboardView}
+			keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : isKeyboardVisible ? 0 : -insets.top}>
 				<ThemedScrollView
 					style={styles.scrollView}
 					contentContainerStyle={styles.scrollContent}

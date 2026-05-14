@@ -17,11 +17,11 @@
  *   logger.error('PRODUCT_LOAD_FAILED', err, { screen: 'EditProduct', extra: { productId } });
  */
 
-import { telemetryService } from '@/api/services';
-import type { MobileLogDto } from '@/types';
-import Constants from 'expo-constants';
-import { Platform } from 'react-native';
-import { addSentryBreadcrumb } from './sentry';
+import { telemetryService } from '@/api/services'
+import type { MobileLogDto } from '@/types'
+import Constants from 'expo-constants'
+import { Platform } from 'react-native'
+import { addSentryBreadcrumb } from './sentry'
 
 // ── Backend field limits ────────────────────────────────────────────────────
 const LIMITS = {
@@ -35,101 +35,101 @@ const LIMITS = {
   OS_VERSION: 60,
   DEVICE: 100,
   EXTRA_BYTES: 4 * 1024, // 4 KB serialized
-} as const;
+} as const
 
 // ── Dedup window (ms) — same {level+code+message} not re-sent within this ──
-const DEDUP_WINDOW_MS = 30_000;
+const DEDUP_WINDOW_MS = 30_000
 
 // ── Module state ────────────────────────────────────────────────────────────
-const recentSignatures = new Map<string, number>();
+const recentSignatures = new Map<string, number>()
 
 const truncate = (value: string | undefined, max: number): string | undefined => {
-  if (value == null) return undefined;
-  if (value.length <= max) return value;
-  return value.slice(0, max);
-};
+  if (value == null) return undefined
+  if (value.length <= max) return value
+  return value.slice(0, max)
+}
 
 const truncateExtra = (extra: Record<string, any> | undefined): Record<string, any> | undefined => {
-  if (!extra) return undefined;
+  if (!extra) return undefined
   try {
-    const json = JSON.stringify(extra);
-    if (json.length <= LIMITS.EXTRA_BYTES) return extra;
+    const json = JSON.stringify(extra)
+    if (json.length <= LIMITS.EXTRA_BYTES) return extra
     // Too large — store a notice and a truncated string snapshot only.
     return {
       _truncated: true,
       _original_size: json.length,
       snapshot: json.slice(0, LIMITS.EXTRA_BYTES - 200),
-    };
+    }
   } catch {
-    return { _serialization_error: true };
+    return { _serialization_error: true }
   }
-};
+}
 
 // ── Device / app metadata (resolved once) ───────────────────────────────────
 const platformName = (() => {
   if (Platform.OS === 'ios' || Platform.OS === 'android' || Platform.OS === 'web') {
-    return Platform.OS;
+    return Platform.OS
   }
-  return String(Platform.OS);
-})();
+  return String(Platform.OS)
+})()
 
-const osVersion = `${Platform.OS} ${Platform.Version}`;
+const osVersion = `${Platform.OS} ${Platform.Version}`
 
 const appVersion =
   Constants.expoConfig?.version ??
   // @ts-ignore older Expo versions
   Constants.manifest?.version ??
-  'unknown';
+  'unknown'
 
 const deviceName: string | undefined =
   Constants.deviceName ??
   // @ts-ignore Constants types vary across Expo SDK versions
   Constants.platform?.ios?.model ??
-  undefined;
+  undefined
 
 // ── Mutable runtime context (current screen / route) ────────────────────────
-let currentScreen: string | undefined;
+let currentScreen: string | undefined
 
 export const setLoggerScreen = (screen: string | undefined) => {
-  currentScreen = screen;
-};
+  currentScreen = screen
+}
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 const normalizeError = (err: unknown): { message: string; stack?: string } => {
   if (err instanceof Error) {
-    return { message: err.message || err.name || 'Error', stack: err.stack };
+    return { message: err.message || err.name || 'Error', stack: err.stack }
   }
-  if (typeof err === 'string') return { message: err };
+  if (typeof err === 'string') return { message: err }
   if (err && typeof err === 'object') {
     try {
-      const anyErr = err as any;
+      const anyErr = err as any
       const message =
         anyErr.message ||
         anyErr.response?.data?.message ||
         anyErr.response?.data?.errors?.[0] ||
-        JSON.stringify(err);
-      return { message: String(message), stack: anyErr.stack };
+        JSON.stringify(err)
+      return { message: String(message), stack: anyErr.stack }
     } catch {
-      return { message: 'Unknown error' };
+      return { message: 'Unknown error' }
     }
   }
-  return { message: 'Unknown error' };
-};
+  return { message: 'Unknown error' }
+}
 
 const shouldDedupe = (level: string, code: string | undefined, message: string): boolean => {
-  const sig = `${level}|${code ?? ''}|${message}`;
-  const now = Date.now();
-  const last = recentSignatures.get(sig);
-  if (last && now - last < DEDUP_WINDOW_MS) return true;
-  recentSignatures.set(sig, now);
+  const sig = `${level}|${code ?? ''}|${message}`
+  const now = Date.now()
+  const last = recentSignatures.get(sig)
+  if (last && now - last < DEDUP_WINDOW_MS) return true
+  recentSignatures.set(sig, now)
   // Trim old entries opportunistically.
   if (recentSignatures.size > 200) {
     for (const [k, t] of recentSignatures) {
-      if (now - t > DEDUP_WINDOW_MS) recentSignatures.delete(k);
+      if (now - t > DEDUP_WINDOW_MS) recentSignatures.delete(k)
     }
   }
-  return false;
-};
+  return false
+}
 
 interface LogOptions {
   code?: string;
@@ -155,17 +155,17 @@ const buildPayload = (
   os_version: truncate(osVersion, LIMITS.OS_VERSION),
   device: truncate(deviceName, LIMITS.DEVICE),
   extra: truncateExtra(options?.extra),
-});
+})
 
 const send = (payload: MobileLogDto) => {
   // Fire-and-forget. Never let a logging failure surface.
   telemetryService.log(payload).catch(() => {
     if (__DEV__) {
-      // eslint-disable-next-line no-console
-      console.warn('[logger] telemetry send failed (suppressed)');
+       
+      console.warn('[logger] telemetry send failed (suppressed)')
     }
-  });
-};
+  })
+}
 
 const log = (
   level: 'info' | 'warn' | 'error' | 'fatal',
@@ -176,16 +176,16 @@ const log = (
     const { message, stack } =
       typeof messageOrError === 'string'
         ? { message: messageOrError, stack: undefined }
-        : normalizeError(messageOrError);
+        : normalizeError(messageOrError)
 
-    if (shouldDedupe(level, options?.code, message)) return;
+    if (shouldDedupe(level, options?.code, message)) return
 
-    const payload = buildPayload(level, message, stack, options);
+    const payload = buildPayload(level, message, stack, options)
 
     if (__DEV__) {
-      // eslint-disable-next-line no-console
-      const out = level === 'error' || level === 'fatal' ? console.error : console.log;
-      out(`[${level.toUpperCase()}]${payload.code ? ` ${payload.code}` : ''} ${payload.message}`, options?.extra ?? '');
+       
+      const out = level === 'error' || level === 'fatal' ? console.error : console.log
+      out(`[${level.toUpperCase()}]${payload.code ? ` ${payload.code}` : ''} ${payload.message}`, options?.extra ?? '')
     }
 
     // Drop a Sentry breadcrumb so when a *real* native crash later occurs,
@@ -196,13 +196,13 @@ const log = (
       level === 'warn' ? 'warning' : level,
       payload.code ? `${payload.code}: ${payload.message}` : payload.message,
       { screen: payload.screen, ...options?.extra },
-    );
+    )
 
-    send(payload);
+    send(payload)
   } catch {
     // Swallow — logging must never throw.
   }
-};
+}
 
 export const logger = {
   info: (message: string, options?: LogOptions) => log('info', message, options),
@@ -212,21 +212,21 @@ export const logger = {
     //   logger.error('CODE', error, { screen, extra })
     //   logger.error(error, { code, screen, extra })
     if (typeof codeOrError === 'string') {
-      const code = codeOrError;
-      const opts = (maybeOptions ?? {}) as LogOptions;
-      return log('error', errOrOptions ?? code, { ...opts, code });
+      const code = codeOrError
+      const opts = (maybeOptions ?? {}) as LogOptions
+      return log('error', errOrOptions ?? code, { ...opts, code })
     }
-    return log('error', codeOrError, (errOrOptions as LogOptions) ?? undefined);
+    return log('error', codeOrError, (errOrOptions as LogOptions) ?? undefined)
   },
   fatal: (codeOrError: string | unknown, errOrOptions?: unknown, maybeOptions?: LogOptions) => {
     if (typeof codeOrError === 'string') {
-      const code = codeOrError;
-      const opts = (maybeOptions ?? {}) as LogOptions;
-      return log('fatal', errOrOptions ?? code, { ...opts, code });
+      const code = codeOrError
+      const opts = (maybeOptions ?? {}) as LogOptions
+      return log('fatal', errOrOptions ?? code, { ...opts, code })
     }
-    return log('fatal', codeOrError, (errOrOptions as LogOptions) ?? undefined);
+    return log('fatal', codeOrError, (errOrOptions as LogOptions) ?? undefined)
   },
   setScreen: setLoggerScreen,
-};
+}
 
-export default logger;
+export default logger

@@ -22,6 +22,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import FormRow from '../FormElements/FormRow'
 import ImageUploader, { DraftImageItem } from '../FormElements/ImageUploader'
 import RadioButtonGroup, {
@@ -31,6 +32,7 @@ import RadioButtonGroup, {
 const CreateThingForm = () => {
   const { t, locale } = useTranslations()
   const colors = useThemeColors()
+  const insets = useSafeAreaInsets()
 
   const router = useRouter()
   const [isResolvingLocation, setIsResolvingLocation] = useState(false)
@@ -430,7 +432,7 @@ const CreateThingForm = () => {
       </View>
 
       {/* Fixed Bottom Post Button */}
-      <View style={styles.buttonContainer}>
+      <View style={[styles.buttonContainer]}>
         <TouchableOpacity
           style={[
             styles.postButton,
@@ -462,7 +464,6 @@ const styles = StyleSheet.create({
   },
   formContent: {
     paddingTop: 8,
-    paddingBottom: 100, // Space for fixed button
   },
   section: {
     marginBottom: 14,
@@ -528,11 +529,6 @@ const styles = StyleSheet.create({
     marginTop: 30, // Align with input (label height + margin)
   },
   buttonContainer: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    marginBottom: 16,
     paddingVertical: 12,
   },
   postButton: {
