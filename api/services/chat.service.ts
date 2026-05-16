@@ -8,9 +8,9 @@ import type {
     CreateChatRoomRequest,
     MarkAsReadRequest,
     UnreadCountResponse,
-} from '../../types';
-import axiosInstance from '../api';
-import ENDPOINT from '../endpoints';
+} from '../../types'
+import axiosInstance from '../api'
+import ENDPOINT from '../endpoints'
 
 export const chatService = {
   /**
@@ -18,7 +18,7 @@ export const chatService = {
    * GET /api/chats/my-chats
    */
   getMyChats: (params: ChatListParams = {}) => {
-    return axiosInstance.get<ApiResponse<ChatListResponse>>(ENDPOINT.CHAT.MY_CHATS, { params });
+    return axiosInstance.get<ApiResponse<ChatListResponse>>(ENDPOINT.CHAT.MY_CHATS, { params })
   },
 
   /**
@@ -26,7 +26,7 @@ export const chatService = {
    * POST /api/chats/create-or-get
    */
   createOrGetChat: (data: CreateChatRoomRequest) => {
-    return axiosInstance.post<ApiResponse<ChatRoomDto>>(ENDPOINT.CHAT.CREATE_OR_GET, data);
+    return axiosInstance.post<ApiResponse<ChatRoomDto>>(ENDPOINT.CHAT.CREATE_OR_GET, data)
   },
 
   /**
@@ -34,7 +34,7 @@ export const chatService = {
    * GET /api/chats/{chatRoomId}/messages
    */
   getChatMessages: (chatRoomId: number, params: ChatMessagesParams = {}) => {
-    return axiosInstance.get<ApiResponse<ChatMessagesResponse>>(ENDPOINT.CHAT.MESSAGES(chatRoomId), { params });
+    return axiosInstance.get<ApiResponse<ChatMessagesResponse>>(ENDPOINT.CHAT.MESSAGES(chatRoomId), { params })
   },
 
   /**
@@ -42,7 +42,7 @@ export const chatService = {
    * GET /api/chats/unread-count
    */
   getUnreadCount: () => {
-    return axiosInstance.get<ApiResponse<UnreadCountResponse>>(ENDPOINT.CHAT.UNREAD_COUNT);
+    return axiosInstance.get<ApiResponse<UnreadCountResponse>>(ENDPOINT.CHAT.UNREAD_COUNT)
   },
 
   /**
@@ -50,7 +50,7 @@ export const chatService = {
    * POST /api/chats/mark-as-read
    */
   markAsRead: (data: MarkAsReadRequest) => {
-    return axiosInstance.post(ENDPOINT.CHAT.MARK_AS_READ, data);
+    return axiosInstance.post(ENDPOINT.CHAT.MARK_AS_READ, data)
   },
 
   /**
@@ -60,7 +60,7 @@ export const chatService = {
   deleteChatRoom: (chatRoomId: number) => {
     return axiosInstance.delete<ApiResponse<Record<string, never>>>(
       ENDPOINT.CHAT.DELETE_CHAT_ROOM(chatRoomId)
-    );
+    )
   },
 
   /**
@@ -70,7 +70,7 @@ export const chatService = {
   deleteChatMessage: (chatRoomId: number, messageId: number) => {
     return axiosInstance.delete<ApiResponse<Record<string, never>>>(
       ENDPOINT.CHAT.DELETE_ROOM_MESSAGES(chatRoomId, messageId)
-    );
+    )
   },
 
   /**
@@ -78,7 +78,7 @@ export const chatService = {
    * GET /api/chats/user-status/{userId}
    */
   getUserStatus: (userId: number) => {
-    return axiosInstance.get(ENDPOINT.CHAT.USER_STATUS(userId));
+    return axiosInstance.get(ENDPOINT.CHAT.USER_STATUS(userId))
   },
 
   /**
@@ -86,6 +86,6 @@ export const chatService = {
    * GET /api/chats/health
    */
   health: () => {
-    return axiosInstance.get(ENDPOINT.CHAT.HEALTH);
+    return axiosInstance.get(ENDPOINT.CHAT.HEALTH)
   },
-};
+}

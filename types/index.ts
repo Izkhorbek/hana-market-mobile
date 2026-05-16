@@ -13,8 +13,7 @@ import {
   EWorkerType,
   EWorkSalaryType,
   EWorkType,
-} from '@/constants/enums';
-import { List } from 'lucide-react-native';
+} from '@/constants/enums'
 
 export interface ApiResponse<T> {
   success: boolean;
@@ -30,6 +29,7 @@ export interface ApiResponse<T> {
  * Mobile log payload sent to POST /telemetry/log.
  * Mirrors backend MobileLogDto.
  */
+
 export interface MobileLogDto {
   /** Severity level: "info", "warn", "error", "fatal" */
   level: string;
@@ -266,10 +266,6 @@ export interface MarkAsReadRequest {
   chat_room_id: number;
 }
 
-export interface UnreadCountResponse {
-  unread_count: number;
-}
-
 export interface UserOnlineStatus {
   isOnline: boolean;
   lastSeenAt: string | null;
@@ -302,6 +298,8 @@ export interface UnreadCountResponse {
 }
 
 // ==================== PRODUCT TYPES ====================
+
+export type ProductStatus = 'active' | 'reserved' | 'sold' | 'hidden'
 
 export interface DraftImageDto {
   draft_uuid: string;
@@ -369,7 +367,7 @@ export interface ProductUpdateRequest {
   is_free?: boolean;
   is_negotiable?: boolean;
   moljal?: string;
-  status?: string;
+  status?: ProductStatus;
   car_brand?: string;
   car_model?: string;
   work_type?: EWorkType;
@@ -415,8 +413,6 @@ export interface PaginatedResponse<T> {
   page_size: number;
   total_records: number;
 }
-
-export interface ProductListResponse extends PaginatedResponse<ProductListItemDto> {}
 
 export interface ProductListItemDto {
   id: number;
@@ -715,40 +711,4 @@ export interface FeedbackRequest {
 
 export interface FeedbackResponse {
   feedback_id: number;
-}
-
-// ==================== LOG TYPES ====================
-export interface MobileLogDto {
-  /** Severity level: "info", "warn", "error", "fatal" */
-  level: string;
-
-  /** Stable, machine-readable error code (e.g. "OTP_PARSE_FAILED", "PRODUCT_LOAD_TIMEOUT"). Max 120 chars. */
-  code?: string;
-
-  /** Human-readable message. Max 2000 chars. */
-  message: string;
-
-  /** Stack trace (truncated by client if long). Max 8000 chars. */
-  stack?: string;
-
-  /** Trace id correlating this event with a specific backend request. Max 64 chars. */
-  trace_id?: string;
-
-  /** Screen / route name where the issue occurred. Max 120 chars. */
-  screen?: string;
-
-  /** Mobile app version (e.g. "1.4.2"). Max 40 chars. */
-  app_version?: string;
-
-  /** Platform: "android", "ios", "web". Max 20 chars. */
-  platform?: string;
-
-  /** OS version (e.g. "Android 14", "iOS 17.2"). Max 60 chars. */
-  os_version?: string;
-
-  /** Device model (e.g. "Samsung A52", "iPhone 13"). Max 100 chars. */
-  device?: string;
-
-  /** Free-form structured context (will be serialized to JSON in logs). Keep < 4 KB serialized. */
-  extra?: Record<string, any>;
 }

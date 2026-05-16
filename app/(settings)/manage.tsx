@@ -1,4 +1,4 @@
-import { AppLimits, HEADER_PADDING_TOP } from '@/constants/appLimits'
+import { AppLimits } from '@/constants/appLimits'
 import { useColorScheme } from '@/hooks/use-color-scheme'
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
@@ -278,6 +278,7 @@ const ManageNeighborhoodPage = () => {
 			{/* Map */}
 			<View style={styles.mapContainer}>
 				<MapView
+					mapType="standard"
 					ref={mapRef}
 					provider='google'
 					style={styles.map}
@@ -314,11 +315,12 @@ const ManageNeighborhoodPage = () => {
 								longitude: storedLocation.longitude,
 							}}
 							anchor={{ x: 0.5, y: 0.5 }}
+							tracksViewChanges={false}
 						>
 							<View style={[styles.markerOuter, { borderColor: colors.primaryColor }]}>
-								<View style={[styles.markerInner, { backgroundColor: colors.primaryColor }]}>
-									<MapPin size={20} color='#fff' />
-								</View>
+								{/* <View style={[styles.markerInner, { backgroundColor: colors.primaryColor }]}> */}
+									{/* <MapPin size={20} color='#fff' /> */}
+								{/* </View> */}
 							</View>
 						</Marker>
 					)}
@@ -509,7 +511,6 @@ const styles = StyleSheet.create({
 		flexDirection: 'row',
 		alignItems: 'center',
 		justifyContent: 'space-between',
-		paddingTop: HEADER_PADDING_TOP,
 		paddingBottom: 16,
 		paddingHorizontal: 16,
 		borderBottomWidth: 1,

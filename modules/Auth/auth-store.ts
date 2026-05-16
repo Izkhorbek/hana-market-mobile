@@ -7,9 +7,11 @@ import {
   setRefreshTokenFn,
   setTokenGetter,
 } from '@/api/auth-bridge'
+import { queryClient } from '@/api/queryClient'
 import { secureTokenStore } from '@/utils/secureTokenStore'
 import { setSentryUser } from '@/utils/sentry'
 import { authApi as localAuthApi, userApi as localUserApi } from './api'
+import { useChatStore }  from '@/modules/Chat/chat-store'
 
 // ── Types ──
 export interface User {
@@ -40,9 +42,15 @@ interface AuthState {
   isAuthenticated: boolean;
   isHydrated: boolean;
   locationGranted: boolean;
+  /**
+   * Set to true when a startup token validation fails (expired / missing).
+   * Cleared after the Alert is shown. NOT persisted.
+   */
+  sessionExpiredOnStart: boolean;
 
   // Actions
   setHydrated: (hydrated: boolean) => void;
+  clearSessionExpiredOnStart: () => void;
   /**
    * Ask the backend to SMS an OTP for this phone. No token is issued yet.
    */
@@ -119,8 +127,10 @@ export const useAuthStore = create<AuthState>()(
       isAuthenticated: false,
       isHydrated: false,
       locationGranted: false,
+      sessionExpiredOnStart: false,
 
       setHydrated: (hydrated) => set({ isHydrated: hydrated }),
+      clearSessionExpiredOnStart: () => set({ sessionExpiredOnStart: false }),
 
       requestOtp: async (phoneNumber) => {
         // Fire-and-forget from the store's perspective: the SMS is the only
@@ -195,7 +205,7 @@ export const useAuthStore = create<AuthState>()(
       fetchUser: async () => {
         try {
           const response = await localUserApi.getUser()
-          set({ user: response.data.data })
+          set({ user: response.data.data, sessionExpiredOnStart: false })
           // Tag Sentry events with the (non-PII) user identity for triage.
           if (response.data.data) {
             setSentryUser({
@@ -204,7 +214,9 @@ export const useAuthStore = create<AuthState>()(
             })
           }
         } catch {
-          // Token may be expired and refresh failed — log out
+          // Token is expired / invalid — flag it so the UI can show an Alert,
+          // then wipe the session so the user is sent back to the welcome page.
+          set({ sessionExpiredOnStart: true })
           get().logout()
         }
       },
@@ -243,8 +255,12 @@ export const useAuthStore = create<AuthState>()(
 
       logout: () => {
         // Lazy import to break circular dependency
-        const { useChatStore } = require('@/modules/Chat/chat-store')
         useChatStore.getState().reset()
+
+        // Wipe the entire React Query cache so no previous user's data
+        // (chat list, messages, profile, unread counts, product queries, etc.)
+        // bleeds into the next session on a shared device.
+        queryClient.clear()
 
         // Clear auth state
         set({
@@ -335,18 +351,28 @@ async function hydrateTokensFromVault(rehydrated?: AuthState) {
       })
     }
   } finally {
-    // If we restored a token but the persisted user is missing/placeholder,
-    // refresh it from the server (preserves the existing post-rehydrate
-    // recovery behavior).
     const s = useAuthStore.getState()
-    const shouldRefreshUser =
-      !!s.token && s.isAuthenticated && (!s.user || !hasValidUserId(s.user))
 
-    if (shouldRefreshUser) {
-      s.fetchUser().finally(() => s.setHydrated(true))
-    } else {
+    // Guard: authenticated but vault returned no token (token was wiped by
+    // the OS, uninstall-reinstall, or manual vault clear). Treat the same as
+    // an expired session.
+    if (s.isAuthenticated && !s.token) {
+      useAuthStore.setState({ sessionExpiredOnStart: true })
+      s.logout()
       s.setHydrated(true)
+      return
     }
+
+    // Always validate the stored token against the server on startup.
+    // fetchUser() sets sessionExpiredOnStart + calls logout() on any failure,
+    // so the user is redirected to the welcome page with an Alert.
+    if (s.isAuthenticated && s.token) {
+      s.fetchUser().finally(() => s.setHydrated(true))
+      return
+    }
+
+    // Fresh install / already logged out — nothing to validate.
+    s.setHydrated(true)
   }
 }
 

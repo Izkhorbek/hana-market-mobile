@@ -19,6 +19,8 @@
     "location_required_title": "Требуется местоположение",
     "location_required_message": "Пожалуйста, настройте местоположение и радиус поиска, чтобы видеть товары рядом с вами.",
     "setup_location": "Настроить местоположение",
+    "session_expired_title": "Сессия истекла",
+    "session_expired_message": "Ваша сессия истекла. Пожалуйста, войдите снова.",
     "username_required_title": "Создайте имя пользователя",
     "username_required_message": "Пожалуйста, создайте имя пользователя для завершения настройки профиля.",
     "username_placeholder": "Введите имя пользователя",

@@ -1,6 +1,6 @@
 import { useLikedProductsQuery } from '@/api/hooks'
 import ProductCard from '@/components/shared/Cards/ProductCard'
-import { HEADER_HEIGHT, HEADER_PADDING_TOP } from '@/constants/appLimits'
+import { HEADER_HEIGHT } from '@/constants/appLimits'
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
 import { LikedProductDto } from '@/types'
@@ -135,7 +135,6 @@ const styles = StyleSheet.create({
     },
     header: {
         height: HEADER_HEIGHT,
-        paddingTop: HEADER_PADDING_TOP,
         paddingHorizontal: 16,
         paddingBottom: 12,
         borderBottomWidth: 1,

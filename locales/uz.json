@@ -19,6 +19,8 @@
     "location_required_title": "Joylashuv talab qilinadi",
     "location_required_message": "Iltimos, yaqin atrofdagi mahsulotlarni ko'rish uchun joylashuv va qidiruv radiusini sozlang.",
     "setup_location": "Joylashuvni sozlash",
+    "session_expired_title": "Sessiya tugadi",
+    "session_expired_message": "Sizning sessiyangiz tugadi. Iltimos, qayta kiring.",
     "username_required_title": "Foydalanuvchi nomini yarating",
     "username_required_message": "Iltimos, profil sozlamalarini yakunlash uchun foydalanuvchi nomini kiriting.",
     "username_placeholder": "Foydalanuvchi nomini kiriting",

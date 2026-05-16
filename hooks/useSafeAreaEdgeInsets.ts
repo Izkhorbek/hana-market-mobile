@@ -1,5 +1,5 @@
-import { Platform, StatusBar } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Platform, StatusBar } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 /**
  * Cross-platform safe area insets without global SafeAreaProvider.
@@ -10,7 +10,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
  * - Android: StatusBar height + bottom gesture area
  */
 export const useSafeAreaEdgeInsets = () => {
-  const insets = useSafeAreaInsets();
+  const insets = useSafeAreaInsets()
 
   return Platform.select({
     ios: {
@@ -28,15 +28,15 @@ export const useSafeAreaEdgeInsets = () => {
       right: 0,
     },
     default: insets, // Fallback for other platforms
-  });
-};
+  })
+}
 
 /**
  * Lightweight EdgeInsets without any hook dependencies.
  * Use this if you want zero reliance on react-native-safe-area-context.
  */
 export const getEdgeInsetsSync = () => {
-  const statusBarHeight = StatusBar.currentHeight || 0;
+  const statusBarHeight = StatusBar.currentHeight || 0
 
   return Platform.select({
     ios: {
@@ -52,5 +52,5 @@ export const getEdgeInsetsSync = () => {
       right: 0,
     },
     default: { top: 0, bottom: 0, left: 0, right: 0 },
-  });
-};
+  })
+}

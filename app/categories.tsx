@@ -1,5 +1,5 @@
 import { useCategoriesQuery } from '@/api/hooks'
-import { HEADER_HEIGHT, HEADER_PADDING_TOP } from '@/constants/appLimits'
+import { HEADER_HEIGHT } from '@/constants/appLimits'
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
 import { Category } from '@/types'
@@ -9,13 +9,11 @@ import { router } from 'expo-router'
 import { ArrowLeft, ChevronRight } from 'lucide-react-native'
 import React, { useCallback } from 'react'
 import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { SvgUri } from 'react-native-svg'
 
 const CategoriesPage: React.FC = () => {
 	const { t, locale } = useTranslations()
 	const colors = useThemeColors()
-	const insets = useSafeAreaInsets()
 
 	// Fetch categories from API
 	const { data: categoriesRes, isLoading, isRefetching, refetch } = useCategoriesQuery()
@@ -52,7 +50,7 @@ const CategoriesPage: React.FC = () => {
 				<FlatList
 					data={categories}
 					keyExtractor={item => String(item.id)}
-					contentContainerStyle={[styles.listContainer, { paddingBottom: insets.bottom }]}
+					contentContainerStyle={styles.listContainer}
 					showsVerticalScrollIndicator={false}
 					refreshControl={
 						<RefreshControl
@@ -114,7 +112,6 @@ const styles = StyleSheet.create({
 	},
 	header: {
 		height: HEADER_HEIGHT,
-		paddingTop: HEADER_PADDING_TOP,
 		paddingHorizontal: 16,
 		paddingBottom: 10,
 		flexDirection: 'row',

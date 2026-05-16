@@ -12,7 +12,6 @@ import { ActivityIndicator, StyleSheet, View } from 'react-native'
 // Default coordinates (Tashkent)
 const DEFAULT_LAT = 41.311081
 const DEFAULT_LNG = 69.240562
-const MAP_PAGE_SIZE = 200
 
 // Product item from API response
 interface MapProductItem {
@@ -62,7 +61,7 @@ const MapPage = () => {
   const hasLocationParams = Number.isFinite(latitudeParam) && Number.isFinite(longitudeParam)
 
   // Fetch products for map
-  const { data, isLoading, isError } = useProductsQuery({
+  const { data, isLoading } = useProductsQuery({
     params: {
       user_lat: userLat,
       user_long: userLng,
@@ -74,15 +73,17 @@ const MapPage = () => {
   console.log('MapPage products data:', data)
 
   // Create highlighted marker from URL params
-  const highlightedMarker: MarkerData | null = hasLocationParams
-    ? {
-      id: 'target-location',
-      latitude: latitudeParam,
-      longitude: longitudeParam,
-      title: params.markerTitle || 'Selected location',
-      description: 'Opened from product detail',
-    }
-    : null
+  const highlightedMarker: MarkerData | null = useMemo(() => {
+    return hasLocationParams    
+      ? { 
+        id: 'target-location',
+        latitude: latitudeParam,
+        longitude: longitudeParam,
+        title: params.markerTitle || 'Selected location',
+        description: 'Opened from product detail',
+      }
+      : null
+  }, [hasLocationParams, latitudeParam, longitudeParam, params.markerTitle])
 
   // Transform products to markers
   const productMarkers: MarkerData[] = useMemo(() => {
@@ -105,7 +106,7 @@ const MapPage = () => {
           item.created_ago || '',
         ].filter(Boolean),
       }))
-  }, [data, locale])
+  }, [data, t])
 
   console.log('MapPage productMarkers:', productMarkers)
 

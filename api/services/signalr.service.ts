@@ -17,6 +17,9 @@ export const SignalREvents = {
   MessagesRead: 'MessagesRead',
   UserTyping: 'UserTyping',
   Error: 'Error',
+  ChatRoomCreated: 'ChatRoomCreated',
+  MessageDeleted: 'MessageDeleted',
+  ChatRoomDeleted: 'ChatRoomDeleted'
 } as const
 
 // SignalR event payloads (matching API documentation - snake_case from backend)
@@ -65,6 +68,31 @@ export interface SignalRError {
   code?: string;
 }
 
+// New chat room created (e.g. another user opened a chat with us).
+// Backend may send either the bare ChatRoomDto or a wrapped { chat_room }
+// shape — we accept both via a union and normalize in the store.
+export interface ChatRoomCreatedWrapped {
+  chat_room: ChatRoomDto;
+}
+export type ChatRoomCreatedPayload = ChatRoomDto | ChatRoomCreatedWrapped;
+
+// A single message was deleted (soft or permanent) by a user in a room.
+export interface MessageDeletedPayload {
+  chat_room_id: number;
+  message_id: number;
+  deleted_by_user_id?: number;
+  is_permanently_deleted?: boolean;
+  deleted_at?: string;
+}
+
+// A chat room was deleted (soft or permanent) by a user.
+export interface ChatRoomDeletedPayload {
+  chat_room_id: number;
+  deleted_by_user_id?: number;
+  is_permanently_deleted?: boolean;
+  deleted_at?: string;
+}
+
 // Hub method names (methods we can invoke on the server)
 export const HubMethods = {
   SendMessage: 'SendMessage',
@@ -73,6 +101,7 @@ export const HubMethods = {
   StopTyping: 'StopTyping',
   JoinChatRoom: 'JoinChatRoom',
   LeaveChatRoom: 'LeaveChatRoom',
+  IsUserOnline: 'IsUserOnline',
 } as const
 
 // Send message request (matching API format)
@@ -108,6 +137,9 @@ class SignalRService {
   private userTypingListeners: EventCallback<UserTypingPayload>[] = []
   private errorListeners: EventCallback<SignalRError>[] = []
   private connectionStateListeners: EventCallback<HubConnectionState>[] = []
+  private chatRoomCreatedListeners: EventCallback<ChatRoomCreatedPayload>[] = []
+  private messageDeletedListeners: EventCallback<MessageDeletedPayload>[] = []
+  private chatRoomDeletedListeners: EventCallback<ChatRoomDeletedPayload>[] = []
 
   private getHubUrl(): string {
     // SignalR hub URL from API documentation
@@ -173,7 +205,6 @@ class SignalRService {
       this.reconnectAttempts = 0
       this.notifyConnectionState(HubConnectionState.Connected)
     } catch (error) {
-      console.error('[SignalR] Connection failed:', error)
       logger.error('SIGNALR_CONNECT_FAILED', error)
       this.handleConnectionError()
       throw error
@@ -191,7 +222,6 @@ class SignalRService {
         await this.connection.stop()
         console.log('[SignalR] Disconnected')
       } catch (error) {
-        console.error('[SignalR] Error disconnecting:', error)
         logger.warn(error, { code: 'SIGNALR_DISCONNECT_FAILED' })
       }
       this.connection = null
@@ -208,6 +238,9 @@ class SignalRService {
     this.messagesReadListeners = []
     this.userTypingListeners = []
     this.errorListeners = []
+    this.chatRoomCreatedListeners = []
+    this.messageDeletedListeners = []
+    this.chatRoomDeletedListeners = []
     // Note: connectionStateListeners are NOT cleared as they're needed for reconnect handling
   }
 
@@ -284,6 +317,21 @@ class SignalRService {
     await this.invokeMethod(HubMethods.LeaveChatRoom, chatRoomId)
   }
 
+  /**
+   * Check if a user is online
+   * @param userId The ID of the user to check
+   * @returns A promise that resolves to true if the user is online, false otherwise  
+   */
+async isUserOnline(userId: number): Promise<boolean> {
+    try {
+      const result = await this.invokeMethod(HubMethods.IsUserOnline, userId)
+      return Boolean(result)
+    } catch (error) {
+      logger.warn(error, { code: 'SIGNALR_IS_USER_ONLINE_FAILED', extra: { userId } })
+      return false
+    }
+  }
+
   // ========== Event Subscriptions ==========
 
   onUserStatusChanged(callback: EventCallback<UserStatusPayload>): () => void {
@@ -335,6 +383,39 @@ class SignalRService {
     this.connectionStateListeners.push(callback)
     return () => {
       this.connectionStateListeners = this.connectionStateListeners.filter(
+        (cb) => cb !== callback,
+      )
+    }
+  }
+
+  onChatRoomCreated(
+    callback: EventCallback<ChatRoomCreatedPayload>,
+  ): () => void {
+    this.chatRoomCreatedListeners.push(callback)
+    return () => {
+      this.chatRoomCreatedListeners = this.chatRoomCreatedListeners.filter(
+        (cb) => cb !== callback,
+      )
+    }
+  }
+
+  onMessageDeleted(
+    callback: EventCallback<MessageDeletedPayload>,
+  ): () => void {
+    this.messageDeletedListeners.push(callback)
+    return () => {
+      this.messageDeletedListeners = this.messageDeletedListeners.filter(
+        (cb) => cb !== callback,
+      )
+    }
+  }
+
+  onChatRoomDeleted(
+    callback: EventCallback<ChatRoomDeletedPayload>,
+  ): () => void {
+    this.chatRoomDeletedListeners.push(callback)
+    return () => {
+      this.chatRoomDeletedListeners = this.chatRoomDeletedListeners.filter(
         (cb) => cb !== callback,
       )
     }
@@ -403,6 +484,30 @@ class SignalRService {
       })
       this.errorListeners.forEach((cb) => cb(error))
     })
+
+    // ChatRoomCreated event
+    this.connection.on(
+      SignalREvents.ChatRoomCreated,
+      (payload: ChatRoomCreatedPayload) => {
+        this.chatRoomCreatedListeners.forEach((cb) => cb(payload))
+      },
+    )
+
+    // MessageDeleted event
+    this.connection.on(
+      SignalREvents.MessageDeleted,
+      (payload: MessageDeletedPayload) => {
+        this.messageDeletedListeners.forEach((cb) => cb(payload))
+      },
+    )
+
+    // ChatRoomDeleted event
+    this.connection.on(
+      SignalREvents.ChatRoomDeleted,
+      (payload: ChatRoomDeletedPayload) => {
+        this.chatRoomDeletedListeners.forEach((cb) => cb(payload))
+      },
+    )
   }
 
   /**

@@ -1,17 +1,16 @@
 import CreateCarForm from '@/components/Forms/CreateCarForm'
 import CreateThingForm from '@/components/Forms/CreateThingForm'
 import CreateWorksForm from '@/components/Forms/CreateWorksForm'
+import KeyboardAvoidWrapper from '@/components/shared/KeyboardAvoidWrapper'
 import ThemedScrollView from '@/components/themed-scrollview'
 import { ThemedText } from '@/components/themed-text'
 import { ThemedView } from '@/components/themed-view'
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
-import { useKeyboardHeight } from '@/hooks/useKeyboardHeight'
 import { useLocalSearchParams } from 'expo-router'
 import { Briefcase, Car, Package } from 'lucide-react-native'
 import React, { useState } from 'react'
-import { KeyboardAvoidingView, StyleSheet, TouchableOpacity, Platform } from 'react-native'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import {  StyleSheet, TouchableOpacity, } from 'react-native'
 
 type CategoryType = 'things' | 'cars' | 'works'
 
@@ -24,8 +23,6 @@ const CreatePost = () => {
   const [selectedCategory, setSelectedCategory] = useState<CategoryType>(initialType)
   const colors = useThemeColors()
   const { t } = useTranslations()
-  const insets = useSafeAreaInsets()  
-  const { isKeyboardVisible } = useKeyboardHeight()
 
   const categories = [
     { id: 'things' as CategoryType, icon: Package, labelKey: 'post.things' },
@@ -34,10 +31,8 @@ const CreatePost = () => {
   ]
 
   return (
-    <KeyboardAvoidingView
-      style={[styles.keyboardContainer]}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : isKeyboardVisible ? 0 : -insets.top}
+    <KeyboardAvoidWrapper
+      style={styles.keyboardContainer}
     >
       <ThemedScrollView
         style={styles.container}
@@ -88,7 +83,7 @@ const CreatePost = () => {
         {selectedCategory === 'cars' && <CreateCarForm />}
         {selectedCategory === 'works' && <CreateWorksForm />}
       </ThemedScrollView>
-    </KeyboardAvoidingView>
+    </KeyboardAvoidWrapper>
   )
 
 }

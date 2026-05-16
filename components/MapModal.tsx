@@ -1,4 +1,3 @@
-import { HEADER_PADDING_TOP } from '@/constants/appLimits'
 import { useTranslations } from '@/hooks/use-translation'
 import { useColor } from '@/hooks/useColor'
 import { logger } from '@/utils/logger'
@@ -348,7 +347,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingTop: HEADER_PADDING_TOP,
     paddingBottom: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#e0e0e0',

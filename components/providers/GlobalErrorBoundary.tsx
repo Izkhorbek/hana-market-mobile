@@ -1,6 +1,6 @@
-import { logger } from '@/utils/logger';
-import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { logger } from '@/utils/logger'
+import React from 'react'
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 
 interface Props {
   children: React.ReactNode;
@@ -17,24 +17,24 @@ interface State {
  * fallback so the user can recover the session.
  */
 export class GlobalErrorBoundary extends React.Component<Props, State> {
-  state: State = { hasError: false };
+  state: State = { hasError: false }
 
   static getDerivedStateFromError(error: Error): State {
-    return { hasError: true, error };
+    return { hasError: true, error }
   }
 
   componentDidCatch(error: Error, info: React.ErrorInfo) {
     logger.fatal('REACT_RENDER_ERROR', error, {
       extra: { componentStack: info.componentStack },
-    });
+    })
   }
 
   handleReset = () => {
-    this.setState({ hasError: false, error: undefined });
-  };
+    this.setState({ hasError: false, error: undefined })
+  }
 
   render() {
-    if (!this.state.hasError) return this.props.children;
+    if (!this.state.hasError) return this.props.children
     return (
       <View style={styles.container}>
         <Text style={styles.title}>Something went wrong</Text>
@@ -43,7 +43,7 @@ export class GlobalErrorBoundary extends React.Component<Props, State> {
           <Text style={styles.buttonText}>Try again</Text>
         </TouchableOpacity>
       </View>
-    );
+    )
   }
 }
 
@@ -53,6 +53,6 @@ const styles = StyleSheet.create({
   message: { fontSize: 14, color: '#666', textAlign: 'center', marginBottom: 24 },
   button: { paddingHorizontal: 24, paddingVertical: 12, borderRadius: 8, backgroundColor: '#3B82F6' },
   buttonText: { color: '#fff', fontWeight: '600' },
-});
+})
 
-export default GlobalErrorBoundary;
+export default GlobalErrorBoundary

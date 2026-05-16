@@ -4,15 +4,17 @@ import EditCarForm from '@/components/Forms/EditCarForm'
 import EditThingForm from '@/components/Forms/EditThingForm'
 import EditWorksForm from '@/components/Forms/EditWorksForm'
 import EditProductHeader from '@/components/headers/EditProductHeader'
+import KeyboardAvoidWrapper from '@/components/shared/KeyboardAvoidWrapper'
 import RemoteImage from '@/components/shared/RemoteImage'
 import { ThemedText } from '@/components/themed-text'
 import { ThemedView } from '@/components/themed-view'
+import { AppLimits } from '@/constants/appLimits'
 import { ECarCondition, ECarFuelType, ECarTransmissionType, ECurrencyType, EProductType, EWorkCondition, EWorkerType, EWorkSalaryType, EWorkType } from '@/constants/enums'
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
 import { useColor } from '@/hooks/useColor'
 import { useKeyboardHeight } from '@/hooks/useKeyboardHeight'
-import { ProductEditImageDto, ProductUpdateRequest } from '@/types'
+import { ProductEditImageDto, ProductStatus, ProductUpdateRequest } from '@/types'
 import { parseApiError } from '@/utils/apiError'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { Clock, Eye, Heart } from 'lucide-react-native'
@@ -21,7 +23,6 @@ import { useForm } from 'react-hook-form'
 import {
     ActivityIndicator,
     Alert,
-    KeyboardAvoidingView,
     Platform,
     RefreshControl,
     ScrollView,
@@ -33,13 +34,11 @@ import {
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
-type ProductStatus = 'active' | 'reserved' | 'sold' | 'hidden'
-
 const statusOptions: { value: ProductStatus; labelKey: string }[] = [
-    { value: 'active', labelKey: 'edit_product.status_active' },
-    { value: 'reserved', labelKey: 'edit_product.status_reserved' },
-    { value: 'sold', labelKey: 'edit_product.status_sold' },
-    { value: 'hidden', labelKey: 'edit_product.status_hidden' },
+    { value: AppLimits.ProductStatus.active, labelKey: 'edit_product.status_active' },
+    { value: AppLimits.ProductStatus.reserved, labelKey: 'edit_product.status_reserved' },
+    { value: AppLimits.ProductStatus.sold, labelKey: 'edit_product.status_sold' },
+    { value: AppLimits.ProductStatus.hidden, labelKey: 'edit_product.status_hidden' },
 ]
 
 const EditProductPage = () => {
@@ -76,7 +75,7 @@ const EditProductPage = () => {
 
     const form = useForm({
         defaultValues: {
-            status: 'active' as ProductStatus,
+            status: AppLimits.ProductStatus.active as ProductStatus,
             title: '', 
             category: '', 
             description: '', 
@@ -223,9 +222,8 @@ const EditProductPage = () => {
     }
 
     return (
-        <KeyboardAvoidingView style={{ flex: 1 }} 
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : isKeyboardVisible ? 0 : -insets.top}>
+        <KeyboardAvoidWrapper style={{ flex: 1 }} 
+        >
             <EditProductHeader productTitle={product?.title} onShare={handleShare} />
             <ScrollView
                 style={[styles.container, { backgroundColor: colors.background }]}
@@ -272,7 +270,7 @@ const EditProductPage = () => {
                     </TouchableOpacity>
                 </View>
             </ScrollView>
-        </KeyboardAvoidingView>
+        </KeyboardAvoidWrapper>
     )
 }
 

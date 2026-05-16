@@ -134,7 +134,7 @@ const SellerProductsPage: React.FC = () => {
     }
 
     return (
-        <View style={[styles.container, { backgroundColor: colors.profileBackground, paddingTop: insets.top, paddingBottom: insets.bottom }]}>
+        <View style={[styles.container, { backgroundColor: colors.profileBackground}]}>
             <View style={[styles.header, { backgroundColor: colors.background, borderBottomColor: colors.borderColor }]}>
                 <TouchableOpacity onPress={() => router.back()} hitSlop={12}>
                     <ArrowLeft size={24} color={colors.text} />

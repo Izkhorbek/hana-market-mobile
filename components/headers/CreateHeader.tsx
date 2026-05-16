@@ -3,7 +3,7 @@ import { useTranslations } from '@/hooks/use-translation'
 import { useRouter } from 'expo-router'
 import { ArrowLeft } from 'lucide-react-native'
 import React from 'react'
-import { Platform, StyleSheet, TouchableOpacity } from 'react-native'
+import {  StyleSheet, TouchableOpacity } from 'react-native'
 import { ThemedText } from '../themed-text'
 import { ThemedView } from '../themed-view'
 import { HEADER_HEIGHT } from '@/constants/appLimits'
@@ -25,7 +25,7 @@ const CreateHeader = () => {
       >
         <ArrowLeft size={20} color={colors.blackIcon} />
       </TouchableOpacity>
-      <ThemedText style={[styles.title, { color: colors.text }]}>
+      <ThemedText style={[styles.title, { color: colors.primaryColor }]}>
         {t('post.create_ad')}
       </ThemedText>
       <ThemedView style={styles.placeholder} />

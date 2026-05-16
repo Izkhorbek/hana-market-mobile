@@ -69,9 +69,9 @@ const StatItem: React.FC<StatItemProps> = ({ value, label, isLoading }) => {
 const MyProfilePage: React.FC = () => {
 	const { t } = useTranslations()
 	const colors = useThemeColors()
-	const cardColor = useColor('profileCard');
-	const textColor = useColor('text');
-	const mutedTextColor = useColor('textMuted');
+	const cardColor = useColor('profileCard')
+	const textColor = useColor('text')
+	const mutedTextColor = useColor('textMuted')
 	const insets = useSafeAreaInsets()
 
 	//  API 
@@ -83,6 +83,7 @@ const MyProfilePage: React.FC = () => {
 	const email = profileRes?.data?.data?.email
 	const bio = profileRes?.data?.data?.bio
 
+	console.log('Profile data:', profileRes?.data?.data)
 
 	// Display name: "First Last" -> @username -> phone_number -> "--"
 	const displayName =
@@ -114,7 +115,7 @@ const MyProfilePage: React.FC = () => {
 	}
 
 	return (
-		<View style={[styles.container, { backgroundColor: colors.background, paddingBottom: insets.bottom, paddingTop: insets.top }]}>
+		<View style={[styles.container, { backgroundColor: colors.background}]}>
 			{/* Header */}
 			<View
 				style={[
@@ -129,7 +130,7 @@ const MyProfilePage: React.FC = () => {
 				>
 					<ArrowLeft size={24} color={colors.text} />
 				</TouchableOpacity>
-				<Text style={[styles.headerTitle, { color: colors.text }]}>
+				<Text style={[styles.headerTitle, { color: colors.primaryColor }]}>
 					{t('my_profile.title')}
 				</Text>
 				<View style={styles.headerRight} />

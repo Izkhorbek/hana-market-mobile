@@ -1,10 +1,10 @@
-import React from 'react';
-import Svg, { ClipPath, Defs, Ellipse, G, Path, Rect } from 'react-native-svg';
+import React from 'react'
+import Svg, { ClipPath, Defs, Ellipse, G, Path, Rect } from 'react-native-svg'
 
 const LocationPinIcon = ({ size = 45, color = '#02A348' }: { size?: number; color?: string }) => {
-  const scale = size / 75; // Original height is 75
-  const width = 58 * scale;
-  const height = 75 * scale;
+  const scale = size / 75 // Original height is 75
+  const width = 58 * scale
+  const height = 75 * scale
 
   return (
     <Svg width={width} height={height} viewBox="0 0 58 75" fill="none">
@@ -33,7 +33,7 @@ const LocationPinIcon = ({ size = 45, color = '#02A348' }: { size?: number; colo
         />
       </G>
     </Svg>
-  );
-};
+  )
+}
 
-export default LocationPinIcon;
+export default LocationPinIcon

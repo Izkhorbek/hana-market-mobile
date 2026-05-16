@@ -1,12 +1,12 @@
-import { HEADER_HEIGHT } from '@/constants/appLimits';
-import { useThemeColors } from '@/hooks/use-theme-colors';
-import { useTranslations } from '@/hooks/use-translation';
-import { useResponsive } from '@/hooks/useResponsive';
-import { Bell, Bookmark, SlidersHorizontal } from 'lucide-react-native';
-import { useMemo } from 'react';
-import { StyleSheet, TouchableOpacity } from 'react-native';
-import { ThemedText } from '../themed-text';
-import { ThemedView } from '../themed-view';
+import { HEADER_HEIGHT } from '@/constants/appLimits'
+import { useThemeColors } from '@/hooks/use-theme-colors'
+import { useTranslations } from '@/hooks/use-translation'
+import { useResponsive } from '@/hooks/useResponsive'
+import { Bell, Bookmark, SlidersHorizontal } from 'lucide-react-native'
+import { useMemo } from 'react'
+import { StyleSheet, TouchableOpacity } from 'react-native'
+import { ThemedText } from '../themed-text'
+import { ThemedView } from '../themed-view'
 
 interface ChatPageHeaderProps {
   onFilterPress?: () => void;
@@ -21,9 +21,9 @@ const ChatPageHeader = ({
   onNotificationPress,
   hasNotifications = false,
 }: ChatPageHeaderProps) => {
-  const { t } = useTranslations();
-  const colors = useThemeColors();
-  const { ms, fs } = useResponsive();
+  const { t } = useTranslations()
+  const colors = useThemeColors()
+  const { ms, fs } = useResponsive()
 
   const responsiveStyles = useMemo(() => ({
     container: {
@@ -47,7 +47,7 @@ const ChatPageHeader = ({
       height: ms(10),
       borderRadius: ms(5),
     },
-  }), [ms, fs]);
+  }), [ms, fs])
 
   return (
     <ThemedView
@@ -60,7 +60,7 @@ const ChatPageHeader = ({
         responsiveStyles.container,
       ]}
     >
-      <ThemedText style={[styles.title, { color: colors.blackIcon }, responsiveStyles.title]}>
+      <ThemedText style={[styles.title, { color: colors.primaryColor }, responsiveStyles.title]}>
         {t('chat.title')}
       </ThemedText>
 
@@ -79,10 +79,10 @@ const ChatPageHeader = ({
         </TouchableOpacity>
       </ThemedView>
     </ThemedView>
-  );
-};
+  )
+}
 
-export default ChatPageHeader;
+export default ChatPageHeader
 
 const styles = StyleSheet.create({
   container: {
@@ -117,4 +117,4 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     backgroundColor: '#ef4444',
   },
-});
+})

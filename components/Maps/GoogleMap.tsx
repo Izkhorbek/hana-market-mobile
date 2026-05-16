@@ -1,12 +1,12 @@
-import { useColorScheme } from '@/hooks/use-color-scheme';
-import { useThemeColors } from '@/hooks/use-theme-colors';
-import { logger } from '@/utils/logger';
-import * as Location from 'expo-location';
-import { Home, Minus, Plus } from 'lucide-react-native';
-import React, { useEffect, useRef, useState } from 'react';
-import { Alert, StyleSheet, TouchableOpacity, View } from 'react-native';
-import MapView, { Marker, Region } from 'react-native-maps';
-import LocationPinIcon from './LocationPinIcon';
+import { useColorScheme } from '@/hooks/use-color-scheme'
+import { useThemeColors } from '@/hooks/use-theme-colors'
+import { logger } from '@/utils/logger'
+import * as Location from 'expo-location'
+import { Home, Minus, Plus } from 'lucide-react-native'
+import React, { useEffect, useRef, useState } from 'react'
+import { Alert, StyleSheet, TouchableOpacity, View } from 'react-native'
+import MapView, { Marker, Region } from 'react-native-maps'
+import LocationPinIcon from './LocationPinIcon'
 
 // Dark mode map style
 const darkMapStyle = [
@@ -83,10 +83,10 @@ const darkMapStyle = [
     elementType: 'labels.text.stroke',
     stylers: [{ color: '#17263c' }],
   },
-];
+]
 
 // Light mode map style (standard Google Maps)
-const lightMapStyle: any[] = [];
+const lightMapStyle: any[] = []
 
 export interface MarkerData {
   id: string | number;
@@ -128,47 +128,47 @@ const GoogleMap = ({
   height = '100%',
 }: GoogleMapProps) => {
 
-  console.log('GoogleMap rendered with props:');
+  console.log('GoogleMap rendered with props:')
 
-  const mapRef = useRef<MapView>(null);
-  const colors = useThemeColors();
-  const colorScheme = useColorScheme();
-  const [currentZoom, setCurrentZoom] = useState(10);
+  const mapRef = useRef<MapView>(null)
+  const colors = useThemeColors()
+  const colorScheme = useColorScheme()
+  const [currentZoom, setCurrentZoom] = useState(10)
 
-  const mapStyle = colorScheme === 'dark' ? darkMapStyle : lightMapStyle;
+  const mapStyle = colorScheme === 'dark' ? darkMapStyle : lightMapStyle
 
   useEffect(() => {
-    initializeLocation();
-  }, []);
+    initializeLocation()
+  }, [])
 
   const initializeLocation = async () => {
     try {
-      const { status } = await Location.requestForegroundPermissionsAsync();
+      const { status } = await Location.requestForegroundPermissionsAsync()
       if (status !== 'granted') {
         Alert.alert(
           'Location Permission',
           'Please enable location services to see your position on the map.'
-        );
-        return;
+        )
+        return
       }
 
       // Auto-locate to user's current position if enabled and no custom initialRegion
       if (autoLocate) {
-        const location = await Location.getCurrentPositionAsync({});
+        const location = await Location.getCurrentPositionAsync({})
         setTimeout(() => {
           mapRef.current?.animateToRegion({
             latitude: location.coords.latitude,
             longitude: location.coords.longitude,
             latitudeDelta: 0.01,
             longitudeDelta: 0.01,
-          }, 500);
-        }, 300);
+          }, 500)
+        }, 300)
       }
     } catch (error) {
-      console.error('Error initializing location:', error);
-      logger.warn(error, { code: 'LOCATION_INIT_FAILED', screen: 'GoogleMap' });
+      console.error('Error initializing location:', error)
+      logger.warn(error, { code: 'LOCATION_INIT_FAILED', screen: 'GoogleMap' })
     }
-  };
+  }
 
   const handleZoomIn = () => {
     if (mapRef.current) {
@@ -176,11 +176,11 @@ const GoogleMap = ({
         if (camera.zoom) {
           mapRef.current?.animateCamera({
             zoom: camera.zoom + 1,
-          });
+          })
         }
-      });
+      })
     }
-  };
+  }
 
   const handleZoomOut = () => {
     if (mapRef.current) {
@@ -188,18 +188,18 @@ const GoogleMap = ({
         if (camera.zoom) {
           mapRef.current?.animateCamera({
             zoom: camera.zoom - 1,
-          });
+          })
         }
-      });
+      })
     }
-  };
+  }
 
   const handleLocateMe = async () => {
     try {
-      const { status } = await Location.getForegroundPermissionsAsync();
+      const { status } = await Location.getForegroundPermissionsAsync()
       if (status !== 'granted') {
-        Alert.alert('Permission denied', 'Allow access to location to use this feature.');
-        return;
+        Alert.alert('Permission denied', 'Allow access to location to use this feature.')
+        return
       }
 
       const location = await Location.getCurrentPositionAsync({
@@ -211,20 +211,20 @@ const GoogleMap = ({
         longitude: location.coords.longitude,
         latitudeDelta: 0.01,
         longitudeDelta: 0.01,
-      });
+      })
 
     } catch (error) {
-      console.error('Error getting location:', error);
-      logger.warn(error, { code: 'LOCATION_FETCH_FAILED', screen: 'GoogleMap' });
-      Alert.alert('Error', 'Could not get your current location.');
+      console.error('Error getting location:', error)
+      logger.warn(error, { code: 'LOCATION_FETCH_FAILED', screen: 'GoogleMap' })
+      Alert.alert('Error', 'Could not get your current location.')
     }
-  };
+  }
 
   const handleRegionChange = (region: Region) => {
     // // Calculate approximate zoom level from latitudeDelta
-    const zoom = Math.log2(360 / region.latitudeDelta);
-    setCurrentZoom(zoom);
-  };
+    const zoom = Math.log2(360 / region.latitudeDelta)
+    setCurrentZoom(zoom)
+  }
 
   return (
     <View style={[styles.container, { height: height as any }]}>
@@ -242,7 +242,7 @@ const GoogleMap = ({
         onRegionChangeComplete={handleRegionChange}
         onPress={(event) => {
           if (onMapPress) {
-            onMapPress(event.nativeEvent.coordinate);
+            onMapPress(event.nativeEvent.coordinate)
           }
         }}
       >
@@ -257,6 +257,12 @@ const GoogleMap = ({
             title={marker.title}
             description={marker.description}
             onPress={() => onMarkerPress?.(marker)}
+            // Bottom-center of the icon should sit on the coordinate point.
+            // Without this Android defaults to center-center, misplacing the pin.
+            anchor={{ x: 0.5, y: 0.5 }}
+            // Disable continuous bitmap re-capture on Android — this is the
+            // primary cause of the SVG marker appearing rotated / tilted.
+            tracksViewChanges={false}
           >
             {/* Custom marker view */}
             <View style={styles.markerContainer}>
@@ -294,10 +300,10 @@ const GoogleMap = ({
         )
       }
     </View >
-  );
-};
+  )
+}
 
-export default GoogleMap;
+export default GoogleMap
 
 const styles = StyleSheet.create({
   container: {
@@ -334,6 +340,11 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   markerContainer: {
+    // Explicit dimensions prevent Android from capturing the SVG at the wrong
+    // size when creating the marker bitmap. Values match LocationPinIcon size=45:
+    // scale = 45/75 = 0.6 → width = 58*0.6 ≈ 35, height = 75*0.6 = 45
+    width: 30,
+    height: 35,
     alignItems: 'center',
   },
   marker: {
@@ -368,4 +379,4 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
   },
-});
+})

@@ -50,7 +50,7 @@ const HomeHeader = () => {
 				activeOpacity={0.7}
 			>
 				<MapPin size={24} color={colors.primaryColor} />
-				<ThemedText style={[styles.currentCity, { color: colors.blackIcon }]}>{currentCity}</ThemedText>
+				<ThemedText style={[styles.currentCity, { color: colors.primaryColor }]}>{currentCity}</ThemedText>
 				<ChevronDown size={24} color={colors.textMuted} />
 			</TouchableOpacity>
 			<ThemedView style={styles.searchContainer}>

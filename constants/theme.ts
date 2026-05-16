@@ -15,7 +15,7 @@ export const Colors = {
 		subText: '#939496',
 
 		background: '#fff',
-		taBarBg: '#fff',
+		tabBarBg: '#fff',
 
 		// tab icons related colors
 		tabIconBackground: '#E6F7ED',
@@ -39,7 +39,7 @@ export const Colors = {
 		subText: '#939496',
 
 		background: '#1D1D24',
-		taBarBg: '#1D1D24',
+		tabBarBg: '#1D1D24',
 
 		// tab icons related colors
 		tabIconBackground: '#343441',

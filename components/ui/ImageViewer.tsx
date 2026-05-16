@@ -20,6 +20,7 @@ import {
     GestureHandlerRootView,
 } from 'react-native-gesture-handler'
 import Animated, {
+    runOnJS,
     useAnimatedStyle,
     useSharedValue,
     withSpring
@@ -254,6 +255,52 @@ const ImageViewer: React.FC<ImageViewerProps> = ({
         onClose()
     }, [onClose])
 
+    // Swipe-down-to-dismiss
+    const dismissY = useSharedValue(0)
+    const dismissOpacity = useSharedValue(1)
+
+    // Reset animation state whenever the modal is opened.
+    useEffect(() => {
+        if (visible) {
+            dismissY.value = 0
+            dismissOpacity.value = 1
+        }
+    }, [visible, dismissOpacity, dismissY])
+
+    const dismissGesture = Gesture.Pan()
+        // Only activate after a clear downward motion; fail on horizontal swipes
+        // so the FlatList's horizontal pager keeps working normally.
+        .activeOffsetY(15)
+        .failOffsetX([-20, 20])
+        .onUpdate((e) => {
+            // Only follow the finger while moving down; ignore upward drags.
+            if (e.translationY > 0) {
+                dismissY.value = e.translationY
+                dismissOpacity.value = Math.max(0.4, 1 - e.translationY / 280)
+            }
+        })
+        .onEnd((e) => {
+            // Dismiss if dragged far enough or flicked quickly downward.
+            if (e.translationY > 110 || e.velocityY > 800) {
+                dismissY.value = withSpring(SCREEN_HEIGHT, {
+                    damping: 20,
+                    stiffness: 200,
+                    mass: 0.6,
+                })
+                dismissOpacity.value = withSpring(0)
+                runOnJS(handleClose)()
+            } else {
+                // Snap back if not enough movement.
+                dismissY.value = withSpring(0, SPRING_CONFIG)
+                dismissOpacity.value = withSpring(1, SPRING_CONFIG)
+            }
+        })
+
+    const dismissAnimatedStyle = useAnimatedStyle(() => ({
+        transform: [{ translateY: dismissY.value }],
+        opacity: dismissOpacity.value,
+    }))
+
     const renderItem = useCallback(
         ({ item }: { item: string }) => (
             <View style={styles.slide}>
@@ -264,7 +311,7 @@ const ImageViewer: React.FC<ImageViewerProps> = ({
                 />
             </View>
         ),
-        [handleClose]
+        [insets.bottom, insets.top]
     )
 
     const handleThumbnailPress = useCallback((index: number) => {
@@ -331,71 +378,75 @@ const ImageViewer: React.FC<ImageViewerProps> = ({
             <GestureHandlerRootView style={[styles.container]}>
                 <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
 
-                {/* Background */}
+                {/* Background stays fixed so the black shows through as the content slides away */}
                 <View style={styles.background} />
 
-                {/* Header */}
-                <View style={[styles.header, { paddingTop: insets.top + ms(20) }]}>
-                    <TouchableOpacity
-                        style={[styles.closeButton, { width: ms(40), height: ms(40) }]}
-                        onPress={handleClose}
-                        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                    >
-                        <X size={ms(24)} color="#fff" />
-                    </TouchableOpacity>
+                <GestureDetector gesture={dismissGesture}>
+                    <Animated.View style={[styles.dismissContainer, dismissAnimatedStyle]}>
+                        {/* Header */}
+                        <View style={[styles.header, { paddingTop: insets.top + ms(20) }]}>
+                            <TouchableOpacity
+                                style={[styles.closeButton, { width: ms(40), height: ms(40) }]}
+                                onPress={handleClose}
+                                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                            >
+                                <X size={ms(24)} color="#fff" />
+                            </TouchableOpacity>
 
-                    {images.length > 1 && (
-                        <View style={styles.counterContainer}>
-                            <Text style={[styles.counterText, { fontSize: fs(16) }]}>
-                                {currentIndex + 1} / {images.length}
-                            </Text>
+                            {images.length > 1 && (
+                                <View style={styles.counterContainer}>
+                                    <Text style={[styles.counterText, { fontSize: fs(16) }]}>
+                                        {currentIndex + 1} / {images.length}
+                                    </Text>
+                                </View>
+                            )}
+
+                            <View style={[styles.placeholder, { width: ms(40) }]} />
                         </View>
-                    )}
 
-                    <View style={[styles.placeholder, { width: ms(40) }]} />
-                </View>
-
-                {/* Image Gallery */}
-                <FlatList
-                    ref={flatListRef}
-                    data={images}
-                    renderItem={renderItem}
-                    keyExtractor={keyExtractor}
-                    horizontal
-                    pagingEnabled
-                    showsHorizontalScrollIndicator={false}
-                    bounces={false}
-                    initialScrollIndex={initialIndex}
-                    onViewableItemsChanged={onViewableItemsChanged.current}
-                    viewabilityConfig={viewabilityConfig.current}
-                    getItemLayout={getItemLayout}
-                    initialNumToRender={1}
-                    maxToRenderPerBatch={2}
-                    windowSize={3}
-                />
-
-                {showThumbnailSwiper && (
-                    <View
-                        style={[
-                            styles.thumbnailRail,
-                            {
-                                paddingBottom: insets.bottom + ms(18),
-                                backgroundColor: 'rgba(0,0,0,0.22)',
-                            },
-                        ]}
-                    >
+                        {/* Image Gallery */}
                         <FlatList
-                            ref={thumbnailListRef}
+                            ref={flatListRef}
                             data={images}
-                            renderItem={renderThumbnail}
+                            renderItem={renderItem}
                             keyExtractor={keyExtractor}
                             horizontal
+                            pagingEnabled
                             showsHorizontalScrollIndicator={false}
-                            contentContainerStyle={styles.thumbnailListContent}
-                            getItemLayout={getThumbnailItemLayout}
+                            bounces={false}
+                            initialScrollIndex={initialIndex}
+                            onViewableItemsChanged={onViewableItemsChanged.current}
+                            viewabilityConfig={viewabilityConfig.current}
+                            getItemLayout={getItemLayout}
+                            initialNumToRender={1}
+                            maxToRenderPerBatch={2}
+                            windowSize={3}
                         />
-                    </View>
-                )}
+
+                        {showThumbnailSwiper && (
+                            <View
+                                style={[
+                                    styles.thumbnailRail,
+                                    {
+                                        paddingBottom: insets.bottom + ms(18),
+                                        backgroundColor: 'rgba(0,0,0,0.22)',
+                                    },
+                                ]}
+                            >
+                                <FlatList
+                                    ref={thumbnailListRef}
+                                    data={images}
+                                    renderItem={renderThumbnail}
+                                    keyExtractor={keyExtractor}
+                                    horizontal
+                                    showsHorizontalScrollIndicator={false}
+                                    contentContainerStyle={styles.thumbnailListContent}
+                                    getItemLayout={getThumbnailItemLayout}
+                                />
+                            </View>
+                        )}
+                    </Animated.View>
+                </GestureDetector>
             </GestureHandlerRootView>
         </Modal>
     )
@@ -405,6 +456,9 @@ export default ImageViewer
 
 const styles = StyleSheet.create({
     container: {
+        flex: 1,
+    },
+    dismissContainer: {
         flex: 1,
     },
     background: {

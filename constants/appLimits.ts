@@ -1,21 +1,43 @@
 import { Platform, StatusBar } from 'react-native'
 
 // Platform-aware layout constants
-export const HEADER_HEIGHT = Platform.OS === 'ios' ? 90 : 70
-export const HEADER_PADDING_TOP = Platform.OS === 'ios' ? 56 : 30
-export const TAB_FOOTER_HEIGHT = Platform.OS === 'ios' ? 100 : 90
+export const HEADER_HEIGHT = Platform.OS === 'ios' ? 45 : 50
 
 // Dynamic safe area values - get actual values at app startup
 const STATUS_BAR_HEIGHT =
   StatusBar.currentHeight ?? (Platform.OS === 'ios' ? 44 : 0)
-const STICKY_HEADER_HEIGHT = STATUS_BAR_HEIGHT + 56
+const STICKY_HEADER_HEIGHT = STATUS_BAR_HEIGHT + 32
 
 export type MessageTypeString = 'text' | 'image' | 'file';
 
+export const UZBEK_MOBILE_OPERATORS: Record<string, string> = {
+  '20': 'OQ',
+  '33': 'Humans',
+  '50': 'Ucell',
+  '70': 'Uzmobile',
+  '77': 'Uzmobile',
+  '80': 'Perfectum',
+  '87': 'MobiUz',
+  '88': 'MobiUz',
+  '90': 'Beeline',
+  '91': 'Beeline',
+  '92': 'Beeline',
+  '93': 'Ucell',
+  '94': 'Ucell',
+  '95': 'Uzmobile',
+  '97': 'MobiUz',
+  '98': 'Perfectum',
+  '99': 'Uzmobile',
+}
+
+export  const UZBEK_MOBILE_PREFIXES = Object.keys(UZBEK_MOBILE_OPERATORS)
+export  const UZBEK_MOBILE_PREFIX_SET = new Set(UZBEK_MOBILE_PREFIXES)
+export  const UZBEK_MOBILE_PHONE_REGEX = /^(20|33|50|70|77|80|87|88|90|91|92|93|94|95|97|98|99)\d{7}$/
+
+
 export const AppLimits = {
   STATUS_BAR_HEIGHT: STATUS_BAR_HEIGHT,
-  STICKY_HEADER_CONTENT_HEIGHT: 56,
-  STICKY_HEADER_HEIGHT: STATUS_BAR_HEIGHT + 56,
+  STICKY_HEADER_HEIGHT: STICKY_HEADER_HEIGHT,
   HERO_HEIGHT: Platform.OS === 'ios' ? 400 : 300,
   // Extra px the image container extends below the clip area for parallax travel
   PARALLAX_EXTRA: 100,
@@ -73,7 +95,12 @@ export const AppLimits = {
     MAX_PRICE_USD: 999999999.99,
     ALLOWED_STATUSES: ['active', 'reserved', 'sold'] as const,
   },
-
+  ProductStatus:{
+    active: 'active',
+    reserved: 'reserved',
+    sold: 'sold',
+    hidden: 'hidden',
+  } as const,
   Pagination: {
     DEFAULT_PAGE_SIZE: 20,
     MAX_PAGE_SIZE: 200,
@@ -81,8 +108,9 @@ export const AppLimits = {
 
   Chat: {
     MAX_MESSAGE_LENGTH: 500,
+    MIN_MESSAGE_LENGTH: 1,
     MAX_CHAT_ROOMS_PER_USER: 100,
-    MAX_MESSAGES_PER_PAGE: 20,
+    MAX_MESSAGES_PER_PAGE: 50,
     MAXIMUM_RECEIVE_MESSAGE_SIZE: 1024 * 1024, // 1MB
     MESSAGE_TYPES: {
       TEXT: 'text',
@@ -91,7 +119,7 @@ export const AppLimits = {
     } as const,
   },
   ProductStatusColors: {
-    active: '',
+    active: 'blue',
     reserved: 'green',
     sold: 'black',
   } as const,

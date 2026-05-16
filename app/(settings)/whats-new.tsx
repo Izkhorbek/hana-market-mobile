@@ -1,6 +1,5 @@
 import { useNewsListQuery } from '@/api/hooks'
 import ThemedScrollView from '@/components/themed-scrollview'
-import { HEADER_PADDING_TOP } from '@/constants/appLimits'
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
 import { useColor } from '@/hooks/useColor'
@@ -144,7 +143,6 @@ const styles = StyleSheet.create({
 		flexDirection: 'row',
 		alignItems: 'center',
 		justifyContent: 'space-between',
-		paddingTop: HEADER_PADDING_TOP,
 		paddingBottom: 16,
 		paddingHorizontal: 16,
 		borderBottomWidth: 1,

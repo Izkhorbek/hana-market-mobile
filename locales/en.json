@@ -19,6 +19,8 @@
 		"location_required_title": "Location Required",
 		"location_required_message": "Please set up your location and search radius to see products near you and improve your experience.",
 		"setup_location": "Set Up Location",
+		"session_expired_title": "Session Expired",
+		"session_expired_message": "Your session has expired. Please log in again.",
 		"username_required_title": "Create Username",
 		"username_required_message": "Please create a username to complete your profile setup.",
 		"username_placeholder": "Enter username",

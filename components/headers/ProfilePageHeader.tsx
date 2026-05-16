@@ -1,13 +1,13 @@
-import { HEADER_HEIGHT } from '@/constants/appLimits';
-import { useThemeColors } from '@/hooks/use-theme-colors';
-import { useTranslations } from '@/hooks/use-translation';
-import { StyleSheet } from 'react-native';
-import { ThemedText } from '../themed-text';
-import { ThemedView } from '../themed-view';
+import { HEADER_HEIGHT } from '@/constants/appLimits'
+import { useThemeColors } from '@/hooks/use-theme-colors'
+import { useTranslations } from '@/hooks/use-translation'
+import { StyleSheet } from 'react-native'
+import { ThemedText } from '../themed-text'
+import { ThemedView } from '../themed-view'
 
 const ProfilePageHeader = () => {
-  const { t } = useTranslations();
-  const colors = useThemeColors();
+  const { t } = useTranslations()
+  const colors = useThemeColors()
 
   return (
     <ThemedView
@@ -23,10 +23,10 @@ const ProfilePageHeader = () => {
         {t('profile.title')}
       </ThemedText>
     </ThemedView>
-  );
-};
+  )
+}
 
-export default ProfilePageHeader;
+export default ProfilePageHeader
 
 const styles = StyleSheet.create({
   container: {
@@ -43,4 +43,4 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: '700',
   },
-});
+})

@@ -136,7 +136,7 @@ const ProfilePage = () => {
 					status={t('profile.active')}
 					// temperature='0.0°C'
 					temperature='0.0°C'
-					profile_image={user?.profile_image_url ?? ""}
+					profile_image={user?.profile_image_url ?? ''}
 					onPress={() => handleNavigation('edit-profile')}
 				/>
 

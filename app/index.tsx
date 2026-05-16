@@ -1,11 +1,25 @@
 import { useAuthStore } from '@/modules/Auth/auth-store'
+import { useTranslations } from '@/hooks/use-translation'
 import { Redirect } from 'expo-router'
-import React from 'react'
-import { ActivityIndicator, View } from 'react-native'
+import React, { useEffect } from 'react'
+import { ActivityIndicator, Alert, View } from 'react-native'
 
 export default function Index() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
   const isHydrated = useAuthStore((s) => s.isHydrated)
+  const sessionExpiredOnStart = useAuthStore((s) => s.sessionExpiredOnStart)
+  const clearSessionExpiredOnStart = useAuthStore((s) => s.clearSessionExpiredOnStart)
+  const { t } = useTranslations()
+
+  useEffect(() => {
+    if (!isHydrated || !sessionExpiredOnStart) return
+    clearSessionExpiredOnStart()
+    Alert.alert(
+      t('alert.session_expired_title'),
+      t('alert.session_expired_message'),
+      [{ text: t('common.ok') }],
+    )
+  }, [isHydrated, sessionExpiredOnStart, clearSessionExpiredOnStart, t])
 
   if (!isHydrated) {
     return (

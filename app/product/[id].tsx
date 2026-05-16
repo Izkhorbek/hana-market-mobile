@@ -28,6 +28,7 @@ import {
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
 import { useAuthStore } from '@/modules/Auth/auth-store'
+import logger from '@/utils/logger'
 import { router, useLocalSearchParams } from 'expo-router'
 import {
   ArrowLeft,
@@ -424,10 +425,6 @@ const ProductDetailPage: React.FC = () => {
   const productSellerLocation = product?.seller?.address_name ?? 'unknown'
   const productSellerProfileImage = product?.seller?.profile_image_url ?? null
 
-  console.log('product', product)
-  console.log('currentUserId', currentUserId)
-  console.log('isMyProduct', isMyProduct)
-
   // ── Seller products ──────────────────────────────────────────────────────
   const { data: sellerProductsRes } = useProductsBySellerQuery({
     sellerId: productSellerId,
@@ -682,8 +679,8 @@ const ProductDetailPage: React.FC = () => {
           android: `https://hanamarket.uz/product/${productId}`,
         }),
       })
-    } catch (e) {
-      // user dismissed or error — no-op
+    } catch (error) {
+      logger.error('Error sharing product', { error, productId })
     }
   }, [productTitle, productId])
 
@@ -738,7 +735,7 @@ const ProductDetailPage: React.FC = () => {
                 key={`${title}-${item.label}`}
                 style={[
                   styles.specItem,
-                  { backgroundColor: colors.profileBackground },
+                  { backgroundColor: colors.borderColor },
                 ]}
               >
                 <Text style={[styles.specLabel, { color: colors.textMuted }]}>
@@ -753,13 +750,7 @@ const ProductDetailPage: React.FC = () => {
         </View>
       )
     },
-    [
-      colors.background,
-      colors.borderColor,
-      colors.profileBackground,
-      colors.text,
-      colors.textMuted,
-    ],
+    [colors.background, colors.borderColor, colors.text, colors.textMuted],
   )
 
   const isInitialPageLoading = productLoading && !product
@@ -782,7 +773,7 @@ const ProductDetailPage: React.FC = () => {
   //---Seller products section ------------------------------
   return (
     <View
-      style={[styles.container, { backgroundColor: colors.profileBackground }]}
+      style={[styles.container, { backgroundColor: colors.background }]}
     >
       {/* Sticky Header — always present, driven by scrollY */}
       <Animated.View
@@ -932,13 +923,13 @@ const ProductDetailPage: React.FC = () => {
             <View
               style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}
             >
-              {(productStatus === 'reserved' || productStatus === 'sold') && (
+              {(productStatus === AppLimits.ProductStatus.reserved || productStatus === AppLimits.ProductStatus.sold) && (
                 <Text
                   style={[
                     styles.title,
                     {
                       color:
-                        productStatus === 'sold'
+                        productStatus === AppLimits.ProductStatus.sold
                           ? colors.statusSold
                           : colors.statusReserved,
                       backgroundColor: 'rgb(235, 235, 235)',
@@ -1134,7 +1125,6 @@ const ProductDetailPage: React.FC = () => {
           {
             backgroundColor: colors.background,
             borderTopColor: colors.borderColor,
-            paddingBottom: Math.max(insets.bottom, 20),
           },
           bottomBarStyle,
         ]}
@@ -1145,7 +1135,7 @@ const ProductDetailPage: React.FC = () => {
             { borderColor: isLiked ? colors.primaryColor : colors.borderColor },
           ]}
           onPress={handleLike}
-          disabled={likePending}
+          disabled={likePending || isMyProduct || productStatus === AppLimits.ProductStatus.sold}
         >
           <Heart
             size={22}
@@ -1212,7 +1202,6 @@ const styles = StyleSheet.create({
     zIndex: 100,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingTop: AppLimits.STATUS_BAR_HEIGHT,
     height: AppLimits.STICKY_HEADER_HEIGHT,
     paddingHorizontal: 12,
     borderBottomWidth: 1,
@@ -1267,9 +1256,9 @@ const styles = StyleSheet.create({
   },
   heroTopRow: {
     position: 'absolute',
-    top: AppLimits.STATUS_BAR_HEIGHT + 10,
-    left: 14,
-    right: 14,
+    top: AppLimits.STATUS_BAR_HEIGHT - 10,
+    left: 16,
+    right: 16,
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
@@ -1411,7 +1400,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     paddingHorizontal: 16,
     paddingTop: 14,
-    paddingBottom: 20,
+    paddingBottom: 14,
     flexDirection: 'row',
     gap: 12,
     borderTopWidth: 1,

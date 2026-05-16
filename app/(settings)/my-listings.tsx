@@ -1,5 +1,6 @@
 import { useDeleteProductMutation, useMyProductsQuery } from '@/api/hooks'
 import MyListingCard, { ListingStatus, MyListingCardProps } from '@/components/shared/Cards/MyListingCard'
+import { AppLimits } from '@/constants/appLimits'
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
 import { MyProductDto } from '@/types'
@@ -44,7 +45,6 @@ const mapProductToCardProps = (product: MyProductDto): MyListingCardProps => ({
 const MyListingsPage = () => {
 	const { t } = useTranslations()
 	const colors = useThemeColors()
-	const insets = useSafeAreaInsets()
 	const [activeTab, setActiveTab] = useState<TabType>('active')
 	const [deletingListingId, setDeletingListingId] = useState<string | null>(null)
 
@@ -121,7 +121,7 @@ const MyListingsPage = () => {
 	const renderListingItem = ({ item }: { item: MyListingCardProps }) => (
 		<MyListingCard
 			{...item}
-			isInactiveTab={activeTab !== 'active'}
+			isInactiveTab={activeTab !== AppLimits.ProductStatus.active}
 			onPress={() => handleListingPress(item)}
 			onMenuPress={() => handleMenuPress(item)}
 		/>
@@ -140,7 +140,7 @@ const MyListingsPage = () => {
 	)
 
 	return (
-		<View style={[styles.container, { backgroundColor: colors.background, paddingTop: insets.top, paddingBottom: insets.bottom }]}>
+		<View style={[styles.container, { backgroundColor: colors.background }]}>
 			{/* Header */}
 			<View
 				style={[

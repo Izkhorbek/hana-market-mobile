@@ -34,7 +34,7 @@ const MapPageHeader: React.FC<MapPageHeaderProps> = ({ title }) => {
             >
                 <ArrowLeft size={24} color={colors.blackIcon} />
             </TouchableOpacity>
-            <ThemedText style={[styles.title, { color: colors.text }]}>
+            <ThemedText style={[styles.title, { color: colors.primaryColor }]}>
                 {title || t('map.title')}
             </ThemedText>
             <ThemedView style={styles.placeholder} />
@@ -66,7 +66,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     title: {
-        fontSize: 18,
+        fontSize: 24,
         lineHeight: 28,
         fontWeight: '600',
         marginBottom: 4,

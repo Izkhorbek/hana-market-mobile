@@ -1,10 +1,10 @@
+import KeyboardAvoidWrapper from '@/components/shared/KeyboardAvoidWrapper'
 import { ThemedText } from '@/components/themed-text'
 import { ThemedView } from '@/components/themed-view'
 import CustomAlert from '@/components/ui/CustomAlert'
-import { AppLimits } from '@/constants/appLimits'
+import { AppLimits, UZBEK_MOBILE_OPERATORS, UZBEK_MOBILE_PHONE_REGEX, UZBEK_MOBILE_PREFIX_SET, UZBEK_MOBILE_PREFIXES } from '@/constants/appLimits'
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
-import { useKeyboardHeight } from '@/hooks/useKeyboardHeight'
 import { userApi } from '@/modules/Auth/api'
 import { useAuthStore } from '@/modules/Auth/auth-store'
 import Ionicons from '@expo/vector-icons/Ionicons'
@@ -14,8 +14,6 @@ import React, { useCallback, useEffect, useRef, useState } from 'react'
 import {
   ActivityIndicator,
   Alert,
-  KeyboardAvoidingView,
-  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -23,31 +21,6 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
-
-const UZBEK_MOBILE_OPERATORS: Record<string, string> = {
-  '20': 'OQ',
-  '33': 'Humans',
-  '50': 'Ucell',
-  '70': 'Uzmobile',
-  '77': 'Uzmobile',
-  '80': 'Perfectum',
-  '87': 'MobiUz',
-  '88': 'MobiUz',
-  '90': 'Beeline',
-  '91': 'Beeline',
-  '92': 'Beeline',
-  '93': 'Ucell',
-  '94': 'Ucell',
-  '95': 'Uzmobile',
-  '97': 'MobiUz',
-  '98': 'Perfectum',
-  '99': 'Uzmobile',
-}
-
-const UZBEK_MOBILE_PREFIXES = Object.keys(UZBEK_MOBILE_OPERATORS)
-const UZBEK_MOBILE_PREFIX_SET = new Set(UZBEK_MOBILE_PREFIXES)
-const UZBEK_MOBILE_PHONE_REGEX = /^(20|33|50|70|77|80|87|88|90|91|92|93|94|95|97|98|99)\d{7}$/
 
 const normalizePhoneInput = (text: string): string => {
   const digits = text.replace(/\D/g, '')
@@ -76,8 +49,6 @@ const AuthPage = () => {
   const router = useRouter()
   const colors = useThemeColors()
   const { t } = useTranslations()
-  const insets = useSafeAreaInsets()
-  const { isKeyboardVisible } = useKeyboardHeight()
   
   const { requestOtp, verifyOtp } = useAuthStore()
 
@@ -330,10 +301,8 @@ const AuthPage = () => {
   }
 
   return (
-    <KeyboardAvoidingView
+    <KeyboardAvoidWrapper     
       style={{ flex: 1 }}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : isKeyboardVisible ? 0 : -insets.top}
     >
       <ThemedView
         style={[styles.container, { backgroundColor: colors.background }]}
@@ -625,7 +594,7 @@ const AuthPage = () => {
         onSecondaryPress={handleSkipLocation}
         onDismiss={handleSkipLocation}
       />
-    </KeyboardAvoidingView>
+    </KeyboardAvoidWrapper>
   )
 }
 

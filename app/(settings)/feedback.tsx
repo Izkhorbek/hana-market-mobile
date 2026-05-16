@@ -1,6 +1,6 @@
 import { useSubmitFeedbackMutation } from '@/api/hooks'
+import KeyboardAvoidWrapper from '@/components/shared/KeyboardAvoidWrapper'
 import ThemedScrollView from '@/components/themed-scrollview'
-import { HEADER_PADDING_TOP } from '@/constants/appLimits'
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
 import { useColor } from '@/hooks/useColor'
@@ -12,7 +12,6 @@ import React from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import {
 	Alert,
-	KeyboardAvoidingView,
 	Platform,
 	StyleSheet,
 	Text,
@@ -122,8 +121,7 @@ const FeedbackPage: React.FC = () => {
 				<View style={styles.headerRight} />
 			</View>
 
-			<KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.keyboardView}
-				keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : isKeyboardVisible ? 0 : -insets.top}>
+			<KeyboardAvoidWrapper style={styles.keyboardView}>
 				<ThemedScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps='handled' withSafeBottom>
 					{/* Hero Section */}
 					<View style={styles.heroSection}>
@@ -223,7 +221,7 @@ const FeedbackPage: React.FC = () => {
 						<Text style={[styles.privacyText, { color: colors.infoCardText }]}>{t('feedback.privacy_note')}</Text>
 					</View>
 				</ThemedScrollView>
-			</KeyboardAvoidingView>
+			</KeyboardAvoidWrapper>
 		</View>
 	)
 }
@@ -236,7 +234,6 @@ const styles = StyleSheet.create({
 		flexDirection: 'row',
 		alignItems: 'center',
 		justifyContent: 'space-between',
-		paddingTop: HEADER_PADDING_TOP,
 		paddingBottom: 16,
 		paddingHorizontal: 16,
 		borderBottomWidth: 1,

@@ -196,7 +196,7 @@ const SearchPage: React.FC = () => {
     }
 
     return (
-        <View style={[styles.container, { backgroundColor: colors.profileBackground, paddingTop: insets.top }]}>
+        <View style={[styles.container, { backgroundColor: colors.profileBackground}]}>
             <View style={[styles.searchHeader, { borderBottomColor: colors.borderColor, backgroundColor: colors.background }]}>
                 <TouchableOpacity onPress={() => router.back()} hitSlop={12}>
                     <ArrowLeft size={24} color={colors.text} />

@@ -1,12 +1,14 @@
+import { useKeyboardHeight } from '@/hooks/useKeyboardHeight'
 import React from 'react'
 import {
-    KeyboardAvoidingView,
-    Platform,
+  KeyboardAvoidingView,
+  Platform,
     ScrollView,
     ScrollViewProps,
     StyleSheet,
     ViewStyle,
 } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 interface KeyboardAvoidWrapperProps {
   children: React.ReactNode;
@@ -42,11 +44,14 @@ const KeyboardAvoidWrapper = ({
   scrollEnabled = true,
   scrollViewProps,
 }: KeyboardAvoidWrapperProps) => {
+  const insets = useSafeAreaInsets()
+  const { isKeyboardVisible } = useKeyboardHeight()
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={[styles.container, style]}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 40 : isKeyboardVisible ? insets.bottom : 0}
     >
       {scrollEnabled ? (
         <ScrollView

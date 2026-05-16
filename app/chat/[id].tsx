@@ -3,16 +3,17 @@ import {
   useChatRoom,
   useDeleteChatMessageMutation,
   useDeleteChatRoomMutation,
+  useMarkAsReadMutation,
   useMyChatQuery,
   useSendMessage,
-  useSignalRConnection,
   useTypingIndicator,
   useUserOnlineStatus,
 } from '@/api/hooks'
+import KeyboardAvoidWrapper from '@/components/shared/KeyboardAvoidWrapper'
 import RemoteImage from '@/components/shared/RemoteImage'
+import { AppLimits } from '@/constants/appLimits'
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
-import { useKeyboardHeight } from '@/hooks/useKeyboardHeight'
 import { useAuthStore } from '@/modules/Auth/auth-store'
 import { ChatMessage, useChatStore } from '@/modules/Chat/chat-store'
 import {
@@ -23,6 +24,7 @@ import {
   DisplayMessage,
 } from '@/types'
 import { parseBackendDateTime } from '@/utils/dateTime'
+import { logger } from '@/utils/logger'
 import { useQueryClient } from '@tanstack/react-query'
 import { format, isToday, isYesterday } from 'date-fns'
 import { router, useLocalSearchParams } from 'expo-router'
@@ -37,15 +39,12 @@ import {
   ActivityIndicator,
   Alert,
   FlatList,
-  KeyboardAvoidingView,
-  Platform,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from 'react-native'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 // Transform ChatMessage (from store) to DisplayMessage
 const transformStoreMessage = (
@@ -64,19 +63,19 @@ const transformStoreMessage = (
 })
 
 // Transform API ChatMessageDto to DisplayMessage
-const transformApiMessage = (
-  message: ChatMessageDto,
-  currentUserId: number,
-  index: number,
-): DisplayMessage => ({
-  id: String(message.id),
-  localId: `api_${index}_${message.id}`,
-  text: message.content || '',
-  timestamp: format(parseBackendDateTime(message.sent_at), 'h:mm a'),
-  isMe: message.is_mine ? true : false,
-  status: message.is_read ? 'read' : 'sent',
-  imageUrl: message.sender_image_url || undefined,
-})
+// const transformApiMessage = (
+//   message: ChatMessageDto,
+//   currentUserId: number,
+//   index: number,
+// ): DisplayMessage => ({
+//   id: String(message.id),
+//   localId: `api_${index}_${message.id}`,
+//   text: message.content || '',
+//   timestamp: format(parseBackendDateTime(message.sent_at), 'h:mm a'),
+//   isMe: message.is_mine ? true : false,
+//   status: message.is_read ? 'read' : 'sent',
+//   imageUrl: message.sender_image_url || undefined,
+// })
 
 // Format date for date separator
 const formatMessageDate = (dateString: string): string => {
@@ -227,7 +226,6 @@ const ProductCard: React.FC<{ product: ChatData['product'] }> = ({
 }
 
 const SafetyBanner: React.FC = () => {
-  const colors = useThemeColors()
   const { t } = useTranslations()
 
   return (
@@ -386,7 +384,6 @@ const MessageInput: React.FC<{
   onAttach: () => void;
   onTyping?: () => void;
   isSending?: boolean;
-  bottomInset?: number;
 }> = ({
   value,
   onChangeText,
@@ -394,7 +391,6 @@ const MessageInput: React.FC<{
   onAttach,
   onTyping,
   isSending,
-  bottomInset = 0,
 }) => {
   const colors = useThemeColors()
   const { t } = useTranslations()
@@ -411,7 +407,7 @@ const MessageInput: React.FC<{
         {
           backgroundColor: colors.background,
           borderTopColor: colors.borderColor,
-          paddingBottom: styles.inputContainer.paddingBottom + bottomInset,
+          paddingBottom: styles.inputContainer.paddingBottom,
         },
       ]}
     >
@@ -465,8 +461,6 @@ const ChatRoomPage: React.FC = () => {
   const colors = useThemeColors()
   const { t } = useTranslations()
   const flatListRef = useRef<FlatList>(null)
-  const insets = useSafeAreaInsets()
-  const { isKeyboardVisible } = useKeyboardHeight()
   
   const [inputText, setInputText] = useState('')
   const [isSending, setIsSending] = useState(false)
@@ -489,8 +483,9 @@ const ChatRoomPage: React.FC = () => {
   const currentUserId = useAuthStore((s) => s.user?.id)
   // const user = useAuthStore((s) => s.user);
 
-  // Establish SignalR connection (required for chat functionality)
-  // const { isConnected: signalRConnected } = useSignalRConnection();
+  // Establish SignalR connection (handled globally by ChatBootstrap in
+  // app/_layout.tsx — do NOT re-subscribe here, otherwise we'd dedupe-skip
+  // and produce duplicate listeners on remount).
 
   // Get chat room info from store (selector includes find to prevent unnecessary re-renders)
   const currentChat = useChatStore((s) =>
@@ -499,7 +494,7 @@ const ChatRoomPage: React.FC = () => {
 
   // Fallback: fetch chat list if current chat not found in store
   const { data: chatListData } = useMyChatQuery({
-    params: { page: 1, pageSize: 100 },
+    params: { page: 1, pageSize: AppLimits.Chat.MAX_CHAT_ROOMS_PER_USER },
     querySettings: {
       enabled: !currentChat && !!chatRoomId && !!currentUserId,
       staleTime: 1000 * 60, // 1 minute
@@ -530,13 +525,96 @@ const ChatRoomPage: React.FC = () => {
     messagesLoading,
   } = useChatRoom(chatRoomId)
 
+  // REST mark-as-read on enter. We also flip read state via SignalR (inside
+  // useChatRoom -> store.markAsRead), but firing the REST endpoint as well
+  // guarantees the server-side unread counters are reconciled even if the
+  // hub call was rejected (e.g. transient hub error). Idempotent on the
+  // backend — calling twice is safe.
+  const markAsReadOnceRef = useRef<number | null>(null)
+  const { mutate: markAsReadRest } = useMarkAsReadMutation({
+    onSuccess: () => {
+      // Reconcile any cached unread totals shown elsewhere in the app.
+      queryClient.invalidateQueries({ queryKey: ['UNREAD_COUNT'] })
+      queryClient.invalidateQueries({ queryKey: ['MY_CHATS'] })
+    },
+    onError: (error) => {
+      // Non-fatal — the SignalR path will retry on next message arrival.
+      logger.warn('[ChatRoom] markAsRead REST failed', {
+        extra: { error, chatRoomId },
+      })
+    },
+  })
+
+  useEffect(() => {
+    if (!chatRoomId) return
+    if (markAsReadOnceRef.current === chatRoomId) return
+    markAsReadOnceRef.current = chatRoomId
+    markAsReadRest({ chat_room_id: chatRoomId })
+  }, [chatRoomId, markAsReadRest])
+
+  // React to the other party deleting this chat room over SignalR. The
+  // store sets `lastRemovedChatRoomId` from its `_handleChatRoomDeleted`
+  // handler; if it matches the room we're currently viewing, surface a
+  // brief notice and pop back to the chat list.
+  const lastRemovedChatRoomId = useChatStore((s) => s.lastRemovedChatRoomId)
+  const setLastRemovedChatRoomId = useChatStore(
+    (s) => s.setLastRemovedChatRoomId,
+  )
+  useEffect(() => {
+    if (!chatRoomId) return
+    if (lastRemovedChatRoomId !== chatRoomId) return
+    setSnackbar({
+      visible: true,
+      message: t('chat.delete_chat_success'),
+      isError: false,
+    })
+    setLastRemovedChatRoomId(null)
+    const timer = setTimeout(() => {
+      if (router.canGoBack()) router.back()
+      else router.replace('/(tabs)/chat')
+    }, 800)
+    return () => clearTimeout(timer)
+  }, [
+    lastRemovedChatRoomId,
+    chatRoomId,
+    setLastRemovedChatRoomId,
+    t,
+  ])
+
   // Send message functionality
   const { send, handleTyping } = useSendMessage(chatRoomId)
 
   // Typing indicator
   const { isTyping } = useTypingIndicator(chatRoomId)
 
-  // Online status of other user
+  // Online status of other user. Seed the store from the chat metadata if
+  // SignalR hasn't yet delivered a UserStatusChanged event for this user, so
+  // the header doesn't briefly flash "offline" when entering the room.
+  const setUserOnlineStatus = useChatStore((s) => s.setUserOnlineStatus)
+  useEffect(() => {
+    if (!otherUserId || !chatData_source) return
+    const existing = useChatStore.getState().onlineUsers[otherUserId]
+    if (existing) return
+    const seedOnline =
+      chatData_source.is_other_user_online ??
+      (chatData_source.buyer.id === otherUserId
+        ? chatData_source.buyer.is_online
+        : chatData_source.seller.id === otherUserId
+          ? chatData_source.seller.is_online
+          : false) ??
+      false
+    const rawLastSeen = chatData_source.other_user_last_seen
+    const lastSeenStr =
+      rawLastSeen instanceof Date
+        ? rawLastSeen.toISOString()
+        : (rawLastSeen ?? null)
+    setUserOnlineStatus(otherUserId, {
+      userId: otherUserId,
+      isOnline: seedOnline,
+      lastSeenAt: lastSeenStr,
+    })
+  }, [otherUserId, chatData_source, setUserOnlineStatus])
+
   const { isOnline } = useUserOnlineStatus(otherUserId)
 
   // Fetch messages from API with infinite pagination (load older messages)
@@ -569,8 +647,6 @@ const ChatRoomPage: React.FC = () => {
 
   const { mutate: deleteChatRoom } = useDeleteChatRoomMutation({
     onSuccess: (response) => {
-      console.log('Chat deletion successful:', response)
-
       // Only update store AFTER server confirms deletion
       if (chatRoomId) {
         setChatList(
@@ -599,7 +675,7 @@ const ChatRoomPage: React.FC = () => {
       }, 1500)
     },
     onError: (error: any) => {
-      console.error('Delete chat failed:', {
+      logger.error('Delete chat failed:', {
         message: error?.message,
         response: error?.response?.data,
         status: error?.response?.status,
@@ -886,10 +962,8 @@ const ChatRoomPage: React.FC = () => {
     try {
       await send(inputText)
       setInputText('')
-      // Scroll to bottom
-      setTimeout(() => {
-        flatListRef.current?.scrollToEnd({ animated: true })
-      }, 100)
+      // The autoScroll effect (keyed on the latest message) will pull us to
+      // the bottom as soon as the new message lands in mergedMessages.
     } finally {
       setIsSending(false)
     }
@@ -916,6 +990,42 @@ const ChatRoomPage: React.FC = () => {
       fetchNextPage()
     }
   }
+
+  // ---- Smart auto-scroll -----------------------------------------------
+  // Tracks the bottom-most message we've already rendered. When the bottom
+  // changes (new outgoing/incoming message arrives) we scrollToEnd. When
+  // pagination prepends older messages at the top, the bottom message key
+  // stays the same, so we DO NOT scroll — the user keeps their reading
+  // position. The very first render scrolls to bottom without animation so
+  // the latest message is visible immediately.
+  const lastBottomKeyRef = useRef<string | null>(null)
+  const didInitialScrollRef = useRef(false)
+
+  useEffect(() => {
+    if (mergedMessages.length === 0) return
+    const last = mergedMessages[mergedMessages.length - 1]
+    const key = last.localId
+      ? `local:${last.localId}`
+      : last.id > 0
+        ? `id:${last.id}`
+        : `fallback:${last.sent_at}:${last.content}`
+
+    if (lastBottomKeyRef.current === key) return
+    const isFirst = !didInitialScrollRef.current
+    lastBottomKeyRef.current = key
+    didInitialScrollRef.current = true
+
+    // requestAnimationFrame ensures FlatList has measured the new content.
+    requestAnimationFrame(() => {
+      flatListRef.current?.scrollToEnd({ animated: !isFirst })
+    })
+  }, [mergedMessages])
+
+  // Reset scroll memory when switching rooms
+  useEffect(() => {
+    lastBottomKeyRef.current = null
+    didInitialScrollRef.current = false
+  }, [chatRoomId])
 
   const renderMessageGroup = ({ item }: { item: MessageGroup }) => (
     <View>
@@ -946,16 +1056,12 @@ const ChatRoomPage: React.FC = () => {
   }
 
   return (
-    <KeyboardAvoidingView
-      style={[
-        styles.container,
-        {
-          backgroundColor: colors.profileBackground,
-          paddingTop: insets.top,
-        },
-      ]}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : isKeyboardVisible ? 0 : -insets.top}
+    <KeyboardAvoidWrapper
+      scrollEnabled={false}
+      style={{
+        ...styles.container,
+        backgroundColor: colors.profileBackground,
+      }}
     >
       <ChatHeader
         chatData={effectiveChatData}
@@ -979,6 +1085,7 @@ const ChatRoomPage: React.FC = () => {
         data={messageGroups}
         renderItem={renderMessageGroup}
         keyExtractor={(item) => item.date}
+        extraData={lastBottomKeyRef.current}
         contentContainerStyle={styles.messagesList}
         showsVerticalScrollIndicator={false}
         ListHeaderComponent={
@@ -1005,10 +1112,11 @@ const ChatRoomPage: React.FC = () => {
         ListFooterComponent={
           <ReservedNotice status={effectiveChatData.product.status} />
         }
-        onContentSizeChange={() => {
-          flatListRef.current?.scrollToEnd({ animated: false })
-        }}
-        // Auto load more when scrolled to top
+        // Auto load more when scrolled to top — NOTE: we intentionally do
+        // NOT call scrollToEnd here. Initial / new-message scrolling is
+        // handled by the auto-scroll effect above so that pagination
+        // (which prepends older content at the top) doesn't yank the user
+        // back to the bottom.
         onScroll={(event) => {
           const { contentOffset } = event.nativeEvent
           if (contentOffset.y < 50 && hasNextPage && !isFetchingNextPage) {
@@ -1016,6 +1124,7 @@ const ChatRoomPage: React.FC = () => {
           }
         }}
         scrollEventThrottle={100}
+        maintainVisibleContentPosition={{ minIndexForVisible: 1 }}
       />
 
       <QuickReplies replies={quickReplies} onSelect={handleQuickReply} />
@@ -1027,7 +1136,6 @@ const ChatRoomPage: React.FC = () => {
         onAttach={handleAttach}
         onTyping={handleTyping}
         isSending={isSending || !!effectiveChatData.product.isSold}
-        bottomInset={insets.bottom}
       />
 
       {snackbar.visible && (
@@ -1040,7 +1148,7 @@ const ChatRoomPage: React.FC = () => {
           <Text style={styles.snackbarText}>{snackbar.message}</Text>
         </View>
       )}
-    </KeyboardAvoidingView>
+    </KeyboardAvoidWrapper>
   )
 }
 

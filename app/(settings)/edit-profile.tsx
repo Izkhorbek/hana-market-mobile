@@ -5,13 +5,13 @@ import {
 	useUploadProfileImageMutation,
 } from '@/api/hooks'
 import FormInput from '@/components/FormElements/FormInput'
+import KeyboardAvoidWrapper from '@/components/shared/KeyboardAvoidWrapper'
 import RemoteImage from '@/components/shared/RemoteImage'
 import ThemedScrollView from '@/components/themed-scrollview'
 import { AppLimits } from '@/constants/appLimits'
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
 import { useKeyboardHeight } from '@/hooks/useKeyboardHeight'
-import { useSafeAreaEdgeInsets } from '@/hooks/useSafeAreaEdgeInsets'
 import { useAuthStore } from '@/modules/Auth/auth-store'
 import { useQueryClient } from '@tanstack/react-query'
 import * as ImagePicker from 'expo-image-picker'
@@ -22,13 +22,13 @@ import { useForm } from 'react-hook-form'
 import {
 	ActivityIndicator,
 	Alert,
-	KeyboardAvoidingView,
 	Platform,
 	StyleSheet,
 	Text,
 	TouchableOpacity,
 	View
 } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 interface EditProfileFormData {
 	username: string
@@ -43,8 +43,8 @@ const EditProfilePage = () => {
 	const colors = useThemeColors()
 	const queryClient = useQueryClient()
 	const logout = useAuthStore((s) => s.logout)
-	const insets = useSafeAreaEdgeInsets()
 	const { isKeyboardVisible } = useKeyboardHeight()
+	const insets = useSafeAreaInsets()
 	
 	// Displayed profile image URL (from server or just-uploaded URL)
 	const [displayImageUrl, setDisplayImageUrl] = useState<string | null>(null)
@@ -85,7 +85,7 @@ const EditProfilePage = () => {
 			})
 			setDisplayImageUrl(user.profile_image_url ?? null)
 		}
-	}, [user])
+	}, [reset, user])
 
 	// ── Navigation ────────────────────────────────────────────────────────────
 	const handleGoBack = () => {
@@ -235,8 +235,8 @@ const EditProfilePage = () => {
 	// ── Loading skeleton ──────────────────────────────────────────────────────
 	if (profileLoading) {
 		return (
-			<View style={[styles.container, { backgroundColor: colors.profileBackground, paddingTop: insets.top, paddingBottom: insets.bottom }]}>
-				<View style={[styles.header, { backgroundColor: colors.background, borderBottomColor: colors.borderColor, paddingTop: insets.top }]}>
+			<View style={[styles.container, { backgroundColor: colors.profileBackground }]}>
+				<View style={[styles.header, { backgroundColor: colors.background, borderBottomColor: colors.borderColor}]}>
 					<TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
 						<ArrowLeft size={24} color={colors.text} />
 					</TouchableOpacity>
@@ -251,7 +251,7 @@ const EditProfilePage = () => {
 	}
 
 	return (
-		<View style={[styles.container, { backgroundColor: colors.profileBackground, paddingTop: insets.top, paddingBottom: insets.bottom }]}>
+		<View style={[styles.container, { backgroundColor: colors.profileBackground }]}>
 			{/* Header */}
 			<View style={[styles.header, { backgroundColor: colors.background, borderBottomColor: colors.borderColor }]}>
 				<TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
@@ -261,8 +261,7 @@ const EditProfilePage = () => {
 				<View style={styles.headerRight} />
 			</View>
 
-			<KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.keyboardView}
-			keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : isKeyboardVisible ? 0 : -insets.top}>
+			<KeyboardAvoidWrapper style={styles.keyboardView}>
 				<ThemedScrollView
 					style={styles.scrollView}
 					contentContainerStyle={styles.scrollContent}
@@ -434,7 +433,7 @@ const EditProfilePage = () => {
 						</TouchableOpacity>
 					</View>
 				</ThemedScrollView>
-			</KeyboardAvoidingView>
+			</KeyboardAvoidWrapper>
 		</View>
 	)
 }

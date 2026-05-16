@@ -50,7 +50,7 @@ const EditProductHeader: React.FC<EditProductHeaderProps> = ({ productTitle, onS
             >
                 <ArrowLeft size={20} color={colors.blackIcon} />
             </TouchableOpacity>
-            <ThemedText style={[styles.title, { color: colors.text }]}>
+            <ThemedText style={[styles.title, { color: colors.primaryColor }]}>
                 {t('edit_product.title')}
             </ThemedText>
             <TouchableOpacity

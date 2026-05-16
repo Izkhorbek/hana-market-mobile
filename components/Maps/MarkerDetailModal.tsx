@@ -1,16 +1,16 @@
-import { MarkerData } from '@/components/Maps/GoogleMap';
-import { BottomSheet } from '@/components/ui/bottom-sheet';
-import { Text } from '@/components/ui/text';
-import { View } from '@/components/ui/view';
-import { useThemeColors } from '@/hooks/use-theme-colors';
-import { useTranslations } from '@/hooks/use-translation';
-import { logger } from '@/utils/logger';
-import * as Location from 'expo-location';
-import { navigate } from 'expo-router/build/global-state/routing';
-import { Navigation, X } from 'lucide-react-native';
-import React, { useCallback, useEffect, useState } from 'react';
-import { Alert, Linking, StyleSheet, TouchableOpacity } from 'react-native';
-import RemoteImage from '../shared/RemoteImage';
+import { MarkerData } from '@/components/Maps/GoogleMap'
+import { BottomSheet } from '@/components/ui/bottom-sheet'
+import { Text } from '@/components/ui/text'
+import { View } from '@/components/ui/view'
+import { useThemeColors } from '@/hooks/use-theme-colors'
+import { useTranslations } from '@/hooks/use-translation'
+import { logger } from '@/utils/logger'
+import * as Location from 'expo-location'
+import { navigate } from 'expo-router/build/global-state/routing'
+import { Navigation, X } from 'lucide-react-native'
+import React, { useCallback, useEffect, useState } from 'react'
+import { Alert, Linking, StyleSheet, TouchableOpacity } from 'react-native'
+import RemoteImage from '../shared/RemoteImage'
 
 interface MarkerDetailModalProps {
   marker: MarkerData | null;
@@ -19,51 +19,51 @@ interface MarkerDetailModalProps {
 }
 
 export function MarkerDetailModal({ marker, isVisible, onClose }: MarkerDetailModalProps) {
-  const colors = useThemeColors();
-  const { t } = useTranslations();
+  const colors = useThemeColors()
+  const { t } = useTranslations()
 
-  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
-  const [isLoadingLocation, setIsLoadingLocation] = useState(true);
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null)
+  const [isLoadingLocation, setIsLoadingLocation] = useState(true)
 
   // Get user's current location when modal opens OR when marker changes
   useEffect(() => {
     const getUserLocation = async () => {
       try {
-        const { status } = await Location.requestForegroundPermissionsAsync();
+        const { status } = await Location.requestForegroundPermissionsAsync()
         if (status !== 'granted') {
-          setIsLoadingLocation(false);
-          return;
+          setIsLoadingLocation(false)
+          return
         }
 
         const location = await Location.getCurrentPositionAsync({
           accuracy: Location.Accuracy.Balanced,
-        });
+        })
 
         setUserLocation({
           lat: location.coords.latitude,
           lng: location.coords.longitude,
-        });
+        })
       } catch (error) {
-        console.error('Error getting user location:', error);
-        logger.warn(error, { code: 'LOCATION_FETCH_FAILED', screen: 'MarkerDetailModal' });
+        console.error('Error getting user location:', error)
+        logger.warn(error, { code: 'LOCATION_FETCH_FAILED', screen: 'MarkerDetailModal' })
       } finally {
-        setIsLoadingLocation(false);
+        setIsLoadingLocation(false)
       }
-    };
+    }
 
     // Fetch location when modal becomes visible
     if (isVisible && marker) {
-      setIsLoadingLocation(true);
-      getUserLocation();
+      setIsLoadingLocation(true)
+      getUserLocation()
     }
-  }, [isVisible, marker?.id]); // Re-run when marker changes
+  }, [isVisible, marker?.id]) // Re-run when marker changes
 
   const handleViewDetails = (productId: number | string) => {
-    if (!productId) return;
+    if (!productId) return
 
-    navigate(`/product/${productId}`);
-    onClose();
-  };
+    navigate(`/product/${productId}`)
+    onClose()
+  }
 
   const handleOpenDirections = useCallback(async () => {
     // If no user location, show alert
@@ -72,43 +72,43 @@ export function MarkerDetailModal({ marker, isVisible, onClose }: MarkerDetailMo
         t('navigation.location_permission') || 'Location Required',
         t('navigation.location_needed') || 'Unable to get your location. Please enable location services.',
         [{ text: 'OK' }],
-      );
-      return;
+      )
+      return
     }
 
     // If no marker, return early
     if (!marker) {
-      Alert.alert('Error', 'Marker location not available.');
-      return;
+      Alert.alert('Error', 'Marker location not available.')
+      return
     }
 
     // Google Maps URL scheme
-    const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${userLocation.lat},${userLocation.lng}&destination=${marker.latitude},${marker.longitude}`;
+    const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${userLocation.lat},${userLocation.lng}&destination=${marker.latitude},${marker.longitude}`
 
     // Fallback URLs
-    const appleMapsUrl = `http://maps.apple.com/?saddr=${userLocation.lat},${userLocation.lng}&daddr=${marker.latitude},${marker.longitude}`;
-    const geoUrl = `geo:${marker.latitude},${marker.longitude}`;
+    const appleMapsUrl = `http://maps.apple.com/?saddr=${userLocation.lat},${userLocation.lng}&daddr=${marker.latitude},${marker.longitude}`
+    const geoUrl = `geo:${marker.latitude},${marker.longitude}`
 
     try {
       // Try Google Maps first
-      const googleMapsSupported = await Linking.canOpenURL(googleMapsUrl);
+      const googleMapsSupported = await Linking.canOpenURL(googleMapsUrl)
       if (googleMapsSupported) {
-        await Linking.openURL(googleMapsUrl);
-        return;
+        await Linking.openURL(googleMapsUrl)
+        return
       }
 
       // Try Apple Maps
-      const appleMapsSupported = await Linking.canOpenURL(appleMapsUrl);
+      const appleMapsSupported = await Linking.canOpenURL(appleMapsUrl)
       if (appleMapsSupported) {
-        await Linking.openURL(appleMapsUrl);
-        return;
+        await Linking.openURL(appleMapsUrl)
+        return
       }
 
       // Try generic geo URL
-      const geoSupported = await Linking.canOpenURL(geoUrl);
+      const geoSupported = await Linking.canOpenURL(geoUrl)
       if (geoSupported) {
-        await Linking.openURL(geoUrl);
-        return;
+        await Linking.openURL(geoUrl)
+        return
       }
 
       // If nothing works
@@ -116,21 +116,21 @@ export function MarkerDetailModal({ marker, isVisible, onClose }: MarkerDetailMo
         t('navigation.no_maps') || 'No Maps App',
         t('navigation.install_maps') || 'Please install Google Maps or Apple Maps to view directions.',
         [{ text: 'OK' }],
-      );
+      )
     } catch (error) {
       Alert.alert(
         t('navigation.error') || 'Error',
         t('navigation.error_opening_maps') || 'Could not open maps application.',
         [{ text: 'OK' }],
-      );
-      console.error('Error opening maps:', error);
-      logger.warn(error, { code: 'OPEN_MAPS_FAILED', screen: 'MarkerDetailModal' });
+      )
+      console.error('Error opening maps:', error)
+      logger.warn(error, { code: 'OPEN_MAPS_FAILED', screen: 'MarkerDetailModal' })
     }
-  }, [userLocation, marker, t]);
+  }, [userLocation, marker, t])
 
   // Don't render if no marker
   if (!marker) {
-    return null;
+    return null
   }
 
   return (
@@ -231,7 +231,7 @@ export function MarkerDetailModal({ marker, isVisible, onClose }: MarkerDetailMo
         </View>
       </View>
     </BottomSheet>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -330,4 +330,4 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
-});
+})
