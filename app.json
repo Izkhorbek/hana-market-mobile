@@ -22,7 +22,8 @@
     "jsEngine": "hermes",
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/android-icon-foreground.png"
+        "foregroundImage": "./assets/images/android-icon-foreground.png",
+        "backgroundColor": "#02A348"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,

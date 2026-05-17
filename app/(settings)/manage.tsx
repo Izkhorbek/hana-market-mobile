@@ -88,44 +88,49 @@ const ManageNeighborhoodPage = () => {
 		setIsLoading(true)
 
 		// 1. Load stored location from auth store
-		await loadStoredLocation()
+		const loadedLocation = await loadStoredLocation()
 
-		// 2. Get current GPS location
-		await getCurrentGPSLocation()
+		// 2. Get current GPS location (pass loaded location to avoid stale closure)
+		await getCurrentGPSLocation(loadedLocation)
 
 		setIsLoading(false)
 	}
 
-	const loadStoredLocation = async () => {
+	const loadStoredLocation = async (): Promise<LocationData> => {
 		const { latitude, longitude } = defaultStoredLocation
 
 		try {
 			const [address] = await Location.reverseGeocodeAsync({ latitude, longitude })
 
-			setStoredLocation({
+			const data: LocationData = {
 				latitude,
 				longitude,
 				neighborhood: address?.district || address?.subregion || address?.name || '',
 				city: address?.city || address?.region || '',
 				country: address?.country || '',
-			})
+			}
+			setStoredLocation(data)
+			return data
 		} catch (error) {
-			setStoredLocation({
-				latitude,
-				longitude,
-				neighborhood: '',
-				city: '',
-				country: '',
-			})
+			const data: LocationData = { latitude, longitude, neighborhood: '', city: '', country: '' }
+			setStoredLocation(data)
+			return data
 		}
 	}
 
-	const getCurrentGPSLocation = async () => {
+	const getCurrentGPSLocation = async (fallback?: LocationData | null) => {
 		try {
 			const { status } = await Location.requestForegroundPermissionsAsync()
 			if (status !== 'granted') {
 				// If permission denied, use stored location as GPS location
-				setGpsLocation(storedLocation)
+				setGpsLocation(fallback ?? null)
+				return
+			}
+
+			const servicesEnabled = await Location.hasServicesEnabledAsync()
+			if (!servicesEnabled) {
+				Alert.alert(t('neighborhood.permission_denied'), t('neighborhood.permission_message'))
+				setGpsLocation(fallback ?? null)
 				return
 			}
 
@@ -156,7 +161,7 @@ const ManageNeighborhoodPage = () => {
 
 		} catch (error) {
 			logger.error('Error getting current GPS location:', { extra: { error } })
-			setGpsLocation(storedLocation)
+			setGpsLocation(fallback ?? null)
 		}
 	}
 
@@ -226,6 +231,12 @@ const ManageNeighborhoodPage = () => {
 				return
 			}
 
+			const servicesEnabled = await Location.hasServicesEnabledAsync()
+			if (!servicesEnabled) {
+				Alert.alert(t('neighborhood.permission_denied'), t('neighborhood.permission_message'))
+				return
+			}
+
 			const location = await Location.getCurrentPositionAsync({
 				accuracy: Location.Accuracy.Balanced,
 			})
@@ -278,7 +289,6 @@ const ManageNeighborhoodPage = () => {
 			{/* Map */}
 			<View style={styles.mapContainer}>
 				<MapView
-					mapType="standard"
 					ref={mapRef}
 					provider='google'
 					style={styles.map}

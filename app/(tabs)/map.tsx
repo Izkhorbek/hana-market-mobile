@@ -108,8 +108,6 @@ const MapPage = () => {
       }))
   }, [data, t])
 
-  console.log('MapPage productMarkers:', productMarkers)
-
   // Combine highlighted marker with product markers
   const allMarkers = useMemo(() => {
     if (highlightedMarker) {

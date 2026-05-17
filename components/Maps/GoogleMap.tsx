@@ -128,8 +128,6 @@ const GoogleMap = ({
   height = '100%',
 }: GoogleMapProps) => {
 
-  console.log('GoogleMap rendered with props:')
-
   const mapRef = useRef<MapView>(null)
   const colors = useThemeColors()
   const colorScheme = useColorScheme()
@@ -152,9 +150,17 @@ const GoogleMap = ({
         return
       }
 
+      const servicesEnabled = await Location.hasServicesEnabledAsync()
+      if (!servicesEnabled) {
+        Alert.alert('Location Services Disabled', 'Please turn on location services in your device settings.')
+        return
+      }
+
       // Auto-locate to user's current position if enabled and no custom initialRegion
       if (autoLocate) {
-        const location = await Location.getCurrentPositionAsync({})
+        const location = await Location.getCurrentPositionAsync({
+          accuracy: Location.Accuracy.Balanced,
+        })
         setTimeout(() => {
           mapRef.current?.animateToRegion({
             latitude: location.coords.latitude,
@@ -199,6 +205,12 @@ const GoogleMap = ({
       const { status } = await Location.getForegroundPermissionsAsync()
       if (status !== 'granted') {
         Alert.alert('Permission denied', 'Allow access to location to use this feature.')
+        return
+      }
+
+      const servicesEnabled = await Location.hasServicesEnabledAsync()
+      if (!servicesEnabled) {
+        Alert.alert('Location Services Disabled', 'Please turn on location services in your device settings.')
         return
       }
 
@@ -259,14 +271,14 @@ const GoogleMap = ({
             onPress={() => onMarkerPress?.(marker)}
             // Bottom-center of the icon should sit on the coordinate point.
             // Without this Android defaults to center-center, misplacing the pin.
-            anchor={{ x: 0.5, y: 0.5 }}
+            anchor={{ x: 0.5, y: 1 }}
             // Disable continuous bitmap re-capture on Android — this is the
             // primary cause of the SVG marker appearing rotated / tilted.
-            tracksViewChanges={false}
+            // tracksViewChanges={false}
           >
             {/* Custom marker view */}
             <View style={styles.markerContainer}>
-              <LocationPinIcon size={45} color={colors.primaryColor} />
+              <LocationPinIcon size={40} color={colors.primaryColor} />
             </View>
           </Marker>
         ))}
@@ -341,10 +353,10 @@ const styles = StyleSheet.create({
   },
   markerContainer: {
     // Explicit dimensions prevent Android from capturing the SVG at the wrong
-    // size when creating the marker bitmap. Values match LocationPinIcon size=45:
-    // scale = 45/75 = 0.6 → width = 58*0.6 ≈ 35, height = 75*0.6 = 45
-    width: 30,
-    height: 35,
+    // size when creating the marker bitmap. Values match LocationPinIcon size=40:
+    // scale = 40/75 ≈ 0.533 → width = 58*0.533 ≈ 31, height = 75*0.533 ≈ 40
+    width: 31,
+    height: 40,
     alignItems: 'center',
   },
   marker: {

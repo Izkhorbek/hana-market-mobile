@@ -2,6 +2,7 @@ import GoogleMap, { MarkerData } from '@/components/Maps/GoogleMap'
 import MapPageHeader from '@/components/headers/MapPageHeader'
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
+import { logger } from '@/utils/logger'
 import * as Location from 'expo-location'
 import { useLocalSearchParams } from 'expo-router'
 import { MapPin, Navigation } from 'lucide-react-native'
@@ -17,6 +18,7 @@ export default function ProductLocationPage() {
         moljal: string
     }>()
 
+    console.log('Received location params:', { latitude, longitude, title, moljal })
     const colors = useThemeColors()
     const { t } = useTranslations()
     const insets = useSafeAreaInsets()
@@ -47,7 +49,7 @@ export default function ProductLocationPage() {
                     lng: location.coords.longitude,
                 })
             } catch (error) {
-                console.error('Error getting user location:', error)
+                logger.error('Error getting user location:', error)
             } finally {
                 setIsLoadingLocation(false)
             }
@@ -120,7 +122,7 @@ export default function ProductLocationPage() {
                 t('navigation.error_opening_maps') || 'Could not open maps application.',
                 [{ text: 'OK' }],
             )
-            console.error('Error opening maps:', error)
+            logger.error('Error opening maps:', error)
         }
     }, [userLocation, lat, lng, t])
 
