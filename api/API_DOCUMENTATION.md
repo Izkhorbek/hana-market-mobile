@@ -46,7 +46,7 @@ All requests and responses use `application/json` content type unless specified 
 
 ### Authentication Methods
 
-Most endpoints require Bearer token authentication:
+Most API_ENDPOINTSs require Bearer token authentication:
 
 ```http
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...

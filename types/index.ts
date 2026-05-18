@@ -712,3 +712,42 @@ export interface FeedbackRequest {
 export interface FeedbackResponse {
   feedback_id: number;
 }
+
+// ==================== NOTIFICATIONS TYPES ====================
+export const NotificationType = {
+      NewMessage:  'new_message',
+      NewChatRoom: 'new_chat_room',
+      NewProduct: 'new_product',  
+      ProductLiked: 'product_liked',
+      ProductSold: 'product_sold',
+      ProductExpired: 'product_expired',
+      General: 'general',
+    } as const   
+
+    export interface RegisterPushTokenDto {
+    device_token: string;
+
+    /// <summary>android | ios</summary>
+    platform: 'android' | 'ios';
+}
+
+export interface DeactivatePushTokenDto {
+    device_token: string;
+}
+
+export interface NotificationListItemDto {
+    id: number;
+    type: string;
+    title: string;
+    message: string;
+    related_id?: number;
+    related_type: string;
+    is_read: boolean;
+    read_at?: string;
+    created_at: string;
+}
+
+export interface MarkNotificationsReadDto {
+    /// <summary>Leave empty to mark ALL unread notifications as read.</summary>
+    ids: number[];
+}

@@ -3,6 +3,7 @@ import { useThemeNavigationBar } from '@/components/AnroidNavbarButtonsColorChan
 import { ChatBootstrap } from '@/components/providers/ChatBootstrap'
 import { GlobalErrorBoundary } from '@/components/providers/GlobalErrorBoundary'
 import { NetworkProvider } from '@/components/providers/NetworkProvider'
+import { NotificationBootstrap } from '@/components/providers/NotificationBootstrap'
 import '@/constants/localization'
 import { useColorScheme } from '@/hooks/use-color-scheme'
 import { useThemeColors } from '@/hooks/use-theme-colors'
@@ -41,6 +42,7 @@ function RootLayout() {
 						<NetworkProvider>
 							<SafeAreaView style={{ flex: 1, backgroundColor: colorScheme === 'dark' ? colors.background : colors.background }} edges={edgesList}>
 								<ChatBootstrap />
+							<NotificationBootstrap />
 								<Stack screenOptions={{ headerShown: false }}>
 									<Stack.Screen name='index' />
 									<Stack.Screen name='(tabs)' />

@@ -1,3 +1,5 @@
+// ==================== API ENDPOINTS ====================
+
 const ENDPOINT = {
   // Health
   HEALTH: 'health',
@@ -22,6 +24,16 @@ const ENDPOINT = {
     SELLER_INFO: (sellerId: string | number) => `user/seller/${sellerId}`,
   },
 
+  // Notifications
+  NOTIFICATIONS: {
+    REGISTER_TOKEN: 'notifications/token/register',
+    DEACTIVATE_TOKEN: 'notifications/token/deactivate',
+    LIST: 'notifications',
+    UNREAD_COUNT: 'notifications/unread-count',
+    MARK_AS_READ: 'notifications/mark-read',
+    DELETE: (id: string | number) => `notifications/${id}`,
+  },
+  
   // Chat
   CHAT: {
     MY_CHATS: 'chats/my-chats',

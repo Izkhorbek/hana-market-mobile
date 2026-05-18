@@ -8347,7 +8347,7 @@ the current version. Please update. Support for old versions may be purchased
         "/api/services/auth.service.ts": {
           "size": 361
         },
-        "/api/endpoints.ts": {
+        "/api/API_ENDPOINTSs.ts": {
           "size": 1880
         },
         "/api/services/category.service.ts": {
