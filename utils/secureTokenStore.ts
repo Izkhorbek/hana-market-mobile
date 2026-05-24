@@ -22,11 +22,11 @@
  *   here. This vault is the *persistence* layer only.
  */
 
-import { logger } from '@/utils/logger';
-import * as SecureStore from 'expo-secure-store';
-import { Platform } from 'react-native';
+import { logger } from '@/utils/logger'
+import * as SecureStore from 'expo-secure-store'
+import { Platform } from 'react-native'
 
-const VAULT_KEY = 'hana.auth.tokens.v1';
+const VAULT_KEY = 'hana.auth.tokens.v1'
 
 export interface VaultTokens {
   token: string | null;
@@ -40,7 +40,7 @@ const EMPTY: VaultTokens = {
   refreshToken: null,
   expiresAt: null,
   refreshTokenExpiresAt: null,
-};
+}
 
 // ── Platform-specific accessibility options ────────────────────────────────
 // AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY: readable in background after first
@@ -48,40 +48,41 @@ const EMPTY: VaultTokens = {
 // to iCloud / not restored to a different device.
 const SECURE_STORE_OPTIONS: SecureStore.SecureStoreOptions = {
   keychainAccessible: SecureStore.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY,
-};
+}
 
 // ── Web fallback (SecureStore unavailable on web) ───────────────────────────
-const isWeb = Platform.OS === 'web';
+const isWeb = Platform.OS === 'web'
 
 const webGet = (): string | null => {
   try {
     return typeof window !== 'undefined'
       ? window.localStorage.getItem(VAULT_KEY)
-      : null;
-  } catch {
-    return null;
-  }
-};
+      : null
+  } catch (error) {
+      logger.warn(error, { code: 'TOKEN_VAULT_WEB_GET_FAILED' })
+      return null
+    }
+}
 
 const webSet = (value: string) => {
   try {
     if (typeof window !== 'undefined') {
-      window.localStorage.setItem(VAULT_KEY, value);
+      window.localStorage.setItem(VAULT_KEY, value)
     }
-  } catch {
-    /* quota / private mode — ignore */
+  } catch (error) {
+    logger.warn(error, { code: 'TOKEN_VAULT_WEB_SET_FAILED' })
   }
-};
+}
 
 const webDelete = () => {
   try {
     if (typeof window !== 'undefined') {
-      window.localStorage.removeItem(VAULT_KEY);
+      window.localStorage.removeItem(VAULT_KEY)
     }
-  } catch {
-    /* ignore */
+  } catch (error) {
+    logger.warn(error, { code: 'TOKEN_VAULT_WEB_DELETE_FAILED' }) 
   }
-};
+}
 
 // ── Public API ──────────────────────────────────────────────────────────────
 
@@ -91,34 +92,34 @@ export const secureTokenStore = {
     try {
       const raw = isWeb
         ? webGet()
-        : await SecureStore.getItemAsync(VAULT_KEY, SECURE_STORE_OPTIONS);
-      if (!raw) return { ...EMPTY };
-      const parsed = JSON.parse(raw) as Partial<VaultTokens>;
+        : await SecureStore.getItemAsync(VAULT_KEY, SECURE_STORE_OPTIONS)
+      if (!raw) return { ...EMPTY }
+      const parsed = JSON.parse(raw) as Partial<VaultTokens>
       return {
         token: parsed.token ?? null,
         refreshToken: parsed.refreshToken ?? null,
         expiresAt: parsed.expiresAt ?? null,
         refreshTokenExpiresAt: parsed.refreshTokenExpiresAt ?? null,
-      };
+      }
     } catch (error) {
       // Corrupt JSON or hardware error — treat as empty so the user just has
       // to log in again rather than crashing the app.
-      logger.warn(error, { code: 'TOKEN_VAULT_READ_FAILED' });
-      return { ...EMPTY };
+      logger.warn(error, { code: 'TOKEN_VAULT_READ_FAILED' })
+      return { ...EMPTY }
     }
   },
 
   /** Atomically persist all four token fields. */
   async write(tokens: VaultTokens): Promise<void> {
     try {
-      const value = JSON.stringify(tokens);
+      const value = JSON.stringify(tokens)
       if (isWeb) {
-        webSet(value);
+        webSet(value)
       } else {
-        await SecureStore.setItemAsync(VAULT_KEY, value, SECURE_STORE_OPTIONS);
+        await SecureStore.setItemAsync(VAULT_KEY, value, SECURE_STORE_OPTIONS)
       }
     } catch (error) {
-      logger.error('TOKEN_VAULT_WRITE_FAILED', error);
+      logger.error('TOKEN_VAULT_WRITE_FAILED', error)
     }
   },
 
@@ -126,14 +127,14 @@ export const secureTokenStore = {
   async clear(): Promise<void> {
     try {
       if (isWeb) {
-        webDelete();
+        webDelete()
       } else {
-        await SecureStore.deleteItemAsync(VAULT_KEY, SECURE_STORE_OPTIONS);
+        await SecureStore.deleteItemAsync(VAULT_KEY, SECURE_STORE_OPTIONS)
       }
     } catch (error) {
-      logger.warn(error, { code: 'TOKEN_VAULT_CLEAR_FAILED' });
+      logger.warn(error, { code: 'TOKEN_VAULT_CLEAR_FAILED' })
     }
   },
-};
+}
 
-export default secureTokenStore;
+export default secureTokenStore

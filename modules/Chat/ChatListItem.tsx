@@ -1,8 +1,8 @@
-import RemoteImage from '@/components/shared/RemoteImage';
-import { useColor } from '@/hooks/useColor';
-import useResponsive from '@/hooks/useResponsive';
-import React, { useMemo } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import RemoteImage from '@/components/shared/RemoteImage'
+import { useColor } from '@/hooks/useColor'
+import useResponsive from '@/hooks/useResponsive'
+import React, { memo, useMemo } from 'react'
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 
 export interface ChatItemData {
   id: string;
@@ -21,11 +21,11 @@ interface ChatListItemProps {
   onPress?: (chatId: string) => void;
 }
 
-const ChatListItem = ({ chat, onPress }: ChatListItemProps) => {
-  const textColor = useColor('text');
-  const mutedTextColor = useColor('textMuted');
-  const backgroundColor = useColor('background');
-  const { ms, fs, isSmallDevice, isLargeDevice } = useResponsive();
+const ChatListItemComponent = ({ chat, onPress }: ChatListItemProps) => {
+  const textColor = useColor('text')
+  const mutedTextColor = useColor('textMuted')
+  const backgroundColor = useColor('background')
+  const { ms, fs, isSmallDevice, isLargeDevice } = useResponsive()
 
   // Responsive sizes
   const responsiveStyles = useMemo(() => ({
@@ -75,7 +75,7 @@ const ChatListItem = ({ chat, onPress }: ChatListItemProps) => {
     placeholderText: {
       fontSize: fs(18),
     },
-  }), [ms, fs]);
+  }), [ms, fs])
 
   return (
     <TouchableOpacity
@@ -90,7 +90,14 @@ const ChatListItem = ({ chat, onPress }: ChatListItemProps) => {
       {/* Avatar */}
       <View style={styles.avatarContainer}>
         {chat.avatar ? (
-          <RemoteImage src={chat.avatar} style={responsiveStyles.avatar} />
+          <RemoteImage
+            src={chat.avatar}
+            style={responsiveStyles.avatar}
+            cachePolicy='disk'
+            requestedWidth={96}
+            requestedHeight={96}
+            requestedQuality={65}
+          />
         ) : (
           <View style={[responsiveStyles.avatar, styles.placeholderAvatar]}>
             <Text style={[styles.placeholderText, responsiveStyles.placeholderText]}>
@@ -135,12 +142,21 @@ const ChatListItem = ({ chat, onPress }: ChatListItemProps) => {
       </View>
 
       {/* Thumbnail */}
-      <RemoteImage src={chat.thumbnail} style={responsiveStyles.thumbnail} />
+      <RemoteImage
+        src={chat.thumbnail}
+        style={responsiveStyles.thumbnail}
+        cachePolicy='disk'
+        requestedWidth={104}
+        requestedHeight={104}
+        requestedQuality={60}
+      />
     </TouchableOpacity>
-  );
-};
+  )
+}
 
-export default ChatListItem;
+const ChatListItem = memo(ChatListItemComponent)
+
+export default ChatListItem
 
 const styles = StyleSheet.create({
   container: {
@@ -232,4 +248,4 @@ const styles = StyleSheet.create({
     height: 52,
     borderRadius: 8,
   },
-});
+})

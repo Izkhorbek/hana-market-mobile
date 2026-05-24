@@ -3,14 +3,17 @@ import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
 
 import {
+  setSessionExpiredLogoutFn,
   setLogoutFn,
   setRefreshTokenFn,
   setTokenGetter,
 } from '@/api/auth-bridge'
 import { queryClient } from '@/api/queryClient'
 import { secureTokenStore } from '@/utils/secureTokenStore'
+import { logger } from '@/utils/logger'
 import { setSentryUser } from '@/utils/sentry'
-import { authApi as localAuthApi, userApi as localUserApi } from './api'
+import { authService } from '@/api/services/auth.service'
+import { userService } from '@/api/services/user.service'
 import { useChatStore }  from '@/modules/Chat/chat-store'
 
 // ── Types ──
@@ -136,11 +139,11 @@ export const useAuthStore = create<AuthState>()(
         // Fire-and-forget from the store's perspective: the SMS is the only
         // side-effect. Errors propagate so the screen can show a localized
         // message to the user.
-        await localAuthApi.requestOtp(phoneNumber)
+          await authService.requestOtp({ phone_number: phoneNumber })
       },
 
       verifyOtp: async (phoneNumber, code) => {
-        const response = await localAuthApi.verifyOtp(phoneNumber, code)
+        const response = await authService.verifyOtp({ phone_number: phoneNumber, code })
 
         const tokens = extractAuthTokens(response)
         const userData = response.data?.data as User | undefined
@@ -179,7 +182,7 @@ export const useAuthStore = create<AuthState>()(
         const current = get().refreshToken
         if (!current) return null
         try {
-          const response = await localAuthApi.refresh(current)
+          const response = await authService.refreshToken({ refresh_token: current })
           const tokens = extractAuthTokens(response)
           if (!tokens.token) return null
 
@@ -197,14 +200,15 @@ export const useAuthStore = create<AuthState>()(
           void secureTokenStore.write(nextState)
 
           return tokens.token
-        } catch {
+        } catch (error) {
+          logger.warn(error, { code: 'AUTH_REFRESH_TOKENS_FAILED' })
           return null
         }
       },
 
       fetchUser: async () => {
         try {
-          const response = await localUserApi.getUser()
+          const response = await userService.getProfile()
           set({ user: response.data.data, sessionExpiredOnStart: false })
           // Tag Sentry events with the (non-PII) user identity for triage.
           if (response.data.data) {
@@ -213,11 +217,37 @@ export const useAuthStore = create<AuthState>()(
               username: response.data.data.username,
             })
           }
-        } catch {
-          // Token is expired / invalid — flag it so the UI can show an Alert,
-          // then wipe the session so the user is sent back to the welcome page.
-          set({ sessionExpiredOnStart: true })
-          get().logout()
+        } catch (error) {
+          const status = (error as { response?: { status?: number } })
+            ?.response?.status
+
+          // Only auth failures should invalidate the local session.
+          if (status === 401 || status === 403) {
+            // ✅ Avval refresh urinib ko'r
+            const newToken = await get().refreshTokens()
+            if (newToken) {
+              // Refresh muvaffaqiyatli — user'ni qayta olishga urin
+              try {
+                 const retryResponse = await userService.getProfile()
+                set({ user: retryResponse.data.data, sessionExpiredOnStart: false })
+                return
+              } catch (retryError) {
+                // Fall through to session expiration handling
+                logger.warn(retryError, {
+                  code: 'AUTH_FETCH_USER_FAILED_AFTER_REFRESH',
+                })
+              }
+            }
+            set({ sessionExpiredOnStart: true })
+            get().logout()
+            return
+          }
+
+          // Network / server / unknown failures should not force logout.
+          logger.warn(error, {
+            code: 'AUTH_FETCH_USER_FAILED_NON_AUTH',
+            extra: { status },
+          })
         }
       },
 
@@ -227,7 +257,7 @@ export const useAuthStore = create<AuthState>()(
         searchRadiusKm,
         addressName,
       ) => {
-        await localUserApi.updateLocation({
+        await userService.updateLocation({
           latitude,
           longitude,
           search_radius_km: searchRadiusKm,
@@ -364,9 +394,26 @@ async function hydrateTokensFromVault(rehydrated?: AuthState) {
     }
 
     // Always validate the stored token against the server on startup.
-    // fetchUser() sets sessionExpiredOnStart + calls logout() on any failure,
-    // so the user is redirected to the welcome page with an Alert.
+    // If the access token is locally known to be expired, try to refresh it
+    // first to avoid a guaranteed 401 round-trip and the resulting session-
+    // expired dialog when a valid refresh token is still available.
     if (s.isAuthenticated && s.token) {
+      const isLocallyExpired = s.expiresAt
+        ? new Date(s.expiresAt) <= new Date()
+        : false
+
+      if (isLocallyExpired) {
+        const newToken = await s.refreshTokens()
+        if (!newToken) {
+          // Refresh token also expired — end the session without a server call.
+          useAuthStore.setState({ sessionExpiredOnStart: true })
+          useAuthStore.getState().logout()
+          useAuthStore.getState().setHydrated(true)
+          return
+        }
+        // Token refreshed — fall through to fetchUser() with the new token.
+      }
+
       s.fetchUser().finally(() => s.setHydrated(true))
       return
     }
@@ -379,4 +426,5 @@ async function hydrateTokensFromVault(rehydrated?: AuthState) {
 // Register bridge functions — breaks the circular dependency with api/api.ts
 setTokenGetter(() => useAuthStore.getState().token)
 setLogoutFn(() => useAuthStore.getState().logout())
+setSessionExpiredLogoutFn()
 setRefreshTokenFn(() => useAuthStore.getState().refreshTokens())

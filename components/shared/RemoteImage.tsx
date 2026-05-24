@@ -1,6 +1,6 @@
 import HanaLogoPlaceholder from '@/components/shared/HanaLogoPlaceholder'
 import { useThemeColors } from '@/hooks/use-theme-colors'
-import { resolveImageUrl } from '@/utils/imageUrl'
+import { resolveImageUrl, resolveSizedImageUrl } from '@/utils/imageUrl'
 import { Image, ImageContentFit, ImageStyle } from 'expo-image'
 import React, { useEffect, useState } from 'react'
 import {
@@ -27,6 +27,14 @@ interface RemoteImageProps {
   cachePolicy?: 'none' | 'disk' | 'memory' | 'memory-disk';
   /** Transition duration in ms */
   transition?: number;
+  /** Optional width hint for requesting smaller variants from backend/CDN */
+  requestedWidth?: number;
+  /** Optional height hint for requesting smaller variants from backend/CDN */
+  requestedHeight?: number;
+  /** Optional quality hint for requesting smaller variants from backend/CDN */
+  requestedQuality?: number;
+  /** Show spinner while loading. Keep false for long lists to reduce jank. */
+  showLoader?: boolean;
 }
 
 /**
@@ -41,13 +49,24 @@ const RemoteImage: React.FC<RemoteImageProps> = ({
   resizeMode = 'cover',
   placeholderColor = '#d0d0d0',
   blurhash = DEFAULT_BLURHASH,
-  cachePolicy = 'memory-disk',
+  cachePolicy = 'disk',
   transition = 200,
+  requestedWidth,
+  requestedHeight,
+  requestedQuality = 70,
+  showLoader = false,
 }) => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
 
-  const uri = resolveImageUrl(src)
+  const uri =
+    requestedWidth && requestedWidth > 0
+      ? resolveSizedImageUrl(src, {
+          width: requestedWidth,
+          height: requestedHeight,
+          quality: requestedQuality,
+        })
+      : resolveImageUrl(src)
   const colors = useThemeColors()
 
   // Map resizeMode to expo-image contentFit
@@ -62,12 +81,12 @@ const RemoteImage: React.FC<RemoteImageProps> = ({
 
   // Reset error/loading whenever the resolved URI changes (e.g. after upload)
   useEffect(() => {
-    setLoading(true)
+    setLoading(!!uri)
     setError(false)
   }, [uri])
 
   // ── No URL or failed to load → show local fallback image ─────────────────
-  if (!loading && (!uri || error)) {
+  if (!uri || error) {
     return (
       <View style={[styles.wrapper, styles.placeholder, containerStyle, style as ViewStyle]}>
         <HanaLogoPlaceholder />
@@ -78,21 +97,21 @@ const RemoteImage: React.FC<RemoteImageProps> = ({
   // ── Remote image with expo-image (cached) ─────────────────────────────────
   return (
     <View style={[styles.wrapper, containerStyle, style as ViewStyle]}>
-      {loading && (
+      {showLoader && loading && (
         <View style={[StyleSheet.absoluteFillObject, styles.loaderBox, { backgroundColor: placeholderColor }]}>
           <ActivityIndicator size='large' color={colors.primaryColor} />
         </View>
       )}
       <Image
         source={{ uri }}
-        style={[style, loading && styles.hidden]}
+        style={[style, showLoader && loading && styles.hidden]}
         contentFit={contentFit}
         placeholder={{ blurhash }}
         placeholderContentFit="cover"
         transition={transition}
         cachePolicy={cachePolicy}
         recyclingKey={uri}
-        onLoad={() => setLoading(false)}
+        onLoadEnd={() => setLoading(false)}
         onError={() => { setLoading(false); setError(true) }}
       />
     </View>

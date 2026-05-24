@@ -60,3 +60,5 @@ store/screenshots/
 ios/sentry.properties
 
 .env.local
+app-settings/google-services.json
+app-settings/sentry.properties

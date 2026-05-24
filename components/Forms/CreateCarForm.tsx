@@ -28,7 +28,6 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import FormRow from '../FormElements/FormRow'
 import ImageUploader, { DraftImageItem } from '../FormElements/ImageUploader'
 import RadioButtonGroup, {
@@ -39,7 +38,6 @@ const CreateCarForm = () => {
   const { t } = useTranslations()
   const primaryColor = useColor('primaryColor')
   const textColor = useColor('text')
-  const insets = useSafeAreaInsets()
   const subTextColor = useColor('subText')
   const surfaceColor = useColor('background')
   const sectionTintColor = useColor('profileBackground')
@@ -86,9 +84,6 @@ const CreateCarForm = () => {
     },
   })
 
-  const fuelType = form.watch('fuelType')
-  const transmission = form.watch('transmission')
-  const condition = form.watch('condition')
   const currency = form.watch('currency')
 
   const { mutate: createProduct, isPending } = useCreateProductMutation({

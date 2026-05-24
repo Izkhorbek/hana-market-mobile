@@ -1,3 +1,4 @@
+import { userService } from '@/api/services/user.service'
 import KeyboardAvoidWrapper from '@/components/shared/KeyboardAvoidWrapper'
 import { ThemedText } from '@/components/themed-text'
 import { ThemedView } from '@/components/themed-view'
@@ -5,7 +6,6 @@ import CustomAlert from '@/components/ui/CustomAlert'
 import { AppLimits, UZBEK_MOBILE_OPERATORS, UZBEK_MOBILE_PHONE_REGEX, UZBEK_MOBILE_PREFIX_SET, UZBEK_MOBILE_PREFIXES } from '@/constants/appLimits'
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
-import { userApi } from '@/modules/Auth/api'
 import { useAuthStore } from '@/modules/Auth/auth-store'
 import Ionicons from '@expo/vector-icons/Ionicons'
 import * as Haptics from 'expo-haptics'
@@ -267,7 +267,7 @@ const AuthPage = () => {
     if (!validateUsername(username) || isLoading) return
     setIsLoading(true)
     try {
-      await userApi.updateUser({ username })
+      await userService.updateProfile({ username })
       setIsLoading(false)
       const loggedInUser = useAuthStore.getState().user
       if (

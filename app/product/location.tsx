@@ -18,7 +18,6 @@ export default function ProductLocationPage() {
         moljal: string
     }>()
 
-    console.log('Received location params:', { latitude, longitude, title, moljal })
     const colors = useThemeColors()
     const { t } = useTranslations()
     const insets = useSafeAreaInsets()

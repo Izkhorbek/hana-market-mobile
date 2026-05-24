@@ -31,9 +31,6 @@ const OUT = path.join(ROOT, 'assets/images')
 // Adjust here AND in app.json together.
 const BG_HEX = '#E6F4FE'
 
-// Splash background (matches app.json plugin config).
-const SPLASH_BG_HEX = '#FFFFFF'
-
 const hexToRgba = (hex, alpha = 1) => {
   const m = hex.replace('#', '')
   const r = parseInt(m.slice(0, 2), 16)
@@ -53,8 +50,8 @@ if (!fs.existsSync(SPLASH_SRC)) {
 }
 
 (async () => {
-  const srcMeta = await sharp(SRC).metadata()
-  console.log(`Source: ${path.basename(SRC)} ${srcMeta.width}x${srcMeta.height}`)
+  // const srcMeta = await sharp(SRC).metadata()
+  // console.log(`Source: ${path.basename(SRC)} ${srcMeta.width}x${srcMeta.height}`)
 
   // 1) iOS App Store icon — 1024x1024, opaque, logo fits inner 80%
   // App Store explicitly forbids transparency on the marketing icon.
@@ -75,7 +72,7 @@ if (!fs.existsSync(SPLASH_SRC)) {
     .flatten({ background: hexToRgba(BG_HEX) })
     .png({ compressionLevel: 9 })
     .toFile(path.join(OUT, 'icon.png'))
-  console.log('  -> icon.png (1024x1024 opaque)')
+  // console.log('  -> icon.png (1024x1024 opaque)')
 
   // 2) Splash logo — transparent wordmark so only the text sits on the splash background.
   await sharp(SPLASH_SRC)

@@ -36,8 +36,6 @@ interface MapProductItem {
 
 const MapPage = () => {
 
-  console.log('MapPage rendered with params:')
-
   const params = useLocalSearchParams<{
     latitude?: string;
     longitude?: string;
@@ -69,8 +67,6 @@ const MapPage = () => {
       current_page: 1,
     },
   })
-
-  console.log('MapPage products data:', data)
 
   // Create highlighted marker from URL params
   const highlightedMarker: MarkerData | null = useMemo(() => {

@@ -1,6 +1,6 @@
-import { AppLimits } from "@/constants/appLimits";
-import * as Location from "expo-location";
-import { Alert, Linking } from "react-native";
+import { AppLimits } from '@/constants/appLimits'
+import * as Location from 'expo-location'
+import { Alert, Linking } from 'react-native'
 
 export type Coords = {
   latitude: number;
@@ -8,13 +8,13 @@ export type Coords = {
 };
 
 export type LocationErrorCode =
-  | "PERMISSION_DENIED"
-  | "PERMISSION_BLOCKED"
-  | "SERVICES_DISABLED"
-  | "TIMEOUT"
-  | "UNAVAILABLE"
-  | "OUT_OF_REGION"
-  | "UNKNOWN";
+  | 'PERMISSION_DENIED'
+  | 'PERMISSION_BLOCKED'
+  | 'SERVICES_DISABLED'
+  | 'TIMEOUT'
+  | 'UNAVAILABLE'
+  | 'OUT_OF_REGION'
+  | 'UNKNOWN';
 
 export type LocationResult =
   | { ok: true; coords: Coords }
@@ -30,18 +30,18 @@ export const UZBEKISTAN_BBOX = {
   maxLat: 45.7,
   minLng: 55.9,
   maxLng: 73.2,
-} as const;
+} as const
 
 /** True if the given coordinates fall inside the Uzbekistan bbox. */
 export function isWithinUzbekistan(coords: Coords): boolean {
-  const { latitude: lat, longitude: lng } = coords;
-  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return false;
+  const { latitude: lat, longitude: lng } = coords
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return false
   return (
     lat >= AppLimits.Location.MIN_LATITUDE &&
     lat <= AppLimits.Location.MAX_LATITUDE &&
     lng >= AppLimits.Location.MIN_LONGITUDE &&
     lng <= AppLimits.Location.MAX_LONGITUDE
-  );
+  )
 }
 
 export type GetCurrentLocationOptions = {
@@ -51,7 +51,7 @@ export type GetCurrentLocationOptions = {
   accuracy?: Location.LocationAccuracy;
 };
 
-const DEFAULT_TIMEOUT_MS = 15000;
+const DEFAULT_TIMEOUT_MS = 15000
 
 /**
  * Resolve the device's current GPS coordinates safely.
@@ -66,35 +66,35 @@ export async function getCurrentLocationSafe(
   options: GetCurrentLocationOptions = {},
 ): Promise<LocationResult> {
   const { timeoutMs = DEFAULT_TIMEOUT_MS, accuracy = Location.Accuracy.Balanced } =
-    options;
+    options
 
   try {
     // 1. Device-level location services
-    const servicesEnabled = await Location.hasServicesEnabledAsync();
+    const servicesEnabled = await Location.hasServicesEnabledAsync()
     if (!servicesEnabled) {
       return {
         ok: false,
-        code: "SERVICES_DISABLED",
-        message: "Location services are disabled on this device.",
-      };
+        code: 'SERVICES_DISABLED',
+        message: 'Location services are disabled on this device.',
+      }
     }
 
     // 2. App-level foreground permission
     let { status, canAskAgain } =
-      await Location.getForegroundPermissionsAsync();
+      await Location.getForegroundPermissionsAsync()
 
-    if (status !== "granted" && canAskAgain) {
-      const requested = await Location.requestForegroundPermissionsAsync();
-      status = requested.status;
-      canAskAgain = requested.canAskAgain;
+    if (status !== 'granted' && canAskAgain) {
+      const requested = await Location.requestForegroundPermissionsAsync()
+      status = requested.status
+      canAskAgain = requested.canAskAgain
     }
 
-    if (status !== "granted") {
+    if (status !== 'granted') {
       return {
         ok: false,
-        code: canAskAgain ? "PERMISSION_DENIED" : "PERMISSION_BLOCKED",
-        message: "Location permission was not granted.",
-      };
+        code: canAskAgain ? 'PERMISSION_DENIED' : 'PERMISSION_BLOCKED',
+        message: 'Location permission was not granted.',
+      }
     }
 
     // 3. Get position, raced against timeout
@@ -105,77 +105,77 @@ export async function getCurrentLocationSafe(
       new Promise<{ __timeout: true }>((resolve) =>
         setTimeout(() => resolve({ __timeout: true }), timeoutMs),
       ),
-    ]);
+    ])
 
-    if ("__timeout" in position) {
+    if ('__timeout' in position) {
       return {
         ok: false,
-        code: "TIMEOUT",
-        message: "Timed out while getting your location.",
-      };
+        code: 'TIMEOUT',
+        message: 'Timed out while getting your location.',
+      }
     }
 
-    // const coords: Coords = {
-    //   latitude: position.coords.latitude,
-    //   longitude: position.coords.longitude,
-    // };
+    const coords: Coords = {
+      latitude: position.coords.latitude,
+      longitude: position.coords.longitude,
+    }
 
     // Temporary override: skip the Uzbekistan region check and allow all coordinates through.
-     const coords: Coords = {
-      latitude: 41.311081, // Tashkent city center
-      longitude: 69.240562, // Tashkent city center
-    };
+    //  const coords: Coords = {
+    //   latitude: 41.311081, // Tashkent city center
+    //   longitude: 69.240562, // Tashkent city center
+    // }
 
     if (!isWithinUzbekistan(coords)) {
       return {
         ok: false,
-        code: "OUT_OF_REGION",
+        code: 'OUT_OF_REGION',
         message:
-          "Your current location is outside the supported service region (Uzbekistan).",
-      };
+          'Your current location is outside the supported service region (Uzbekistan).',
+      }
     }
 
-    return { ok: true, coords };
+    return { ok: true, coords }
   } catch (error: any) {
     return {
       ok: false,
-      code: "UNAVAILABLE",
-      message: error?.message ?? "Unable to retrieve location.",
-    };
+      code: 'UNAVAILABLE',
+      message: error?.message ?? 'Unable to retrieve location.',
+    }
   }
 }
 
 type Translator = (key: string, options?: any) => string;
 
 const i18nKeyFor: Record<
-  Exclude<LocationErrorCode, "UNKNOWN">,
+  Exclude<LocationErrorCode, 'UNKNOWN'>,
   { title: string; message: string }
 > = {
   PERMISSION_DENIED: {
-    title: "post.location.permission_denied_title",
-    message: "post.location.permission_denied_message",
+    title: 'post.location.permission_denied_title',
+    message: 'post.location.permission_denied_message',
   },
   PERMISSION_BLOCKED: {
-    title: "post.location.permission_blocked_title",
-    message: "post.location.permission_blocked_message",
+    title: 'post.location.permission_blocked_title',
+    message: 'post.location.permission_blocked_message',
   },
   SERVICES_DISABLED: {
-    title: "post.location.services_disabled_title",
-    message: "post.location.services_disabled_message",
+    title: 'post.location.services_disabled_title',
+    message: 'post.location.services_disabled_message',
   },
   TIMEOUT: {
-    title: "post.location.timeout_title",
-    message: "post.location.timeout_message",
+    title: 'post.location.timeout_title',
+    message: 'post.location.timeout_message',
   },
   UNAVAILABLE: {
-    title: "post.location.unavailable_title",
-    message: "post.location.unavailable_message",
+    title: 'post.location.unavailable_title',
+    message: 'post.location.unavailable_message',
   },
   OUT_OF_REGION: {
-    title: "post.location.out_of_region_title",
-    message: "post.location.out_of_region_message",
+    title: 'post.location.out_of_region_title',
+    message: 'post.location.out_of_region_message',
   },
-};
+}
 
 /**
  * Show a localized, user-friendly alert for a failed `LocationResult`.
@@ -186,27 +186,27 @@ export function showLocationErrorAlert(
   result: Extract<LocationResult, { ok: false }>,
   t: Translator,
 ): void {
-  const code: Exclude<LocationErrorCode, "UNKNOWN"> =
-    result.code === "UNKNOWN" ? "UNAVAILABLE" : result.code;
+  const code: Exclude<LocationErrorCode, 'UNKNOWN'> =
+    result.code === 'UNKNOWN' ? 'UNAVAILABLE' : result.code
 
-  const { title, message } = i18nKeyFor[code];
+  const { title, message } = i18nKeyFor[code]
 
   const showsOpenSettings =
-    code === "PERMISSION_BLOCKED" || code === "SERVICES_DISABLED";
+    code === 'PERMISSION_BLOCKED' || code === 'SERVICES_DISABLED'
 
   const buttons = showsOpenSettings
     ? [
-        { text: t("common.cancel"), style: "cancel" as const },
+        { text: t('common.cancel'), style: 'cancel' as const },
         {
-          text: t("post.location.open_settings"),
+          text: t('post.location.open_settings'),
           onPress: () => {
             Linking.openSettings().catch(() => {
               /* noop — user may have killed the activity */
-            });
+            })
           },
         },
       ]
-    : [{ text: t("common.ok") }];
+    : [{ text: t('common.ok') }]
 
-  Alert.alert(t(title), t(message), buttons);
+  Alert.alert(t(title), t(message), buttons)
 }

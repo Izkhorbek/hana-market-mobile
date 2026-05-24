@@ -83,8 +83,6 @@ const MyProfilePage: React.FC = () => {
 	const email = profileRes?.data?.data?.email
 	const bio = profileRes?.data?.data?.bio
 
-	console.log('Profile data:', profileRes?.data?.data)
-
 	// Display name: "First Last" -> @username -> phone_number -> "--"
 	const displayName =
 		profileRes?.data?.data?.first_name || profileRes?.data?.data?.last_name

@@ -1,6 +1,17 @@
 import { useIsOnline } from '@/hooks/useNetworkStatus'
 import { MutationCache, QueryCache } from '@tanstack/react-query'
 
+// ─────────────────────────────────────────────────────────────────
+// PATTERN 3: Custom Offline Banner Component
+// ─────────────────────────────────────────────────────────────────
+
+import { useNetwork } from '@/components/providers/NetworkProvider'
+import { useTranslations } from '@/hooks/use-translation'
+import { RefreshCw, WifiOff } from 'lucide-react-native'
+import React from 'react'
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { logger } from './logger'
+
 /**
  * ADVANCED OFFLINE-AWARE PATTERNS FOR NEBOR MARKETPLACE
  * =====================================================
@@ -52,14 +63,14 @@ export const createOfflineAwareQueryClient = () => {
         queryCache: new QueryCache({
             onError: (error, query) => {
                 // Log query errors
-                console.log('[QueryCache] Error in query:', query.queryKey, error)
+               logger.error('[QueryCache] Error in query: {query.queryKey}', { queryKey: query.queryKey, error })
             },
         }),
 
         mutationCache: new MutationCache({
             onError: (error, variables, context, mutation) => {
                 // Log mutation errors
-                console.log('[MutationCache] Mutation failed:', mutation.options.mutationKey, error)
+                logger.error('[MutationCache] Mutation failed: {mutationKey}', { mutationKey: mutation.options.mutationKey, error })
             },
         }),
     }
@@ -92,8 +103,7 @@ export const useOfflineAwareMutation = <TData, TVariables>(
         // Apply optimistic update immediately
         options?.optimisticUpdate?.(variables)
 
-        if (!isOnline) {
-            console.log('[OfflineMutation] Offline - queueing for later')
+        if (!isOnline) {    
             // In production, you'd save to AsyncStorage queue here
             return null
         }
@@ -111,16 +121,6 @@ export const useOfflineAwareMutation = <TData, TVariables>(
 
     return { execute, isOnline }
 }
-
-// ─────────────────────────────────────────────────────────────────
-// PATTERN 3: Custom Offline Banner Component
-// ─────────────────────────────────────────────────────────────────
-
-import { useNetwork } from '@/components/providers/NetworkProvider'
-import { useTranslations } from '@/hooks/use-translation'
-import { RefreshCw, WifiOff } from 'lucide-react-native'
-import React from 'react'
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 
 /**
  * Advanced offline banner with localization and retry
@@ -225,7 +225,7 @@ export const NetworkAwareView: React.FC<{
         ) : (
             <View style={fallbackStyles.container}>
                 <WifiOff size={48} color="#9CA3AF" />
-                <Text style={fallbackStyles.title}>You're Offline</Text>
+                <Text style={fallbackStyles.title}>You`re Offline</Text>
                 <Text style={fallbackStyles.subtitle}>
                     Some features require an internet connection
                 </Text>

@@ -6,7 +6,7 @@ import { useAuthStore } from '@/modules/Auth/auth-store'
 import { ApiResponse, PaginatedResponse } from '@/types'
 import { AxiosResponse } from 'axios'
 import { router } from 'expo-router'
-import React, { useMemo } from 'react'
+import React, { useCallback, useMemo, useRef } from 'react'
 import {
   ActivityIndicator,
   FlatList,
@@ -90,6 +90,8 @@ const ProductsList: React.FC<ProductsListProps> = ({ selectedFilter, onFilterCha
     },
   })
 
+  const loadMoreInFlightRef = useRef(false)
+
   const products: ProductItem[] = useMemo(
     () =>
       data?.pages.flatMap(
@@ -121,6 +123,48 @@ const ProductsList: React.FC<ProductsListProps> = ({ selectedFilter, onFilterCha
     <ActivityIndicator style={styles.footerLoader} color={colors.primaryColor} />
   ) : null
 
+  // ── Callbacks (must be declared before any early returns) ───────────────
+  // Clicking on a product card navigates to the product details page
+  const handleOnPress = useCallback((id: number) => {
+    router.push(`/product/${id}`)
+  }, [])
+
+  // Dots button is for future features like edit/delete/report
+  const handleOnDotsPress = useCallback((_id: number) => {
+  }, [])
+
+  const renderItem = useCallback(({ item }: { item: ProductItem }) => (
+    <ProductCard
+      title={item.title ?? ''}
+      description={item.description ?? ''}
+      distance={item.distance ?? ''}
+      status={item.status ?? ''}
+      main_image_url={item.main_image_url ?? ''}
+      created_ago={item.created_ago ?? ''}
+      moljal={item.moljal ?? ''}
+      is_free={item.is_free}
+      price={item.price ?? ''}
+      likes_count={item.likes_count ?? 0}
+      view_count={item.view_count ?? 0}
+      onPress={() => handleOnPress(item.id)}
+      onDotsPress={() => handleOnDotsPress(item.id)}
+    />
+  ), [handleOnDotsPress, handleOnPress])
+
+  const keyExtractor = useCallback((item: ProductItem) => item.id.toString(), [])
+
+  const handleEndReached = useCallback(async () => {
+    if (!hasNextPage || isFetchingNextPage || loadMoreInFlightRef.current) {
+      return
+    }
+    loadMoreInFlightRef.current = true
+    try {
+      await fetchNextPage()
+    } finally {
+      loadMoreInFlightRef.current = false
+    }
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage])
+
   // ── Error state ─────────────────────────────────────────────────────────
   if (isError) {
     return (
@@ -140,46 +184,23 @@ const ProductsList: React.FC<ProductsListProps> = ({ selectedFilter, onFilterCha
     )
   }
 
-  // Clicking on a product card navigates to the product details page
-  const handleOnPress = (id: number) => {
-    router.push(`/product/${id}`)
-  }
-
-  // Dots button is for future features like edit/delete/report
-  const handleOnDotsPress = (id: number) => {
-
-  }
-
   return (
     <FlatList
       showsVerticalScrollIndicator={false}
       style={styles.container}
       data={products}
-      keyExtractor={(item) => item.id.toString()}
+      keyExtractor={keyExtractor}
       ListHeaderComponent={ListHeader}
       ListEmptyComponent={ListEmpty}
       ListFooterComponent={ListFooter}
-      renderItem={({ item }) => (
-        <ProductCard
-          title={item.title ?? ''}
-          description={item.description ?? ''}
-          distance={item.distance ?? ''}
-          status={item.status ?? ''}
-          main_image_url={item.main_image_url ?? ''}
-          created_ago={item.created_ago ?? ''}
-          moljal={item.moljal ?? ''}
-          is_free={item.is_free}
-          price={item.price ?? ''}
-          likes_count={item.likes_count ?? 0}
-          view_count={item.view_count ?? 0}
-          onPress={() => handleOnPress(item.id)}
-          onDotsPress={() => handleOnDotsPress(item.id)}
-        />
-      )}
-      onEndReached={() => {
-        if (hasNextPage && !isFetchingNextPage) fetchNextPage()
-      }}
+      renderItem={renderItem}
+      onEndReached={handleEndReached}
       onEndReachedThreshold={0.4}
+      removeClippedSubviews
+      initialNumToRender={8}
+      maxToRenderPerBatch={8}
+      updateCellsBatchingPeriod={50}
+      windowSize={7}
       // Pull-to-refresh
       refreshing={isFetching && !isFetchingNextPage}
       onRefresh={() => refetch()}

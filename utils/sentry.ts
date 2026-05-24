@@ -17,17 +17,17 @@
  *     from a future call site.
  */
 
-import { init as Sentry_init, setUser as Sentry_setUser, addBreadcrumb as Sentry_addBreadcrumb, wrap } from '@sentry/react-native';
-import Constants from 'expo-constants';
+import { init as Sentry_init, setUser as Sentry_setUser, addBreadcrumb as Sentry_addBreadcrumb, wrap } from '@sentry/react-native'
+import Constants from 'expo-constants'
 
-const extra = Constants.expoConfig?.extra ?? {};
-const dsn: string = (extra.sentryDsn as string) || '';
-const enableInDev: boolean = !!extra.sentryEnableInDev;
-const appEnv: string = (extra.appEnv as string) || 'development';
+const extra = Constants.expoConfig?.extra ?? {}
+const dsn: string = (extra.sentryDsn as string) || ''
+const enableInDev: boolean = !!extra.sentryEnableInDev
+const appEnv: string = (extra.appEnv as string) || 'development'
 
-const shouldEnable = !!dsn && (!__DEV__ || enableInDev);
+const shouldEnable = !!dsn && (!__DEV__ || enableInDev)
 
-let initialized = false;
+let initialized = false
 
 // ── PII scrubbers ───────────────────────────────────────────────────────────
 // The backend logger already redacts most things, but Sentry sees raw
@@ -40,45 +40,45 @@ const TOKEN_HEADERS = new Set([
   'x-refresh-token',
   'cookie',
   'set-cookie',
-]);
+])
 
 const scrubHeaders = (headers: Record<string, any> | undefined) => {
-  if (!headers) return headers;
-  const out: Record<string, any> = {};
+  if (!headers) return headers
+  const out: Record<string, any> = {}
   for (const [k, v] of Object.entries(headers)) {
-    out[k] = TOKEN_HEADERS.has(k.toLowerCase()) ? '[REDACTED]' : v;
+    out[k] = TOKEN_HEADERS.has(k.toLowerCase()) ? '[REDACTED]' : v
   }
-  return out;
-};
+  return out
+}
 
 // Redact +998901234567 / 901234567 patterns (UZ phone numbers) from free text.
-const PHONE_RE = /(\+?998)?\s?\d{2}[-\s]?\d{3}[-\s]?\d{2}[-\s]?\d{2}/g;
+const PHONE_RE = /(\+?998)?\s?\d{2}[-\s]?\d{3}[-\s]?\d{2}[-\s]?\d{2}/g
 // Redact obvious bearer tokens.
-const BEARER_RE = /Bearer\s+[A-Za-z0-9._\-]+/g;
+const BEARER_RE = /Bearer\s+[A-Za-z0-9._\-]+/g
 
 const scrubString = (value: string): string => {
-  return value.replace(PHONE_RE, '[PHONE]').replace(BEARER_RE, 'Bearer [REDACTED]');
-};
+  return value.replace(PHONE_RE, '[PHONE]').replace(BEARER_RE, 'Bearer [REDACTED]')
+}
 
 const scrubDeep = (input: any, depth = 0): any => {
-  if (input == null || depth > 4) return input;
-  if (typeof input === 'string') return scrubString(input);
-  if (Array.isArray(input)) return input.map((v) => scrubDeep(v, depth + 1));
+  if (input == null || depth > 4) return input
+  if (typeof input === 'string') return scrubString(input)
+  if (Array.isArray(input)) return input.map((v) => scrubDeep(v, depth + 1))
   if (typeof input === 'object') {
-    const out: Record<string, any> = {};
+    const out: Record<string, any> = {}
     for (const [k, v] of Object.entries(input)) {
-      out[k] = scrubDeep(v, depth + 1);
+      out[k] = scrubDeep(v, depth + 1)
     }
-    return out;
+    return out
   }
-  return input;
-};
+  return input
+}
 
 // ── Init ────────────────────────────────────────────────────────────────────
 
 export const initSentry = () => {
-  if (initialized || !shouldEnable) return;
-  initialized = true;
+  if (initialized || !shouldEnable) return
+  initialized = true
 
   Sentry_init({
     dsn,
@@ -93,58 +93,58 @@ export const initSentry = () => {
     // Drop noisy / privacy-sensitive breadcrumbs entirely.
     beforeBreadcrumb(crumb) {
       // Skip our own telemetry POSTs to avoid recursive noise.
-      const url: string | undefined = crumb.data?.url;
-      if (url && url.includes('telemetry/log')) return null;
+      const url: string | undefined = crumb.data?.url
+      if (url && url.includes('telemetry/log')) return null
 
       if (crumb.data) {
-        crumb.data = scrubDeep(crumb.data);
+        crumb.data = scrubDeep(crumb.data)
       }
-      return crumb;
+      return crumb
     },
 
     // Final scrub of the outgoing event.
     beforeSend(event) {
       try {
         if (event.request?.headers) {
-          event.request.headers = scrubHeaders(event.request.headers as any);
+          event.request.headers = scrubHeaders(event.request.headers as any)
         }
         if (event.request?.url) {
-          event.request.url = scrubString(event.request.url);
+          event.request.url = scrubString(event.request.url)
         }
         if (event.message) {
-          event.message = scrubString(event.message as string);
+          event.message = scrubString(event.message as string)
         }
         if (event.extra) {
-          event.extra = scrubDeep(event.extra);
+          event.extra = scrubDeep(event.extra)
         }
         if (event.breadcrumbs) {
           event.breadcrumbs = event.breadcrumbs.map((b) => ({
             ...b,
             message: b.message ? scrubString(b.message) : b.message,
             data: b.data ? scrubDeep(b.data) : b.data,
-          }));
+          }))
         }
       } catch {
         // If scrubbing throws, drop the event — better to lose telemetry than
         // ship raw PII.
-        return null;
+        return null
       }
-      return event;
+      return event
     },
-  });
-};
+  })
+}
 
 // ── User context ────────────────────────────────────────────────────────────
 
 export const setSentryUser = (user: { id: number; username?: string | null } | null) => {
-  if (!initialized) return;
+  if (!initialized) return
   if (!user) {
-    Sentry_setUser(null);
-    return;
+    Sentry_setUser(null)
+    return
   }
   // Never send phone or email — only opaque id + username.
-  Sentry_setUser({ id: String(user.id), username: user.username ?? undefined });
-};
+  Sentry_setUser({ id: String(user.id), username: user.username ?? undefined })
+}
 
 // ── Breadcrumbs (called by the logger facade) ───────────────────────────────
 
@@ -153,15 +153,15 @@ export const addSentryBreadcrumb = (
   message: string,
   data?: Record<string, any>,
 ) => {
-  if (!initialized) return;
+  if (!initialized) return
   Sentry_addBreadcrumb({
     level,
     message,
     data: data ? scrubDeep(data) : undefined,
-  });
-};
+  })
+}
 
 // ── Re-export for advanced call sites (rare) ────────────────────────────────
-export { wrap as sentryWrap };
+export { wrap as sentryWrap }
 
-export const isSentryEnabled = () => initialized;
+export const isSentryEnabled = () => initialized

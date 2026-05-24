@@ -6,7 +6,7 @@ import { useTranslations } from '@/hooks/use-translation'
 import Ionicons from '@expo/vector-icons/Ionicons'
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
-import React from 'react'
+import React, { memo } from 'react'
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 
 interface ProductCardProps {
@@ -26,7 +26,7 @@ interface ProductCardProps {
 	onHeartPress?: () => void
 }
 
-const ProductCard: React.FC<ProductCardProps> = ({
+const ProductCardComponent: React.FC<ProductCardProps> = ({
 	title,
 	description,
 	main_image_url,
@@ -52,9 +52,15 @@ const ProductCard: React.FC<ProductCardProps> = ({
 			onPress={onPress}
 		>
 			{/* Product Image */}
-			<TouchableOpacity onPress={onPress}>
-				<RemoteImage src={main_image_url} style={styles.image} resizeMode='cover' />
-			</TouchableOpacity>
+			<RemoteImage
+				src={main_image_url}
+				style={styles.image}
+				resizeMode='cover'
+				cachePolicy='disk'
+				requestedWidth={260}
+				requestedHeight={260}
+				requestedQuality={65}
+			/>
 
 			{/* Content Section */}
 			<View style={styles.content}>
@@ -121,6 +127,8 @@ const ProductCard: React.FC<ProductCardProps> = ({
 		</TouchableOpacity>
 	)
 }
+
+const ProductCard = memo(ProductCardComponent)
 
 const styles = StyleSheet.create({
 	container: {

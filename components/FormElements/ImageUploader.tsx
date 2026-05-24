@@ -1,13 +1,14 @@
-import { productService } from '@/api/services';
-import { useThemeColors } from '@/hooks/use-theme-colors';
-import { useTranslations } from '@/hooks/use-translation';
-import { useColor } from '@/hooks/useColor';
-import * as ImagePicker from 'expo-image-picker';
-import { ImagePlus, Star, X } from 'lucide-react-native';
-import React, { useRef } from 'react';
-import { Control, Controller } from 'react-hook-form';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import RemoteImage from '../shared/RemoteImage';
+import { productService } from '@/api/services'
+import { useThemeColors } from '@/hooks/use-theme-colors'
+import { useTranslations } from '@/hooks/use-translation'
+import { useColor } from '@/hooks/useColor'
+import * as ImagePicker from 'expo-image-picker'
+import { ImagePlus, Star, X } from 'lucide-react-native'
+import React, { useRef } from 'react'
+import { Control, Controller } from 'react-hook-form'
+import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import RemoteImage from '../shared/RemoteImage'
+import { logger } from '@/utils/logger'
 
 export interface DraftImageItem {
   uri: string;
@@ -34,15 +35,15 @@ const ImageUploader = ({
   maxImages = 5,
   rules,
 }: ImageUploaderProps) => {
-  const colors = useThemeColors();
-  const textColor = useColor('text');
-  const destructiveColor = useColor('destructive');
-  const borderColor = useColor('borderColor');
-  const primaryColor = useColor('primaryColor');
-  const { t } = useTranslations();
+  const colors = useThemeColors()
+  const textColor = useColor('text')
+  const destructiveColor = useColor('destructive')
+  const borderColor = useColor('borderColor')
+  const primaryColor = useColor('primaryColor')
+  const { t } = useTranslations()
 
   // Ref to always have the latest images array in async callbacks (avoids stale closures)
-  const latestImagesRef = useRef<DraftImageItem[]>([]);
+  const latestImagesRef = useRef<DraftImageItem[]>([])
 
   const uploadSingleImage = async (
     uri: string,
@@ -50,17 +51,15 @@ const ImageUploader = ({
     onChange: (images: DraftImageItem[]) => void
   ) => {
     try {
-      const formData = new FormData();
+      const formData = new FormData()
       formData.append('images', {
         uri,
         type: 'image/jpeg',
         name: `image_${Date.now()}_${index}.jpg`,
-      } as any);
+      } as any)
 
-      const response = await productService.uploadDraftImages(formData);
-      const draftImage = response?.data?.data?.[0];
-
-      console.log('Upload response for image at index', index, ':', response);
+      const response = await productService.uploadDraftImages(formData)
+      const draftImage = response?.data?.data?.[0]
 
       latestImagesRef.current = latestImagesRef.current.map((img, i) =>
         i === index
@@ -72,27 +71,27 @@ const ImageUploader = ({
             uploadError: false,
           }
           : img
-      );
-      onChange([...latestImagesRef.current]);
+      )
+      onChange([...latestImagesRef.current])
     } catch (error) {
-      console.log('Upload error for image at index', index, ':', error);
+      logger.error(error, 'Upload error for image at index')
       latestImagesRef.current = latestImagesRef.current.map((img, i) =>
         i === index ? { ...img, uploading: false, uploadError: true } : img
-      );
-      onChange([...latestImagesRef.current]);
+      )
+      onChange([...latestImagesRef.current])
     }
-  };
+  }
 
   const pickImage = async (
     currentImages: DraftImageItem[],
     onChange: (images: DraftImageItem[]) => void
   ) => {
-    if (currentImages.length >= maxImages) return;
+    if (currentImages.length >= maxImages) return
 
-    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync()
     if (permissionResult.granted === false) {
-      alert('Permission to access camera roll is required!');
-      return;
+      alert('Permission to access camera roll is required!')
+      return
     }
 
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -100,46 +99,46 @@ const ImageUploader = ({
       allowsEditing: false,
       allowsMultipleSelection: true,
       quality: 0.8,
-    });
+    })
 
     if (!result.canceled && result.assets && result.assets.length > 0) {
-      const remainingSlots = maxImages - currentImages.length;
-      const assetsToAdd = result.assets.slice(0, remainingSlots);
-      const startIndex = currentImages.length;
+      const remainingSlots = maxImages - currentImages.length
+      const assetsToAdd = result.assets.slice(0, remainingSlots)
+      const startIndex = currentImages.length
 
       // Add items immediately with uploading=true so user sees progress
       const newItems: DraftImageItem[] = assetsToAdd.map((asset) => ({
         uri: asset.uri,
         uploading: true,
-      }));
+      }))
 
-      const combined = [...currentImages, ...newItems];
-      latestImagesRef.current = combined;
-      onChange(combined);
+      const combined = [...currentImages, ...newItems]
+      latestImagesRef.current = combined
+      onChange(combined)
 
       // Upload each image in parallel
       assetsToAdd.forEach((asset, i) => {
-        uploadSingleImage(asset.uri, startIndex + i, onChange);
-      });
+        uploadSingleImage(asset.uri, startIndex + i, onChange)
+      })
     }
-  };
+  }
 
   const removeImage = (
     index: number,
     currentImages: DraftImageItem[],
     onChange: (images: DraftImageItem[]) => void
   ) => {
-    const imageToRemove = currentImages[index];
-    const updated = currentImages.filter((_, i) => i !== index);
-    latestImagesRef.current = updated;
-    onChange(updated);
+    const imageToRemove = currentImages[index]
+    const updated = currentImages.filter((_, i) => i !== index)
+    latestImagesRef.current = updated
+    onChange(updated)
 
     if (imageToRemove?.draft_uuid) {
       productService.deleteDraftImage(imageToRemove.draft_uuid).catch((err) => {
-        console.warn('Failed to delete draft image:', imageToRemove.draft_uuid, err);
-      });
+        console.warn('Failed to delete draft image:', imageToRemove.draft_uuid, err)
+      })
     }
-  };
+  }
 
   return (
     <View style={styles.container}>
@@ -155,9 +154,9 @@ const ImageUploader = ({
         rules={rules}
         render={({ field: { onChange, value = [] }, fieldState: { error } }) => {
           // Keep ref in sync with the latest rendered value
-          latestImagesRef.current = value;
+          latestImagesRef.current = value
 
-          const mainItem: DraftImageItem | undefined = value[0];
+          const mainItem: DraftImageItem | undefined = value[0]
 
           return (
             <>
@@ -271,12 +270,12 @@ const ImageUploader = ({
                 </Text>
               )}
             </>
-          );
+          )
         }}
       />
     </View>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -396,6 +395,6 @@ const styles = StyleSheet.create({
     marginTop: 4,
     marginLeft: 4,
   },
-});
+})
 
-export default ImageUploader;
+export default ImageUploader

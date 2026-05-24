@@ -1,5 +1,5 @@
 import { useThemeColors } from '@/hooks/use-theme-colors'
-import React from 'react'
+import React, { memo } from 'react'
 import { Pressable, StyleSheet, Text, View } from 'react-native'
 import RemoteImage from '../shared/RemoteImage'
 
@@ -16,7 +16,7 @@ interface SimilarProductCardProps {
 	variant?: 'compact' | 'grid'
 }
 
-const SimilarProductCard: React.FC<SimilarProductCardProps> = ({
+const SimilarProductCardComponent: React.FC<SimilarProductCardProps> = ({
 	item,
 	onPress,
 	variant = 'compact',
@@ -37,6 +37,10 @@ const SimilarProductCard: React.FC<SimilarProductCardProps> = ({
 				src={item.image}
 				style={[styles.image, isGrid ? styles.gridImage : styles.compactImage]}
 				resizeMode='cover'
+				cachePolicy='disk'
+				requestedWidth={isGrid ? 320 : 344}
+				requestedHeight={isGrid ? 244 : 216}
+				requestedQuality={65}
 			/>
 			<View style={[styles.content, isGrid && styles.gridContent]}>
 				<Text style={[styles.title, isGrid && styles.gridTitle, { color: colors.text }]} numberOfLines={isGrid ? 2 : 1}>
@@ -49,6 +53,8 @@ const SimilarProductCard: React.FC<SimilarProductCardProps> = ({
 		</Pressable>
 	)
 }
+
+const SimilarProductCard = memo(SimilarProductCardComponent)
 
 export default SimilarProductCard
 

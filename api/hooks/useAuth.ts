@@ -1,13 +1,13 @@
-import { useMutation, UseMutationOptions } from '@tanstack/react-query';
-import { AxiosResponse } from 'axios';
+import { useMutation, UseMutationOptions } from '@tanstack/react-query'
+import { AxiosResponse } from 'axios'
 import type {
   ApiResponse,
   RefreshTokenRequest,
   RequestOtpRequest,
   User,
   VerifyOtpRequest,
-} from '../../types';
-import { authService } from '../services';
+} from '../../types'
+import { authService } from '../services'
 
 /**
  * Request an OTP code to be sent to a phone number.
@@ -24,8 +24,8 @@ export const useRequestOtpMutation = (
     mutationKey: ['request-otp'],
     mutationFn: (data) => authService.requestOtp(data),
     ...options,
-  });
-};
+  })
+}
 
 /**
  * Verify an OTP code and authenticate the user.
@@ -45,8 +45,8 @@ export const useVerifyOtpMutation = (
       mutationFn: (data) => authService.verifyOtp(data),
       ...options,
     },
-  );
-};
+  )
+}
 
 /**
  * Exchange a refresh token for a new access/refresh pair.
@@ -69,5 +69,5 @@ export const useRefreshTokenMutation = (
     mutationKey: ['refresh-token'],
     mutationFn: (data) => authService.refreshToken(data),
     ...options,
-  });
-};
+  })
+}

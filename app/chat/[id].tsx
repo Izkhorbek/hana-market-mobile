@@ -34,7 +34,7 @@ import {
   CheckCheck,
   MoreVertical,
 } from 'lucide-react-native'
-import { default as React, useEffect, useMemo, useRef, useState } from 'react'
+import { default as React, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   ActivityIndicator,
   Alert,
@@ -197,6 +197,10 @@ const ProductCard: React.FC<{ product: ChatData['product'] }> = ({
         src={product.image}
         style={styles.productImage}
         resizeMode="cover"
+        cachePolicy="disk"
+        requestedWidth={100}
+        requestedHeight={100}
+        requestedQuality={60}
       />
       <View style={styles.productInfo}>
         {product.isSold && (
@@ -252,7 +256,7 @@ const DateSeparator: React.FC<{ date: string }> = ({ date }) => {
   )
 }
 
-const MessageBubble: React.FC<{
+const MessageBubbleComponent: React.FC<{
   message: DisplayMessage;
   onLongPress?: () => void;
 }> = ({ message, onLongPress }) => {
@@ -331,6 +335,18 @@ const MessageBubble: React.FC<{
     </TouchableOpacity>
   )
 }
+
+const MessageBubble = React.memo(
+  MessageBubbleComponent,
+  (prev, next) =>
+    prev.message.id === next.message.id &&
+    prev.message.localId === next.message.localId &&
+    prev.message.status === next.message.status &&
+    prev.message.failed === next.message.failed &&
+    prev.message.text === next.message.text &&
+    prev.message.timestamp === next.message.timestamp &&
+    prev.message.isMe === next.message.isMe,
+)
 
 const ReservedNotice: React.FC<{ status: string }> = ({ status }) => {
   const colors = useThemeColors()
@@ -478,6 +494,8 @@ const ChatRoomPage: React.FC = () => {
     isError: false,
   })
   const queryClient = useQueryClient()
+  const sendInFlightRef = useRef(false)
+  const loadMoreInFlightRef = useRef(false)
 
   // Get current user
   const currentUserId = useAuthStore((s) => s.user?.id)
@@ -911,7 +929,6 @@ const ChatRoomPage: React.FC = () => {
   }
 
   const handleCall = () => {
-    console.log('Call pressed')
   }
 
   const handleMore = () => {
@@ -930,7 +947,7 @@ const ChatRoomPage: React.FC = () => {
     ])
   }
 
-  const handleDeleteMessage = (message: DisplayMessage) => {
+  const handleDeleteMessage = useCallback((message: DisplayMessage) => {
     if (!chatRoomId || deletingMessageId || !message.id) return
 
     const numericMessageId = Number(message.id)
@@ -953,11 +970,12 @@ const ChatRoomPage: React.FC = () => {
         },
       ],
     )
-  }
+  }, [chatRoomId, deletingMessageId, deleteChatMessage, t])
 
-  const handleSend = async () => {
-    if (!inputText.trim()) return
+  const handleSend = useCallback(async () => {
+    if (!inputText.trim() || sendInFlightRef.current) return
 
+    sendInFlightRef.current = true
     setIsSending(true)
     try {
       await send(inputText)
@@ -965,31 +983,40 @@ const ChatRoomPage: React.FC = () => {
       // The autoScroll effect (keyed on the latest message) will pull us to
       // the bottom as soon as the new message lands in mergedMessages.
     } finally {
+      sendInFlightRef.current = false
       setIsSending(false)
     }
-  }
+  }, [inputText, send])
 
   const handleAttach = () => {
-    console.log('Attach pressed')
     // TODO: Open image picker and call sendImage
   }
 
-  const handleQuickReply = (reply: string) => {
+  const handleQuickReply = useCallback((reply: string) => {
     setInputText(reply)
-  }
+  }, [])
 
   // Quick Reply Suggestions (translated)
-  const quickReplies = [
-    t('chat_room.quick_reply_hello'),
-    t('chat_room.quick_reply_available'),
-  ]
+  const quickReplies = useMemo(
+    () => [
+      t('chat_room.quick_reply_hello'),
+      t('chat_room.quick_reply_available'),
+    ],
+    [t],
+  )
 
   // Handle loading more (older messages)
-  const handleLoadMore = () => {
-    if (hasNextPage && !isFetchingNextPage) {
-      fetchNextPage()
+  const handleLoadMore = useCallback(async () => {
+    if (!hasNextPage || isFetchingNextPage || loadMoreInFlightRef.current) {
+      return
     }
-  }
+    loadMoreInFlightRef.current = true
+    try {
+      await fetchNextPage()
+    } finally {
+      loadMoreInFlightRef.current = false
+    }
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage])
 
   // ---- Smart auto-scroll -----------------------------------------------
   // Tracks the bottom-most message we've already rendered. When the bottom
@@ -1027,17 +1054,25 @@ const ChatRoomPage: React.FC = () => {
     didInitialScrollRef.current = false
   }, [chatRoomId])
 
-  const renderMessageGroup = ({ item }: { item: MessageGroup }) => (
-    <View>
-      <DateSeparator date={item.date} />
-      {item.messages.map((message) => (
-        <MessageBubble
-          key={message.localId || message.id}
-          message={message}
-          onLongPress={() => handleDeleteMessage(message)}
-        />
-      ))}
-    </View>
+  const renderMessageGroup = useCallback(
+    ({ item }: { item: MessageGroup }) => (
+      <View>
+        <DateSeparator date={item.date} />
+        {item.messages.map((message) => (
+          <MessageBubble
+            key={message.localId || message.id}
+            message={message}
+            onLongPress={() => handleDeleteMessage(message)}
+          />
+        ))}
+      </View>
+    ),
+    [handleDeleteMessage],
+  )
+
+  const messageGroupKeyExtractor = useCallback(
+    (item: MessageGroup) => item.date,
+    [],
   )
 
   // Loading state
@@ -1084,10 +1119,13 @@ const ChatRoomPage: React.FC = () => {
         ref={flatListRef}
         data={messageGroups}
         renderItem={renderMessageGroup}
-        keyExtractor={(item) => item.date}
-        extraData={lastBottomKeyRef.current}
+        keyExtractor={messageGroupKeyExtractor}
         contentContainerStyle={styles.messagesList}
         showsVerticalScrollIndicator={false}
+        removeClippedSubviews
+        initialNumToRender={10}
+        maxToRenderPerBatch={10}
+        windowSize={7}
         ListHeaderComponent={
           <>
             {isFetchingNextPage && (
@@ -1120,7 +1158,7 @@ const ChatRoomPage: React.FC = () => {
         onScroll={(event) => {
           const { contentOffset } = event.nativeEvent
           if (contentOffset.y < 50 && hasNextPage && !isFetchingNextPage) {
-            fetchNextPage()
+            handleLoadMore()
           }
         }}
         scrollEventThrottle={100}

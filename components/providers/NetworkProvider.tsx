@@ -79,7 +79,6 @@ export const NetworkProvider: React.FC<NetworkProviderProps> = ({
     // Auto-retry when coming back online
     useEffect(() => {
         if (previouslyOffline.current && networkStatus.isConnected) {
-            console.log('[NetworkProvider] Back online - retrying failed queries')
             retryFailedQueries()
         }
         previouslyOffline.current = !networkStatus.isConnected

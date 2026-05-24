@@ -1,3 +1,4 @@
+import { logger } from '@/utils/logger'
 import * as Network from 'expo-network'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
@@ -78,11 +79,11 @@ export const useNetworkStatus = (options?: {
         }
         
         // Log status change for debugging
-        console.log('[useNetworkStatus] Status changed:', {
-          connected: newStatus.isConnected,
-          reachable: newStatus.isInternetReachable,
-          type: newStatus.type,
-        })
+        logger.info(`[useNetworkStatus] Status changed: {
+          connected: ${newStatus.isConnected},
+          reachable: ${newStatus.isInternetReachable},
+          type: ${newStatus.type}
+        }`)
         
         setStatus(newStatus)
       } else if (status.isChecking) {
@@ -90,7 +91,7 @@ export const useNetworkStatus = (options?: {
         setStatus(newStatus)
       }
     } catch (error) {
-      console.error('[useNetworkStatus] Failed to fetch network state:', error)
+      logger.error('[useNetworkStatus] Failed to fetch network state:', error)
       setStatus(prev => ({ ...prev, isChecking: false }))
     }
   }, [status.isChecking])

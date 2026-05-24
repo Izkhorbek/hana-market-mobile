@@ -4,10 +4,10 @@ import type {
   RequestOtpRequest,
   User,
   VerifyOtpRequest,
-} from '../../types';
-import type { AxiosResponse } from 'axios';
-import axiosInstance from '../api';
-import ENDPOINT from '../endpoints';
+} from '../../types'
+import type { AxiosResponse } from 'axios'
+import axiosInstance from '../api'
+import ENDPOINT from '../endpoints'
 
 export const authService = {
   /**
@@ -16,7 +16,7 @@ export const authService = {
    * Server will SMS a 6-digit code. No token is issued at this step.
    */
   requestOtp: (data: RequestOtpRequest) => {
-    return axiosInstance.post<ApiResponse<{}>>(ENDPOINT.AUTH.REQUEST_OTP, data);
+    return axiosInstance.post<ApiResponse<{}>>(ENDPOINT.AUTH.REQUEST_OTP, data)
   },
 
   /**
@@ -30,7 +30,7 @@ export const authService = {
     return axiosInstance.post<ApiResponse<User>>(
       ENDPOINT.AUTH.VERIFY_OTP,
       data,
-    );
+    )
   },
 
   /**
@@ -46,7 +46,7 @@ export const authService = {
     return axiosInstance.post<ApiResponse<{}>>(ENDPOINT.AUTH.REFRESH, data, {
       // @ts-expect-error custom flag consumed by api.ts interceptor
       _skipAuthRefresh: true,
-    }) as Promise<AxiosResponse<ApiResponse<{}>>>;
+    }) as Promise<AxiosResponse<ApiResponse<{}>>>
   },
 
   /**
@@ -54,6 +54,6 @@ export const authService = {
    * POST /api/auth/logout
    */
   logout: () => {
-    return axiosInstance.post<ApiResponse<{}>>(ENDPOINT.AUTH.LOGOUT);
+    return axiosInstance.post<ApiResponse<{}>>(ENDPOINT.AUTH.LOGOUT)
   },
-};
+}

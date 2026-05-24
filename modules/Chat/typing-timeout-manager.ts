@@ -87,7 +87,6 @@ class TypingTimeoutManager {
       clearTimeout(timeoutId)
     }
     this.timeouts.clear()
-    console.log('[TypingTimeoutManager] Cleared all typing timeouts')
   }
 
   /**

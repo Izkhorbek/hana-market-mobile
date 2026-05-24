@@ -126,6 +126,7 @@ class SignalRService {
   private maxReconnectAttempts = 5
   private reconnectInterval = 5000
   private isConnecting = false
+  private isIntentionalDisconnect = false
   // Single in-flight connect promise so concurrent callers wait for the same
   // negotiation instead of racing and seeing "Not connected".
   private connectPromise: Promise<void> | null = null
@@ -169,6 +170,7 @@ class SignalRService {
 
   private async doConnect(): Promise<void> {
     this.isConnecting = true
+    this.isIntentionalDisconnect = false
     const token = getAuthToken()
 
     if (!token) {
@@ -180,7 +182,9 @@ class SignalRService {
     try {
       this.connection = new HubConnectionBuilder()
         .withUrl(this.getHubUrl(), {
-          accessTokenFactory: () => token,
+          // Always read the latest token so automatic reconnect won't keep
+          // using a stale access token after refresh rotation.
+          accessTokenFactory: () => getAuthToken() ?? '',
         })
         .withAutomaticReconnect({
           nextRetryDelayInMilliseconds: (retryContext) => {
@@ -218,6 +222,7 @@ class SignalRService {
    */
   async disconnect(): Promise<void> {
     if (this.connection) {
+      this.isIntentionalDisconnect = true
       try {
         await this.connection.stop()
         console.log('[SignalR] Disconnected')
@@ -437,7 +442,16 @@ async isUserOnline(userId: number): Promise<boolean> {
     })
 
     this.connection.onclose((error) => {
-      logger.error('[SignalR] Connection closed', { extra: { error } })
+      const expectedClose = this.isIntentionalDisconnect
+      this.isIntentionalDisconnect = false
+
+      if (expectedClose || !error) {
+        logger.info('[SignalR] Connection closed', {
+          extra: { expectedClose, hasError: !!error },
+        })
+      } else {
+        logger.error('[SignalR] Connection closed', { extra: { error } })
+      }
       this.notifyConnectionState(HubConnectionState.Disconnected)
     })
   }

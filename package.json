@@ -10,6 +10,7 @@
     "web": "expo start --web",
     "build:android:preview": "eas build -p android --profile preview",
     "build:android:production": "eas build -p android --profile production",
+    "build:android:aab": "eas build -p android --profile production",
     "build:ios:preview": "eas build -p ios --profile preview",
     "build:ios:simulator": "eas build -p ios --profile preview-simulator",
     "build:ios:production": "eas build -p ios --profile production",

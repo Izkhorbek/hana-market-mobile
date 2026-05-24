@@ -1,5 +1,10 @@
 import Constants from 'expo-constants'
-import { authLogout, getAuthToken, refreshAuthToken } from '@/api/auth-bridge'
+import {
+  authLogout,
+  authLogoutSessionExpired,
+  getAuthToken,
+  refreshAuthToken,
+} from '@/api/auth-bridge'
 import { logger } from '@/utils/logger'
 import axios, { AxiosError, AxiosRequestConfig } from 'axios'
 
@@ -131,10 +136,10 @@ axiosInstance.interceptors.response.use(
           logger.error('AUTH_REFRESH_FAILED', refreshErr, { extra: { url } })
         }
         // Refresh failed → end the session.
-        authLogout()
+        authLogoutSessionExpired()
       } else if (responseStatus === 401) {
         // Refresh disabled / already retried / no token → log out.
-        authLogout()
+        authLogoutSessionExpired()
       }
     }
 

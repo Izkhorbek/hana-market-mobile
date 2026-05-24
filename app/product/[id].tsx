@@ -38,7 +38,7 @@ import {
   MessageCircle,
   Share2,
 } from 'lucide-react-native'
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   ActivityIndicator,
   Platform,
@@ -408,9 +408,13 @@ const ProductDetailPage: React.FC = () => {
   ])
 
   // prepare images for gallery component
-  const imagesGalleryImages = productImages?.map((image: string) => ({
-    image_url: image,
-  }))
+  const imagesGalleryImages = useMemo(
+    () =>
+      productImages?.map((image: string) => ({
+        image_url: image,
+      })) ?? [],
+    [productImages],
+  )
 
   // Sync like state from API once product loads
   useEffect(() => {
@@ -431,35 +435,45 @@ const ProductDetailPage: React.FC = () => {
     pageSize: 12,
     querySettings: { enabled: productSellerId > 0 },
   })
-  const sellerProducts: SimilarProduct[] = (
-    sellerProductsRes?.data?.data?.items ?? []
+  const sellerProducts: SimilarProduct[] = useMemo(
+    () =>
+      (sellerProductsRes?.data?.data?.items ?? [])
+        .filter((p: any) => Number(p.id) !== productId)
+        .map((p: any) => ({
+          id: String(p.id),
+          title: p.title ?? '',
+          price: p.is_free ? t('home.free') : (p.price ?? ''),
+          image: p.main_image_url ?? '',
+        })),
+    [productId, sellerProductsRes?.data?.data?.items, t],
   )
-    .filter((p: any) => Number(p.id) !== productId)
-    .map((p: any) => ({
-      id: String(p.id),
-      title: p.title ?? '',
-      price: p.is_free ? t('home.free') : (p.price ?? ''),
-      image: p.main_image_url ?? '',
-    }))
 
   // ── Related products ─────────────────────────────────────────────────────
   const { data: relatedProductsRes } = useRelatedProductsQuery({
     productId,
     querySettings: { enabled: productId > 0 },
   })
-  const relatedProducts: SimilarProduct[] = (
-    relatedProductsRes?.data?.data ?? []
+  const relatedProducts: SimilarProduct[] = useMemo(
+    () =>
+      (relatedProductsRes?.data?.data ?? [])
+        .filter((p: any) => Number(p.id) !== productId)
+        .map((p: any) => ({
+          id: String(p.id),
+          title: p.title ?? '',
+          price: p.is_free ? t('home.free') : (p.price ?? ''),
+          image: p.main_image_url ?? '',
+        })),
+    [productId, relatedProductsRes?.data?.data, t],
   )
-    .filter((p: any) => Number(p.id) !== productId)
-    .map((p: any) => ({
-      id: String(p.id),
-      title: p.title ?? '',
-      price: p.is_free ? t('home.free') : (p.price ?? ''),
-      image: p.main_image_url ?? '',
-    }))
 
-  const sellerPreviewProducts = sellerProducts.slice(0, 6)
-  const relatedPreviewProducts = relatedProducts.slice(0, 6)
+  const sellerPreviewProducts = useMemo(
+    () => sellerProducts.slice(0, 6),
+    [sellerProducts],
+  )
+  const relatedPreviewProducts = useMemo(
+    () => relatedProducts.slice(0, 6),
+    [relatedProducts],
+  )
 
   // ── Animations ───────────────────────────────────────────────────────────
   // Scroll position drives ALL scroll-based animations on the UI thread

@@ -232,7 +232,6 @@ export const useChatStore = create<ChatState>((set, get) => ({
   disconnect: async () => {
     // Clean up event listeners before disconnecting
     if (eventListenersCleanup) {
-      console.log('[ChatStore] Cleaning up event listeners on disconnect')
       eventListenersCleanup()
       eventListenersCleanup = null
     }
@@ -622,12 +621,9 @@ export const useChatStore = create<ChatState>((set, get) => ({
         // Make sure socket is up first; ensureJoined may be called from
         // sendMessage before useChatRoom's join effect has run.
         await get().connect()
-        console.log('[ChatStore] Joining chat room:', chatRoomId)
         await signalRService.joinChatRoom(chatRoomId)
         joinedRooms.add(chatRoomId)
-        console.log('[ChatStore] Successfully joined chat room:', chatRoomId)
       } catch (error) {
-        console.error('[ChatStore] Failed to join chat room:', error)
         logger.warn(error, { code: 'CHAT_JOIN_FAILED' })
         throw error
       } finally {
@@ -641,7 +637,6 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
   leaveChatRoom: async (chatRoomId) => {
     try {
-      console.log('[ChatStore] Leaving chat room:', chatRoomId)
       joinedRooms.delete(chatRoomId)
       joinPromises.delete(chatRoomId)
       if (signalRService.isConnected()) {
@@ -650,9 +645,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       if (get().activeChatRoomId === chatRoomId) {
         set({ activeChatRoomId: null })
       }
-      console.log('[ChatStore] Successfully left chat room:', chatRoomId)
     } catch (error) {
-      console.error('[ChatStore] Failed to leave chat room:', error)
       logger.warn(error, { code: 'CHAT_LEAVE_FAILED' })
     }
   },
@@ -722,8 +715,6 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
   // Reset store (for logout)
   reset: () => {
-    console.log('[ChatStore] Resetting store state')
-
     // Clean up event listeners
     if (eventListenersCleanup) {
       eventListenersCleanup()
@@ -756,8 +747,6 @@ export const useChatStore = create<ChatState>((set, get) => ({
       onlineUsers: {},
       typingUsers: {},
     })
-
-    console.log('[ChatStore] Store reset complete')
   },
 
   setLastRemovedChatRoomId: (chatRoomId) =>
@@ -1045,9 +1034,6 @@ export const useChatStore = create<ChatState>((set, get) => ({
   _setupEventListeners: () => {
     // Clean up existing listeners first to prevent duplicates
     if (eventListenersCleanup) {
-      console.log(
-        '[ChatStore] Cleaning up existing event listeners before re-setup',
-      )
       eventListenersCleanup()
       eventListenersCleanup = null
     }
@@ -1055,7 +1041,6 @@ export const useChatStore = create<ChatState>((set, get) => ({
     // Also clear SignalR service listeners to ensure clean state
     signalRService.clearAllListeners()
 
-    console.log('[ChatStore] Setting up event listeners')
     const unsubscribes: (() => void)[] = []
 
     // Connection state changes
@@ -1128,10 +1113,10 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
     // Store cleanup function for later use
     eventListenersCleanup = () => {
-      console.log('[ChatStore] Cleaning up event listeners')
+      logger.info('[ChatStore] Cleaning up event listeners')
       unsubscribes.forEach((unsub) => unsub())
     }
 
-    console.log('[ChatStore] Event listeners set up successfully')
+    logger.info('[ChatStore] Event listeners set up successfully')
   },
 }))
