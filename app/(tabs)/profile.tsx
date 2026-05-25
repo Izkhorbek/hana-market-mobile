@@ -15,6 +15,7 @@ import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs'
 import { router, useFocusEffect } from 'expo-router'
 import {
 	FileText,
+	Flag,
 	Globe,
 	Heart,
 	HelpCircle,
@@ -90,6 +91,8 @@ const ProfilePage = () => {
 			router.push('/(settings)/my-listings')
 		} else if (route === 'favorites') {
 			router.push('/(settings)/favorites')
+		} else if (route === 'my-complaints') {
+			router.push('/(settings)/my-complaint')
 		} else if (route === 'verification') {
 			router.push('/(settings)/verification')
 		} else if (route === 'settings') {
@@ -152,6 +155,11 @@ const ProfilePage = () => {
 						icon={Heart}
 						title={t('profile.favorites')}
 						onPress={() => handleNavigation('favorites')}
+					/>
+					<ProfileMenuItem
+						icon={Flag}
+						title={t('profile.my_complaints')}
+						onPress={() => handleNavigation('my-complaints')}
 					/>
 				</ProfileSection>
 

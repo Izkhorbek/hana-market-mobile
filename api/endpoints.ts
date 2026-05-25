@@ -89,7 +89,10 @@ const ENDPOINT = {
     MY: 'complaint/my-complaints',
     TYPES: 'complaint/types',
   },
-
+  REPORT:{
+    CREATE: 'report/create',
+    MY_REPORTS: 'report/my-reports',
+  },
   // Contact
   CONTACT: {
     SEND: 'contact/send',

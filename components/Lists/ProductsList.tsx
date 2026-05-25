@@ -17,6 +17,7 @@ import {
 } from 'react-native'
 import ProductCard from '../shared/Cards/ProductCard'
 import FilterButtons from './FilterButtons'
+import { AppLimits } from '@/constants/appLimits'
 
 // ── Shape returned by GET /api/product/all ──────────────────────────────────
 interface ProductItem {
@@ -55,22 +56,19 @@ const FILTER_TO_PRODUCT_TYPE: Record<string, EProductType | undefined> = {
   works: EProductType.WORK,
 }
 
-const DEFAULT_LAT = 41.311081
-const DEFAULT_LNG = 69.240562
-const PAGE_SIZE = 20
-
 interface ProductsListProps {
   selectedFilter: string
-  onFilterChange: (key: string) => void
+  onFilterChange: (key: string) => void,
+  onDotsPress?: (productId: number) => void
 }
 
-const ProductsList: React.FC<ProductsListProps> = ({ selectedFilter, onFilterChange }) => {
+const ProductsList: React.FC<ProductsListProps> = ({ selectedFilter, onFilterChange, onDotsPress }) => {
   const { t } = useTranslations()
   const colors = useThemeColors()
   const user = useAuthStore((s) => s.user)
 
-  const userLat = user?.latitude ?? DEFAULT_LAT
-  const userLng = user?.longitude ?? DEFAULT_LNG
+  const userLat = user?.latitude ?? AppLimits.DefaultCoordinates.TASHKENT_LATITUDE
+  const userLng = user?.longitude ?? AppLimits.DefaultCoordinates.TASHKENT_LONGITUDE
   const productType = FILTER_TO_PRODUCT_TYPE[selectedFilter]
 
   const {
@@ -85,7 +83,7 @@ const ProductsList: React.FC<ProductsListProps> = ({ selectedFilter, onFilterCha
     params: {
       user_lat: userLat,
       user_long: userLng,
-      page_size: PAGE_SIZE,
+      page_size: AppLimits.Pagination.DEFAULT_PAGE_SIZE,
       product_type: productType,
     },
   })
@@ -130,8 +128,11 @@ const ProductsList: React.FC<ProductsListProps> = ({ selectedFilter, onFilterCha
   }, [])
 
   // Dots button is for future features like edit/delete/report
-  const handleOnDotsPress = useCallback((_id: number) => {
-  }, [])
+  const handleOnDotsPress = useCallback((productId: number) => {
+    if (onDotsPress) {
+      onDotsPress(productId)
+    }
+  }, [onDotsPress])
 
   const renderItem = useCallback(({ item }: { item: ProductItem }) => (
     <ProductCard
@@ -171,7 +172,8 @@ const ProductsList: React.FC<ProductsListProps> = ({ selectedFilter, onFilterCha
       <View style={styles.centerBox}>
         {ListHeader}
         <Text style={[styles.emptyTitle, { color: colors.text }]}>
-          {t('home.error')}
+          {t('home.error')}<br />
+          {t('home.retry_set_address')}
         </Text>
         <TouchableOpacity
           style={[styles.retryBtn, { backgroundColor: colors.primaryColor }]}

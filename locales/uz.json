@@ -43,6 +43,7 @@
   },
   "home": {
     "address_not_set": "Manzil...",
+    "retry_set_address": "Manzilni... qayta sozlab ko'ring",
     "create": "Joylash",
     "free": "Bepul",
     "empty_state": "Mahsulotlar topilmadi",
@@ -313,6 +314,7 @@
     "listings": "E'lonlar",
     "listings_subtitle": "Faol · Sotilgan · Yashirin",
     "favorites": "Sevimlilar",
+    "my_complaints": "Mening shikoyatlarim",
     "neighborhood": "MAHALLA",
     "manage_neighborhood": "Mahallani boshqarish",
     "manage_neighborhood_subtitle": "Joylashuv sozlamalarini o'rnating",
@@ -754,5 +756,40 @@
     "install_maps": "Marshrutlarni ko'rish uchun Google Xaritalar yoki Apple Xaritalarini o'rnating.",
     "error": "Xatolik",
     "error_opening_maps": "Xarita ilovasini ochibolamadi. Iltimos qayta urinib ko'ring."
+  },
+  "my_complaints": {
+    "title": "Mening shikoyatlarim",
+    "empty_title": "Shikoyatlar yo'q",
+    "empty_subtitle": "Siz hali hech qanday shikoyat yubormadingiz.",
+    "status_pending": "Ko'rib chiqilmoqda",
+    "status_resolved": "Hal qilindi",
+    "status_rejected": "Rad etildi",
+    "reported_product": "Shikoyat qilingan e'lon #{{id}}",
+    "reported_user": "Shikoyat qilingan foydalanuvchi #{{id}}",
+    "no_description": "Tavsif yo'q",
+    "error": "Shikoyatlarni yuklashda xatolik",
+    "retry": "Qayta urinish"
+  },
+  "complaint": {
+    "title": "E'lonni shikoyat qilish",
+    "subtitle": "Shikoyat sababini tanlang",
+    "description_label": "Qo'shimcha ma'lumot (ixtiyoriy)",
+    "description_placeholder": "Muammoni batafsil tasvirlab bering...",
+    "description_max_hint": "Maksimal 500 ta belgi",
+    "submit": "Shikoyat yuborish",
+    "submitting": "Yuborilmoqda...",
+    "success_title": "Shikoyat qabul qilindi",
+    "success_message": "Rahmat. Biz shikoyatingizni ko'rib chiqamiz va tegishli chora ko'ramiz.",
+    "error_no_reason": "Davom etish uchun sabab tanlang",
+    "error_unauthorized": "Shikoyat qilish uchun tizimga kiring",
+    "error_network": "Tarmoq xatosi. Internet aloqangizni tekshiring va qayta urinib ko'ring.",
+    "error_server": "Server xatosi. Keyinroq qayta urinib ko'ring.",
+    "error_generic": "Shikoyat yuborishda xatolik. Qayta urinib ko'ring.",
+    "types": {
+      "spam": "Spam",
+      "inappropriate": "Noto'g'ri kontent",
+      "fraud": "Firibgarlik",
+      "other": "Boshqa"
+    }
   }
 }

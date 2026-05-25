@@ -1,7 +1,7 @@
 import axiosInstance from '../api'
 import type {
     ApiResponse,
-    ComplaintDto,
+    ComplaintResponseDto,
     ComplaintTypeDto,
     CreateComplaintRequest,
 } from '../../types'
@@ -21,7 +21,7 @@ export const complaintService = {
    * GET /api/complaint/my-complaints
    */
   getMyComplaints: (params: { page?: number; pageSize?: number } = {}) => {
-    return axiosInstance.get<ApiResponse<ComplaintDto[]>>(ENDPOINT.COMPLAINT.MY, { params })
+    return axiosInstance.get<ApiResponse<ComplaintResponseDto[]>>(ENDPOINT.COMPLAINT.MY, { params })
   },
 
   /**

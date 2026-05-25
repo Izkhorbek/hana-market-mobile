@@ -115,6 +115,8 @@ export const useUnreadCountQuery = ({
     queryFn: () => chatService.getUnreadCount(),
     enabled: isAuthorized,
     refetchInterval: 30000, // Refetch every 30 seconds
+    retry: 1,              // 1 retry for transient server errors (502/503)
+    retryDelay: 3000,      // Wait 3s before retry
     ...querySettings,
   })
 }

@@ -583,17 +583,37 @@ export interface ComplaintTypeDto {
   display_name: string;
 }
 
-export interface ComplaintDto {
+export interface ComplaintResponseDto {
   id: number;
   reporter_user_id: number;
   reported_user_id: number | null;
   reported_product_id: number | null;
-  complaint_type: {
-    value: number;
-    name: string;
-    description: string;
-  };
+  complaint_type: ComplaintTypeDto;
   description: string | null;
+  status: string;
+  created_at: string;
+}
+
+// ==================== REPORT TYPES ====================
+
+export interface ReportCreateRequestDto{
+  reported_user_id: number;
+  /// <summary>
+  /// Optional: the product that triggered the report
+  /// </summary>
+  product_id?: number;
+  /// <summary>
+  /// string:  5 < size < 500
+  /// </summary>
+  reason: string;
+}
+
+export interface ReportResponseDto{
+  id: number;
+  reporter_user_id: number;
+  reported_user_id: number;
+  product_id?: number;
+  reason: string;
   status: string;
   created_at: string;
 }

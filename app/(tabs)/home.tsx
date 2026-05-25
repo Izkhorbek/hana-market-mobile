@@ -1,5 +1,6 @@
 
 import ProductsList from '@/components/Lists/ProductsList'
+import ComplaintModal from '@/components/shared/ComplaintModal'
 import { ThemedView } from '@/components/themed-view'
 import { AppLimits } from '@/constants/appLimits'
 import { useThemeColors } from '@/hooks/use-theme-colors'
@@ -103,11 +104,17 @@ export default function HomeScreen() {
     },
   ]
 
+  const handleReport = (productId: number) => {
+    setSelectedProductId(productId)
+    setReportModalVisible(true)
+  }
+
   return (
     <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
       <ProductsList
         selectedFilter={activeFilter}
         onFilterChange={setActiveFilter}
+        onDotsPress={handleReport}
       />
 
       {/* ── Floating Action Button ─────────────────────────────────────── */}
@@ -201,17 +208,12 @@ export default function HomeScreen() {
         </Animated.View>
       </Modal>
 
-      {/* Report Post Modal (placeholder, not implemented yet) */}
-      <Modal>
-        <View style={styles.backdrop}>
-          <View style={[styles.sheet, { backgroundColor: colors.background }]}>
-            <Text style={[styles.sheetTitle, { color: colors.text }]}>  
-              Report Post #{selectedProductId}
-            </Text>
-            {/* Report form would go here */}
-          </View>
-        </View> 
-      </Modal>
+      {/* ── Report / Complaint Modal ───────────────────────────────────── */}
+      <ComplaintModal
+        visible={reportModalVisible}
+        productId={selectedProductId}
+        onClose={() => setReportModalVisible(false)}
+      />
 
       <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
     </ThemedView>

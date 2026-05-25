@@ -43,6 +43,7 @@
 	},
 	"home": {
 		"address_not_set": "Address...",
+		"retry_set_address": "Address... try setting it again",
 		"create": "Post",
 		"free": "Free",
 		"empty_state": "No products found",
@@ -310,6 +311,7 @@
 		"listings": "Listings",
 		"listings_subtitle": "Active · Sold · Hidden",
 		"favorites": "Favorites",
+		"my_complaints": "My Reports",
 		"neighborhood": "NEIGHBORHOOD",
 		"manage_neighborhood": "Manage neighborhood",
 		"manage_neighborhood_subtitle": "Set your location preferences",
@@ -734,5 +736,40 @@
 		"install_maps": "Please install Google Maps or Apple Maps to view directions.",
 		"error": "Error",
 		"error_opening_maps": "Could not open maps application. Please try again."
+	},
+	"my_complaints": {
+		"title": "My Reports",
+		"empty_title": "No reports yet",
+		"empty_subtitle": "You haven't submitted any reports yet.",
+		"status_pending": "Under Review",
+		"status_resolved": "Resolved",
+		"status_rejected": "Rejected",
+		"reported_product": "Reported listing #{{id}}",
+		"reported_user": "Reported user #{{id}}",
+		"no_description": "No description provided",
+		"error": "Failed to load reports",
+		"retry": "Try again"
+	},
+	"complaint": {
+		"title": "Report Listing",
+		"subtitle": "Select a reason for reporting this listing",
+		"description_label": "Additional details (optional)",
+		"description_placeholder": "Describe the issue in more detail...",
+		"description_max_hint": "Maximum 500 characters",
+		"submit": "Submit Report",
+		"submitting": "Submitting...",
+		"success_title": "Report Submitted",
+		"success_message": "Thank you. We will review your report and take appropriate action.",
+		"error_no_reason": "Please select a reason to continue",
+		"error_unauthorized": "Please log in to report a listing",
+		"error_network": "Network error. Please check your connection and try again.",
+		"error_server": "Server error. Please try again later.",
+		"error_generic": "Failed to submit report. Please try again.",
+		"types": {
+			"spam": "Spam",
+			"inappropriate": "Inappropriate Content",
+			"fraud": "Fraud or Scam",
+			"other": "Other"
+		}
 	}
 }
