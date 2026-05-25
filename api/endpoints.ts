@@ -86,8 +86,8 @@ const ENDPOINT = {
   // Complaints
   COMPLAINT: {
     CREATE: 'complaint/create',
-    MY: 'complaint/my',
-    BY_ID: (id: string | number) => `complaint/${id}`,
+    MY: 'complaint/my-complaints',
+    TYPES: 'complaint/types',
   },
 
   // Contact

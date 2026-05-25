@@ -545,7 +545,9 @@
       "subject_required": "Mavzu talab qilinadi",
       "subject_min": "Mavzu kamida 5 ta belgidan iborat bo'lishi kerak",
       "message_required": "Xabar talab qilinadi",
-      "message_min": "Xabar kamida 20 ta belgidan iborat bo'lishi kerak"
+      "message_min": "Xabar kamida 20 ta belgidan iborat bo'lishi kerak",
+      "phone_required": "Telefon raqami talab qilinadi",
+      "phone_invalid": "O'zbekiston raqamini kiriting (+998 XX XXX XX XX)"
     }
   },
   "settings_page": {

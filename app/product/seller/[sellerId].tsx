@@ -52,7 +52,13 @@ const SellerProductsPage: React.FC = () => {
     })
 
     const pageData = data?.data?.data
-    const pageItems: SellerProductItem[] = pageData?.items ?? []
+    // useMemo stabilises the reference — without it, `?? []` creates a new
+    // array every render during loading, causing the effect to run on every
+    // render and potentially infinite re-render loops.
+    const pageItems = useMemo<SellerProductItem[]>(
+        () => pageData?.items ?? [],
+        [pageData],
+    )
     const totalRecords = pageData?.total_records ?? 0
 
     useEffect(() => {
@@ -90,8 +96,20 @@ const SellerProductsPage: React.FC = () => {
     }
 
     const handleRefresh = async () => {
-        setPage(1)
-        setProducts([])
+        if (page !== 1) {
+            // User was on page > 1: reset accumulated pages and go back to page 1.
+            // The query-key change (page → 1) will trigger a fresh fetch and
+            // the useEffect will repopulate products once data arrives.
+            setPage(1)
+            setProducts([])
+            return
+        }
+
+        // page is already 1 — just refetch without clearing products first.
+        // Clearing products here causes data to disappear when React Query's
+        // structural sharing preserves the data reference after the refetch
+        // (same server response → same array reference → useEffect never fires
+        // → products stays empty).
         await refetch()
     }
 

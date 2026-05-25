@@ -426,5 +426,25 @@ async function hydrateTokensFromVault(rehydrated?: AuthState) {
 // Register bridge functions — breaks the circular dependency with api/api.ts
 setTokenGetter(() => useAuthStore.getState().token)
 setLogoutFn(() => useAuthStore.getState().logout())
-setSessionExpiredLogoutFn()
+
+let sessionExpiredHandled = false  // module-level flag to prevent multiple rapid calls
+setSessionExpiredLogoutFn(() => {
+
+    if (sessionExpiredHandled) return  // ← Ikkinchi chaqiruvni bloklash
+  sessionExpiredHandled = true
+
+  const state = useAuthStore.getState()
+  if (!state.isAuthenticated && !state.token) {
+    sessionExpiredHandled = false
+    return
+  }
+
+  useAuthStore.setState({ sessionExpiredOnStart: true })
+  state.logout()
+
+  // Keyingi login uchun flagni tozalash
+  setTimeout(() => { sessionExpiredHandled = false }, 2000)
+})
+
+
 setRefreshTokenFn(() => useAuthStore.getState().refreshTokens())

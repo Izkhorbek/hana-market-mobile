@@ -538,7 +538,9 @@
 			"subject_required": "Subject is required",
 			"subject_min": "Subject must be at least 5 characters",
 			"message_required": "Message is required",
-			"message_min": "Message must be at least 20 characters"
+			"message_min": "Message must be at least 20 characters",
+			"phone_required": "Phone number is required",
+			"phone_invalid": "Please enter a valid phone number"
 		}
 	},
 	"settings_page": {

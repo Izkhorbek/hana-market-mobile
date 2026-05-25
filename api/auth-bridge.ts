@@ -2,9 +2,9 @@
  * Auth bridge — breaks the circular dependency between api/api.ts and auth-store.ts.
  * api/api.ts imports from here (no store dependency).
  * auth-store.ts calls the setters here after the store is created.
+ *
+ * IMPORTANT: Do NOT import auth-store.ts here — that re-introduces the cycle.
  */
-
-import { useAuthStore } from '@/modules/Auth/auth-store'
 
 let _getToken: () => string | null = () => null
 let _logout: () => void = () => {}
@@ -19,23 +19,8 @@ export const setLogoutFn = (fn: () => void) => {
   _logout = fn
 }
 
-let sessionExpiredHandled = false  // module-level flag
-export const setSessionExpiredLogoutFn = () => {
-  if (sessionExpiredHandled) return  // ← Ikkinchi chaqiruvni bloklash
-  sessionExpiredHandled = true
-
-  const state = useAuthStore.getState()
-  if (!state.isAuthenticated && !state.token) {
-    sessionExpiredHandled = false
-    return
-  }
-
-  useAuthStore.setState({ sessionExpiredOnStart: true })
-  state.logout()
-
-  // Keyingi login uchun flagni tozalash
-  setTimeout(() => { sessionExpiredHandled = false }, 2000)
-  
+export const setSessionExpiredLogoutFn = (fn: () => void) => {
+  _logoutSessionExpired = fn
 }
 
 export const setRefreshTokenFn = (fn: () => Promise<string | null>) => {

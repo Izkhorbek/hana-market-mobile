@@ -4,9 +4,9 @@ import type {
     ContactMessageResponse,
     FeedbackRequest,
     FeedbackResponse,
-} from '../../types';
-import axiosInstance from '../api';
-import ENDPOINT from '../endpoints';
+} from '../../types'
+import axiosInstance from '../api'
+import ENDPOINT from '../endpoints'
 
 export const contactService = {
   /**
@@ -17,7 +17,7 @@ export const contactService = {
     return axiosInstance.post<ApiResponse<ContactMessageResponse>>(
       ENDPOINT.CONTACT.SEND,
       data
-    );
+    )
   },
 
   /**
@@ -28,6 +28,6 @@ export const contactService = {
     return axiosInstance.post<ApiResponse<FeedbackResponse>>(
       ENDPOINT.CONTACT.FEEDBACK,
       data
-    );
+    )
   },
-};
+}

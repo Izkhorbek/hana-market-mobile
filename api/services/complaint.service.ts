@@ -1,10 +1,11 @@
-import axiosInstance from '../api';
+import axiosInstance from '../api'
 import type {
     ApiResponse,
     ComplaintDto,
     ComplaintTypeDto,
     CreateComplaintRequest,
-} from '../../types';
+} from '../../types'
+import ENDPOINT from '../endpoints'
 
 export const complaintService = {
   /**
@@ -12,7 +13,7 @@ export const complaintService = {
    * POST /api/complaint/create
    */
   create: (data: CreateComplaintRequest) => {
-    return axiosInstance.post<ApiResponse<{ complaint_id: number }>>('/complaint/create', data);
+    return axiosInstance.post<ApiResponse<{ complaint_id: number }>>(ENDPOINT.COMPLAINT.CREATE, data)
   },
 
   /**
@@ -20,7 +21,7 @@ export const complaintService = {
    * GET /api/complaint/my-complaints
    */
   getMyComplaints: (params: { page?: number; pageSize?: number } = {}) => {
-    return axiosInstance.get<ApiResponse<ComplaintDto[]>>('/complaint/my-complaints', { params });
+    return axiosInstance.get<ApiResponse<ComplaintDto[]>>(ENDPOINT.COMPLAINT.MY, { params })
   },
 
   /**
@@ -28,6 +29,6 @@ export const complaintService = {
    * GET /api/complaint/types
    */
   getTypes: () => {
-    return axiosInstance.get<ApiResponse<ComplaintTypeDto[]>>('/complaint/types');
+    return axiosInstance.get<ApiResponse<ComplaintTypeDto[]>>(ENDPOINT.COMPLAINT.TYPES)
   },
-};
+}

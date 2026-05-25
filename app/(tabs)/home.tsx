@@ -34,8 +34,6 @@ interface CategoryOption {
   iconColor: string;
 }
 
-
-
 export default function HomeScreen() {
   const colors = useThemeColors()
   const colorScheme = useColorScheme()
@@ -43,6 +41,8 @@ export default function HomeScreen() {
   const insets = useSafeAreaInsets()
   const [activeFilter, setActiveFilter] = useState('all')
   const [sheetVisible, setSheetVisible] = useState(false)
+  const [reportModalVisible, setReportModalVisible] = useState(false)
+  const [selectedProductId, setSelectedProductId] = useState<number | null>(null)
 
   // Slide-up animation
   const slideAnim = useRef(new Animated.Value(AppLimits.Home.
@@ -199,6 +199,18 @@ export default function HomeScreen() {
           {/* iOS safe area padding */}
           {Platform.OS === 'ios' && <View style={styles.iosBottom} />}
         </Animated.View>
+      </Modal>
+
+      {/* Report Post Modal (placeholder, not implemented yet) */}
+      <Modal>
+        <View style={styles.backdrop}>
+          <View style={[styles.sheet, { backgroundColor: colors.background }]}>
+            <Text style={[styles.sheetTitle, { color: colors.text }]}>  
+              Report Post #{selectedProductId}
+            </Text>
+            {/* Report form would go here */}
+          </View>
+        </View> 
       </Modal>
 
       <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />

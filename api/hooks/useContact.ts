@@ -1,13 +1,13 @@
-import { useMutation, UseMutationOptions } from '@tanstack/react-query';
-import { AxiosResponse } from 'axios';
+import { useMutation, UseMutationOptions } from '@tanstack/react-query'
+import { AxiosResponse } from 'axios'
 import type {
   ApiResponse,
   ContactMessageRequest,
   ContactMessageResponse,
   FeedbackRequest,
   FeedbackResponse,
-} from '../../types';
-import { contactService } from '../services';
+} from '../../types'
+import { contactService } from '../services'
 
 /**
  * Hook to send a public contact message (no auth required)
@@ -26,8 +26,8 @@ export const useSendContactMessageMutation = (
   >({
     mutationFn: (data) => contactService.sendMessage(data),
     ...options,
-  });
-};
+  })
+}
 
 /**
  * Hook to submit authenticated user feedback with optional rating
@@ -46,5 +46,5 @@ export const useSubmitFeedbackMutation = (
   >({
     mutationFn: (data) => contactService.submitFeedback(data),
     ...options,
-  });
-};
+  })
+}
