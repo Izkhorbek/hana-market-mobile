@@ -13,7 +13,7 @@
 |---------|------|-------------|-------------|-------------------------------|
 | **P0**  | 3    | 3 (✅ tugadi) | 0          | 0 |
 | **P1**  | 3    | 3 (✅ tugadi) | 0          | 0 |
-| **P2**  | 3    | 2 (3.6/3.7, 4.4) | 0      | 1 (5.3 — eng katta refactor) |
+| **P2**  | 3    | 2 (3.6/3.7, 4.4) | 0      | 1 (5.3 — 🟡 Bosqich 1/3 bajarildi) |
 
 > **P0 to'liq tugadi** (2.1, 2.3, 3.2, 3.3). Keyingi bosqich: **P1**.
 > **P0 #2 — qismlar:** (B) 2.3 stale chat-list fallback ✅ + (A) 3.2 no-op tugmalar ✅ (Variant 1).
@@ -144,23 +144,35 @@
 - **Tekshiruv:** `npx tsc --noEmit` → EXIT 0.
 - **Qo'lda sinov:** (1) 20+ xil chatga kirib chiqib, eng birinchisiga qайт → xabarlar qayta yuklanadi, to'g'ri ko'rinadi. (2) Faol xonada turib boshqa xonalardan xabar kel → faol xona xabarlari hech qachon yo'qolmaydi. (3) Oddiy chat oqimi (scroll, real-time, unread, read) avvalgidek.
 
+### 2.2 — O'lik `messagesLoading` guard `[5.3 Bosqich 1]` ✅
+- **Sana:** 2026-06-05
+- **Fayl(lar):** `app/chat/[id].tsx`
+- **Ildiz sabab (tasdiqlangan):** Store'ning `setMessagesLoading` action'i **hech qayerda chaqirilmaydi** → `messagesLoading[room]` har doim `undefined`/`false`. Loading guard `(isLoadingApi || messagesLoading)` ning yarmi o'lik edi.
+- **Yechim:** Guard'dan `|| messagesLoading` va ishlatilmay qoladigan destructure olib tashlandi → `if (isLoadingApi && displayMessages.length === 0)`. **Nol xulq-atvor o'zgarishi** (messagesLoading doim false edi); Chesterton's-fence izoh qoldirildi.
+- **Kontrakt / qamrov:** Store'dagi `messagesLoading` field/action/`useChatRoom` return **saqlandi** — ular kechiktirilgan 5.3 Bosqich 2-3 da loading-state to'g'ri loyihalanganda hal qilinadi (churn'dan saqlanish).
+- **Tekshiruv:** `npx tsc --noEmit` → EXIT 0.
+- **Qo'lda sinov:** Chat xonasini ochish → spinner → xabarlar (avvalgidek; xulq-atvor o'zgarmaydi).
+
 ---
 
 ## 🔜 Navbatdagi buglar
 
-### P2 (refactor)
-- **5.3 — Chat ikki manbali holat (REST + Zustand)** `[P2 #7]` ⏸️ — eng katta ish; Zustand'ni yagona manba qilish. 2.2/4.3/4.5 ham shu bilan hal bo'ladi. **Alohida batafsil reja kerak.**
+### P2 (refactor) — 5.3 qisman (🟡 Bosqich 1/3 bajarildi)
+- **5.3 Bosqich 2-3 — Chat ikki manbali holatni yagona manbaga keltirish** `[P2 #7]` ⏸️ — Zustand'ni render uchun yagona manba qilish: `mergeMessages` (yozishda sort+dedupe), pagination'ni store'ga yozish, render'ni `storeMessages`'dan. **Yuqori risk — runtime sinovsiz qilinmaydi.** Foydalanuvchi har bosqichni qurilmada sinaydigan alohida ish sifatida olib boriladi.
+  - ✅ **Bosqich 1 bajarildi:** 2.2 o'lik `messagesLoading` guard tozalandi.
+  - ⏸️ **Bosqich 2:** store-source render + pagination→store (4.3 hal bo'ladi).
+  - ⏸️ **Bosqich 3:** eski merge yo'lini olib tashlash + grouping optimizatsiyasi (4.5 hal bo'ladi).
 
 ---
 
-## ⏭️ Atayin kechiktirilgan (5.3 refactori bilan birga hal bo'ladi)
+## ⏭️ Atayin kechiktirilgan (5.3 Bosqich 2-3 bilan hal bo'ladi)
 
-Bularga ALOHIDA tegilmaydi — ikki manbali holat refactori (5.3) ularni tabiiy hal qiladi:
-- **2.2** — `messagesLoading` hech qachon `true` bo'lmaydi.
-- **4.3** — `mergedMessages` har renderda O(n log n) sort.
-- **4.5** — `groupMessagesByDate` har renderda qayta hisoblash.
+Bularga ALOHIDA tegilmaydi — store-source refactori (5.3 Bosqich 2-3) ularni tabiiy hal qiladi:
+- ~~**2.2** — `messagesLoading` hech qachon `true` bo'lmaydi.~~ ✅ **Bosqich 1 da hal qilindi.**
+- **4.3** — `mergedMessages` har xabar o'zgarishida O(n log n) sort.
+- **4.5** — `groupMessagesByDate` har xabar o'zgarishida qayta hisoblash.
 
-> ⚠️ 5.3 ga yetganda foydalanuvchiga eslatiladi.
+> ⚠️ 5.3 Bosqich 2-3 yuqori riskli — runtime sinov talab qiladi.
 
 ---
 

@@ -533,7 +533,6 @@ const ChatRoomPage: React.FC = () => {
   // Join chat room and get real-time messages
   const {
     messages: storeMessages,
-    messagesLoading,
   } = useChatRoom(chatRoomId)
 
   // REST mark-as-read on enter. We also flip read state via SignalR (inside
@@ -1064,8 +1063,11 @@ const ChatRoomPage: React.FC = () => {
     [],
   )
 
-  // Loading state
-  if ((isLoadingApi || messagesLoading) && displayMessages.length === 0) {
+  // Loading state. NOTE: the store's per-room `messagesLoading` flag is never
+  // set (no setMessagesLoading caller), so it was dead weight in this guard —
+  // the REST infinite query's `isLoadingApi` is the real loading signal. The
+  // store loading-state will be designed properly in the deferred 5.3 refactor.
+  if (isLoadingApi && displayMessages.length === 0) {
     return (
       <View
         style={[
