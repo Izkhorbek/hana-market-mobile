@@ -65,18 +65,27 @@ const ChatPageHeader = ({
       </ThemedText>
 
       <ThemedView style={[styles.iconsContainer, responsiveStyles.iconsContainer]}>
-        <TouchableOpacity onPress={onFilterPress} style={[styles.iconButton, responsiveStyles.iconButton]}>
-          <SlidersHorizontal size={responsiveStyles.iconSize} color={colors.blackIcon} strokeWidth={2} />
-        </TouchableOpacity>
+        {/* Each icon renders only when its handler is supplied, so callers can
+            omit actions that have no destination yet (e.g. no filter modal or
+            notifications screen exists). Prevents dead, no-op buttons. */}
+        {onFilterPress && (
+          <TouchableOpacity onPress={onFilterPress} style={[styles.iconButton, responsiveStyles.iconButton]}>
+            <SlidersHorizontal size={responsiveStyles.iconSize} color={colors.blackIcon} strokeWidth={2} />
+          </TouchableOpacity>
+        )}
 
-        <TouchableOpacity onPress={onBookmarkPress} style={[styles.iconButton, responsiveStyles.iconButton]}>
-          <Bookmark size={responsiveStyles.iconSize} color={colors.blackIcon} strokeWidth={2} />
-        </TouchableOpacity>
+        {onBookmarkPress && (
+          <TouchableOpacity onPress={onBookmarkPress} style={[styles.iconButton, responsiveStyles.iconButton]}>
+            <Bookmark size={responsiveStyles.iconSize} color={colors.blackIcon} strokeWidth={2} />
+          </TouchableOpacity>
+        )}
 
-        <TouchableOpacity onPress={onNotificationPress} style={[styles.iconButton, responsiveStyles.iconButton]}>
-          <Bell size={responsiveStyles.iconSize} color={colors.blackIcon} strokeWidth={2} />
-          {hasNotifications && <ThemedView style={[styles.notificationDot, responsiveStyles.notificationDot]} />}
-        </TouchableOpacity>
+        {onNotificationPress && (
+          <TouchableOpacity onPress={onNotificationPress} style={[styles.iconButton, responsiveStyles.iconButton]}>
+            <Bell size={responsiveStyles.iconSize} color={colors.blackIcon} strokeWidth={2} />
+            {hasNotifications && <ThemedView style={[styles.notificationDot, responsiveStyles.notificationDot]} />}
+          </TouchableOpacity>
+        )}
       </ThemedView>
     </ThemedView>
   )

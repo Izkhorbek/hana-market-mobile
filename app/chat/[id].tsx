@@ -23,6 +23,7 @@ import {
   ChatMessagesResponse,
   DisplayMessage,
 } from '@/types'
+import i18n from '@/constants/localization'
 import { parseBackendDateTime } from '@/utils/dateTime'
 import { logger } from '@/utils/logger'
 import { useQueryClient } from '@tanstack/react-query'
@@ -80,8 +81,8 @@ const transformStoreMessage = (
 // Format date for date separator
 const formatMessageDate = (dateString: string): string => {
   const date = parseBackendDateTime(dateString)
-  if (isToday(date)) return 'Today'
-  if (isYesterday(date)) return 'Yesterday'
+  if (isToday(date)) return i18n.t('chat_room.date_today')
+  if (isYesterday(date)) return i18n.t('chat_room.date_yesterday')
   return format(date, 'MMM d, yyyy')
 }
 
@@ -99,7 +100,7 @@ const groupMessagesByDate = (
 
   messages.forEach((msg, index) => {
     const rawMsg = rawMessages[index]
-    const dateKey = rawMsg ? formatMessageDate(rawMsg.sent_at) : 'Unknown'
+    const dateKey = rawMsg ? formatMessageDate(rawMsg.sent_at) : i18n.t('chat_room.date_unknown')
     if (!groups[dateKey]) {
       groups[dateKey] = []
     }
@@ -397,7 +398,7 @@ const MessageInput: React.FC<{
   value: string;
   onChangeText: (text: string) => void;
   onSend: () => void;
-  onAttach: () => void;
+  onAttach?: () => void;
   onTyping?: () => void;
   isSending?: boolean;
 }> = ({
@@ -427,9 +428,16 @@ const MessageInput: React.FC<{
         },
       ]}
     >
-      <TouchableOpacity onPress={onAttach} style={styles.attachButton}>
-        <Text style={[styles.attachIcon, { color: colors.textMuted }]}>+</Text>
-      </TouchableOpacity>
+      {/* Attach button renders only when an onAttach handler is supplied. It is
+          currently hidden because the backend has no chat-image upload endpoint:
+          SendMessage accepts only an attachmentUrl (a hosted URL), so sending a
+          local file:// URI would persist a broken image. Re-enable by passing
+          onAttach once a real upload exists. See docs/FIX-PROGRESS.md (3.3). */}
+      {onAttach && (
+        <TouchableOpacity onPress={onAttach} style={styles.attachButton}>
+          <Text style={[styles.attachIcon, { color: colors.textMuted }]}>+</Text>
+        </TouchableOpacity>
+      )}
       <TextInput
         style={[
           styles.textInput,
@@ -853,14 +861,14 @@ const ChatRoomPage: React.FC = () => {
 
       return {
         id: chatData_source.id,
-        name: otherUser.username || 'Unknown',
+        name: otherUser.username || t('chat_room.unknown_user'),
         avatar: otherUser.profile_image_url || undefined,
         trustScore: '0.0°C',
         isOnline,
         otherUserId: otherUser.id,
         product: {
           id: chatData_source.product.id,
-          title: chatData_source.product.title || 'Product',
+          title: chatData_source.product.title || t('chat_room.product_fallback'),
           is_free: chatData_source.product.is_free || false,
           price: chatData_source.product.price
             ? `${chatData_source.product.price}`
@@ -884,14 +892,14 @@ const ChatRoomPage: React.FC = () => {
 
       return {
         id: chatRoom.id,
-        name: otherUser?.username || 'Unknown',
+        name: otherUser?.username || t('chat_room.unknown_user'),
         avatar: otherUser?.profile_image_url || undefined,
         trustScore: '37.7°C',
         isOnline: otherUser?.is_online ?? false,
         otherUserId: otherUser?.id ?? 0,
         product: {
           id: chatRoom.product.id,
-          title: chatRoom.product?.title || 'Product',
+          title: chatRoom.product?.title || t('chat_room.product_fallback'),
           is_free: chatRoom.product?.is_free || false,
           price: productPrice,
           image: chatRoom.product?.image_url || '',
@@ -903,13 +911,13 @@ const ChatRoomPage: React.FC = () => {
     }
 
     return null
-  }, [chatData_source, isOnline, apiChatRoom, currentUserId])
+  }, [chatData_source, isOnline, apiChatRoom, currentUserId, t])
 
   const effectiveChatData: ChatData = useMemo(
     () =>
       chatData ?? {
         id: chatRoomId ?? 0,
-        name: 'Chat',
+        name: t('chat_room.chat_fallback'),
         trustScore: '0.0°C',
         isOnline: false,
         otherUserId: 0,
@@ -921,7 +929,7 @@ const ChatRoomPage: React.FC = () => {
           status: '',
         },
       },
-    [chatData, chatRoomId],
+    [chatData, chatRoomId, t],
   )
 
   const handleBack = () => {
@@ -987,10 +995,6 @@ const ChatRoomPage: React.FC = () => {
       setIsSending(false)
     }
   }, [inputText, send])
-
-  const handleAttach = () => {
-    // TODO: Open image picker and call sendImage
-  }
 
   const handleQuickReply = useCallback((reply: string) => {
     setInputText(reply)
@@ -1171,7 +1175,6 @@ const ChatRoomPage: React.FC = () => {
         value={inputText}
         onChangeText={setInputText}
         onSend={handleSend}
-        onAttach={handleAttach}
         onTyping={handleTyping}
         isSending={isSending || !!effectiveChatData.product.isSold}
       />

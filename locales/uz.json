@@ -364,7 +364,9 @@
     "delete_chat_title": "Chatni o'chirish",
     "delete_chat_confirm": "Ushbu chatni o'chirishni xohlaysizmi?",
     "delete_chat_error": "Chatni o'chirib bo'lmadi. Qayta urinib ko'ring.",
-    "delete_chat_success": "Chat muvaffaqiyatli o'chirildi"
+    "delete_chat_success": "Chat muvaffaqiyatli o'chirildi",
+    "image_attachment": "📷 Rasm",
+    "file_attachment": "📎 Fayl"
   },
   "neighborhood": {
     "title": "Mahallani boshqarish",
@@ -708,7 +710,13 @@
     "delete_message_title": "Xabarni o'chirish",
     "delete_message_confirm": "Ushbu xabarni o'chirishni xohlaysizmi?",
     "delete_message_error": "Xabarni o'chirib bo'lmadi. Qayta urinib ko'ring.",
-    "delete_message_success": "Xabar muvaffaqiyatli o'chirildi"
+    "delete_message_success": "Xabar muvaffaqiyatli o'chirildi",
+    "date_today": "Bugun",
+    "date_yesterday": "Kecha",
+    "date_unknown": "Noma'lum",
+    "unknown_user": "Noma'lum",
+    "chat_fallback": "Chat",
+    "product_fallback": "Mahsulot"
   },
   "date_picker": {
     "months": [

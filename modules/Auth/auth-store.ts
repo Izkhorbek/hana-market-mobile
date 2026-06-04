@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import { isAxiosError } from 'axios'
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
 
@@ -218,26 +219,27 @@ export const useAuthStore = create<AuthState>()(
             })
           }
         } catch (error) {
-          const status = (error as { response?: { status?: number } })
-            ?.response?.status
+          const status = isAxiosError(error) ? error.response?.status : undefined
 
-          // Only auth failures should invalidate the local session.
-          if (status === 401 || status === 403) {
-            // ✅ Avval refresh urinib ko'r
-            const newToken = await get().refreshTokens()
-            if (newToken) {
-              // Refresh muvaffaqiyatli — user'ni qayta olishga urin
-              try {
-                 const retryResponse = await userService.getProfile()
-                set({ user: retryResponse.data.data, sessionExpiredOnStart: false })
-                return
-              } catch (retryError) {
-                // Fall through to session expiration handling
-                logger.warn(retryError, {
-                  code: 'AUTH_FETCH_USER_FAILED_AFTER_REFRESH',
-                })
-              }
-            }
+          // 401 → DO NOT refresh or logout here. The axios response
+          // interceptor (api/api.ts) is the single owner of token refresh: it
+          // already ran the single-flight refresh + retry and, when that
+          // failed, ended the session via authLogoutSessionExpired() (logout +
+          // sessionExpiredOnStart). A 401 reaching this catch therefore means
+          // recovery already failed and logout is already in flight. Re-running
+          // refresh/logout here would double-wipe state (queryClient.clear,
+          // SignalR disconnect, keychain wipe) and bypass the interceptor's
+          // re-entrancy guard. Keep this branch side-effect free — do not
+          // "fix" it by adding logout back.
+          if (status === 401) {
+            logger.warn(error, { code: 'AUTH_FETCH_USER_UNAUTHORIZED' })
+            return
+          }
+
+          // 403 is not token-expiry, so the interceptor does not handle it.
+          // Preserve the existing behaviour and end the session here, but do
+          // NOT attempt a refresh — refreshing on a 403 is semantically wrong.
+          if (status === 403) {
             set({ sessionExpiredOnStart: true })
             get().logout()
             return

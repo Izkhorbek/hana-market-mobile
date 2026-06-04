@@ -1,6 +1,7 @@
 import { HubConnectionState } from '@microsoft/signalr'
 import { create } from 'zustand'
 import { MessageTypeString } from './../../constants/appLimits'
+import i18n from '@/constants/localization'
 import { logger } from '@/utils/logger'
 
 import { queryClient } from '@/api/queryClient'
@@ -840,7 +841,9 @@ export const useChatStore = create<ChatState>((set, get) => ({
       get().updateChatListItem(chatRoomId, {
         last_message:
           messageData.content ||
-          (messageData.type === 'image' ? '📷 Image' : '📎 File'),
+          (messageData.type === 'image'
+            ? i18n.t('chat.image_attachment')
+            : i18n.t('chat.file_attachment')),
         last_message_at: messageData.sent_at,
         unread_count: newUnreadCount,
         // Update other user online status from chat_room data if available
@@ -871,17 +874,16 @@ export const useChatStore = create<ChatState>((set, get) => ({
       get().markAsRead(chatRoomId)
     }
 
-    // Keep REST caches in sync with realtime stream so any screen reading
-    // MY_CHATS / UNREAD_COUNT (e.g. tab badge, chat list page) sees the
-    // updated counts even if its own component isn't subscribed to SignalR.
-    if (!isMine && get().activeChatRoomId !== chatRoomId) {
-      try {
-        queryClient.invalidateQueries({ queryKey: ['UNREAD_COUNT'] })
-        queryClient.invalidateQueries({ queryKey: ['MY_CHATS'] })
-      } catch (e) {
-        console.warn('[ChatStore] invalidateQueries on receive failed:', e)
-      }
-    }
+    // NOTE: We deliberately do NOT invalidate MY_CHATS / UNREAD_COUNT here.
+    // Everything the UI reads has already been updated in the store above:
+    // the chat-list row (last_message / last_message_at / unread_count via
+    // updateChatListItem), a brand-new room (setChatList), and the global
+    // badge (incrementUnreadCount). The chat list and tab badge render from
+    // the store, not the REST cache. Invalidating on every inbound message
+    // fired a redundant MY_CHATS + UNREAD_COUNT refetch per message and let
+    // server data churn/flicker over the live store state. Server
+    // reconciliation still happens via the periodic UNREAD_COUNT poll
+    // (ChatBootstrap) and the markAsRead invalidation. Do not re-add this.
   },
 
   _handleUserStatusChanged: (payload) => {
