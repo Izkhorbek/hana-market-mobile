@@ -13,7 +13,7 @@
 |---------|------|-------------|-------------|-------------------------------|
 | **P0**  | 3    | 3 (✅ tugadi) | 0          | 0 |
 | **P1**  | 3    | 3 (✅ tugadi) | 0          | 0 |
-| **P2**  | 3    | 0           | 0           | 3 (5.3 refactoriga bog'liq) |
+| **P2**  | 3    | 1 (3.6/3.7) | 1 (4.4)     | 1 (5.3 — eng katta refactor) |
 
 > **P0 to'liq tugadi** (2.1, 2.3, 3.2, 3.3). Keyingi bosqich: **P1**.
 > **P0 #2 — qismlar:** (B) 2.3 stale chat-list fallback ✅ + (A) 3.2 no-op tugmalar ✅ (Variant 1).
@@ -118,14 +118,26 @@
 - **Tekshiruv:** `npx tsc --noEmit` → EXIT 0.
 - **Qo'lda sinov:** (1) Chat ro'yxatida turib boshqa userdan xabar kel → ro'yxat tepasiga chiqadi, last_message + unread badge **darhol** yangilanadi (miltillashsiz). (2) Xonada turib xabar kel → pastga scroll, read bo'ladi. (3) Tab badge unread soni to'g'ri. (4) Network tab'da: har xabarda MY_CHATS/UNREAD_COUNT refetch endi **bo'lmaydi** (faqat 30s poll + read'da).
 
+### 3.6 / 3.7 — O'lik kod tozalash `[P2 #9]` ✅
+- **Sana:** 2026-06-03
+- **Fayl(lar):** `api/hooks/useChat.ts`, `api/services/chat.service.ts`, `api/endpoints.ts`, `app/chat/[id].tsx`
+- **Tasdiqlash (har biri olib tashlashdan oldin):** `git grep` bilan butun kod bo'ylab (maestro/dinamik chaqiruvlar ham) **zero-reference** ekani tasdiqlandi. `api/hooks/index.ts` `export *` ishlatadi → barrel'ga tegish shart emas.
+- **Olib tashlangan to'liq o'lik zanjir:**
+  - `useChatMessagesQuery` (non-infinite hook) — ekran `useChatMessagesInfiniteQuery` ishlatadi, bunisi ishlatilmas edi.
+  - `useUserStatusQuery` (4.1'da aniqlangan) → `chatService.getUserStatus` → `ENDPOINT.CHAT.USER_STATUS` — uchchаласи faqat bir-birini ishlatardi, tashqi ref yo'q.
+  - `useChat.ts`'dagi ortiqcha qolgan `ChatMessagesParams` / `ChatMessagesResponse` importlari.
+  - Kommentlangan `transformApiMessage` bloki (`chat/[id].tsx`).
+- **Kontrakt / ehtiyotkorlik:** `chatService.getChatMessages` + uning `ChatMessagesParams`/`ChatMessagesResponse` importlari `chat.service.ts`'da **saqlandi** (infinite query hamon ishlatadi). Faqat o'chirish (69 qator, 0 qo'shish). Backendga ta'sir yo'q (USER_STATUS endpoint client'da ishlatilmasdi).
+- **Tekshiruv:** `npx tsc --noEmit` → EXIT 0; `git grep` → qoldiq referens yo'q.
+- **Qo'lda sinov:** Faqat o'lik kod o'chirildi — xulq-atvor o'zgarmaydi. Chat ro'yxati, xabarlar, infinite-scroll, unread — hammasi avvalgidek.
+
 ---
 
 ## 🔜 Navbatdagi buglar
 
 ### P2 (refactor)
-- **5.3 — Chat ikki manbali holat (REST + Zustand)** `[P2 #7]` ⏸️ — eng katta ish; Zustand'ni yagona manba qilish.
-- **4.4 — Messages map evict** `[P2 #8]` ⏸️ — cheksiz xotira o'sishi; LRU/cap.
-- **3.6 / 3.7 — O'lik kod** `[P2 #9]` ⏸️ — `useChatMessagesQuery`, kommentlangan `transformApiMessage`, **`useUserStatusQuery`** (4.1 tahlilida aniqlandi — hech qayerda ishlatilmaydi).
+- **4.4 — Messages map evict** `[P2 #8]` ⏸️ — cheksiz xotira o'sishi; LRU/cap. (O'rta risk.)
+- **5.3 — Chat ikki manbali holat (REST + Zustand)** `[P2 #7]` ⏸️ — eng katta ish; Zustand'ni yagona manba qilish. 2.2/4.3/4.5 ham shu bilan hal bo'ladi. **Alohida batafsil reja kerak.**
 
 ---
 

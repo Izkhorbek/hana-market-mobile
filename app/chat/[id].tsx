@@ -63,21 +63,6 @@ const transformStoreMessage = (
   imageUrl: message.sender_image_url || undefined,
 })
 
-// Transform API ChatMessageDto to DisplayMessage
-// const transformApiMessage = (
-//   message: ChatMessageDto,
-//   currentUserId: number,
-//   index: number,
-// ): DisplayMessage => ({
-//   id: String(message.id),
-//   localId: `api_${index}_${message.id}`,
-//   text: message.content || '',
-//   timestamp: format(parseBackendDateTime(message.sent_at), 'h:mm a'),
-//   isMe: message.is_mine ? true : false,
-//   status: message.is_read ? 'read' : 'sent',
-//   imageUrl: message.sender_image_url || undefined,
-// })
-
 // Format date for date separator
 const formatMessageDate = (dateString: string): string => {
   const date = parseBackendDateTime(dateString)

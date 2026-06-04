@@ -74,14 +74,6 @@ export const chatService = {
   },
 
   /**
-   * Get user online status
-   * GET /api/chats/user-status/{userId}
-   */
-  getUserStatus: (userId: number) => {
-    return axiosInstance.get(ENDPOINT.CHAT.USER_STATUS(userId))
-  },
-
-  /**
    * Health check
    * GET /api/chats/health
    */
