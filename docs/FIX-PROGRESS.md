@@ -13,7 +13,7 @@
 |---------|------|-------------|-------------|-------------------------------|
 | **P0**  | 3    | 3 (✅ tugadi) | 0          | 0 |
 | **P1**  | 3    | 3 (✅ tugadi) | 0          | 0 |
-| **P2**  | 3    | 1 (3.6/3.7) | 1 (4.4)     | 1 (5.3 — eng katta refactor) |
+| **P2**  | 3    | 2 (3.6/3.7, 4.4) | 0      | 1 (5.3 — eng katta refactor) |
 
 > **P0 to'liq tugadi** (2.1, 2.3, 3.2, 3.3). Keyingi bosqich: **P1**.
 > **P0 #2 — qismlar:** (B) 2.3 stale chat-list fallback ✅ + (A) 3.2 no-op tugmalar ✅ (Variant 1).
@@ -131,12 +131,24 @@
 - **Tekshiruv:** `npx tsc --noEmit` → EXIT 0; `git grep` → qoldiq referens yo'q.
 - **Qo'lda sinov:** Faqat o'lik kod o'chirildi — xulq-atvor o'zgarmaydi. Chat ro'yxati, xabarlar, infinite-scroll, unread — hammasi avvalgidek.
 
+### 4.4 — Messages map evict (cheksiz xotira o'sishi) `[P2 #8]` ✅
+- **Sana:** 2026-06-03
+- **Fayl(lar):** `constants/appLimits.ts` (yangi konstanta), `modules/Chat/chat-store.ts` (LRU)
+- **Ildiz sabab:** `messages: Record<number, ChatMessage[]>` faqat logout/room-delete'da tozalanardi → uzoq sessiyada ko'p xonaga kirilsa, xotira cheksiz o'sardi.
+- **Yechim:** LRU cap. `AppLimits.Chat.MAX_CACHED_MESSAGE_ROOMS = 20` (kelajakda shu yerdan boshqariladi). `roomAccessOrder` (module-level), `touchRoom`/`forgetRoom`, va pure `evictLruMessageRooms` helper.
+  - `touchRoom`: `setActiveChatRoom` (non-null), `setMessages`, `addMessage`.
+  - `evictLruMessageRooms`: faqat `setMessages`'da (xona ochilib to'liq tarix yuklangan asosiy nuqta) chaqiriladi.
+  - `forgetRoom`: `removeChatRoom`'da; `roomAccessOrder.length = 0`: `reset()`'da (logout).
+- **Xavfsizlik kafolati (5 ta xulq-atvor saqlanadi):** evict **ikki qatlamli himoya** bilan — faol xona (`activeChatRoomId`) VA ayni yuklanayotgan xona (`chatRoomId`) **hech qachon** o'chirilmaydi. Faqat ko'rinmaydigan eski xonalar evict bo'ladi. Re-entry: ekran remount → `useChatMessagesInfiniteQuery` REST'dan + `messagesInitializedRef` store'ni qayta to'ldiradi → ma'lumot yo'qolmaydi.
+- **Risk:** past-o'rta. Yagona kuzatiladigan ta'sir: 20+ xona oralab qайтilganda eng eski qايта ochilsa, REST'dan qayta yuklanadi (tez, cache'langan). Funksional buzilish yo'q.
+- **Tekshiruv:** `npx tsc --noEmit` → EXIT 0.
+- **Qo'lda sinov:** (1) 20+ xil chatga kirib chiqib, eng birinchisiga qайт → xabarlar qayta yuklanadi, to'g'ri ko'rinadi. (2) Faol xonada turib boshqa xonalardan xabar kel → faol xona xabarlari hech qachon yo'qolmaydi. (3) Oddiy chat oqimi (scroll, real-time, unread, read) avvalgidek.
+
 ---
 
 ## 🔜 Navbatdagi buglar
 
 ### P2 (refactor)
-- **4.4 — Messages map evict** `[P2 #8]` ⏸️ — cheksiz xotira o'sishi; LRU/cap. (O'rta risk.)
 - **5.3 — Chat ikki manbali holat (REST + Zustand)** `[P2 #7]` ⏸️ — eng katta ish; Zustand'ni yagona manba qilish. 2.2/4.3/4.5 ham shu bilan hal bo'ladi. **Alohida batafsil reja kerak.**
 
 ---

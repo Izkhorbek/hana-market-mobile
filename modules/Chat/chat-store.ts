@@ -1,6 +1,6 @@
 import { HubConnectionState } from '@microsoft/signalr'
 import { create } from 'zustand'
-import { MessageTypeString } from './../../constants/appLimits'
+import { AppLimits, MessageTypeString } from './../../constants/appLimits'
 import i18n from '@/constants/localization'
 import { logger } from '@/utils/logger'
 
@@ -180,6 +180,47 @@ const createLocalId = (): string => {
   return `temp_${Date.now()}_${localIdCounter}`
 }
 
+// ── LRU cache for per-room message arrays ───────────────────────────────────
+// `messages` would otherwise grow unbounded as the user visits rooms over a
+// long session. Keep at most AppLimits.Chat.MAX_CACHED_MESSAGE_ROOMS rooms'
+// arrays in memory; the least-recently-touched inactive room is evicted once
+// the cap is exceeded. Re-opening an evicted room reloads its history from REST
+// (useChatMessagesInfiniteQuery) + realtime, so no data is lost.
+const roomAccessOrder: number[] = [] // least-recent first, most-recent last
+
+const touchRoom = (chatRoomId: number) => {
+  const idx = roomAccessOrder.indexOf(chatRoomId)
+  if (idx !== -1) roomAccessOrder.splice(idx, 1)
+  roomAccessOrder.push(chatRoomId)
+}
+
+const forgetRoom = (chatRoomId: number) => {
+  const idx = roomAccessOrder.indexOf(chatRoomId)
+  if (idx !== -1) roomAccessOrder.splice(idx, 1)
+}
+
+// Prune the least-recently-used inactive rooms once the cap is exceeded.
+// `protectedIds` (the active room + the room being loaded) are never evicted,
+// so the room the user is currently viewing can never be dropped.
+const evictLruMessageRooms = (
+  messages: Record<number, ChatMessage[]>,
+  protectedIds: Set<number>,
+): Record<number, ChatMessage[]> => {
+  if (Object.keys(messages).length <= AppLimits.Chat.MAX_CACHED_MESSAGE_ROOMS) {
+    return messages
+  }
+  const next = { ...messages }
+  for (const roomId of [...roomAccessOrder]) {
+    if (Object.keys(next).length <= AppLimits.Chat.MAX_CACHED_MESSAGE_ROOMS) break
+    if (protectedIds.has(roomId)) continue
+    if (next[roomId] !== undefined) {
+      delete next[roomId]
+      forgetRoom(roomId)
+    }
+  }
+  return next
+}
+
 // ── Store ──
 export const useChatStore = create<ChatState>((set, get) => ({
   // Initial state
@@ -339,6 +380,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
     locallyReadRooms.delete(chatRoomId)
     joinedRooms.delete(chatRoomId)
     joinPromises.delete(chatRoomId)
+    forgetRoom(chatRoomId)
   },
 
   setChatListLoading: (loading) => set({ chatListLoading: loading }),
@@ -352,24 +394,38 @@ export const useChatStore = create<ChatState>((set, get) => ({
     set((state) => ({ unreadCount: Math.max(0, state.unreadCount - amount) })),
 
   // Message Actions
-  setActiveChatRoom: (chatRoomId) => set({ activeChatRoomId: chatRoomId }),
+  setActiveChatRoom: (chatRoomId) => {
+    // Mark as most-recently-used so the active room is never the LRU evict pick.
+    if (chatRoomId != null) touchRoom(chatRoomId)
+    set({ activeChatRoomId: chatRoomId })
+  },
 
-  setMessages: (chatRoomId, messages) =>
-    set(
-      (state) => (
-        {
-          messages: { ...state.messages, [chatRoomId]: messages },
-        }
-      ),
-    ),
+  setMessages: (chatRoomId, messages) => {
+    touchRoom(chatRoomId)
+    set((state) => {
+      // Never evict the room we are loading, nor the active room.
+      const protectedIds = new Set<number>([chatRoomId])
+      if (state.activeChatRoomId != null) {
+        protectedIds.add(state.activeChatRoomId)
+      }
+      return {
+        messages: evictLruMessageRooms(
+          { ...state.messages, [chatRoomId]: messages },
+          protectedIds,
+        ),
+      }
+    })
+  },
 
-  addMessage: (chatRoomId, message) =>
+  addMessage: (chatRoomId, message) => {
+    touchRoom(chatRoomId)
     set((state) => ({
       messages: {
         ...state.messages,
         [chatRoomId]: [...(state.messages[chatRoomId] || []), message],
       },
-    })),
+    }))
+  },
 
   updateMessage: (chatRoomId, messageId, updates) =>
     set((state) => ({
@@ -728,6 +784,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
     joinedRooms.clear()
     joinPromises.clear()
     connectPromise = null
+    roomAccessOrder.length = 0
 
     // Disconnect SignalR
     signalRService.disconnect()
