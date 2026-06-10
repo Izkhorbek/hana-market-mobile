@@ -640,8 +640,8 @@ const ChatRoomPage: React.FC = () => {
 
   // Set messages from API to store on initial load
   const setMessages = useChatStore((s) => s.setMessages)
+  const mergeMessages = useChatStore((s) => s.mergeMessages)
   const setChatList = useChatStore((s) => s.setChatList)
-  const messagesInitializedRef = useRef<number | null>(null)
 
   // Sync fallback chat to store when fetched
   useEffect(() => {
@@ -752,30 +752,17 @@ const ChatRoomPage: React.FC = () => {
     return () => clearTimeout(timer)
   }, [snackbar.visible])
 
+  // Mirror the REST-loaded history (every loaded page) into the store so the
+  // store is the complete source of truth. mergeMessages de-dupes + sorts and
+  // keeps the store's own version on conflict, so realtime read-state and
+  // pending optimistic messages survive. Idempotent — safe to re-run as pages
+  // paginate in. (Server marks all read on join via SignalR.)
+  // NOTE: rendering still flows through `mergedMessages` below in this step;
+  // this effect only ensures the store holds the full history (5.3 stage 2a).
   useEffect(() => {
-    // Only initialize messages once per chatRoomId when store is empty
-    if (
-      chatRoomId &&
-      apiMessages.length > 0 &&
-      messagesInitializedRef.current !== chatRoomId
-    ) {
-      // Check store directly to get fresh value (avoid stale closure)
-      const currentStoreMessages =
-        useChatStore.getState().messages[chatRoomId] || []
-      if (currentStoreMessages.length === 0) {
-        messagesInitializedRef.current = chatRoomId
-        const initializedMessages = apiMessages.map((m) => ({
-          ...m,
-          isPending: false,
-          isFailed: false,
-        }))
-
-        setMessages(chatRoomId, initializedMessages)
-        // Note: server marks all as read when we join the room (handled
-        // inside useChatRoom -> markAsRead via SignalR). No REST call needed.
-      }
-    }
-  }, [chatRoomId, apiMessages, setMessages])
+    if (!chatRoomId || apiMessages.length === 0) return
+    mergeMessages(chatRoomId, apiMessages)
+  }, [chatRoomId, apiMessages, mergeMessages])
 
   // Merge API history and store realtime updates to avoid source-flipping.
   const mergedMessages = useMemo<ChatMessage[]>(() => {

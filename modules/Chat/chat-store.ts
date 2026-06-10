@@ -2,6 +2,7 @@ import { HubConnectionState } from '@microsoft/signalr'
 import { create } from 'zustand'
 import { AppLimits, MessageTypeString } from './../../constants/appLimits'
 import i18n from '@/constants/localization'
+import { parseBackendDateTime } from '@/utils/dateTime'
 import { logger } from '@/utils/logger'
 
 import { queryClient } from '@/api/queryClient'
@@ -106,6 +107,10 @@ interface ChatState {
   // Actions - Messages
   setActiveChatRoom: (chatRoomId: number | null) => void;
   setMessages: (chatRoomId: number, messages: ChatMessage[]) => void;
+  mergeMessages: (
+    chatRoomId: number,
+    incoming: (ChatMessage | ChatMessageDto)[],
+  ) => void;
   addMessage: (chatRoomId: number, message: ChatMessage) => void;
   updateMessage: (
     chatRoomId: number,
@@ -219,6 +224,23 @@ const evictLruMessageRooms = (
     }
   }
   return next
+}
+
+// Normalize an API DTO into the store's ChatMessage shape. Idempotent for
+// messages that are already store-shaped (carry localId / pending / failed).
+const toStoreShape = (msg: ChatMessage | ChatMessageDto): ChatMessage => {
+  if ('localId' in msg || 'isPending' in msg || 'isFailed' in msg) {
+    return msg as ChatMessage
+  }
+  return { ...(msg as ChatMessageDto), isPending: false, isFailed: false }
+}
+
+// Stable identity for de-duping the same logical message arriving from REST
+// history and the realtime stream (and matching optimistic temps by localId).
+const getMessageKey = (msg: ChatMessage): string => {
+  if (msg.localId) return `local:${msg.localId}`
+  if (msg.id > 0) return `id:${msg.id}`
+  return `fallback:${msg.chat_room_id}:${msg.sender_id}:${msg.sent_at}:${msg.content}`
 }
 
 // ── Store ──
@@ -411,6 +433,43 @@ export const useChatStore = create<ChatState>((set, get) => ({
       return {
         messages: evictLruMessageRooms(
           { ...state.messages, [chatRoomId]: messages },
+          protectedIds,
+        ),
+      }
+    })
+  },
+
+  // Merge a batch (REST history / a loaded page) into a room's list: de-dupe by
+  // key, keep the store's OWN version on conflict (so realtime read-state and
+  // pending optimistic temps are never clobbered), and sort by sent_at. Makes
+  // the store the complete source of truth without losing live state.
+  // Idempotent — safe to call repeatedly as pages load.
+  mergeMessages: (chatRoomId, incoming) => {
+    if (!incoming || incoming.length === 0) return
+    touchRoom(chatRoomId)
+    set((state) => {
+      const existing = state.messages[chatRoomId] || []
+      const byKey = new Map<string, ChatMessage>()
+      // Incoming first so the existing (store) version wins on conflict.
+      for (const m of incoming) {
+        const normalized = toStoreShape(m)
+        byKey.set(getMessageKey(normalized), normalized)
+      }
+      for (const m of existing) {
+        byKey.set(getMessageKey(m), m)
+      }
+      const merged = Array.from(byKey.values()).sort(
+        (a, b) =>
+          parseBackendDateTime(a.sent_at).getTime() -
+          parseBackendDateTime(b.sent_at).getTime(),
+      )
+      const protectedIds = new Set<number>([chatRoomId])
+      if (state.activeChatRoomId != null) {
+        protectedIds.add(state.activeChatRoomId)
+      }
+      return {
+        messages: evictLruMessageRooms(
+          { ...state.messages, [chatRoomId]: merged },
           protectedIds,
         ),
       }
