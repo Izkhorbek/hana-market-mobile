@@ -13,7 +13,7 @@
 |---------|------|-------------|-------------|-------------------------------|
 | **P0**  | 3    | 3 (✅ tugadi) | 0          | 0 |
 | **P1**  | 3    | 3 (✅ tugadi) | 0          | 0 |
-| **P2**  | 3    | 2 (3.6/3.7, 4.4) | 0      | 1 (5.3 — 🟡 Bosqich 1/3 bajarildi) |
+| **P2**  | 3    | 2 (3.6/3.7, 4.4) | 0      | 1 (5.3 — ✅ xavfsiz darajada yopildi) |
 
 > **P0 to'liq tugadi** (2.1, 2.3, 3.2, 3.3). Keyingi bosqich: **P1**.
 > **P0 #2 — qismlar:** (B) 2.3 stale chat-list fallback ✅ + (A) 3.2 no-op tugmalar ✅ (Variant 1).
@@ -153,26 +153,36 @@
 - **Tekshiruv:** `npx tsc --noEmit` → EXIT 0.
 - **Qo'lda sinov:** Chat xonasini ochish → spinner → xabarlar (avvalgidek; xulq-atvor o'zgarmaydi).
 
+### 5.3 — Chat ikki manbali holat refactori `[P2 #7]` ✅ (xavfsiz darajada yopildi)
+- **Sana:** 2026-06-08
+- **Qaror:** Foydalanuvchi tanlovi — Variant 1 (2a'da to'xtash). Store-only render (2b) regressiya berdi va bekor qilindi.
+- **Bajarilgan (saqlanadi):**
+  - **Bosqich 1 (2.2)** ✅ — o'lik `messagesLoading` guard tozalandi. Commit `a26d4d3`.
+  - **Bosqich 2a** ✅ — `mergeMessages` store action (dedupe+sort, store-wins) + ekran har REST sahifani store'ga mirror qiladi. Render hali `mergedMessages` (merge) orqali — render-neytral, qurilmada tasdiqlangan. Commit `841aae7`.
+- **Bekor qilingan (revert):**
+  - **Bosqich 2b** ❌ — render'ni faqat `storeMessages`'ga o'tkazish. **Regressiya:** A→B xabarda, B xonani ochganda A'ning xabari ko'rinmadi. **Ildiz sabab:** 2a'dagi merge ikki manbani birlashtirib, apiMessages'ni to'g'ridan-to'g'ri render qilardi — bu mirror (REST→store) dagi ishonchsizlikni **yashirardi**. 2b store-only qilgach, mirror to'liq to'ldirmagan holatda xabar yo'qoldi. (Ehtimoliy sabab: React Query `staleTime` keshi / effect-timing — runtime log bilan tasdiqlanmagan.) `git checkout` bilan qaytarildi (commit qilinmagan).
+- **Natija / qabul qilingan qarz:** Merge (2a) saqlanadi — u "qulay zaxira". 4.3/4.5 (har xabarda merge+sort/grouping) **ataylab qoldirildi** — perf ta'siri marginal, regressiya riski yuqori.
+- **Kelajak uchun:** 2b ni qayta urinishdan oldin mirror ishonchliligini runtime log bilan tuzatish shart (nega B'ning store'i A'ning xabarini olmasligini aniqlash).
+- **Tekshiruv:** `npx tsc --noEmit` → EXIT 0; 2a qurilmada ishlaydi.
+
 ---
 
 ## 🔜 Navbatdagi buglar
 
-### P2 (refactor) — 5.3 qisman (🟡 Bosqich 1/3 bajarildi)
-- **5.3 Bosqich 2-3 — Chat ikki manbali holatni yagona manbaga keltirish** `[P2 #7]` ⏸️ — Zustand'ni render uchun yagona manba qilish: `mergeMessages` (yozishda sort+dedupe), pagination'ni store'ga yozish, render'ni `storeMessages`'dan. **Yuqori risk — runtime sinovsiz qilinmaydi.** Foydalanuvchi har bosqichni qurilmada sinaydigan alohida ish sifatida olib boriladi.
-  - ✅ **Bosqich 1 bajarildi:** 2.2 o'lik `messagesLoading` guard tozalandi.
-  - ⏸️ **Bosqich 2:** store-source render + pagination→store (4.3 hal bo'ladi).
-  - ⏸️ **Bosqich 3:** eski merge yo'lini olib tashlash + grouping optimizatsiyasi (4.5 hal bo'ladi).
+### P2 (refactor) — hammasi yopildi
+
+5.3 **xavfsiz darajada yopildi** (quyidagi "✅ 5.3" bo'limiga qarang). Navbatda buglar yo'q.
 
 ---
 
-## ⏭️ Atayin kechiktirilgan (5.3 Bosqich 2-3 bilan hal bo'ladi)
+## ⏭️ Atayin qoldirilgan (qabul qilingan texnik qarz)
 
-Bularga ALOHIDA tegilmaydi — store-source refactori (5.3 Bosqich 2-3) ularni tabiiy hal qiladi:
+5.3 store-source refactori (Bosqich 2b) bekor qilingani uchun bular **ataylab qoldirildi** — ilovaning ishlashiga halal bermaydi, perf ta'siri marginal:
 - ~~**2.2** — `messagesLoading` hech qachon `true` bo'lmaydi.~~ ✅ **Bosqich 1 da hal qilindi.**
-- **4.3** — `mergedMessages` har xabar o'zgarishida O(n log n) sort.
+- **4.3** — `mergedMessages` har xabar o'zgarishida O(n log n) merge+sort. (Merge saqlandi — u "qulay zaxira", store-only render uni olib tashlaganda regressiya chiqdi.)
 - **4.5** — `groupMessagesByDate` har xabar o'zgarishida qayta hisoblash.
 
-> ⚠️ 5.3 Bosqich 2-3 yuqori riskli — runtime sinov talab qiladi.
+> ⚠️ Kelajakda 4.3/4.5 ni hal qilmoqchi bo'lsangiz, avval mirror (REST→store) ishonchliligini runtime log bilan tuzatish kerak — pastdagi 5.3 bo'limidagi xulosaga qarang.
 
 ---
 
