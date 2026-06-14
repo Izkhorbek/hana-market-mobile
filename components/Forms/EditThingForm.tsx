@@ -226,11 +226,11 @@ const styles = StyleSheet.create({
     section: {
         marginBottom: 24,
         paddingHorizontal: 16,
+        gap: 14,
     },
     sectionTitle: {
         fontSize: 18,
         fontWeight: '600',
-        marginBottom: 12,
     },
     priceInputWrapper: {
         flex: 1,
