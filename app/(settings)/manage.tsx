@@ -10,7 +10,6 @@ import { ArrowLeft, Check, Home, MapPin, Navigation } from 'lucide-react-native'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import MapView, { Circle, Marker } from 'react-native-maps'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { googleMapStyle } from '../../components/Maps/googleMapStyle'
 import { logger } from '@sentry/react-native'
 
@@ -42,7 +41,6 @@ const ManageNeighborhoodPage = () => {
 	const { t } = useTranslations()
 	const colors = useThemeColors()
 	const colorScheme = useColorScheme()
-	const insets = useSafeAreaInsets()
 	const mapRef = useRef<MapView>(null)
 	const storeUser = useAuthStore((s) => s.user)
 
@@ -59,7 +57,7 @@ const ManageNeighborhoodPage = () => {
 	// Ref to track GPS location for callbacks
 	const gpsLocationRef = useRef<LocationData | null>(null)
 
-	const [radius, setRadius] = useState(storeUser?.search_radius_km ?? 3)
+	const [radius, setRadius] = useState(storeUser?.search_radius_km ?? AppLimits.Location.DEFAULT_RADIUS_KM)
 	const [isLoading, setIsLoading] = useState(true)
 	const [isSaving, setIsSaving] = useState(false)
 
@@ -370,7 +368,6 @@ const ManageNeighborhoodPage = () => {
 					{
 						backgroundColor: colors.background,
 						shadowColor: colorScheme === 'dark' ? '#000' : '#000',
-						paddingBottom: Math.max(insets.bottom, 24),
 					},
 				]}
 			>
@@ -521,7 +518,7 @@ const styles = StyleSheet.create({
 		flexDirection: 'row',
 		alignItems: 'center',
 		justifyContent: 'space-between',
-		paddingBottom: 16,
+		paddingBottom: 10,
 		paddingHorizontal: 16,
 		borderBottomWidth: 1,
 	},
@@ -581,7 +578,6 @@ const styles = StyleSheet.create({
 		borderTopRightRadius: 24,
 		paddingHorizontal: 20,
 		paddingTop: 24,
-		paddingBottom: 24,
 		shadowOffset: { width: 0, height: -4 },
 		shadowOpacity: 0.1,
 		shadowRadius: 12,

@@ -87,7 +87,7 @@ export enum EWorkCondition {
 export enum EWorkSalaryType {
   HOURLY = 1000,
   DAILY = 1010,
-  PER_TASK = 1020,
+  // PER_TASK = 1020,
   MONTHLY = 1030,
 }
 

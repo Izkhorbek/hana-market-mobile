@@ -1,5 +1,5 @@
-import { useInfiniteQuery, useMutation, UseMutationOptions, useQuery, useQueryClient, UseQueryOptions } from '@tanstack/react-query';
-import { AxiosResponse } from 'axios';
+import { useInfiniteQuery, useMutation, UseMutationOptions, useQuery, useQueryClient, UseQueryOptions } from '@tanstack/react-query'
+import { AxiosResponse } from 'axios'
 import type {
   ApiResponse,
   DraftImageDto,
@@ -10,8 +10,8 @@ import type {
   ProductListParams,
   ProductUpdateRequest,
   SingleProductResponseDto,
-} from '../../types';
-import { productService } from '../services';
+} from '../../types'
+import { productService } from '../services'
 
 /**
  * Hook to query products list
@@ -27,8 +27,8 @@ export const useProductsQuery = ({
     queryKey: ['PRODUCTS', params],
     queryFn: () => productService.getAll(params),
     ...querySettings,
-  });
-};
+  })
+}
 
 /**
  * Hook to query single product
@@ -45,8 +45,8 @@ export const useProductQuery = ({
     queryFn: () => productService.getById(id),
     enabled: !!id,
     ...querySettings,
-  });
-};
+  })
+}
 
 /**
  * Hook to query single edit product
@@ -63,8 +63,8 @@ export const useEditProductQuery = ({
     queryFn: () => productService.getByIdToEdit(id),
     enabled: !!id,
     ...querySettings,
-  });
-};
+  })
+}
 
 
 /**
@@ -82,63 +82,92 @@ export const useProductImagesQuery = ({
     queryFn: () => productService.getImages(id),
     enabled: !!id,
     ...querySettings,
-  });
-};
+  })
+}
 
 /**
  * Hook to create product
  */
 export const useCreateProductMutation = (
-  options?: UseMutationOptions<AxiosResponse<ApiResponse<{}>>, Error, FormData>
+  options?: UseMutationOptions<AxiosResponse<ApiResponse<object>>, Error, FormData>
 ) => {
-  const queryClient = useQueryClient();
-  return useMutation<AxiosResponse<ApiResponse<{}>>, Error, FormData>({
+  const queryClient = useQueryClient()
+  return useMutation<AxiosResponse<ApiResponse<object>>, Error, FormData>({
     mutationFn: (data) => productService.create(data),
     ...options,
     onSuccess: (data, variables, onMutateResult, context) => {
       // Refresh the home page product list (and any other product queries)
-      queryClient.invalidateQueries({ queryKey: ['PRODUCTS_INFINITE'] });
-      queryClient.invalidateQueries({ queryKey: ['PRODUCTS'] });
-      options?.onSuccess?.(data, variables, onMutateResult, context);
+      queryClient.invalidateQueries({ queryKey: ['PRODUCTS_INFINITE'] })
+      queryClient.invalidateQueries({ queryKey: ['PRODUCTS'] })
+      options?.onSuccess?.(data, variables, onMutateResult, context)
     },
-  });
-};
+  })
+}
 
 /**
  * Hook to update product
  */
 export const useUpdateProductMutation = (
-  options?: UseMutationOptions<AxiosResponse<ApiResponse<{}>>, Error, { id: number; data: ProductUpdateRequest }>
+  options?: UseMutationOptions<AxiosResponse<ApiResponse<object>>, Error, { id: number; data: ProductUpdateRequest }>
 ) => {
-  return useMutation<AxiosResponse<ApiResponse<{}>>, Error, { id: number; data: ProductUpdateRequest }>({
+  const queryClient = useQueryClient()
+  return useMutation<AxiosResponse<ApiResponse<object>>, Error, { id: number; data: ProductUpdateRequest }>({
     mutationFn: ({ id, data }) => productService.update(id, data),
     ...options,
-  });
-};
+    onSuccess: (data, variables, onMutateResult, context) => {
+      // An edit (incl. status active->reserved->sold) must refresh every cache
+      // that holds this product, otherwise the detail screen and the lists keep
+      // showing stale data. Invalidate the single-product caches by id and all
+      // product lists.
+      const { id } = variables
+      queryClient.invalidateQueries({ queryKey: ['PRODUCT', id] })
+      queryClient.invalidateQueries({ queryKey: ['EDIT_PRODUCT', id] })
+      queryClient.invalidateQueries({ queryKey: ['RELATED_PRODUCTS', id] })
+      queryClient.invalidateQueries({ queryKey: ['PRODUCTS'] })
+      queryClient.invalidateQueries({ queryKey: ['PRODUCTS_INFINITE'] })
+      queryClient.invalidateQueries({ queryKey: ['PRODUCTS_BY_SELLER'] })
+      queryClient.invalidateQueries({ queryKey: ['MY_PRODUCTS'] })
+      options?.onSuccess?.(data, variables, onMutateResult, context)
+    },
+  })
+}
 
 /**
  * Hook to delete product
  */
 export const useDeleteProductMutation = (
-  options?: UseMutationOptions<AxiosResponse<ApiResponse<{}>>, Error, number>
+  options?: UseMutationOptions<AxiosResponse<ApiResponse<object>>, Error, number>
 ) => {
-  return useMutation<AxiosResponse<ApiResponse<{}>>, Error, number>({
+  const queryClient = useQueryClient()
+  return useMutation<AxiosResponse<ApiResponse<object>>, Error, number>({
     mutationFn: (id) => productService.delete(id),
     ...options,
-  });
-};
+    onSuccess: (data, variables, onMutateResult, context) => {
+      // Drop the deleted product from its own caches and refresh every list so
+      // it disappears everywhere (home, map, my-listings, seller page, etc.).
+      const id = variables
+      queryClient.removeQueries({ queryKey: ['PRODUCT', id] })
+      queryClient.removeQueries({ queryKey: ['EDIT_PRODUCT', id] })
+      queryClient.invalidateQueries({ queryKey: ['PRODUCTS'] })
+      queryClient.invalidateQueries({ queryKey: ['PRODUCTS_INFINITE'] })
+      queryClient.invalidateQueries({ queryKey: ['PRODUCTS_BY_SELLER'] })
+      queryClient.invalidateQueries({ queryKey: ['MY_PRODUCTS'] })
+      options?.onSuccess?.(data, variables, onMutateResult, context)
+    },
+  })
+}
 
 /**
  * Hook to toggle product like
  */
 export const useToggleLikeMutation = (
-  options?: UseMutationOptions<AxiosResponse<ApiResponse<{}>>, Error, { id: number; data: ProductLikeDto }>
+  options?: UseMutationOptions<AxiosResponse<ApiResponse<object>>, Error, { id: number; data: ProductLikeDto }>
 ) => {
-  return useMutation<AxiosResponse<ApiResponse<{}>>, Error, { id: number; data: ProductLikeDto }>({
+  return useMutation<AxiosResponse<ApiResponse<object>>, Error, { id: number; data: ProductLikeDto }>({
     mutationFn: ({ id, data }) => productService.toggleLike(id, data),
     ...options,
-  });
-};
+  })
+}
 
 /**
  * Hook to upload draft images before creating a product
@@ -150,8 +179,8 @@ export const useUploadDraftImagesMutation = (
     mutationKey: ['UPLOAD_DRAFT_IMAGES'],
     mutationFn: (data) => productService.uploadDraftImages(data),
     ...options,
-  });
-};
+  })
+}
 
 /**
  * Hook to fetch products with infinite scroll / pagination
@@ -169,14 +198,14 @@ export const useInfiniteProductsQuery = ({
       productService.getAll({ ...params, current_page: pageParam }),
     initialPageParam: 1,
     getNextPageParam: (lastPage: AxiosResponse<ApiResponse<PaginatedResponse<any>>>) => {
-      const paged = lastPage.data?.data;
-      if (!paged) return undefined;
-      const totalPages = Math.ceil(paged.total_records / paged.page_size);
-      return paged.current_page < totalPages ? paged.current_page + 1 : undefined;
+      const paged = lastPage.data?.data
+      if (!paged) return undefined
+      const totalPages = Math.ceil(paged.total_records / paged.page_size)
+      return paged.current_page < totalPages ? paged.current_page + 1 : undefined
     },
     ...querySettings,
-  });
-};
+  })
+}
 
 /**
  * Hook to fetch products by seller ID
@@ -197,8 +226,8 @@ export const useProductsBySellerQuery = ({
     queryFn: () => productService.getProductsBySeller(sellerId, page ?? 1, pageSize ?? 20), // Default to first page with 20 items, can be enhanced to support pagination
     enabled: !!sellerId,
     ...querySettings,
-  });
-};
+  })
+}
 
 /**
  * Hook to fetch related products by product ID 
@@ -215,5 +244,5 @@ export const useRelatedProductsQuery = ({
     queryFn: () => productService.getRelatedProducts(productId),
     enabled: !!productId,
     ...querySettings,
-  });
-};
+  })
+}

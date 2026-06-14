@@ -6,9 +6,9 @@ import type {
     NewsListParams,
     PrivacyDto,
     TermsDto,
-} from '../../types';
-import axiosInstance from '../api';
-import ENDPOINT from '../endpoints';
+} from '../../types'
+import axiosInstance from '../api'
+import ENDPOINT from '../endpoints'
 
 export const contentService = {
   /**
@@ -18,7 +18,7 @@ export const contentService = {
   getAboutUs: (lang?: ContentLang) => {
     return axiosInstance.get<ApiResponse<AboutUsDto>>(ENDPOINT.CONTENT.ABOUT_US, {
       params: { lang },
-    });
+    })
   },
 
   /**
@@ -28,7 +28,7 @@ export const contentService = {
   getTerms: (lang?: ContentLang) => {
     return axiosInstance.get<ApiResponse<TermsDto>>(ENDPOINT.CONTENT.TERMS, {
       params: { lang },
-    });
+    })
   },
 
   /**
@@ -38,7 +38,7 @@ export const contentService = {
   getPrivacy: (lang?: ContentLang) => {
     return axiosInstance.get<ApiResponse<PrivacyDto>>(ENDPOINT.CONTENT.PRIVACY, {
       params: { lang },
-    });
+    })
   },
 
   /**
@@ -48,7 +48,7 @@ export const contentService = {
   getNewsList: (params?: NewsListParams) => {
     return axiosInstance.get<ApiResponse<NewsItem[]>>(ENDPOINT.CONTENT.NEWS, {
       params,
-    });
+    })
   },
 
   /**
@@ -56,6 +56,6 @@ export const contentService = {
    * GET /api/content/news/{id}
    */
   getNewsById: (id: number) => {
-    return axiosInstance.get<ApiResponse<NewsItem>>(`${ENDPOINT.CONTENT.NEWS}/${id}`);
+    return axiosInstance.get<ApiResponse<NewsItem>>(`${ENDPOINT.CONTENT.NEWS}/${id}`)
   },
-};
+}

@@ -23,7 +23,7 @@ export const userService = {
    * POST /api/user/update
    */
   updateProfile: (data: UpdateProfileRequest) => {
-    return axiosInstance.post<ApiResponse<{}>>(ENDPOINT.USER.UPDATE_PROFILE, data)
+    return axiosInstance.post<ApiResponse<object>>(ENDPOINT.USER.UPDATE_PROFILE, data)
   },
 
   /**
@@ -65,6 +65,6 @@ export const userService = {
    * POST /api/user/delete
    */
   deleteAccount: () => {
-    return axiosInstance.post<ApiResponse<{}>>(ENDPOINT.USER.DELETE)
+    return axiosInstance.post<ApiResponse<object>>(ENDPOINT.USER.DELETE)
   },
 }

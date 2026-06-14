@@ -14,12 +14,13 @@ import axios, { AxiosError, AxiosRequestConfig } from 'axios'
 //
 // Local dev fallback: real device on same Wi-Fi as a dev backend.
 // Android emulator alternative: http://10.0.2.2:5000/api
-//const DEV_API_URL_FALLBACK='http://192.168.0.111:5000/api'
+const DEV_API_URL_FALLBACK='http://192.168.0.111:5000/api'
+//const DEV_API_URL_FALLBACK='http://localhost:5000/api'
 
 const appEnv = String(Constants.expoConfig?.extra?.appEnv ?? 'development')
 const isProductionApp = appEnv === 'production'
 const configuredApiUrl = process.env.EXPO_PUBLIC_API_URL?.trim()
-const API_URL = configuredApiUrl // || (isProductionApp ? '' : DEV_API_URL_FALLBACK)
+const API_URL = DEV_API_URL_FALLBACK //configuredApiUrl // || (isProductionApp ? '' : DEV_API_URL_FALLBACK)
 
 if (!API_URL) {
   throw new Error('Missing EXPO_PUBLIC_API_URL for production build')

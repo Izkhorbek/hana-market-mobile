@@ -1,13 +1,15 @@
-import FormInput from '@/components/FormElements/FormInput';
-import FormSelect from '@/components/FormElements/FormSelect';
-import { OptionType } from '@/components/ui/combobox';
-import { useTranslations } from '@/hooks/use-translation';
-import { useColor } from '@/hooks/useColor';
-import React, { useEffect } from 'react';
-import { UseFormReturn } from 'react-hook-form';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import FormRow from '../FormElements/FormRow';
-import RadioButtonGroup, { RadioOption } from '../FormElements/RadioButtonGroup';
+import FormInput from '@/components/FormElements/FormInput'
+import FormSelect from '@/components/FormElements/FormSelect'
+import { OptionType } from '@/components/ui/combobox'
+import { useTranslations } from '@/hooks/use-translation'
+import { useColor } from '@/hooks/useColor'
+import React, { useEffect } from 'react'
+import { UseFormReturn } from 'react-hook-form'
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import FormRow from '../FormElements/FormRow'
+import RadioButtonGroup, { RadioOption } from '../FormElements/RadioButtonGroup'
+import { EWorkCondition, EWorkSalaryType, EWorkType } from '@/constants/enums'
+import { EWorkerType } from '../../constants/enums'
 
 export interface EditWorksFormValues {
     workerType: string;
@@ -31,65 +33,64 @@ interface EditWorksFormProps {
 // Helper functions to convert enum values to form values
 function getWorkerTypeValue(value?: number): string {
     switch (value) {
-        case 1000: return 'employee';
-        case 1010: return 'assistant';
-        case 1020: return 'teacher';
-        default: return 'employee';
+        case EWorkerType.EMPLOYEE: return 'employee'
+        case EWorkerType.ASSISTANT: return 'assistant'
+        case EWorkerType.TEACHER: return 'teacher'
+        default: return 'employee'
     }
 }
 
 function getWorkTypeValue(value?: number): string {
     switch (value) {
-        case 1000: return 'full_time';
-        case 1010: return 'part_time';
-        case 1020: return 'contract';
-        case 1030: return 'freelancer';
-        default: return 'full_time';
+        case EWorkType.FULL_TIME: return 'full_time'
+        case EWorkType.PART_TIME: return 'part_time'
+        case EWorkType.CONTRACT: return 'contract'
+        case EWorkType.FREELANCER: return 'freelancer'
+        default: return 'full_time'
     }
 }
 
 function getWorkConditionValue(value?: number): string {
     switch (value) {
-        case 1000: return 'temporary';
-        case 1010: return 'one_month';
-        case 1020: return 'long_term';
-        default: return 'long_term';
+        case EWorkCondition.TEMPORARY: return 'temporary'
+        case EWorkCondition.ONE_MONTH: return 'one_month'
+        case EWorkCondition.LONG_TERM: return 'long_term'
+        default: return 'long_term'
     }
 }
 
 function getSalaryTypeValue(value?: number): string {
     switch (value) {
-        case 1000: return 'hourly';
-        case 1010: return 'daily';
-        case 1020: return 'per_task';
-        case 1030: return 'monthly';
-        default: return 'monthly';
+        case EWorkSalaryType.HOURLY: return 'hourly'
+        case EWorkSalaryType.DAILY: return 'daily'
+        case EWorkSalaryType.MONTHLY: return 'monthly'
+        default: return 'monthly'
     }
 }
 
 const EditWorksForm: React.FC<EditWorksFormProps> = ({ form, product }) => {
-    const { t } = useTranslations();
-    const primaryColor = useColor('primaryColor');
-    const textColor = useColor('text');
+    const { t } = useTranslations()
+    const primaryColor = useColor('primaryColor')
+    const textColor = useColor('text')
 
     // Options for radio buttons and selects
     const workerTypeOptions: RadioOption[] = [
         { value: 'employee', label: t('work.employee') },
         { value: 'assistant', label: t('work.assistant') },
         { value: 'teacher', label: t('work.teacher') },
-    ];
+    ]
 
     const workConditionOptions: RadioOption[] = [
         { value: 'temporary', label: t('work.temporary') },
         { value: 'one_month', label: t('work.one_month') },
         { value: 'long_term', label: t('work.long_term') },
-    ];
+    ]
 
     const salaryTypeOptions: RadioOption[] = [
         { value: 'hourly', label: t('work.hourly') },
         { value: 'daily', label: t('work.daily') },
-        { value: 'per_task', label: t('work.per_task') },
-    ];
+        { value: 'monthly', label: t('work.monthly') },
+    ]
 
     // Work type options for select
     const workTypeOptions: OptionType[] = [
@@ -97,26 +98,26 @@ const EditWorksForm: React.FC<EditWorksFormProps> = ({ form, product }) => {
         { value: 'part_time', label: t('work.part_time') },
         { value: 'contract', label: t('work.contract') },
         { value: 'freelancer', label: t('work.freelancer') },
-    ];
+    ]
 
-    const currency = form.watch('currency');
+    const currency = form.watch('currency')
 
     // Set initial values from product
     useEffect(() => {
         if (product) {
-            form.setValue('workerType', getWorkerTypeValue(product.work_data?.worker_type));
-            form.setValue('workType', getWorkTypeValue(product.work_type));
-            form.setValue('workTitle', product.title || '');
-            form.setValue('workCondition', getWorkConditionValue(product.work_condition));
-            form.setValue('salaryType', getSalaryTypeValue(product.work_data?.salary_type));
-            form.setValue('salaryAmount', product.work_data?.salary_amount?.toString() || '');
-            form.setValue('currency', product.currency_type === 1010 ? 'USD' : 'UZS');
-            form.setValue('jobDescription', product.description || '');
-            form.setValue('employerName', product.work_data?.employer_information || '');
-            form.setValue('employerPhone', product.work_data?.phone_number || '');
-            form.setValue('landmark', product.moljal || '');
+            form.setValue('workerType', getWorkerTypeValue(product.work_data?.worker_type))
+            form.setValue('workType', getWorkTypeValue(product.work_type))
+            form.setValue('workTitle', product.title || '')
+            form.setValue('workCondition', getWorkConditionValue(product.work_condition))
+            form.setValue('salaryType', getSalaryTypeValue(product.work_data?.salary_type))
+            form.setValue('salaryAmount', product.work_data?.salary_amount?.toString() || '')
+            form.setValue('currency', product.currency_type === 1010 ? 'USD' : 'UZS')
+            form.setValue('jobDescription', product.description || '')
+            form.setValue('employerName', product.work_data?.employer_information || '')
+            form.setValue('employerPhone', product.work_data?.phone_number || '')
+            form.setValue('landmark', product.moljal || '')
         }
-    }, [product]);
+    }, [product, form])
 
     return (
         <View style={styles.container}>
@@ -307,8 +308,8 @@ const EditWorksForm: React.FC<EditWorksFormProps> = ({ form, product }) => {
                 </FormRow>
             </View>
         </View>
-    );
-};
+    )
+}
 
 const styles = StyleSheet.create({
     container: {
@@ -366,6 +367,6 @@ const styles = StyleSheet.create({
     socialMediaInputWrapper: {
         marginTop: 8,
     },
-});
+})
 
-export default EditWorksForm;
+export default EditWorksForm

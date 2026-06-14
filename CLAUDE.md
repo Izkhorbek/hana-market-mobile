@@ -14,6 +14,9 @@ npm run android                # expo run:android (native dev build)
 npm run ios                    # expo run:ios
 npm run web                    # expo start --web
 npm run lint                   # expo lint (ESLint, flat config in eslint.config.js)
+npx tsc --noEmit               # typecheck — no npm script for it; this is the main fast feedback loop
+                               # since there's no unit-test runner. (tsconfig is emit-only, but --noEmit
+                               # overrides cleanly and exits 0 on success.)
 
 # E2E (Maestro — the ONLY test layer; there is no unit test runner)
 npm run e2e                    # maestro test .maestro/flows
@@ -75,4 +78,4 @@ Routing is file-based via **Expo Router** (`app/`). Route groups: `(auth)`, `(ta
 
 `skills/*.md` contain detailed design notes per subsystem (`auth-system`, `chat-system`, `notification-realtime`, `location-map-system`, `safe-area-handling`, `hana-market-core`). `api/*.md` document the backend contract (REST + SignalR sequences). Read the relevant one before non-trivial work in that area.
 
-**On-demand only (do NOT auto-load):** `docs/ANALYSIS.md` is a point-in-time technical-debt/bug audit. It is a stale-prone snapshot, not a live spec — open it only when explicitly working on the refactoring/cleanup it describes, and re-verify any claim against the current code first. Don't read it at the start of unrelated tasks.
+**On-demand only (do NOT auto-load):** `docs/ANALYSIS.md` is a point-in-time technical-debt/bug audit. It is a stale-prone snapshot, not a live spec — open it only when explicitly working on the refactoring/cleanup it describes, and re-verify any claim against the current code first. Don't read it at the start of unrelated tasks. `docs/FIX-PROGRESS.md` is its live companion tracker (written in Uzbek): bug IDs map 1:1 to ANALYSIS.md, ordered P0→P1→P2. Keep it updated after each fix when doing that cleanup work.
