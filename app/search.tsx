@@ -286,7 +286,7 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     searchHeader: {
-        height: HEADER_HEIGHT,
+        height: HEADER_HEIGHT + 20,
         paddingHorizontal: 10,
         flexDirection: 'row',
         alignItems: 'center',
@@ -319,7 +319,7 @@ const styles = StyleSheet.create({
         height: 34,
         borderRadius: 18,
         borderWidth: 1,
-        paddingHorizontal: 10,
+        paddingHorizontal: 14,
         justifyContent: 'center',
         alignItems: 'center',
     },
