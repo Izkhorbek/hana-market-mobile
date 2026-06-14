@@ -1,5 +1,6 @@
-import { useChatList, useDeleteChatRoomMutation, useMyChatQuery, useUnreadCountQuery } from '@/api/hooks'
+import { useChatList, useDeleteChatRoomMutation, useMyChatQuery } from '@/api/hooks'
 import ChatPageHeader from '@/components/headers/ChatPageHeader'
+import i18n from '@/constants/localization'
 import { useTranslations } from '@/hooks/use-translation'
 import { useColor } from '@/hooks/useColor'
 import { useResponsive } from '@/hooks/useResponsive'
@@ -34,7 +35,7 @@ const transformChatItem = (item: ChatRoomDto, currentUserId: number | undefined)
 
   return {
     id: String(item.id),
-    name: otherUser.username || 'Unknown',
+    name: otherUser.username || i18n.t('chat_room.unknown_user'),
     message: item.last_message || '',
     avatar: otherUser.profile_image_url || undefined,
     thumbnail: item.product.image_url || undefined,
@@ -96,6 +97,7 @@ const ChatPage = () => {
   const {
     data: chatListResponse,
     isLoading,
+    isFetched,
     isRefetching,
     refetch
   } = useMyChatQuery({
@@ -104,9 +106,6 @@ const ChatPage = () => {
     }
   })
 
-  // Query unread count
-  const { data: unreadCountResponse } = useUnreadCountQuery()
-
   // Update store when API data changes
   useEffect(() => {
     if (chatListResponse?.data?.data?.chats) {
@@ -114,8 +113,13 @@ const ChatPage = () => {
     }
   }, [chatListResponse, setChatList])
 
-  // Use store data for rendering (updated via SignalR)
-  const displayChats = chatList.length > 0 ? chatList : (chatListResponse?.data?.data?.chats || [])
+  // Render from the store (kept fresh by SignalR + the delete mutation). We
+  // discriminate on `isFetched` (has the initial load finished?), NOT on
+  // `chatList.length`. Falling back to the raw query payload only BEFORE the
+  // first fetch avoids an empty flash on cold open; once fetched, the store is
+  // authoritative — so deleting the last chat shows the empty state instead of
+  // resurrecting the just-deleted row from the still-stale query cache.
+  const displayChats = isFetched ? chatList : (chatListResponse?.data?.data?.chats ?? [])
 
   // Filter chats based on active tab
   const filteredChats = useMemo(() => {
@@ -144,16 +148,12 @@ const ChatPage = () => {
     router.push(`/chat/${chatId}`)
   }, [])
 
-  const handleFilterPress = () => {
-    console.log('Open filter modal')
-  }
-
+  // Saved/bookmarked products live on the favorites screen (same route the
+  // profile tab uses). Filter + notification actions are intentionally not
+  // wired: filtering is already handled by the inline FilterTabs below, and no
+  // notifications screen exists yet — so those icons are omitted in the header.
   const handleBookmarkPress = () => {
-    console.log('Open bookmarks')
-  }
-
-  const handleNotificationPress = () => {
-    console.log('Open notifications')
+    router.push('/(settings)/favorites')
   }
 
   const handleRefresh = useCallback(async () => {
@@ -232,10 +232,7 @@ const ChatPage = () => {
     <GestureHandlerRootView style={styles.container}>
       <View style={[styles.container, { backgroundColor }]}>
         <ChatPageHeader
-          onFilterPress={handleFilterPress}
           onBookmarkPress={handleBookmarkPress}
-          onNotificationPress={handleNotificationPress}
-          hasNotifications={(unreadCountResponse?.data?.data?.total_unread ?? 0) > 0}
         />
 
         <FlatList

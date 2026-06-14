@@ -1,12 +1,13 @@
-import FormCheckbox from '@/components/FormElements/FormCheckbox';
-import FormInput from '@/components/FormElements/FormInput';
-import { useTranslations } from '@/hooks/use-translation';
-import { useColor } from '@/hooks/useColor';
-import React, { useEffect } from 'react';
-import { UseFormReturn } from 'react-hook-form';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import FormRow from '../FormElements/FormRow';
-import RadioButtonGroup, { RadioOption } from '../FormElements/RadioButtonGroup';
+import FormCheckbox from '@/components/FormElements/FormCheckbox'
+import FormInput from '@/components/FormElements/FormInput'
+import { useTranslations } from '@/hooks/use-translation'
+import { useColor } from '@/hooks/useColor'
+import React, { useEffect } from 'react'
+import { UseFormReturn } from 'react-hook-form'
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import FormRow from '../FormElements/FormRow'
+import RadioButtonGroup, { RadioOption } from '../FormElements/RadioButtonGroup'
+import { ECurrencyType } from '@/constants/enums'
 
 export interface EditCarFormValues {
     brand: string;
@@ -31,73 +32,73 @@ interface EditCarFormProps {
 // Helper functions to convert enum values to form values
 function getFuelTypeValue(value?: number): string {
     switch (value) {
-        case 1000: return 'petrol';
-        case 1010: return 'gas';
-        case 1020: return 'hybrid';
-        case 1030: return 'electric';
-        default: return 'petrol';
+        case 1000: return 'petrol'
+        case 1010: return 'gas'
+        case 1020: return 'hybrid'
+        case 1030: return 'electric'
+        default: return 'petrol'
     }
 }
 
 function getTransmissionValue(value?: number): string {
     switch (value) {
-        case 1000: return 'automatic';
-        case 1010: return 'manual';
-        default: return 'automatic';
+        case 1000: return 'automatic'
+        case 1010: return 'manual'
+        default: return 'automatic'
     }
 }
 
 function getConditionValue(value?: number): string {
     switch (value) {
-        case 1000: return 'new';
-        case 1010: return 'used';
-        case 1020: return 'broken';
-        default: return 'used';
+        case 1000: return 'new'
+        case 1010: return 'used'
+        case 1020: return 'broken'
+        default: return 'used'
     }
 }
 
 const EditCarForm: React.FC<EditCarFormProps> = ({ form, product }) => {
-    const { t } = useTranslations();
-    const primaryColor = useColor('primaryColor');
-    const textColor = useColor('text');
+    const { t } = useTranslations()
+    const primaryColor = useColor('primaryColor')
+    const textColor = useColor('text')
 
     const fuelTypeOptions: RadioOption[] = [
         { value: 'petrol', label: t('car.petrol') },
         { value: 'gas', label: t('car.gas') },
         { value: 'hybrid', label: t('car.hybrid') },
         { value: 'electric', label: t('car.electric') },
-    ];
+    ]
 
     const transmissionOptions: RadioOption[] = [
         { value: 'automatic', label: t('car.automatic') },
         { value: 'manual', label: t('car.manual') },
-    ];
+    ]
 
     const conditionOptions: RadioOption[] = [
         { value: 'new', label: t('car.new') },
         { value: 'used', label: t('car.used') },
-        { value: 'broken', label: t('car.needs_repair') },
-    ];
+        { value: 'broken', label: t('car.broken') },
+    ]
 
-    const currency = form.watch('currency');
+    const currency = form.watch('currency')
 
     // Set initial values from product
     useEffect(() => {
         if (product) {
-            form.setValue('brand', product.car_brand || '');
-            form.setValue('model', product.car_model || '');
-            form.setValue('year', product.car_data?.year?.toString() || '');
-            form.setValue('mileage', product.car_data?.mileage?.toString() || '');
-            form.setValue('fuelType', getFuelTypeValue(product.car_data?.fuel_type));
-            form.setValue('transmission', getTransmissionValue(product.car_data?.car_transmission));
-            form.setValue('price', product.price_uzs?.toString() || product.price_usd?.toString() || '');
-            form.setValue('currency', product.currency_type === 1010 ? 'USD' : 'UZS');
-            form.setValue('negotiable', product.is_negotiable || false);
-            form.setValue('condition', getConditionValue(product.car_data?.car_condition));
-            form.setValue('landmark', product.moljal || '');
-            form.setValue('additionalNotes', product.description || '');
+            form.setValue('brand', product.car_brand || '')
+            form.setValue('model', product.car_model || '')
+            form.setValue('year', product.car_data?.year?.toString() || '')
+            form.setValue('mileage', product.car_data?.mileage?.toString() || '')
+            form.setValue('fuelType', getFuelTypeValue(product.car_data?.fuel_type))
+            form.setValue('transmission', getTransmissionValue(product.car_data?.car_transmission))
+            form.setValue('price', product.price_uzs?.toString() || product.price_usd?.toString() || '')
+            form.setValue('currency', product.currency_type === ECurrencyType.USD ? 'USD' : 'UZS')
+            form.setValue('negotiable', product.is_negotiable || false)
+            form.setValue('condition', getConditionValue(product.car_data?.car_condition))
+            form.setValue('landmark', product.moljal || '')
+            form.setValue('additionalNotes', product.description || '')
         }
-    }, [product]);
+    }, [product, form])
 
     return (
         <View style={styles.container}>
@@ -145,10 +146,10 @@ const EditCarForm: React.FC<EditCarFormProps> = ({ form, product }) => {
                                     message: t('car.errors.year_invalid'),
                                 },
                                 validate: (value: string) => {
-                                    const year = parseInt(value, 10);
+                                    const year = parseInt(value, 10)
                                     if (year < 1900 || year > new Date().getFullYear() + 1)
-                                        return t('car.errors.year_range');
-                                    return true;
+                                        return t('car.errors.year_range')
+                                    return true
                                 },
                             }}
                         />
@@ -164,10 +165,10 @@ const EditCarForm: React.FC<EditCarFormProps> = ({ form, product }) => {
                             rules={{
                                 required: t('car.errors.mileage'),
                                 validate: (value: string) => {
-                                    const num = parseInt(value, 10);
+                                    const num = parseInt(value, 10)
                                     if (isNaN(num) || num < 0)
-                                        return t('car.errors.mileage_invalid');
-                                    return true;
+                                        return t('car.errors.mileage_invalid')
+                                    return true
                                 },
                             }}
                         />
@@ -215,10 +216,10 @@ const EditCarForm: React.FC<EditCarFormProps> = ({ form, product }) => {
                             rules={{
                                 required: t('car.errors.price'),
                                 validate: (value: string) => {
-                                    const num = parseFloat(value);
+                                    const num = parseFloat(value)
                                     if (isNaN(num) || num <= 0)
-                                        return t('car.errors.price_invalid');
-                                    return true;
+                                        return t('car.errors.price_invalid')
+                                    return true
                                 },
                             }}
                         />
@@ -307,8 +308,8 @@ const EditCarForm: React.FC<EditCarFormProps> = ({ form, product }) => {
                 />
             </View>
         </View>
-    );
-};
+    )
+}
 
 const styles = StyleSheet.create({
     container: {
@@ -357,6 +358,6 @@ const styles = StyleSheet.create({
     locationInputWrapper: {
         flex: 1,
     },
-});
+})
 
-export default EditCarForm;
+export default EditCarForm

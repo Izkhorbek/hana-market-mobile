@@ -63,7 +63,7 @@ const CreateCarForm = () => {
   const conditionOptions: RadioOption[] = [
     { value: 'new', label: t('car.new') },
     { value: 'used', label: t('car.used') },
-    { value: 'broken', label: t('car.needs_repair') },
+    { value: 'broken', label: t('car.broken') },
   ]
 
   const form = useForm({

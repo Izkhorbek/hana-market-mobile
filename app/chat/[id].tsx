@@ -23,6 +23,7 @@ import {
   ChatMessagesResponse,
   DisplayMessage,
 } from '@/types'
+import i18n from '@/constants/localization'
 import { parseBackendDateTime } from '@/utils/dateTime'
 import { logger } from '@/utils/logger'
 import { useQueryClient } from '@tanstack/react-query'
@@ -62,26 +63,11 @@ const transformStoreMessage = (
   imageUrl: message.sender_image_url || undefined,
 })
 
-// Transform API ChatMessageDto to DisplayMessage
-// const transformApiMessage = (
-//   message: ChatMessageDto,
-//   currentUserId: number,
-//   index: number,
-// ): DisplayMessage => ({
-//   id: String(message.id),
-//   localId: `api_${index}_${message.id}`,
-//   text: message.content || '',
-//   timestamp: format(parseBackendDateTime(message.sent_at), 'h:mm a'),
-//   isMe: message.is_mine ? true : false,
-//   status: message.is_read ? 'read' : 'sent',
-//   imageUrl: message.sender_image_url || undefined,
-// })
-
 // Format date for date separator
 const formatMessageDate = (dateString: string): string => {
   const date = parseBackendDateTime(dateString)
-  if (isToday(date)) return 'Today'
-  if (isYesterday(date)) return 'Yesterday'
+  if (isToday(date)) return i18n.t('chat_room.date_today')
+  if (isYesterday(date)) return i18n.t('chat_room.date_yesterday')
   return format(date, 'MMM d, yyyy')
 }
 
@@ -99,7 +85,7 @@ const groupMessagesByDate = (
 
   messages.forEach((msg, index) => {
     const rawMsg = rawMessages[index]
-    const dateKey = rawMsg ? formatMessageDate(rawMsg.sent_at) : 'Unknown'
+    const dateKey = rawMsg ? formatMessageDate(rawMsg.sent_at) : i18n.t('chat_room.date_unknown')
     if (!groups[dateKey]) {
       groups[dateKey] = []
     }
@@ -397,7 +383,7 @@ const MessageInput: React.FC<{
   value: string;
   onChangeText: (text: string) => void;
   onSend: () => void;
-  onAttach: () => void;
+  onAttach?: () => void;
   onTyping?: () => void;
   isSending?: boolean;
 }> = ({
@@ -427,9 +413,16 @@ const MessageInput: React.FC<{
         },
       ]}
     >
-      <TouchableOpacity onPress={onAttach} style={styles.attachButton}>
-        <Text style={[styles.attachIcon, { color: colors.textMuted }]}>+</Text>
-      </TouchableOpacity>
+      {/* Attach button renders only when an onAttach handler is supplied. It is
+          currently hidden because the backend has no chat-image upload endpoint:
+          SendMessage accepts only an attachmentUrl (a hosted URL), so sending a
+          local file:// URI would persist a broken image. Re-enable by passing
+          onAttach once a real upload exists. See docs/FIX-PROGRESS.md (3.3). */}
+      {onAttach && (
+        <TouchableOpacity onPress={onAttach} style={styles.attachButton}>
+          <Text style={[styles.attachIcon, { color: colors.textMuted }]}>+</Text>
+        </TouchableOpacity>
+      )}
       <TextInput
         style={[
           styles.textInput,
@@ -540,7 +533,6 @@ const ChatRoomPage: React.FC = () => {
   // Join chat room and get real-time messages
   const {
     messages: storeMessages,
-    messagesLoading,
   } = useChatRoom(chatRoomId)
 
   // REST mark-as-read on enter. We also flip read state via SignalR (inside
@@ -648,8 +640,8 @@ const ChatRoomPage: React.FC = () => {
 
   // Set messages from API to store on initial load
   const setMessages = useChatStore((s) => s.setMessages)
+  const mergeMessages = useChatStore((s) => s.mergeMessages)
   const setChatList = useChatStore((s) => s.setChatList)
-  const messagesInitializedRef = useRef<number | null>(null)
 
   // Sync fallback chat to store when fetched
   useEffect(() => {
@@ -760,30 +752,17 @@ const ChatRoomPage: React.FC = () => {
     return () => clearTimeout(timer)
   }, [snackbar.visible])
 
+  // Mirror the REST-loaded history (every loaded page) into the store so the
+  // store is the complete source of truth. mergeMessages de-dupes + sorts and
+  // keeps the store's own version on conflict, so realtime read-state and
+  // pending optimistic messages survive. Idempotent — safe to re-run as pages
+  // paginate in. (Server marks all read on join via SignalR.)
+  // NOTE: rendering still flows through `mergedMessages` below in this step;
+  // this effect only ensures the store holds the full history (5.3 stage 2a).
   useEffect(() => {
-    // Only initialize messages once per chatRoomId when store is empty
-    if (
-      chatRoomId &&
-      apiMessages.length > 0 &&
-      messagesInitializedRef.current !== chatRoomId
-    ) {
-      // Check store directly to get fresh value (avoid stale closure)
-      const currentStoreMessages =
-        useChatStore.getState().messages[chatRoomId] || []
-      if (currentStoreMessages.length === 0) {
-        messagesInitializedRef.current = chatRoomId
-        const initializedMessages = apiMessages.map((m) => ({
-          ...m,
-          isPending: false,
-          isFailed: false,
-        }))
-
-        setMessages(chatRoomId, initializedMessages)
-        // Note: server marks all as read when we join the room (handled
-        // inside useChatRoom -> markAsRead via SignalR). No REST call needed.
-      }
-    }
-  }, [chatRoomId, apiMessages, setMessages])
+    if (!chatRoomId || apiMessages.length === 0) return
+    mergeMessages(chatRoomId, apiMessages)
+  }, [chatRoomId, apiMessages, mergeMessages])
 
   // Merge API history and store realtime updates to avoid source-flipping.
   const mergedMessages = useMemo<ChatMessage[]>(() => {
@@ -853,14 +832,14 @@ const ChatRoomPage: React.FC = () => {
 
       return {
         id: chatData_source.id,
-        name: otherUser.username || 'Unknown',
+        name: otherUser.username || t('chat_room.unknown_user'),
         avatar: otherUser.profile_image_url || undefined,
         trustScore: '0.0°C',
         isOnline,
         otherUserId: otherUser.id,
         product: {
           id: chatData_source.product.id,
-          title: chatData_source.product.title || 'Product',
+          title: chatData_source.product.title || t('chat_room.product_fallback'),
           is_free: chatData_source.product.is_free || false,
           price: chatData_source.product.price
             ? `${chatData_source.product.price}`
@@ -884,14 +863,14 @@ const ChatRoomPage: React.FC = () => {
 
       return {
         id: chatRoom.id,
-        name: otherUser?.username || 'Unknown',
+        name: otherUser?.username || t('chat_room.unknown_user'),
         avatar: otherUser?.profile_image_url || undefined,
         trustScore: '37.7°C',
         isOnline: otherUser?.is_online ?? false,
         otherUserId: otherUser?.id ?? 0,
         product: {
           id: chatRoom.product.id,
-          title: chatRoom.product?.title || 'Product',
+          title: chatRoom.product?.title || t('chat_room.product_fallback'),
           is_free: chatRoom.product?.is_free || false,
           price: productPrice,
           image: chatRoom.product?.image_url || '',
@@ -903,13 +882,13 @@ const ChatRoomPage: React.FC = () => {
     }
 
     return null
-  }, [chatData_source, isOnline, apiChatRoom, currentUserId])
+  }, [chatData_source, isOnline, apiChatRoom, currentUserId, t])
 
   const effectiveChatData: ChatData = useMemo(
     () =>
       chatData ?? {
         id: chatRoomId ?? 0,
-        name: 'Chat',
+        name: t('chat_room.chat_fallback'),
         trustScore: '0.0°C',
         isOnline: false,
         otherUserId: 0,
@@ -921,7 +900,7 @@ const ChatRoomPage: React.FC = () => {
           status: '',
         },
       },
-    [chatData, chatRoomId],
+    [chatData, chatRoomId, t],
   )
 
   const handleBack = () => {
@@ -987,10 +966,6 @@ const ChatRoomPage: React.FC = () => {
       setIsSending(false)
     }
   }, [inputText, send])
-
-  const handleAttach = () => {
-    // TODO: Open image picker and call sendImage
-  }
 
   const handleQuickReply = useCallback((reply: string) => {
     setInputText(reply)
@@ -1075,8 +1050,11 @@ const ChatRoomPage: React.FC = () => {
     [],
   )
 
-  // Loading state
-  if ((isLoadingApi || messagesLoading) && displayMessages.length === 0) {
+  // Loading state. NOTE: the store's per-room `messagesLoading` flag is never
+  // set (no setMessagesLoading caller), so it was dead weight in this guard —
+  // the REST infinite query's `isLoadingApi` is the real loading signal. The
+  // store loading-state will be designed properly in the deferred 5.3 refactor.
+  if (isLoadingApi && displayMessages.length === 0) {
     return (
       <View
         style={[
@@ -1171,7 +1149,6 @@ const ChatRoomPage: React.FC = () => {
         value={inputText}
         onChangeText={setInputText}
         onSend={handleSend}
-        onAttach={handleAttach}
         onTyping={handleTyping}
         isSending={isSending || !!effectiveChatData.product.isSold}
       />

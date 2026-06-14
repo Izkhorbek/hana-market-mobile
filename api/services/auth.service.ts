@@ -16,7 +16,7 @@ export const authService = {
    * Server will SMS a 6-digit code. No token is issued at this step.
    */
   requestOtp: (data: RequestOtpRequest) => {
-    return axiosInstance.post<ApiResponse<{}>>(ENDPOINT.AUTH.REQUEST_OTP, data)
+    return axiosInstance.post<ApiResponse<object>>(ENDPOINT.AUTH.REQUEST_OTP, data)
   },
 
   /**
@@ -42,11 +42,11 @@ export const authService = {
    */
   refreshToken: (
     data: RefreshTokenRequest,
-  ): Promise<AxiosResponse<ApiResponse<{}>>> => {
-    return axiosInstance.post<ApiResponse<{}>>(ENDPOINT.AUTH.REFRESH, data, {
+  ): Promise<AxiosResponse<ApiResponse<object>>> => {
+    return axiosInstance.post<ApiResponse<object>>(ENDPOINT.AUTH.REFRESH, data, {
       // @ts-expect-error custom flag consumed by api.ts interceptor
       _skipAuthRefresh: true,
-    }) as Promise<AxiosResponse<ApiResponse<{}>>>
+    }) as Promise<AxiosResponse<ApiResponse<object>>>
   },
 
   /**
@@ -54,6 +54,6 @@ export const authService = {
    * POST /api/auth/logout
    */
   logout: () => {
-    return axiosInstance.post<ApiResponse<{}>>(ENDPOINT.AUTH.LOGOUT)
+    return axiosInstance.post<ApiResponse<object>>(ENDPOINT.AUTH.LOGOUT)
   },
 }

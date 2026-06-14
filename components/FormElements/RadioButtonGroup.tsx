@@ -1,9 +1,9 @@
-import { useThemeColors } from '@/hooks/use-theme-colors';
-import { useColor } from '@/hooks/useColor';
-import type { LucideProps } from 'lucide-react-native';
-import React from 'react';
-import { Control, Controller } from 'react-hook-form';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useThemeColors } from '@/hooks/use-theme-colors'
+import { useColor } from '@/hooks/useColor'
+import type { LucideProps } from 'lucide-react-native'
+import React from 'react'
+import { Control, Controller } from 'react-hook-form'
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 
 export interface RadioOption {
   value: string;
@@ -28,9 +28,9 @@ const RadioButtonGroup = ({
   required = false,
   error,
 }: RadioButtonGroupProps) => {
-  const colors = useThemeColors();
-  const textColor = useColor('text');
-  const destructiveColor = useColor('destructive');
+  const colors = useThemeColors()
+  const textColor = useColor('text')
+  const destructiveColor = useColor('destructive')
 
   return (
     <View style={styles.container}>
@@ -46,8 +46,8 @@ const RadioButtonGroup = ({
         render={({ field: { onChange, value } }) => (
           <View style={styles.optionsContainer}>
             {options.map((option) => {
-              const isSelected = value === option.value;
-              const IconComponent = option.icon;
+              const isSelected = value === option.value
+              const IconComponent = option.icon
 
               return (
                 <TouchableOpacity
@@ -78,7 +78,7 @@ const RadioButtonGroup = ({
                     {option.label}
                   </Text>
                 </TouchableOpacity>
-              );
+              )
             })}
           </View>
         )}
@@ -87,8 +87,8 @@ const RadioButtonGroup = ({
         <Text style={[styles.errorText, { color: destructiveColor }]}>{error}</Text>
       )}
     </View>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -128,6 +128,6 @@ const styles = StyleSheet.create({
     marginTop: 4,
     marginLeft: 4,
   },
-});
+})
 
-export default RadioButtonGroup;
+export default RadioButtonGroup

@@ -5,8 +5,6 @@ import type {
     ApiResponse,
     ChatListParams,
     ChatListResponse,
-    ChatMessagesParams,
-    ChatMessagesResponse,
     ChatRoomDto,
     CreateChatRoomRequest,
     MarkAsReadRequest,
@@ -44,28 +42,6 @@ export const useCreateChatMutation = (
     mutationKey: ['CREATE_OR_GET_CHAT'],
     mutationFn: (data) => chatService.createOrGetChat(data),
     ...options,
-  })
-}
-
-/**
- * Hook to query chat messages
- */
-export const useChatMessagesQuery = ({ 
-  chatRoomId, 
-  params = {}, 
-  querySettings = {} 
-}: { 
-  chatRoomId: number;
-  params?: ChatMessagesParams; 
-  querySettings?: Omit<UseQueryOptions<AxiosResponse<ApiResponse<ChatMessagesResponse>>>, 'queryKey' | 'queryFn'>;
-}) => {
-  const isAuthorized = useAuthStore((s) => s.isAuthenticated)
-  
-  return useQuery({
-    queryKey: ['CHAT_MESSAGES', chatRoomId, params],
-    queryFn: () => chatService.getChatMessages(chatRoomId, params),
-    enabled: isAuthorized && !!chatRoomId,
-    ...querySettings,
   })
 }
 
@@ -165,26 +141,5 @@ export const useDeleteChatMessageMutation = (
     mutationKey: ['DELETE_CHAT_MESSAGE'],
     mutationFn: ({ chatRoomId, messageId }) => chatService.deleteChatMessage(chatRoomId, messageId),
     ...options,
-  })
-}
-
-/**
- * Hook to query user online status
- */
-export const useUserStatusQuery = ({ 
-  userId, 
-  querySettings = {} 
-}: { 
-  userId: number;
-  querySettings?: Omit<UseQueryOptions<AxiosResponse<any>>, 'queryKey' | 'queryFn'>;
-}) => {
-  const isAuthorized = useAuthStore((s) => s.isAuthenticated)
-  
-  return useQuery({
-    queryKey: ['USER_STATUS', userId],
-    queryFn: () => chatService.getUserStatus(userId),
-    enabled: isAuthorized && !!userId,
-    refetchInterval: 10000, // Refetch every 10 seconds
-    ...querySettings,
   })
 }

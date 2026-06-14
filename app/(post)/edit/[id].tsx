@@ -1,4 +1,4 @@
-﻿import { useEditProductQuery, useProductQuery, useUpdateProductMutation } from '@/api/hooks'
+﻿import { useEditProductQuery, useUpdateProductMutation } from '@/api/hooks'
 import RadioButtonGroup, { RadioOption } from '@/components/FormElements/RadioButtonGroup'
 import EditCarForm from '@/components/Forms/EditCarForm'
 import EditThingForm from '@/components/Forms/EditThingForm'
@@ -13,9 +13,9 @@ import { ECarCondition, ECarFuelType, ECarTransmissionType, ECurrencyType, EProd
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
 import { useColor } from '@/hooks/useColor'
-import { useKeyboardHeight } from '@/hooks/useKeyboardHeight'
 import { ProductEditImageDto, ProductStatus, ProductUpdateRequest } from '@/types'
 import { parseApiError } from '@/utils/apiError'
+import { logger } from '@/utils/logger'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { Clock, Eye, Heart } from 'lucide-react-native'
 import React from 'react'
@@ -23,7 +23,6 @@ import { useForm } from 'react-hook-form'
 import {
     ActivityIndicator,
     Alert,
-    Platform,
     RefreshControl,
     ScrollView,
     Share,
@@ -49,7 +48,6 @@ const EditProductPage = () => {
     const primaryColor = useColor('primaryColor')
     const router = useRouter()
     const insets = useSafeAreaInsets()
-    const { isKeyboardVisible } = useKeyboardHeight()
     
     const { data: productRes, isLoading: productLoading, isFetching: productFetching, refetch: refetchProduct } = useEditProductQuery({
         id: productId,
@@ -66,6 +64,8 @@ const EditProductPage = () => {
             Alert.alert(t('edit_product.success'), t('edit_product.product_updated_successfully'), [
                 { text: t('common.ok'), onPress: () => router.back() },
             ])
+
+            
         },
         onError: (error: any) => {
             const message = parseApiError(error, t('edit_product.error_updating_product'))
@@ -112,7 +112,7 @@ const EditProductPage = () => {
     const handleShare = async () => {
         try {
             await Share.share({ message: `${product?.title || ''} - ${product?.currency_type === ECurrencyType.USD ? `${product?.price_usd} USD` : `${product?.price_uzs} UZS`}`, title: product?.title || '' })
-        } catch (error) { console.error('Error sharing:', error) }
+        } catch (error) { logger.warn(error, { code: 'PRODUCT_SHARE_FAILED' }) }
     }
 
     const handleSubmit = form.handleSubmit(data => {
@@ -128,6 +128,7 @@ const EditProductPage = () => {
             updateData.description = data.description
             updateData.is_free = data.sellingMethod === 'free' 
             updateData.is_negotiable = data.canDeal
+
             if (data.sellingMethod !== 'free' && data.price) {
                 if (data.currency === 'USD') { 
                     updateData.currency_type = ECurrencyType.USD
@@ -252,7 +253,7 @@ const EditProductPage = () => {
                 <View style={[styles.statsRow, { borderBottomColor: colors.borderColor }]}>
                     <View style={styles.statItem}><Eye size={18} color={colors.textMuted} /><Text style={[styles.statText, { color: colors.textMuted }]}>{product?.view_count || 0}</Text></View>
                     <View style={styles.statItem}><Heart size={18} color={colors.textMuted} /><Text style={[styles.statText, { color: colors.textMuted }]}>{product?.like_count || 0}</Text></View>
-                    <View style={styles.statItem}><Clock size={18} color={colors.textMuted} /><Text style={[styles.statText, { color: colors.textMuted }]}>{product?.created_ago || ''}</Text></View>
+                    <View style={styles.statItem}><Clock size={18} color={colors.textMuted} /><Text style={[styles.statText, { color: colors.textMuted }]}>{product?.created_at || ''}</Text></View>
                 </View>
 
                 <View style={styles.section}>
@@ -293,7 +294,7 @@ function getWorkConditionEnum(value: string): number {
     switch (value) { case 'temporary': return EWorkCondition.TEMPORARY; case 'one_month': return EWorkCondition.ONE_MONTH; case 'long_term': return EWorkCondition.LONG_TERM; default: return EWorkCondition.LONG_TERM }
 }
 function getSalaryTypeEnum(value: string): number {
-    switch (value) { case 'hourly': return EWorkSalaryType.HOURLY; case 'daily': return EWorkSalaryType.DAILY; case 'per_task': return EWorkSalaryType.PER_TASK; case 'monthly': return EWorkSalaryType.MONTHLY; default: return EWorkSalaryType.MONTHLY }
+    switch (value) { case 'hourly': return EWorkSalaryType.HOURLY; case 'daily': return EWorkSalaryType.DAILY; case 'monthly': return EWorkSalaryType.MONTHLY; default: return EWorkSalaryType.MONTHLY }
 }
 
 const styles = StyleSheet.create({

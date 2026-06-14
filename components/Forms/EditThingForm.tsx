@@ -1,15 +1,16 @@
-import { useCategoriesQuery } from '@/api/hooks';
-import FormCheckbox from '@/components/FormElements/FormCheckbox';
-import FormInput from '@/components/FormElements/FormInput';
-import FormSelect from '@/components/FormElements/FormSelect';
-import { useTranslations } from '@/hooks/use-translation';
-import { useColor } from '@/hooks/useColor';
-import { Category } from '@/types';
-import React, { useEffect } from 'react';
-import { UseFormReturn } from 'react-hook-form';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import FormRow from '../FormElements/FormRow';
-import RadioButtonGroup, { RadioOption } from '../FormElements/RadioButtonGroup';
+import { useCategoriesQuery } from '@/api/hooks'
+import FormCheckbox from '@/components/FormElements/FormCheckbox'
+import FormInput from '@/components/FormElements/FormInput'
+import FormSelect from '@/components/FormElements/FormSelect'
+import { useTranslations } from '@/hooks/use-translation'
+import { useColor } from '@/hooks/useColor'
+import { Category } from '@/types'
+import React, { useEffect } from 'react'
+import { UseFormReturn } from 'react-hook-form'
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import FormRow from '../FormElements/FormRow'
+import RadioButtonGroup, { RadioOption } from '../FormElements/RadioButtonGroup'
+import { ECurrencyType } from '@/constants/enums'
 
 export interface EditThingFormValues {
     title: string;
@@ -28,15 +29,15 @@ interface EditThingFormProps {
 }
 
 const EditThingForm: React.FC<EditThingFormProps> = ({ form, product }) => {
-    const { t, locale } = useTranslations();
-    const primaryColor = useColor('primaryColor');
-    const textColor = useColor('text');
-    const { data: categories } = useCategoriesQuery();
+    const { t, locale } = useTranslations()
+    const primaryColor = useColor('primaryColor')
+    const textColor = useColor('text')
+    const { data: categories } = useCategoriesQuery()
 
     const categoryOptions = categories?.data?.data?.map((category: Category) => ({
         value: category.id.toString(),
         label: locale === 'ru' ? category.name_ru : category.name_uz,
-    })) || [];
+    })) || []
 
     const sellingMethodOptions: RadioOption[] = [
         {
@@ -47,29 +48,29 @@ const EditThingForm: React.FC<EditThingFormProps> = ({ form, product }) => {
             value: 'free',
             label: t('post.free'),
         },
-    ];
+    ]
 
-    const sellingMethod = form.watch('sellingMethod');
-    const currency = form.watch('currency');    // Clear price validation error when user switches to 'free'
+    const sellingMethod = form.watch('sellingMethod')
+    const currency = form.watch('currency')    // Clear price validation error when user switches to 'free'
     useEffect(() => {
         if (sellingMethod === 'free') {
-            form.clearErrors('price');
+            form.clearErrors('price')
         }
-    }, [sellingMethod]);
+    }, [sellingMethod, form])
 
     // Set initial values from product
     useEffect(() => {
         if (product) {
-            form.setValue('title', product.title || '');
-            form.setValue('category', product.category_id?.toString() || '');
-            form.setValue('description', product.description || '');
-            form.setValue('sellingMethod', product.is_free ? 'free' : 'for_sale');
-            form.setValue('price', product.price_uzs?.toString() || product.price_usd?.toString() || '');
-            form.setValue('currency', product.currency_type === 1010 ? 'USD' : 'UZS');
-            form.setValue('canDeal', product.is_negotiable || false);
-            form.setValue('landmark', product.moljal || '');
+            form.setValue('title', product.title || '')
+            form.setValue('category', product.category_id?.toString() || '')
+            form.setValue('description', product.description || '')
+            form.setValue('sellingMethod', product.is_free ? 'free' : 'for_sale')
+            form.setValue('price', product.price_uzs?.toString() || product.price_usd?.toString() || '')
+            form.setValue('currency', product.currency_type === ECurrencyType.USD ? 'USD' : 'UZS')
+            form.setValue('canDeal', product.is_negotiable || false)
+            form.setValue('landmark', product.moljal || '')
         }
-    }, [product]);
+    }, [product, form])
 
     return (
         <View style={styles.container}>
@@ -138,10 +139,10 @@ const EditThingForm: React.FC<EditThingFormProps> = ({ form, product }) => {
                                     rules={{
                                         required: sellingMethod === 'for_sale' ? t('post.errors.price') : false,
                                         validate: (value: string) => {
-                                            if (sellingMethod !== 'for_sale') return true;
-                                            const num = parseFloat(value);
-                                            if (isNaN(num) || num <= 0) return t('post.errors.price_invalid');
-                                            return true;
+                                            if (sellingMethod !== 'for_sale') return true
+                                            const num = parseFloat(value)
+                                            if (isNaN(num) || num <= 0) return t('post.errors.price_invalid')
+                                            return true
                                         },
                                     }}
                                 />
@@ -206,6 +207,7 @@ const EditThingForm: React.FC<EditThingFormProps> = ({ form, product }) => {
                             label={t('post.landmark')}
                             placeholder={t('post.landmark_placeholder')}
                             required
+                            editable={false} // Make it non-editable since it's auto-resolved
                             rules={{
                                 required: t('post.errors.landmark'),
                             }}
@@ -214,8 +216,8 @@ const EditThingForm: React.FC<EditThingFormProps> = ({ form, product }) => {
                 </FormRow>
             </View>
         </View>
-    );
-};
+    )
+}
 
 const styles = StyleSheet.create({
     container: {
@@ -253,6 +255,6 @@ const styles = StyleSheet.create({
     locationInputWrapper: {
         flex: 1,
     },
-});
+})
 
-export default EditThingForm;
+export default EditThingForm

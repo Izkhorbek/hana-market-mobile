@@ -146,11 +146,11 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       // environment via env vars; defaults point to production.
       privacyPolicyUrl:
         process.env.EXPO_PUBLIC_PRIVACY_POLICY_URL ??
-        'https://hanamarket.uz/privacy',
+        'https://hana.uz/privacy',
       termsUrl:
-        process.env.EXPO_PUBLIC_TERMS_URL ?? 'https://hanamarket.uz/terms',
+        process.env.EXPO_PUBLIC_TERMS_URL ?? 'https://hana.uz/terms',
       supportEmail:
-        process.env.EXPO_PUBLIC_SUPPORT_EMAIL ?? 'support@hanamarket.uz',
+        process.env.EXPO_PUBLIC_SUPPORT_EMAIL ?? 'hanamarketuz@gmail.com',
     },
   }
 }

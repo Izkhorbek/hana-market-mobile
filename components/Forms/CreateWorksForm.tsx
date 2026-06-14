@@ -30,7 +30,6 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import FormRow from '../FormElements/FormRow'
 import ImageUploader, { DraftImageItem } from '../FormElements/ImageUploader'
 import RadioButtonGroup, {
@@ -40,7 +39,6 @@ import RadioButtonGroup, {
 const CreateWorksForm = () => {
   const { t } = useTranslations()
   const primaryColor = useColor('primaryColor')
-  const insets = useSafeAreaInsets()
   const textColor = useColor('text')
   const subTextColor = useColor('subText')
   const surfaceColor = useColor('background')
@@ -93,8 +91,8 @@ const CreateWorksForm = () => {
       label: t('work.daily'),
     },
     {
-      value: 'per_task',
-      label: t('work.per_task'),
+      value: 'monthly',
+      label: t('work.monthly'),
     },
   ]
 
@@ -127,18 +125,13 @@ const CreateWorksForm = () => {
       workType: workTypeOptions[0].value,
       workTitle: '',
       workCondition: workConditionOptions[0].value,
-      // workingStartDateTime: undefined as Date | undefined,
       salaryType: salaryTypeOptions[0].value,
       salaryAmount: '',
       currency: ECurrencyType[ECurrencyType.UZS],
-      // paymentType: "cash",
-      // paymentTime: "immediately",
       jobDescription: '',
       employerName: '',
       employerPhone: '',
-      // workplaceInfo: "",
       landmark: '',
-      // webLinks: "",
     },
   })
 

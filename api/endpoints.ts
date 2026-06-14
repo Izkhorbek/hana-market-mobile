@@ -41,7 +41,6 @@ const ENDPOINT = {
     MESSAGES: (chatRoomId: string | number) => `chats/${chatRoomId}/messages`,
     UNREAD_COUNT: 'chats/unread-count',
     MARK_AS_READ: 'chats/mark-as-read',
-    USER_STATUS: (userId: string | number) => `chats/user-status/${userId}`,
     HEALTH: 'chats/health',
     DELETE_CHAT_ROOM: (chatRoomId: string | number) =>
       `chats/room/${chatRoomId}`,

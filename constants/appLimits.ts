@@ -72,9 +72,9 @@ export const AppLimits = {
     MAX_LATITUDE: 46.0,
     MIN_LONGITUDE: 56.0,
     MAX_LONGITUDE: 74.0,
-    DEFAULT_RADIUS_KM: 3.0,
+    DEFAULT_RADIUS_KM: 5.0,
     MIN_RADIUS_KM: 0,
-    MAX_RADIUS_KM: 12,
+    MAX_RADIUS_KM: 20,
   },
 
   DefaultCoordinates: {
@@ -111,6 +111,10 @@ export const AppLimits = {
     MIN_MESSAGE_LENGTH: 1,
     MAX_CHAT_ROOMS_PER_USER: 100,
     MAX_MESSAGES_PER_PAGE: 50,
+    // Max number of rooms whose message arrays are kept in the in-memory chat
+    // store (Zustand). Inactive rooms beyond this are evicted LRU; re-opening a
+    // room reloads its history from REST + realtime, so nothing is lost.
+    MAX_CACHED_MESSAGE_ROOMS: 20,
     MAXIMUM_RECEIVE_MESSAGE_SIZE: 1024 * 1024, // 1MB
     MESSAGE_TYPES: {
       TEXT: 'text',

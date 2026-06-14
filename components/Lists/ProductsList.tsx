@@ -172,7 +172,7 @@ const ProductsList: React.FC<ProductsListProps> = ({ selectedFilter, onFilterCha
       <View style={styles.centerBox}>
         {ListHeader}
         <Text style={[styles.emptyTitle, { color: colors.text }]}>
-          {t('home.error')}<br />
+          {t('home.error')}{'\n'}
           {t('home.retry_set_address')}
         </Text>
         <TouchableOpacity

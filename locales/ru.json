@@ -212,7 +212,7 @@
     "condition": "Состояние",
     "new": "Новый",
     "used": "Б/у",
-    "needs_repair": "Требует ремонта",
+    "broken": "Сломанный",
     "landmark": "Ориентир",
     "landmark_placeholder": "напр., Возле площади Амира Темура",
     "additional_notes": "Дополнительные примечания",
@@ -261,6 +261,7 @@
     "hourly": "Почасовая",
     "daily": "Ежедневная",
     "per_task": "За задачу",
+    "monthly": "Ежемесячная",
     "salary_amount": "Сумма зарплаты",
     "salary_amount_placeholder": "Введите сумму зарплаты",
     "payment_time": "Время оплаты",
@@ -358,7 +359,9 @@
     "filter_unread": "Непрочитанные",
     "notification_banner": "НОВИНКА! Теперь вы можете сохранять сообщения.",
     "empty_state": "Пока нет чатов",
-    "empty_state_description": "Начните разговор, чтобы увидеть его здесь"
+    "empty_state_description": "Начните разговор, чтобы увидеть его здесь",
+    "image_attachment": "📷 Изображение",
+    "file_attachment": "📎 Файл"
   },
   "neighborhood": {
     "current_neighborhood": "Текущий район",
@@ -701,7 +704,13 @@
     "delete_message_title": "Удалить сообщение",
     "delete_message_confirm": "Вы уверены, что хотите удалить это сообщение?",
     "delete_message_error": "Не удалось удалить сообщение. Попробуйте еще раз.",
-    "delete_message_success": "Сообщение успешно удалено"
+    "delete_message_success": "Сообщение успешно удалено",
+    "date_today": "Сегодня",
+    "date_yesterday": "Вчера",
+    "date_unknown": "Неизвестно",
+    "unknown_user": "Неизвестно",
+    "chat_fallback": "Чат",
+    "product_fallback": "Товар"
   },
   "date_picker": {
     "months": [

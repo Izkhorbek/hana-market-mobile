@@ -1,6 +1,6 @@
-import type { ApiResponse, MobileLogDto } from '../../types';
-import axiosInstance from '../api';
-import ENDPOINT from '../endpoints';
+import type { ApiResponse, MobileLogDto } from '../../types'
+import axiosInstance from '../api'
+import ENDPOINT from '../endpoints'
 
 /**
  * Telemetry service — talks to the backend `telemetry/log` endpoint.
@@ -19,10 +19,10 @@ export const telemetryService = {
    * token refresh / logout loop if telemetry calls themselves fail with 401.
    */
   log: (data: MobileLogDto) => {
-    return axiosInstance.post<ApiResponse<{}>>(ENDPOINT.LOG.LOG, data, {
+    return axiosInstance.post<ApiResponse<object>>(ENDPOINT.LOG.LOG, data, {
       // @ts-expect-error custom flag consumed by the response interceptor
       _skipAuthRefresh: true,
       timeout: 8000,
-    });
+    })
   },
-};
+}

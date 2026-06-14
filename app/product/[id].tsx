@@ -92,7 +92,6 @@ type WorkDetailData =
       employer_information?: string | null;
       workplace_information?: string | null;
       phone_number?: string | null;
-      work_ethics?: string | null;
     }
   | null
   | undefined;
@@ -275,12 +274,10 @@ const ProductDetailPage: React.FC = () => {
   const getCarConditionLabel = createEnumLabelGetter({
     [String(ECarCondition.NEW)]: t('car.new'),
     [String(ECarCondition.USED)]: t('car.used'),
-    [String(ECarCondition.BROKEN)]: t('car.needs_repair'),
+    [String(ECarCondition.BROKEN)]: t('car.broken'),
     new: t('car.new'),
     used: t('car.used'),
-    broken: t('car.needs_repair'),
-    damaged: t('car.needs_repair'),
-    needs_repair: t('car.needs_repair'),
+    broken: t('car.broken')
   })
 
   const getWorkTypeLabel = createEnumLabelGetter({
@@ -317,13 +314,10 @@ const ProductDetailPage: React.FC = () => {
   const getSalaryTypeLabel = createEnumLabelGetter({
     [String(EWorkSalaryType.HOURLY)]: t('work.hourly'),
     [String(EWorkSalaryType.DAILY)]: t('work.daily'),
-    [String(EWorkSalaryType.PER_TASK)]: t('work.per_task'),
-    [String(EWorkSalaryType.MONTHLY)]: t('work.payment_monthly'),
+    [String(EWorkSalaryType.MONTHLY)]: t('work.monthly'),
     hourly: t('work.hourly'),
     daily: t('work.daily'),
-    per_task: t('work.per_task'),
-    monthly: t('work.payment_monthly'),
-    fixed: t('work.payment_monthly'),
+    monthly: t('work.monthly')
   })
 
   const getPaymentTypeLabel = createEnumLabelGetter({
@@ -402,9 +396,7 @@ const ProductDetailPage: React.FC = () => {
       label: t('work.employer_information'),
       value: workData?.employer_information,
     },
-    { label: t('work.workplace_info'), value: workData?.workplace_information },
     { label: t('work.phone_number'), value: workData?.phone_number },
-    { label: t('work.web_links'), value: workData?.work_ethics },
   ])
 
   // prepare images for gallery component
@@ -686,11 +678,11 @@ const ProductDetailPage: React.FC = () => {
       await Share.share({
         title: productTitle,
         message: productTitle
-          ? `${productTitle}\nhttps://hanamarket.uz/product/${productId}`
-          : `https://hanamarket.uz/product/${productId}`,
+          ? `${productTitle}\nhttps://hana.uz/product/${productId}`
+          : `https://hana.uz/product/${productId}`,
         url: Platform.select({
-          ios: `https://hanamarket.uz/product/${productId}`,
-          android: `https://hanamarket.uz/product/${productId}`,
+          ios: `https://hana.uz/product/${productId}`,
+          android: `https://hana.uz/product/${productId}`,
         }),
       })
     } catch (error) {
@@ -1114,19 +1106,16 @@ const ProductDetailPage: React.FC = () => {
 									</Text>
 								</TouchableOpacity> */}
               </View>
-              <Animated.ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.hList}
-              >
+              <View style={styles.relatedGrid}>
                 {relatedPreviewProducts.map((item) => (
                   <SimilarProductCard
                     key={item.id}
                     item={item}
                     onPress={handleOpenProduct}
+                    variant="grid"
                   />
                 ))}
-              </Animated.ScrollView>
+              </View>
             </Animated.View>
           )}
         </View>
@@ -1361,6 +1350,13 @@ const styles = StyleSheet.create({
   },
   seeAll: { fontSize: 13, fontWeight: '600' },
   hList: { gap: 10, paddingBottom: 12, paddingRight: 16 },
+  relatedGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    rowGap: 12,
+    paddingBottom: 12,
+  },
   sheetContent: {
     gap: 16,
   },

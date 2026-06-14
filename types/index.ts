@@ -324,14 +324,10 @@ export interface CarData {
 
 export interface WorkData {
   worker_type?: EWorkerType;
-  working_days_hours?: string;
   salary_type?: EWorkSalaryType;
   salary_amount?: number;
-  payment_type?: EPaymentType;
   employer_information?: string;
-  workplace_information?: string;
   phone_number?: string;
-  work_ethics?: string;
 }
 
 export interface ProductCreateRequest {
@@ -531,7 +527,7 @@ export interface ProductEditResponseDto
     work_condition?: EWorkCondition;
     work_data?: WorkData;
 
-    created_ago: string;
+    created_at: string;
     // ===== IMAGES =====
     images: ProductEditImageDto[];
 }
