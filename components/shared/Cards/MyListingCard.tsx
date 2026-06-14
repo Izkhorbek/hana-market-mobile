@@ -196,7 +196,7 @@ const styles = StyleSheet.create({
 		alignItems: 'flex-start',
 	},
 	title: {
-		fontSize: 15,
+		fontSize: 16,
 		fontWeight: '500',
 		flex: 1,
 		marginRight: 8,
@@ -204,12 +204,12 @@ const styles = StyleSheet.create({
 	price: {
 		fontSize: 15,
 		fontWeight: '700',
-		marginTop: 2,
+		marginTop: 4,
 	},
 	statsRow: {
 		flexDirection: 'row',
 		alignItems: 'center',
-		marginTop: 4,
+		marginTop: 6,
 	},
 	statItem: {
 		flexDirection: 'row',
