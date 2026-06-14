@@ -137,7 +137,7 @@ const styles = StyleSheet.create({
 		overflow: 'hidden',
 		borderColor: Colors.light.borderColor,
 		marginVertical: 0,
-		paddingVertical: 8,
+		paddingVertical: 12,
 		marginHorizontal: 10,
 	},
 	image: {
@@ -147,7 +147,7 @@ const styles = StyleSheet.create({
 	},
 	content: {
 		flex: 1,
-		paddingLeft: 10,
+		paddingLeft: 12,
 		paddingVertical: 2,
 		justifyContent: 'space-between',
 	},
@@ -158,10 +158,10 @@ const styles = StyleSheet.create({
 	},
 	title: {
 		fontSize: 18,
-		fontWeight: '400',
+		fontWeight: '500',
 		flex: 1,
 		marginRight: 8,
-		lineHeight: 20,
+		lineHeight: 23,
 	},
 	dotsButton: {
 		padding: 2,
@@ -169,7 +169,7 @@ const styles = StyleSheet.create({
 	infoRow: {
 		flexDirection: 'row',
 		alignItems: 'center',
-		marginTop: 4,
+		marginTop: 6,
 		gap: 12,
 	},
 	infoItem: {
@@ -178,13 +178,13 @@ const styles = StyleSheet.create({
 		gap: 2,
 	},
 	infoText: {
-		fontSize: 14,
+		fontSize: 13,
 		fontWeight: '400',
 	},
 	address: {
-		fontSize: 14,
+		fontSize: 13,
 		fontWeight: '400',
-		marginTop: 5,
+		marginTop: 6,
 	},
 	footer: {
 		flexDirection: 'row',
