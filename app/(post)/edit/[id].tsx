@@ -15,6 +15,7 @@ import { useTranslations } from '@/hooks/use-translation'
 import { useColor } from '@/hooks/useColor'
 import { ProductEditImageDto, ProductStatus, ProductUpdateRequest } from '@/types'
 import { parseApiError } from '@/utils/apiError'
+import { parseBackendDateTime } from '@/utils/dateTime'
 import { logger } from '@/utils/logger'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { Clock, Eye, Heart } from 'lucide-react-native'
@@ -58,6 +59,8 @@ const EditProductPage = () => {
     const productType = product?.product_type
     const productImages = product?.images || []
     const mainImage = product?.main_image_url
+    const createdAt = product?.created_at ? parseBackendDateTime(product.created_at) : null
+    const createdAtLabel = createdAt ? createdAt.toLocaleString() : ''
 
     const { mutate: updateProduct, isPending: isUpdating } = useUpdateProductMutation({
         onSuccess: () => {
@@ -251,9 +254,9 @@ const EditProductPage = () => {
                 </View>
 
                 <View style={[styles.statsRow, { borderBottomColor: colors.borderColor }]}>
-                    <View style={styles.statItem}><Eye size={18} color={colors.textMuted} /><Text style={[styles.statText, { color: colors.textMuted }]}>{product?.view_count || 0}</Text></View>
-                    <View style={styles.statItem}><Heart size={18} color={colors.textMuted} /><Text style={[styles.statText, { color: colors.textMuted }]}>{product?.like_count || 0}</Text></View>
-                    <View style={styles.statItem}><Clock size={18} color={colors.textMuted} /><Text style={[styles.statText, { color: colors.textMuted }]}>{product?.created_at || ''}</Text></View>
+                    <View style={styles.statItem}><Eye size={18} color={colors.textMuted} /><Text style={[styles.statText, { color: colors.textMuted }]}>{product?.views_count || 0}</Text></View>
+                    <View style={styles.statItem}><Heart size={18} color={colors.textMuted} /><Text style={[styles.statText, { color: colors.textMuted }]}>{product?.likes_count || 0}</Text></View>
+                    <View style={styles.statItem}><Clock size={18} color={colors.textMuted} /><Text style={[styles.statText, { color: colors.textMuted }]}>{createdAtLabel}</Text></View>
                 </View>
 
                 <View style={styles.section}>

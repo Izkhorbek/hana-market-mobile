@@ -500,8 +500,8 @@ export interface ProductEditResponseDto
     description?: string;
     moljal?: string;
     status: string;
-    view_count: number;
-    like_count: number;
+    views_count: number;
+    likes_count: number;
     // ===== CURRENCY AND PRICE (raw) =====
     currency_type?: ECurrencyType;
     price_uzs?: number;

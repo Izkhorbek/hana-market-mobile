@@ -163,13 +163,19 @@ const ChatHeader: React.FC<{
   )
 }
 
-const ProductCard: React.FC<{ product: ChatData['product'] }> = ({
-  product,
-}) => {
+const ProductCard: React.FC<{
+  product: ChatData['product'];
+  onPressImage?: () => void;
+}> = ({ product, onPressImage }) => {
   const colors = useThemeColors()
   const { t } = useTranslations()
 
   return (
+    <TouchableOpacity
+        onPress={onPressImage}
+        activeOpacity={0.8}
+        disabled={!onPressImage}
+      >
     <View
       style={[
         styles.productCard,
@@ -179,15 +185,15 @@ const ProductCard: React.FC<{ product: ChatData['product'] }> = ({
         },
       ]}
     >
-      <RemoteImage
-        src={product.image}
-        style={styles.productImage}
-        resizeMode="cover"
-        cachePolicy="disk"
-        requestedWidth={100}
-        requestedHeight={100}
-        requestedQuality={60}
-      />
+        <RemoteImage
+          src={product.image}
+          style={styles.productImage}
+          resizeMode="cover"
+          cachePolicy="disk"
+          requestedWidth={100}
+          requestedHeight={100}
+          requestedQuality={60}
+        />
       <View style={styles.productInfo}>
         {product.isSold && (
           <View style={styles.soldBadge}>
@@ -212,6 +218,8 @@ const ProductCard: React.FC<{ product: ChatData['product'] }> = ({
         </Text>
       </View>
     </View>
+   </TouchableOpacity>
+
   )
 }
 
@@ -907,6 +915,11 @@ const ChatRoomPage: React.FC = () => {
     router.back()
   }
 
+  const handlePressProductImage = useCallback(() => {
+    if (!effectiveChatData.product.id) return
+    router.push(`/product/${effectiveChatData.product.id}`)
+  }, [effectiveChatData.product.id])
+
   const handleCall = () => {
   }
 
@@ -1089,7 +1102,10 @@ const ChatRoomPage: React.FC = () => {
         </View>
       )}
 
-      <ProductCard product={effectiveChatData.product} />
+      <ProductCard
+        product={effectiveChatData.product}
+        onPressImage={handlePressProductImage}
+      />
 
       <SafetyBanner />
 
