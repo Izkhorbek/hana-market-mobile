@@ -19,7 +19,7 @@ import {
   showLocationErrorAlert,
 } from '@/utils/location'
 import { useRouter } from 'expo-router'
-import React, { useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import {
   ActivityIndicator,
@@ -50,6 +50,14 @@ const CreateCarForm = () => {
   const [successVisible, setSuccessVisible] = useState(false)
   const [createdProductId, setCreatedProductId] = useState<number | null>(null)
   const isSubmittingRef = useRef(false)
+  // Guards against setState after unmount if the user leaves mid-create-request.
+  const isMountedRef = useRef(true)
+  useEffect(() => {
+    isMountedRef.current = true
+    return () => {
+      isMountedRef.current = false
+    }
+  }, [])
 
   const fuelTypeOptions: RadioOption[] = [
     { value: 'petrol', label: t('car.petrol') },
@@ -91,6 +99,7 @@ const CreateCarForm = () => {
 
   const { mutate: createProduct, isPending } = useCreateProductMutation({
     onSuccess: (response) => {
+      if (!isMountedRef.current) return
       // Success modal replaces the plain alert. Product id is shown if the API returns one.
       const createdId =
         (response?.data?.data as { product_id?: number } | undefined)?.product_id ?? null

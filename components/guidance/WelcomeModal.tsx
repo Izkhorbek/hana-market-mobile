@@ -3,19 +3,26 @@ import { useTranslations } from '@/hooks/use-translation'
 import { useAuthStore } from '@/modules/Auth/auth-store'
 import { GUIDANCE_KEYS, guidanceStorage } from '@/services/storage/guidanceStorage'
 import Feather from '@expo/vector-icons/Feather'
+import { useFocusEffect } from 'expo-router'
 import React, { memo, useCallback, useEffect, useRef, useState } from 'react'
 import { Modal, Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 
 interface WelcomeModalProps {
   /**
-   * Gate for WHEN the welcome may appear (e.g. only after the home screen has
-   * settled and no critical modal is open). Defaults to true. The "show once"
-   * logic still runs only a single time per mount regardless of toggling.
+   * Gate for WHEN the welcome may appear: pass false while a critical modal is
+   * open so the welcome never stacks on top of it. Defaults to true.
    */
   active?: boolean
+  /**
+   * Delay (ms) after the screen gains focus before the welcome may open, letting
+   * transient first-launch prompts (OS permissions, navigation transitions,
+   * location/notification flows) settle first. The `active` gate is re-checked
+   * when the delay fires.
+   */
+  delayMs?: number
 }
 
-const WelcomeModalComponent: React.FC<WelcomeModalProps> = ({ active = true }) => {
+const WelcomeModalComponent: React.FC<WelcomeModalProps> = ({ active = true, delayMs = 800 }) => {
   const { t } = useTranslations()
   const colors = useThemeColors()
   const user = useAuthStore((s) => s.user)
@@ -30,22 +37,31 @@ const WelcomeModalComponent: React.FC<WelcomeModalProps> = ({ active = true }) =
     }
   }, [])
 
-  // Open at most once per mount.
+  // Open at most once. Deferred + focus-gated so it never appears over a
+  // transient first-launch prompt, and re-checks `active` when the delay fires.
   const handledRef = useRef(false)
-  useEffect(() => {
-    if (!active || handledRef.current) return
-    handledRef.current = true
+  useFocusEffect(
+    useCallback(() => {
+      if (handledRef.current || !active) return
 
-    let cancelled = false
-    guidanceStorage.hasSeen(GUIDANCE_KEYS.homeWelcome).then((seen) => {
-      if (cancelled || !isMountedRef.current) return
-      if (!seen) setVisible(true)
-    })
+      let cancelled = false
+      const timer = setTimeout(() => {
+        // Re-check at fire time: skip if unmounted, blurred, or a modal opened
+        // during the delay (active became false).
+        if (cancelled || !isMountedRef.current || !active) return
+        handledRef.current = true
+        guidanceStorage.hasSeen(GUIDANCE_KEYS.homeWelcome).then((seen) => {
+          if (cancelled || !isMountedRef.current) return
+          if (!seen) setVisible(true)
+        })
+      }, delayMs)
 
-    return () => {
-      cancelled = true
-    }
-  }, [active])
+      return () => {
+        cancelled = true
+        clearTimeout(timer)
+      }
+    }, [active, delayMs]),
+  )
 
   const handleClose = useCallback(() => {
     setVisible(false)
