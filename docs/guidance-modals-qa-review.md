@@ -66,7 +66,7 @@ In each form the success modal does:
   keep this; switching to `router.replace` / pop-then-push remains a one-line future option if the
   back-to-create behavior is undesirable.
 
-### M3 — Form `onSuccess` sets state without a mount guard
+### M3 — Form `onSuccess` sets state without a mount guard — ✅ RESOLVED
 The forms now set React state in the mutation success handler:
 `onSuccess: (response) => { form.reset(); setCreatedProductId(...); setSuccessVisible(true) }`.
 If the user navigates away from the create screen while the create request is in flight, react-query still
@@ -74,7 +74,11 @@ invokes `onSuccess` after unmount, calling `setState` on an unmounted component.
 - Evidence: the three `Create*Form.tsx` `onSuccess` blocks (no `isMountedRef` around these `setState`s).
 - Impact: low in practice — React 19 (this app: `react@19.1.0`) removed the "setState on unmounted"
   warning, so it's effectively a no-op; no leak. The original code used `Alert.alert` (no `setState`), so
-  this is a new-but-benign pattern. Flagged for awareness; a mounted guard would make it strictly correct.
+  this is a new-but-benign pattern.
+- **Resolution:** all three forms now add `const isMountedRef = useRef(true)` with a mount/unmount
+  `useEffect`, and `onSuccess` early-returns `if (!isMountedRef.current) return` before any `setState`
+  (`CreateThingForm.tsx`, `CreateCarForm.tsx`, `CreateWorksForm.tsx`). Submit/validation/loading and
+  `form.reset()` are unchanged.
 
 ---
 
@@ -123,16 +127,26 @@ by this work) and harmless because the success id is read from the `onSuccess(re
 |---|------|---------|--------------|
 | 1 | AsyncStorage race conditions | OK (L1 only) | `guidanceStorage` get/set independent; opens guarded by `cancelled`/`isMountedRef`; fail-closed read |
 | 2 | Modal double-open | OK | `handledTypeRef`/`handledRef` once-guards; success gated by `isPending` (+ `isSubmittingRef` in car); single form mounted at a time |
-| 3 | Navigation side effects | M2 (dormant) | success `onClose`→`router.back()` preserves original nav; "View listing" push leaves create on stack (no id today) |
-| 4 | Memory leaks | OK (M3 benign) | `isMountedRef` + `cancelled` in async modals; React 19 no unmount-setState warning |
+| 3 | Navigation side effects | OK (M2 verified) | `onClose`→`router.back()` preserves original nav; backend returns `product_id` so "View listing" works; push-leaves-create accepted by owner |
+| 4 | Memory leaks | OK (M3 resolved) | forms now guard `onSuccess` with `isMountedRef`; async modals use `isMountedRef` + `cancelled` |
 | 5 | Dark mode | OK (L3) | all colors via `useThemeColors`; only `background` vs `card` polish |
 | 6 | Localization | OK | guidance keys 15/15/15 across uz/ru/en; all referenced keys (`guidance.*`, `common.close`) exist; `{{name}}` interpolation valid |
-| 7 | Home modal conflicts | M1 | gate covers only `reportModalVisible`/`sheetVisible`, not app-level modals |
+| 7 | Home modal conflicts | OK (M1 resolved) | welcome now deferred + focus-gated + re-checks `active` at fire time; won't stack |
 | 8 | Create form regressions | OK | submit/validation/loading/`form.reset()` unchanged; only success presentation changed (Alert→modal); one `SuccessPostModal` per active form |
 
 ---
 
 ## Recommendation
-Safe to proceed. Address **M1** before a public first-launch rollout (coordinate onboarding/permission
-modals), and handle **M2** at the same time the backend begins returning a product id for "View listing".
-M3/L1–L5 are optional polish. No code changes were made as part of this review.
+Safe to proceed. **M1 and M3 are fixed in code; M2 is verified end-to-end** (backend now returns
+`product_id`). Post-fix `tsc --noEmit` = 0 errors, `expo lint` = pass. Remaining items are Low-only
+(L1–L5) and optional polish. Suggested QA spot-checks: first-launch welcome does not overlap a
+permission/location prompt; "View listing" opens the new product; leaving the create screen mid-submit
+produces no warnings.
+
+### Remediation changelog (2026-06-16)
+- **M1 (resolved):** `components/guidance/WelcomeModal.tsx` — `useFocusEffect` + `delayMs` (800ms) +
+  re-check `active` at fire time.
+- **M3 (resolved):** `components/Forms/CreateThingForm.tsx`, `CreateCarForm.tsx`, `CreateWorksForm.tsx`
+  — `isMountedRef` guard added to `onSuccess` (and `useEffect` import added where missing).
+- **M2 (verified):** backend `ProductController.cs:213` returns `{ product_id }`; mobile reads it via
+  `response.data.data.product_id`. No mobile change needed.
