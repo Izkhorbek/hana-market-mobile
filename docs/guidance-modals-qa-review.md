@@ -1,18 +1,23 @@
 # Guidance Modals — QA Review
 
-> Date: 2026-06-16 · App: `nebor-app` · Review-only (no code changed).
+> Date: 2026-06-16 · App: `nebor-app`
 > Scope: `ListingGuideModal`, `SuccessPostModal`, `WelcomeModal`, `guidanceStorage`, and their
 > integration in `app/(post)/create.tsx`, `app/(tabs)/home.tsx`, and the three create forms.
 > Baseline: `tsc --noEmit` = 0 errors, `expo lint` = pass, locale JSON valid (15/15/15 leaf keys).
+
+> **Update 2026-06-16 — remediation applied.** M1 and M3 fixed in code; M2 verified end-to-end after
+> the backend change. Post-fix `tsc --noEmit` = 0 errors and `expo lint` = pass. All three Medium items
+> are now resolved. Remaining open items are Low-only (polish). Original findings are kept below for the
+> record with a **RESOLVED / VERIFIED** note each.
 
 ---
 
 ## Summary
 
 No blockers found. The implementation is sound: async paths are mount-guarded, one-time logic uses
-`useRef` guards, and create-form submit/validation/loading logic is untouched. The notable items are a
-couple of integration/UX risks (home first-launch modal stacking; a latent "View listing" navigation
-behavior) and minor polish items. Counts: **Blockers 0 · High 0 · Medium 3 · Low 5**.
+`useRef` guards, and create-form submit/validation/loading logic is untouched. The three Medium items
+have since been remediated (see per-item notes). Counts: **Blockers 0 · High 0 · Medium 0 open (3
+resolved) · Low 5**.
 
 ---
 
@@ -26,9 +31,9 @@ None.
 
 ---
 
-## Medium risk
+## Medium risk (all resolved)
 
-### M1 — Welcome modal can stack with app-level first-launch modals
+### M1 — Welcome modal can stack with app-level first-launch modals — ✅ RESOLVED
 `WelcomeModal` is gated only against the Home screen's own modals:
 `app/(tabs)/home.tsx` → `<WelcomeModal active={!reportModalVisible && !sheetVisible} />`.
 It does not know about app-level overlays that can appear on first Home load — e.g. notification-permission
@@ -37,10 +42,13 @@ prompts, `LocationMismatchModal`, network/offline banners, or any update prompt.
 - Evidence: `components/guidance/WelcomeModal.tsx` opens purely on mount when `active && !seen`; the gate
   references only `reportModalVisible`/`sheetVisible`.
 - Impact: two modals visible at once on first launch (cosmetic/confusing, not a crash).
-- Note (no fix here): coordinate first-run modals (e.g. delay welcome until after permission/location
-  flows, or a small "only one onboarding modal at a time" gate).
+- **Resolution:** `WelcomeModal` now opens via `useFocusEffect` with an 800ms `delayMs` settle window,
+  and **re-checks `active` when the delay fires** — if a Home modal opened during the delay it skips and
+  retries on the next focus/active change instead of stacking. `handledRef`/`isMountedRef` still ensure
+  once-only and no setState-after-unmount. Home keeps `active={!reportModalVisible && !sheetVisible}`.
+  (`components/guidance/WelcomeModal.tsx`.)
 
-### M2 — "View listing" navigation leaves the create screen on the stack
+### M2 — "View listing" navigation leaves the create screen on the stack — ✅ VERIFIED (backend now returns id)
 In each form the success modal does:
 `onViewListing={(id) => { setSuccessVisible(false); router.push(`/product/${id}`) }}` and
 `onClose={() => { setSuccessVisible(false); router.back() }}`.
@@ -48,11 +56,15 @@ In each form the success modal does:
 `… → create → product`; pressing back returns to the (reset) create form rather than the list/home.
 - Evidence: `components/Forms/CreateThingForm.tsx`, `CreateCarForm.tsx`, `CreateWorksForm.tsx` (success
   modal render block).
-- Currently DORMANT: the create API returns `ApiResponse<object>` with no `product_id`, so
-  `createdProductId` is always `null` and the "View listing" button is hidden (`SuccessPostModal` →
-  `canView = productId != null && …`). The issue only manifests if/when the backend starts returning an id.
-- Note (no fix here): when enabling it, prefer `router.replace('/product/${id}')` or pop-then-push so the
-  create screen isn't stranded under the detail screen.
+- **Now ACTIVE & verified:** the backend create endpoint returns
+  `ApiResponse<object>(new { product_id = productId }, "Successfully created")`
+  (`hanamarket/Controllers/Product/ProductController.cs:213`), which matches exactly what the mobile
+  reads (`response.data.data.product_id`). So "View listing" now appears with the correct id — no mobile
+  change was required. Fixed by the backend per the owner.
+- **Remaining nav note (accepted, not changed):** "View listing" still uses `router.push('/product/${id}')`,
+  so the back stack is `… → create → product` (back returns to the reset create form). The owner opted to
+  keep this; switching to `router.replace` / pop-then-push remains a one-line future option if the
+  back-to-create behavior is undesirable.
 
 ### M3 — Form `onSuccess` sets state without a mount guard
 The forms now set React state in the mutation success handler:
