@@ -41,7 +41,7 @@ export const productService = {
    * Note: Expects multipart/form-data
    */
   create: (data: FormData) => {
-    return axiosInstance.post<ApiResponse<object>>(ENDPOINT.PRODUCT.CREATE, data, {
+    return axiosInstance.post<ApiResponse<{product_id: number}>>(ENDPOINT.PRODUCT.CREATE, data, {
       headers: { 'Content-Type': 'multipart/form-data' },
     })
   },

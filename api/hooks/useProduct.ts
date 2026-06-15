@@ -89,10 +89,10 @@ export const useProductImagesQuery = ({
  * Hook to create product
  */
 export const useCreateProductMutation = (
-  options?: UseMutationOptions<AxiosResponse<ApiResponse<object>>, Error, FormData>
+  options?: UseMutationOptions<AxiosResponse<ApiResponse<{product_id: number}>>, Error, FormData>
 ) => {
   const queryClient = useQueryClient()
-  return useMutation<AxiosResponse<ApiResponse<object>>, Error, FormData>({
+  return useMutation<AxiosResponse<ApiResponse<{product_id: number}>>, Error, FormData>({
     mutationFn: (data) => productService.create(data),
     ...options,
     onSuccess: (data, variables, onMutateResult, context) => {

@@ -198,12 +198,12 @@ const CreateCarForm = () => {
     formData.append('images_json', JSON.stringify(draft_images))
 
     // Submit the form data
-    createProduct(formData)
-    } finally {
-      setIsResolvingLocation(false)
-      isSubmittingRef.current = false
-    }
-  }, onInvalid)
+   createProduct(formData)
+  } finally {
+    setIsResolvingLocation(false)
+    isSubmittingRef.current = false
+  }
+}, onInvalid)
 
   return (
     <View style={styles.container}>
