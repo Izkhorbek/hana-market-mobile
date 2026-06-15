@@ -92,6 +92,13 @@ const ENDPOINT = {
     CREATE: 'report/create',
     MY_REPORTS: 'report/my-reports',
   },
+  // Manner Temperature (peer reputation). Phase 1 = data collection only.
+  MANNER: {
+    REVIEWS: 'manner-temperature/reviews',
+    SUMMARY: (userId: string | number) => `manner-temperature/users/${userId}/summary`,
+    USER_REVIEWS: (userId: string | number) => `manner-temperature/users/${userId}/reviews`,
+    EVENTS: (userId: string | number) => `manner-temperature/users/${userId}/events`,
+  },
   // Contact
   CONTACT: {
     SEND: 'contact/send',

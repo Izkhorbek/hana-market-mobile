@@ -780,5 +780,59 @@
 			"fraud": "Fraud or Scam",
 			"other": "Other"
 		}
+	},
+	"mannerReview": {
+		"entry": "Leave feedback",
+		"menu_title": "Options",
+		"title": "Rate the interaction",
+		"subtitle": "Rate this user based on your conversation.",
+		"rating_label": "Rating",
+		"positive_label": "Positive",
+		"negative_label": "Negative",
+		"tag_polite": "Polite communication",
+		"tag_fast_response": "Responded quickly",
+		"tag_on_time": "Arrived on time",
+		"tag_fair_price": "Price matched the agreement",
+		"tag_no_show": "Did not show up",
+		"tag_rude": "Rude communication",
+		"tag_spam": "Spam or suspicious",
+		"comment_label": "Comment",
+		"comment_placeholder": "Leave a comment (optional)...",
+		"comment_max_hint": "Max 500 characters",
+		"submit": "Submit",
+		"submitting": "Submitting...",
+		"success_title": "Thank you!",
+		"success_message": "Your feedback was submitted.",
+		"error_rating_required": "Please select a rating",
+		"error_duplicate": "You already left feedback for this chat",
+		"error_forbidden": "You cannot review this user",
+		"error_not_eligible": "You can't leave feedback yet",
+		"error_unauthorized": "Please sign in to leave feedback",
+		"error_network": "Network error. Check your connection and try again.",
+		"error_server": "Server error. Please try again later.",
+		"error_generic": "Failed to submit feedback. Please try again."
+	},
+	"guidance": {
+		"understood": "Got it",
+		"listing": {
+			"title": "Tips for posting a listing",
+			"tip_clear_bright": "Use a clear, bright photo",
+			"tip_centered": "Keep the product centered",
+			"tip_first_best": "Make the first photo your best",
+			"tip_real_image": "Use a real photo of the product",
+			"tip_clear_title": "Write a clear title",
+			"tip_useful_description": "Write a useful description"
+		},
+		"success": {
+			"title": "Thank you!",
+			"message": "Your listing has been posted",
+			"view_listing": "View listing",
+			"go_home": "Back to home"
+		},
+		"welcome": {
+			"title": "Welcome, {{name}}!",
+			"title_no_name": "Welcome!",
+			"message": "We hope Hana Market will be useful to you"
+		}
 	}
 }

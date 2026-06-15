@@ -767,3 +767,60 @@ export interface MarkNotificationsReadDto {
     /// <summary>Leave empty to mark ALL unread notifications as read.</summary>
     ids: number[];
 }
+
+// ==================== MANNER TEMPERATURE ====================
+// App-facing request is camelCase; the manner service maps it to the backend's
+// snake_case body. Responses below are snake_case to match the API exactly.
+
+export interface CreateMannerReviewRequest {
+  chatRoomId: number;
+  targetUserId: number;
+  rating: 1 | 2 | 3 | 4 | 5;
+  isPolite?: boolean;
+  isFastResponse?: boolean;
+  isOnTime?: boolean;
+  isFairPrice?: boolean;
+  isNoShow?: boolean;
+  isRude?: boolean;
+  isSpam?: boolean;
+  comment?: string;
+}
+
+export interface MannerTemperatureSummaryResponse {
+  user_id: number;
+  manner_temperature: number;
+  review_count: number;
+  updated_at?: string | null;
+}
+
+export interface MannerReviewResponse {
+  id: number;
+  chat_room_id: number;
+  reviewer_user_id: number;
+  target_user_id: number;
+  rating: number;
+  comment?: string | null;
+  is_polite: boolean;
+  is_fast_response: boolean;
+  is_on_time: boolean;
+  is_fair_price: boolean;
+  is_no_show: boolean;
+  is_rude: boolean;
+  is_spam: boolean;
+  temperature_change: number;
+  created_at: string;
+}
+
+export interface MannerEventResponse {
+  id: number;
+  target_user_id: number;
+  event_type: string;
+  temperature_change: number;
+  created_at: string;
+}
+
+/** POST /reviews returns the created review plus the target's updated summary. */
+export interface CreateMannerReviewResponse {
+  review: MannerReviewResponse;
+  summary: MannerTemperatureSummaryResponse;
+}

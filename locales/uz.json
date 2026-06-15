@@ -800,5 +800,59 @@
       "fraud": "Firibgarlik",
       "other": "Boshqa"
     }
+  },
+  "mannerReview": {
+    "entry": "Fikr bildirish",
+    "menu_title": "Amallar",
+    "title": "Muomala bahosi",
+    "subtitle": "Suhbat asosida foydalanuvchiga baho bering.",
+    "rating_label": "Baho",
+    "positive_label": "Yaxshi tomonlari",
+    "negative_label": "Salbiy tomonlari",
+    "tag_polite": "Yaxshi muomala qildi",
+    "tag_fast_response": "Tez javob berdi",
+    "tag_on_time": "Vaqtida keldi",
+    "tag_fair_price": "Narxi kelishuvga mos bo'ldi",
+    "tag_no_show": "Kelishilgan joyga kelmadi",
+    "tag_rude": "Qo'pol muomala qildi",
+    "tag_spam": "Spam yoki shubhali",
+    "comment_label": "Izoh",
+    "comment_placeholder": "Izoh qoldiring (ixtiyoriy)...",
+    "comment_max_hint": "Maksimal 500 ta belgi",
+    "submit": "Yuborish",
+    "submitting": "Yuborilmoqda...",
+    "success_title": "Rahmat!",
+    "success_message": "Fikringiz qabul qilindi.",
+    "error_rating_required": "Iltimos, baho tanlang",
+    "error_duplicate": "Siz allaqachon fikr qoldirgansiz",
+    "error_forbidden": "Bu foydalanuvchiga baho berib bo'lmaydi",
+    "error_not_eligible": "Hozircha fikr qoldirib bo'lmaydi",
+    "error_unauthorized": "Baho berish uchun tizimga kiring",
+    "error_network": "Tarmoq xatosi. Internet aloqangizni tekshiring va qayta urinib ko'ring.",
+    "error_server": "Server xatosi. Keyinroq qayta urinib ko'ring.",
+    "error_generic": "Fikr yuborishda xatolik. Qayta urinib ko'ring."
+  },
+  "guidance": {
+    "understood": "Tushunarli",
+    "listing": {
+      "title": "E'lon joylash bo'yicha maslahatlar",
+      "tip_clear_bright": "Rasm tiniq va yorug' bo'lsin",
+      "tip_centered": "Mahsulot markazda ko'rinsin",
+      "tip_first_best": "Birinchi rasm eng chiroyli bo'lsin",
+      "tip_real_image": "Real mahsulot rasmini joylang",
+      "tip_clear_title": "Mahsulot nomini aniq yozing",
+      "tip_useful_description": "Tavsifni tushunarli yozing"
+    },
+    "success": {
+      "title": "Rahmat!",
+      "message": "E'loningiz joylandi",
+      "view_listing": "E'lonni ko'rish",
+      "go_home": "Bosh sahifaga qaytish"
+    },
+    "welcome": {
+      "title": "Xush kelibsiz, {{name}}!",
+      "title_no_name": "Xush kelibsiz!",
+      "message": "Hana Market sizga foydali bo'ladi degan umiddamiz"
+    }
   }
 }

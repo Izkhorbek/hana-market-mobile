@@ -1,7 +1,9 @@
 import CreateCarForm from '@/components/Forms/CreateCarForm'
 import CreateThingForm from '@/components/Forms/CreateThingForm'
 import CreateWorksForm from '@/components/Forms/CreateWorksForm'
+import ListingGuideModal from '@/components/guidance/ListingGuideModal'
 import KeyboardAvoidWrapper from '@/components/shared/KeyboardAvoidWrapper'
+import type { ListingGuideType } from '@/services/storage/guidanceStorage'
 import ThemedScrollView from '@/components/themed-scrollview'
 import { ThemedText } from '@/components/themed-text'
 import { ThemedView } from '@/components/themed-view'
@@ -15,6 +17,13 @@ import {  StyleSheet, TouchableOpacity, } from 'react-native'
 type CategoryType = 'things' | 'cars' | 'works'
 
 const VALID_TYPES: CategoryType[] = ['things', 'cars', 'works']
+
+// Maps the create-screen category to the guidance flag/type (thing | car | work).
+const GUIDE_TYPE_BY_CATEGORY: Record<CategoryType, ListingGuideType> = {
+  things: 'thing',
+  cars: 'car',
+  works: 'work',
+}
 
 const CreatePost = () => {
   const { type } = useLocalSearchParams<{ type?: string }>()
@@ -83,6 +92,9 @@ const CreatePost = () => {
         {selectedCategory === 'cars' && <CreateCarForm />}
         {selectedCategory === 'works' && <CreateWorksForm />}
       </ThemedScrollView>
+
+      {/* One-time listing tips, shown per listing type. */}
+      <ListingGuideModal type={GUIDE_TYPE_BY_CATEGORY[selectedCategory]} active />
     </KeyboardAvoidWrapper>
   )
 

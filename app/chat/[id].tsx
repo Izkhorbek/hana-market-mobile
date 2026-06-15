@@ -9,9 +9,11 @@ import {
   useTypingIndicator,
   useUserOnlineStatus,
 } from '@/api/hooks'
+import MannerReviewModal from '@/components/manner/MannerReviewModal'
 import KeyboardAvoidWrapper from '@/components/shared/KeyboardAvoidWrapper'
 import RemoteImage from '@/components/shared/RemoteImage'
 import { AppLimits } from '@/constants/appLimits'
+import { featureFlags } from '@/constants/featureFlags'
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
 import { useAuthStore } from '@/modules/Auth/auth-store'
@@ -367,18 +369,18 @@ const QuickReplies: React.FC<{
     <View
       style={[
         styles.quickRepliesContainer,
-        { borderTopColor: colors.borderColor },
+        { borderTopColor: colors.borderColor, },
       ]}
     >
       {replies.map((reply, index) => (
         <TouchableOpacity
           key={index}
-          style={[styles.quickReplyButton, { borderColor: colors.borderColor }]}
+          style={[styles.quickReplyButton, { borderColor: colors.borderColor}]}
           onPress={() => onSelect(reply)}
           activeOpacity={0.7}
         >
-          <Text style={[styles.quickReplyText, { color: colors.text }]}>
-            {index === 0 ? '‹ ' : ''}
+          <Text style={[styles.quickReplyText, { color: colors.text,  }]}>
+            {/* {index === 0 ? '‹ ' : ''} */}
             {reply}
           </Text>
         </TouchableOpacity>
@@ -485,6 +487,7 @@ const ChatRoomPage: React.FC = () => {
     null,
   )
   const [isDeletingRoom, setIsDeletingRoom] = useState(false)
+  const [mannerModalVisible, setMannerModalVisible] = useState(false)
   const [snackbar, setSnackbar] = useState<{
     visible: boolean;
     message: string;
@@ -923,8 +926,8 @@ const ChatRoomPage: React.FC = () => {
   const handleCall = () => {
   }
 
-  const handleMore = () => {
-    if (!chatRoomId || isDeletingRoom) return
+  const confirmDeleteRoom = () => {
+    if (!chatRoomId) return
 
     Alert.alert(t('chat.delete_chat_title'), t('chat.delete_chat_confirm'), [
       { text: t('common.cancel'), style: 'cancel' },
@@ -936,6 +939,31 @@ const ChatRoomPage: React.FC = () => {
           deleteChatRoom(chatRoomId)
         },
       },
+    ])
+  }
+
+  const handleMore = () => {
+    if (!chatRoomId || isDeletingRoom) return
+
+    // Phase 1: optional "Leave feedback" entry point. Shown only when collection
+    // is enabled and we know the other participant. The backend enforces the real
+    // eligibility rules (message count, room age, duplicates, self-review).
+    const canLeaveFeedback =
+      featureFlags.mannerTemperatureCollectionEnabled &&
+      !!currentUserId &&
+      !!otherUserId &&
+      currentUserId !== otherUserId
+
+    if (!canLeaveFeedback) {
+      // Unchanged original behavior: go straight to the delete confirmation.
+      confirmDeleteRoom()
+      return
+    }
+
+    Alert.alert(t('mannerReview.menu_title'), undefined, [
+      { text: t('mannerReview.entry'), onPress: () => setMannerModalVisible(true) },
+      { text: t('chat.delete'), style: 'destructive', onPress: confirmDeleteRoom },
+      { text: t('common.cancel'), style: 'cancel' },
     ])
   }
 
@@ -1179,6 +1207,16 @@ const ChatRoomPage: React.FC = () => {
           <Text style={styles.snackbarText}>{snackbar.message}</Text>
         </View>
       )}
+
+      {/* Manner Temperature — Phase 1 data collection (no public temperature shown). */}
+      {featureFlags.mannerTemperatureCollectionEnabled && chatRoomId && otherUserId ? (
+        <MannerReviewModal
+          visible={mannerModalVisible}
+          chatRoomId={chatRoomId}
+          targetUserId={otherUserId}
+          onClose={() => setMannerModalVisible(false)}
+        />
+      ) : null}
     </KeyboardAvoidWrapper>
   )
 }

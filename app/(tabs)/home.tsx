@@ -1,4 +1,5 @@
 
+import WelcomeModal from '@/components/guidance/WelcomeModal'
 import ProductsList from '@/components/Lists/ProductsList'
 import ComplaintModal from '@/components/shared/ComplaintModal'
 import { ThemedView } from '@/components/themed-view'
@@ -214,6 +215,9 @@ export default function HomeScreen() {
         productId={selectedProductId}
         onClose={() => setReportModalVisible(false)}
       />
+
+      {/* One-time welcome. Gated so it never appears over the report/category modals. */}
+      <WelcomeModal active={!reportModalVisible && !sheetVisible} />
 
       <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
     </ThemedView>

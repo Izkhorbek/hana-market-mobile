@@ -1,4 +1,5 @@
 import { useCreateProductMutation } from '@/api/hooks'
+import SuccessPostModal from '@/components/guidance/SuccessPostModal'
 import FormCheckbox from '@/components/FormElements/FormCheckbox'
 import FormInput from '@/components/FormElements/FormInput'
 import {
@@ -46,6 +47,8 @@ const CreateCarForm = () => {
 
   const router = useRouter()
   const [isResolvingLocation, setIsResolvingLocation] = useState(false)
+  const [successVisible, setSuccessVisible] = useState(false)
+  const [createdProductId, setCreatedProductId] = useState<number | null>(null)
   const isSubmittingRef = useRef(false)
 
   const fuelTypeOptions: RadioOption[] = [
@@ -87,14 +90,13 @@ const CreateCarForm = () => {
   const currency = form.watch('currency')
 
   const { mutate: createProduct, isPending } = useCreateProductMutation({
-    onSuccess: () => {
-      Alert.alert(t('post.success'), t('post.product_created_successfully'), [
-        {
-          text: t('common.ok'),
-          onPress: () => router.back(),
-        },
-      ])
+    onSuccess: (response) => {
+      // Success modal replaces the plain alert. Product id is shown if the API returns one.
+      const createdId =
+        (response?.data?.data as { product_id?: number } | undefined)?.product_id ?? null
       form.reset()
+      setCreatedProductId(typeof createdId === 'number' && createdId > 0 ? createdId : null)
+      setSuccessVisible(true)
     },
     onError: (error: any) => {
       const message = parseApiError(error, t('post.error_creating_product'))
@@ -507,6 +509,19 @@ const CreateCarForm = () => {
           )}
         </TouchableOpacity>
       </View>
+
+      <SuccessPostModal
+        visible={successVisible}
+        productId={createdProductId}
+        onClose={() => {
+          setSuccessVisible(false)
+          router.back()
+        }}
+        onViewListing={(id) => {
+          setSuccessVisible(false)
+          router.push(`/product/${id}`)
+        }}
+      />
     </View>
   )
 }
