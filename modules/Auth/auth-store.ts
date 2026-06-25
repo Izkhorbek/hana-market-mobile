@@ -10,7 +10,7 @@ import {
   setTokenGetter,
 } from '@/api/auth-bridge'
 import { queryClient } from '@/api/queryClient'
-import { secureTokenStore } from '@/utils/secureTokenStore'
+import { secureTokenStore, SecureTokenReadError } from '@/utils/secureTokenStore'
 import { logger } from '@/utils/logger'
 import { setSentryUser } from '@/utils/sentry'
 import { authService } from '@/api/services/auth.service'
@@ -165,9 +165,13 @@ export const useAuthStore = create<AuthState>()(
           user: hasValidUserId(userData) ? userData : get().user,
         })
 
-        // Persist tokens to the OS keychain (fire-and-forget; vault swallows
-        // its own errors so a keychain failure won't break the login flow).
-        void secureTokenStore.write({
+        // Persist tokens to the OS keychain. AWAITED (not fire-and-forget): the
+        // caller awaits verifyOtp before navigating, so awaiting here guarantees
+        // the vault is written before a possible force-kill — otherwise a kill
+        // right after login can desync the keychain from the persisted auth flag
+        // and the session is lost on reopen. `write` swallows its own errors, so
+        // a keychain failure still won't reject the login flow.
+        await secureTokenStore.write({
           token: tokens.token,
           refreshToken: tokens.refreshToken,
           expiresAt: tokens.expiresAt,
@@ -198,7 +202,10 @@ export const useAuthStore = create<AuthState>()(
           }
 
           set({ ...nextState, isAuthenticated: true })
-          void secureTokenStore.write(nextState)
+          // AWAITED: durably persist the rotated tokens before returning, so a
+          // force-kill immediately after a refresh can't leave the vault holding
+          // a now-invalidated refresh token.
+          await secureTokenStore.write(nextState)
 
           return tokens.token
         } catch (error) {
@@ -350,6 +357,7 @@ export const useAuthStore = create<AuthState>()(
  * blob).
  */
 async function hydrateTokensFromVault(rehydrated?: AuthState) {
+  let readFailed = false
   try {
     const vaultTokens = await secureTokenStore.read()
 
@@ -382,8 +390,42 @@ async function hydrateTokensFromVault(rehydrated?: AuthState) {
         isAuthenticated: true,
       })
     }
+  } catch (error) {
+    // SecureTokenReadError = the keychain was unreachable after retries. The
+    // persisted tokens may still be perfectly valid; the Keystore was just
+    // momentarily unavailable (common right after an Android force-stop).
+    // Crucially we must NOT wipe the vault on this path — doing so previously
+    // turned a transient hiccup into a permanent logout.
+    if (error instanceof SecureTokenReadError) {
+      readFailed = true
+      logger.warn(error, { code: 'AUTH_HYDRATE_VAULT_READ_FAILED' })
+    } else {
+      // Unexpected error from the hydration body. Leave state untouched and let
+      // the normal guard below run (matches the pre-fix behaviour).
+      logger.warn(error, { code: 'AUTH_HYDRATE_UNEXPECTED' })
+    }
   } finally {
     const s = useAuthStore.getState()
+
+    // Read failed (not a genuinely empty vault): end the session IN MEMORY ONLY
+    // so the user re-authenticates instead of landing on a broken Home with a
+    // null token, but DO NOT call logout()/secureTokenStore.clear() — the vault
+    // is preserved so the next launch (healthy Keystore) can recover it, and a
+    // fresh login overwrites it cleanly regardless.
+    if (readFailed) {
+      if (s.isAuthenticated || s.token) {
+        useAuthStore.setState({
+          token: null,
+          refreshToken: null,
+          expiresAt: null,
+          refreshTokenExpiresAt: null,
+          isAuthenticated: false,
+          sessionExpiredOnStart: true,
+        })
+      }
+      s.setHydrated(true)
+      return
+    }
 
     // Guard: authenticated but vault returned no token (token was wiped by
     // the OS, uninstall-reinstall, or manual vault clear). Treat the same as

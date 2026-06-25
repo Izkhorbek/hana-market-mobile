@@ -84,29 +84,74 @@ const webDelete = () => {
   }
 }
 
+// ── Read robustness ──────────────────────────────────────────────────────────
+// On Android the Keystore-backed store can be momentarily unavailable right after
+// a force-stop (the AES key isn't ready yet), so getItemAsync THROWS transiently.
+// We must NOT treat that throw as "the vault is empty" — doing so upstream caused
+// valid sessions to be wiped on reopen. Retry a few times, then surface the
+// failure distinctly via SecureTokenReadError so callers can avoid destroying
+// still-valid tokens.
+const READ_MAX_ATTEMPTS = 3
+const READ_RETRY_DELAY_MS = 150
+
+const delay = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms))
+
+/** Thrown by `read()` when the keychain is unreachable after all retries. */
+export class SecureTokenReadError extends Error {
+  constructor(public readonly cause?: unknown) {
+    super('Secure token vault read failed')
+    this.name = 'SecureTokenReadError'
+  }
+}
+
+// Parse a raw vault string. Corrupt JSON is treated as empty (not a hardware
+// failure) — the user just re-logs in rather than crashing.
+const parseVault = (raw: string | null): VaultTokens => {
+  if (!raw) return { ...EMPTY }
+  try {
+    const parsed = JSON.parse(raw) as Partial<VaultTokens>
+    return {
+      token: parsed.token ?? null,
+      refreshToken: parsed.refreshToken ?? null,
+      expiresAt: parsed.expiresAt ?? null,
+      refreshTokenExpiresAt: parsed.refreshTokenExpiresAt ?? null,
+    }
+  } catch (error) {
+    logger.warn(error, { code: 'TOKEN_VAULT_PARSE_FAILED' })
+    return { ...EMPTY }
+  }
+}
+
 // ── Public API ──────────────────────────────────────────────────────────────
 
 export const secureTokenStore = {
-  /** Read the persisted tokens. Returns an all-null object if nothing stored. */
+  /**
+   * Read the persisted tokens. Returns an all-null object when the vault is
+   * genuinely empty. Throws `SecureTokenReadError` when the keychain could not
+   * be read after retries — callers MUST distinguish this from "empty" and must
+   * NOT wipe the vault on a read failure.
+   */
   async read(): Promise<VaultTokens> {
-    try {
-      const raw = isWeb
-        ? webGet()
-        : await SecureStore.getItemAsync(VAULT_KEY, SECURE_STORE_OPTIONS)
-      if (!raw) return { ...EMPTY }
-      const parsed = JSON.parse(raw) as Partial<VaultTokens>
-      return {
-        token: parsed.token ?? null,
-        refreshToken: parsed.refreshToken ?? null,
-        expiresAt: parsed.expiresAt ?? null,
-        refreshTokenExpiresAt: parsed.refreshTokenExpiresAt ?? null,
+    // Web localStorage is synchronous and not subject to the Keystore race.
+    if (isWeb) return parseVault(webGet())
+
+    let lastError: unknown = null
+    for (let attempt = 1; attempt <= READ_MAX_ATTEMPTS; attempt++) {
+      try {
+        // getItemAsync resolving (even to null) proves the keychain was
+        // reachable: null = genuinely nothing stored, non-null = parse it.
+        const raw = await SecureStore.getItemAsync(VAULT_KEY, SECURE_STORE_OPTIONS)
+        return parseVault(raw)
+      } catch (error) {
+        // A throw is a transient hardware/Keystore error — retry, don't give up.
+        lastError = error
+        logger.warn(error, { code: 'TOKEN_VAULT_READ_RETRY', extra: { attempt } })
+        if (attempt < READ_MAX_ATTEMPTS) await delay(READ_RETRY_DELAY_MS)
       }
-    } catch (error) {
-      // Corrupt JSON or hardware error — treat as empty so the user just has
-      // to log in again rather than crashing the app.
-      logger.warn(error, { code: 'TOKEN_VAULT_READ_FAILED' })
-      return { ...EMPTY }
     }
+
+    logger.error('TOKEN_VAULT_READ_FAILED', lastError)
+    throw new SecureTokenReadError(lastError)
   },
 
   /** Atomically persist all four token fields. */

@@ -12,6 +12,7 @@ import type {
   SingleProductResponseDto,
 } from '../../types'
 import { productService } from '../services'
+import { useAuthStore } from '@/modules/Auth/auth-store'
 
 /**
  * Hook to query products list
@@ -192,6 +193,12 @@ export const useInfiniteProductsQuery = ({
   params: Omit<ProductListParams, 'current_page'>;
   querySettings?: Record<string, any>;
 }) => {
+  // Don't fetch until auth has rehydrated. On a tab remount/refetch this query
+  // could otherwise fire before the token is restored from the keychain, 401,
+  // and surface a misleading "set your address" error for what is really a
+  // not-yet-ready session. The caller's own `enabled` (if any) still applies.
+  const isHydrated = useAuthStore((s) => s.isHydrated)
+
   return useInfiniteQuery({
     queryKey: ['PRODUCTS_INFINITE', params],
     queryFn: ({ pageParam }: { pageParam: number }) =>
@@ -204,6 +211,7 @@ export const useInfiniteProductsQuery = ({
       return paged.current_page < totalPages ? paged.current_page + 1 : undefined
     },
     ...querySettings,
+    enabled: isHydrated && (querySettings.enabled ?? true),
   })
 }
 
