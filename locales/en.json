@@ -50,6 +50,11 @@
 		"empty_state_sub": "Try changing filters or check back later",
 		"error": "Failed to load products",
 		"retry": "Retry",
+		"error_auth": "Your session has ended. Please log in again.",
+		"error_network": "No internet connection. Check your network and try again.",
+		"error_server": "Server error. Please try again in a moment.",
+		"error_location": "Couldn't load products for your area. Try updating your location.",
+		"error_generic": "Couldn't load products. Please try again.",
 		"filters": {
 			"all": "All",
 			"cars": "Cars",

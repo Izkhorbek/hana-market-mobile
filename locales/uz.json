@@ -50,6 +50,11 @@
     "empty_state_sub": "Filtrni o'zgartiring yoki keyinroq qaytib keling",
     "error": "Mahsulotlarni yuklashda xatolik",
     "retry": "Qayta urinish",
+    "error_auth": "Sessiya tugadi. Iltimos, qayta kiring.",
+    "error_network": "Internet aloqasi yo'q. Tarmoqni tekshirib, qayta urinib ko'ring.",
+    "error_server": "Server xatosi. Bir lahzadan so'ng qayta urinib ko'ring.",
+    "error_location": "Hududingiz uchun mahsulotlarni yuklab bo'lmadi. Joylashuvni yangilab ko'ring.",
+    "error_generic": "Mahsulotlarni yuklab bo'lmadi. Qayta urinib ko'ring.",
     "filters": {
       "all": "Hammasi",
       "cars": "Avtomobillar",

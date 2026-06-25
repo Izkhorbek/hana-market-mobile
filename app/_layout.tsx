@@ -1,5 +1,6 @@
 import { queryClient } from '@/api/queryClient'
 import { useThemeNavigationBar } from '@/components/AnroidNavbarButtonsColorChange'
+import { AuthGuard } from '@/components/providers/AuthGuard'
 import { ChatBootstrap } from '@/components/providers/ChatBootstrap'
 import { GlobalErrorBoundary } from '@/components/providers/GlobalErrorBoundary'
 import { NetworkProvider } from '@/components/providers/NetworkProvider'
@@ -41,6 +42,7 @@ function RootLayout() {
 					<ThemeProvider>
 						<NetworkProvider>
 							<SafeAreaView style={{ flex: 1, backgroundColor: colorScheme === 'dark' ? colors.background : colors.background }} edges={edgesList}>
+								<AuthGuard />
 								<ChatBootstrap />
 							<NotificationBootstrap />
 								<Stack screenOptions={{ headerShown: false }}>

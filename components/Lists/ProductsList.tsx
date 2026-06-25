@@ -1,4 +1,5 @@
 import { useInfiniteProductsQuery } from '@/api/hooks'
+import { classifyGeoApiError, type ApiErrorKind } from '@/utils/apiError'
 import { EProductType } from '@/constants/enums'
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
@@ -66,6 +67,8 @@ const ProductsList: React.FC<ProductsListProps> = ({ selectedFilter, onFilterCha
   const { t } = useTranslations()
   const colors = useThemeColors()
   const user = useAuthStore((s) => s.user)
+  const isHydrated = useAuthStore((s) => s.isHydrated)
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
 
   const userLat = user?.latitude ?? AppLimits.DefaultCoordinates.TASHKENT_LATITUDE
   const userLng = user?.longitude ?? AppLimits.DefaultCoordinates.TASHKENT_LONGITUDE
@@ -78,6 +81,7 @@ const ProductsList: React.FC<ProductsListProps> = ({ selectedFilter, onFilterCha
     isFetchingNextPage,
     isFetching,
     isError,
+    error,
     refetch,
   } = useInfiniteProductsQuery({
     params: {
@@ -86,6 +90,9 @@ const ProductsList: React.FC<ProductsListProps> = ({ selectedFilter, onFilterCha
       page_size: AppLimits.Pagination.DEFAULT_PAGE_SIZE,
       product_type: productType,
     },
+    // Never fetch before the keychain-derived session is known. Running before
+    // hydration races a not-yet-injected auth token → guaranteed 401.
+    querySettings: { enabled: isHydrated && isAuthenticated },
   })
 
   const loadMoreInFlightRef = useRef(false)
@@ -168,12 +175,22 @@ const ProductsList: React.FC<ProductsListProps> = ({ selectedFilter, onFilterCha
 
   // ── Error state ─────────────────────────────────────────────────────────
   if (isError) {
+    // Map the real failure cause to its message instead of always blaming the
+    // user's location/address (see docs/home-error-message-fix-report.md).
+    const errorMessageKey: Record<ApiErrorKind, string> = {
+      auth: 'home.error_auth',
+      network: 'home.error_network',
+      server: 'home.error_server',
+      location: 'home.error_location',
+      unknown: 'home.error_generic',
+    }
+    const kind = classifyGeoApiError(error)
     return (
       <View style={styles.centerBox}>
         {ListHeader}
         <Text style={[styles.emptyTitle, { color: colors.text }]}>
           {t('home.error')}{'\n'}
-          {t('home.retry_set_address')}
+          {t(errorMessageKey[kind])}
         </Text>
         <TouchableOpacity
           style={[styles.retryBtn, { backgroundColor: colors.primaryColor }]}

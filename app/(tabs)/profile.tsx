@@ -73,8 +73,10 @@ const ProfilePage = () => {
 				{
 					text: t('profile.logout'),
 					style: 'destructive',
-					onPress: () => {
-						logout()
+					onPress: async () => {
+						// Await the durable keychain clear before navigating so a
+						// force-kill right after logout can't restore the session (M2).
+						await logout()
 						router.replace('/(auth)/welcome')
 					},
 				},

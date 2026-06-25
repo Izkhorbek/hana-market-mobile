@@ -216,8 +216,9 @@ const EditProfilePage = () => {
 					style: 'destructive',
 					onPress: () => {
 						deleteAccount(undefined, {
-							onSuccess: () => {
-								logout()
+							onSuccess: async () => {
+								// Await the durable keychain clear before navigating (M2).
+								await logout()
 								router.replace('/(auth)/auth')
 							},
 							onError: () => {

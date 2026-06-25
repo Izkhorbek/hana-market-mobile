@@ -109,8 +109,16 @@ export const secureTokenStore = {
     }
   },
 
-  /** Atomically persist all four token fields. */
-  async write(tokens: VaultTokens): Promise<void> {
+  /**
+   * Atomically persist all four token fields.
+   *
+   * Returns `true` once the write has durably flushed, `false` on failure.
+   * Callers that rotate the refresh token MUST `await` this before discarding
+   * the previous token / returning the new one — a fire-and-forget write that
+   * is interrupted by a force-kill leaves the keychain holding a stale,
+   * server-invalidated refresh token (see docs/auth-single-source-audit.md §5).
+   */
+  async write(tokens: VaultTokens): Promise<boolean> {
     try {
       const value = JSON.stringify(tokens)
       if (isWeb) {
@@ -118,21 +126,31 @@ export const secureTokenStore = {
       } else {
         await SecureStore.setItemAsync(VAULT_KEY, value, SECURE_STORE_OPTIONS)
       }
+      return true
     } catch (error) {
       logger.error('TOKEN_VAULT_WRITE_FAILED', error)
+      return false
     }
   },
 
-  /** Wipe the vault — called on logout. */
-  async clear(): Promise<void> {
+  /**
+   * Wipe the vault — called on logout.
+   *
+   * Returns `true` once the delete has durably flushed, `false` on failure.
+   * Logout MUST `await` this so a force-kill immediately after logout can't
+   * leave a restorable token behind (see docs/auth-m1-m2-fast-follow-report.md).
+   */
+  async clear(): Promise<boolean> {
     try {
       if (isWeb) {
         webDelete()
       } else {
         await SecureStore.deleteItemAsync(VAULT_KEY, SECURE_STORE_OPTIONS)
       }
+      return true
     } catch (error) {
       logger.warn(error, { code: 'TOKEN_VAULT_CLEAR_FAILED' })
+      return false
     }
   },
 }

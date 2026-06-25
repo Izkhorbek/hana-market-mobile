@@ -4,6 +4,7 @@ import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
 
 import {
+  setHasRefreshableSession,
   setSessionExpiredLogoutFn,
   setLogoutFn,
   setRefreshTokenFn,
@@ -79,7 +80,13 @@ interface AuthState {
     addressName?: string,
   ) => Promise<void>;
   setLocationGranted: (granted: boolean) => void;
-  logout: () => void;
+  /**
+   * Clear the session. Memory + caches are wiped synchronously (instant UI
+   * logout); the returned promise resolves once the keychain has been durably
+   * cleared, so an explicit user logout can `await` it before navigating to
+   * guarantee a force-kill can't silently restore the session.
+   */
+  logout: () => Promise<void>;
 }
 
 const hasValidUserId = (user: User | null | undefined): user is User => {
@@ -165,9 +172,12 @@ export const useAuthStore = create<AuthState>()(
           user: hasValidUserId(userData) ? userData : get().user,
         })
 
-        // Persist tokens to the OS keychain (fire-and-forget; vault swallows
-        // its own errors so a keychain failure won't break the login flow).
-        void secureTokenStore.write({
+        // Persist tokens to the OS keychain. AWAIT the write so the session's
+        // refresh token is durably on disk before we proceed — a fire-and-forget
+        // write interrupted by a force-kill right after OTP success would leave
+        // the vault empty and corrupt the brand-new session. The vault swallows
+        // its own errors (returns false) so a keychain failure won't throw.
+        await secureTokenStore.write({
           token: tokens.token,
           refreshToken: tokens.refreshToken,
           expiresAt: tokens.expiresAt,
@@ -182,29 +192,47 @@ export const useAuthStore = create<AuthState>()(
       refreshTokens: async () => {
         const current = get().refreshToken
         if (!current) return null
+
+        let response
         try {
-          const response = await authService.refreshToken({ refresh_token: current })
-          const tokens = extractAuthTokens(response)
-          if (!tokens.token) return null
-
-          const nextState = {
-            token: tokens.token,
-            // Backend rotates the refresh token; fall back to the previous one
-            // only if the server (unexpectedly) omitted it.
-            refreshToken: tokens.refreshToken ?? current,
-            expiresAt: tokens.expiresAt ?? get().expiresAt,
-            refreshTokenExpiresAt:
-              tokens.refreshTokenExpiresAt ?? get().refreshTokenExpiresAt,
-          }
-
-          set({ ...nextState, isAuthenticated: true })
-          void secureTokenStore.write(nextState)
-
-          return tokens.token
+          response = await authService.refreshToken({ refresh_token: current })
         } catch (error) {
-          logger.warn(error, { code: 'AUTH_REFRESH_TOKENS_FAILED' })
-          return null
+          const status = isAxiosError(error) ? error.response?.status : undefined
+          // Definitive failure: the refresh token itself is invalid/expired
+          // (400/401). The session is dead → return null so the caller ends it.
+          if (status === 400 || status === 401) {
+            logger.warn(error, { code: 'AUTH_REFRESH_TOKEN_REJECTED' })
+            return null
+          }
+          // Transient failure (network / timeout / 5xx): the refresh token is
+          // still valid, we just couldn't reach the server. Re-throw so callers
+          // KEEP the session instead of logging the user out on a network blip.
+          logger.warn(error, { code: 'AUTH_REFRESH_TOKENS_TRANSIENT' })
+          throw error
         }
+
+        const tokens = extractAuthTokens(response)
+        if (!tokens.token) return null
+
+        const nextState = {
+          token: tokens.token,
+          // Backend rotates the refresh token; fall back to the previous one
+          // only if the server (unexpectedly) omitted it.
+          refreshToken: tokens.refreshToken ?? current,
+          expiresAt: tokens.expiresAt ?? get().expiresAt,
+          refreshTokenExpiresAt:
+            tokens.refreshTokenExpiresAt ?? get().refreshTokenExpiresAt,
+        }
+
+        // Persist the ROTATED tokens BEFORE exposing them in memory / returning.
+        // The server has already invalidated the previous refresh token; if a
+        // force-kill landed between an in-memory update and a fire-and-forget
+        // write, the vault would keep the dead token and brick the next launch.
+        // Awaiting the write closes that window (see audit §5).
+        await secureTokenStore.write(nextState)
+        set({ ...nextState, isAuthenticated: true })
+
+        return tokens.token
       },
 
       fetchUser: async () => {
@@ -285,7 +313,22 @@ export const useAuthStore = create<AuthState>()(
 
       setLocationGranted: (granted) => set({ locationGranted: granted }),
 
-      logout: () => {
+      logout: async () => {
+        // Capture the access token BEFORE clearing memory so the best-effort
+        // server-side revoke below can still authenticate.
+        const accessToken = get().token
+
+        // Best-effort server-side refresh-token revoke (M2). Fire-and-forget so
+        // it never blocks the UI or hangs logout on a dead network; if it
+        // lands, a not-yet-flushed local token is useless on the next launch.
+        // `_skipAuthRefresh` (set inside authService.logout) prevents a 401 from
+        // re-entering refresh/logout.
+        if (accessToken) {
+          void authService.logout(accessToken).catch(() => {
+            // Swallow — revoke is a hardening bonus, not required for logout.
+          })
+        }
+
         // Lazy import to break circular dependency
         useChatStore.getState().reset()
 
@@ -294,7 +337,8 @@ export const useAuthStore = create<AuthState>()(
         // bleeds into the next session on a shared device.
         queryClient.clear()
 
-        // Clear auth state
+        // Clear auth state synchronously → UI logs out instantly and AuthGuard
+        // redirects without waiting on the keychain.
         set({
           token: null,
           refreshToken: null,
@@ -305,12 +349,20 @@ export const useAuthStore = create<AuthState>()(
           locationGranted: false,
         })
 
-        // Wipe the keychain entry. Fire-and-forget — vault swallows errors.
-        void secureTokenStore.clear()
-
         // Detach the Sentry identity so subsequent crashes aren't attributed
         // to the wrong user on a shared device.
         setSentryUser(null)
+
+        // Durably wipe the keychain (M2). AWAIT so a force-kill immediately
+        // after logout can't leave a restorable refresh token behind. Memory is
+        // already cleared above, so even if this fails we never silently
+        // restore — we just log a safe (token-free) code.
+        const cleared = await secureTokenStore.clear()
+        if (!cleared) {
+          logger.warn('AUTH_LOGOUT_VAULT_CLEAR_FAILED', {
+            code: 'AUTH_LOGOUT_VAULT_CLEAR_FAILED',
+          })
+        }
       },
     }),
     {
@@ -319,9 +371,14 @@ export const useAuthStore = create<AuthState>()(
       // Tokens are persisted SEPARATELY in the OS keychain via
       // `secureTokenStore`. Exclude them from the AsyncStorage blob so they
       // never sit in plaintext on disk.
+      //
+      // `isAuthenticated` is deliberately NOT persisted: the keychain
+      // (`secureTokenStore`) is the SINGLE source of truth for "is there a
+      // session." `isAuthenticated` is derived from the vault's refresh token
+      // on every startup (see hydrateTokensFromVault). The persisted `user` is
+      // a display cache only — it never decides auth.
       partialize: (state) => ({
         user: state.user,
-        isAuthenticated: state.isAuthenticated,
         locationGranted: state.locationGranted,
         // expiresAt timestamps are not secret, but keeping them next to their
         // tokens (in the vault) makes rotation atomic. So they're excluded too.
@@ -343,90 +400,106 @@ export const useAuthStore = create<AuthState>()(
   ),
 )
 
+// True when an ISO timestamp is absent-treated-as-not-expired or has passed.
+const isExpired = (iso: string | null | undefined): boolean =>
+  iso ? new Date(iso) <= new Date() : false
+
 /**
- * Pull tokens out of the OS keychain into the in-memory zustand state, then
- * mark hydration complete. Also handles the one-time migration from the
- * legacy AsyncStorage-only layout (where tokens lived inside the persisted
- * blob).
+ * Single source of truth = the OS keychain (`secureTokenStore`).
+ *
+ * On startup we DERIVE the session from the vault's refresh token — never from
+ * the (non-persisted) `isAuthenticated` flag or the AsyncStorage user cache:
+ *   • no / expired refresh token            → clear session, route to Login
+ *   • valid refresh token, access expired   → refresh (keep session on a
+ *                                              transient network error)
+ *   • valid refresh token, access valid     → authenticated
+ * `isHydrated` is set to true only after this completes. Also handles the
+ * one-time migration from the legacy AsyncStorage-only token layout.
  */
 async function hydrateTokensFromVault(rehydrated?: AuthState) {
   try {
-    const vaultTokens = await secureTokenStore.read()
+    let tokens = await secureTokenStore.read()
 
     // ── Legacy migration ────────────────────────────────────────────────
     // Old builds wrote tokens into the AsyncStorage blob. If the vault is
-    // empty but the rehydrated state still carries them, copy across once
-    // so users aren't logged out when they update the app. The next persist
-    // cycle (driven by `partialize`) will strip them from AsyncStorage.
-    const legacyToken = rehydrated?.token ?? null
-    const legacyRefresh = rehydrated?.refreshToken ?? null
-    const shouldMigrate =
-      !vaultTokens.token && (legacyToken || legacyRefresh)
-
-    if (shouldMigrate && rehydrated) {
-      const migrated = {
-        token: legacyToken,
-        refreshToken: legacyRefresh,
+    // empty but the rehydrated state still carries them, copy across once so
+    // users aren't logged out when they update the app. The next persist cycle
+    // (driven by `partialize`) strips them from AsyncStorage.
+    if (
+      !tokens.token &&
+      !tokens.refreshToken &&
+      rehydrated &&
+      (rehydrated.token || rehydrated.refreshToken)
+    ) {
+      tokens = {
+        token: rehydrated.token ?? null,
+        refreshToken: rehydrated.refreshToken ?? null,
         expiresAt: rehydrated.expiresAt ?? null,
         refreshTokenExpiresAt: rehydrated.refreshTokenExpiresAt ?? null,
       }
-      await secureTokenStore.write(migrated)
-      useAuthStore.setState(migrated)
-    } else if (vaultTokens.token) {
-      // Normal path — vault wins over whatever (shouldn't be) in AsyncStorage.
-      useAuthStore.setState({
-        token: vaultTokens.token,
-        refreshToken: vaultTokens.refreshToken,
-        expiresAt: vaultTokens.expiresAt,
-        refreshTokenExpiresAt: vaultTokens.refreshTokenExpiresAt,
-        isAuthenticated: true,
-      })
+      await secureTokenStore.write(tokens)
     }
-  } finally {
-    const s = useAuthStore.getState()
 
-    // Guard: authenticated but vault returned no token (token was wiped by
-    // the OS, uninstall-reinstall, or manual vault clear). Treat the same as
-    // an expired session.
-    if (s.isAuthenticated && !s.token) {
-      useAuthStore.setState({ sessionExpiredOnStart: true })
-      s.logout()
-      s.setHydrated(true)
+    // ── Derive the session from the refresh token (the only authority) ───
+    const refreshExpired = isExpired(tokens.refreshTokenExpiresAt)
+
+    // Rule 6: missing or expired refresh token → no session. Only show the
+    // "session expired" alert when a refresh token actually existed but is no
+    // longer usable — NOT on a fresh install / clean logout (empty vault).
+    if (!tokens.refreshToken || refreshExpired) {
+      if (tokens.refreshToken && refreshExpired) {
+        useAuthStore.setState({ sessionExpiredOnStart: true })
+      }
+      useAuthStore.getState().logout()
       return
     }
 
-    // Always validate the stored token against the server on startup.
-    // If the access token is locally known to be expired, try to refresh it
-    // first to avoid a guaranteed 401 round-trip and the resulting session-
-    // expired dialog when a valid refresh token is still available.
-    if (s.isAuthenticated && s.token) {
-      const isLocallyExpired = s.expiresAt
-        ? new Date(s.expiresAt) <= new Date()
-        : false
+    // A usable refresh token exists → a session exists. Load it into memory.
+    useAuthStore.setState({
+      token: tokens.token,
+      refreshToken: tokens.refreshToken,
+      expiresAt: tokens.expiresAt,
+      refreshTokenExpiresAt: tokens.refreshTokenExpiresAt,
+      isAuthenticated: true,
+    })
 
-      if (isLocallyExpired) {
-        const newToken = await s.refreshTokens()
+    // Rule 5: access token missing/expired but refresh token valid → refresh.
+    if (!tokens.token || isExpired(tokens.expiresAt)) {
+      try {
+        const newToken = await useAuthStore.getState().refreshTokens()
         if (!newToken) {
-          // Refresh token also expired — end the session without a server call.
+          // Definitive: the refresh token was rejected as invalid/expired.
           useAuthStore.setState({ sessionExpiredOnStart: true })
           useAuthStore.getState().logout()
-          useAuthStore.getState().setHydrated(true)
           return
         }
-        // Token refreshed — fall through to fetchUser() with the new token.
+      } catch {
+        // Transient (network / 5xx): keep the session. The next authenticated
+        // request will refresh through the interceptor. Never log out here.
       }
-
-      s.fetchUser().finally(() => s.setHydrated(true))
-      return
     }
 
-    // Fresh install / already logged out — nothing to validate.
-    s.setHydrated(true)
+    // Refresh the user profile in the background — never block hydration on it,
+    // and it cannot tear the session down (fetchUser only logs out on 403,
+    // which a working token excludes).
+    void useAuthStore.getState().fetchUser()
+  } catch (error) {
+    // Vault read / unexpected hydration failure — do NOT wipe a possibly-valid
+    // session over a hiccup (rule 7). Leave the in-memory state as-is.
+    logger.warn(error, { code: 'AUTH_HYDRATE_FAILED' })
+  } finally {
+    useAuthStore.getState().setHydrated(true)
   }
 }
 
 // Register bridge functions — breaks the circular dependency with api/api.ts
 setTokenGetter(() => useAuthStore.getState().token)
+// M1: a refresh is worth attempting when the session is hydrated and a refresh
+// token exists — even if the in-memory access token is currently null.
+setHasRefreshableSession(() => {
+  const s = useAuthStore.getState()
+  return s.isHydrated && !!s.refreshToken
+})
 setLogoutFn(() => useAuthStore.getState().logout())
 
 let sessionExpiredHandled = false  // module-level flag to prevent multiple rapid calls

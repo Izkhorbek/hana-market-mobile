@@ -2,6 +2,7 @@ import Constants from 'expo-constants'
 import {
   authLogoutSessionExpired,
   getAuthToken,
+  hasRefreshableSession,
   refreshAuthToken,
 } from '@/api/auth-bridge'
 import { logger } from '@/utils/logger'
@@ -118,8 +119,13 @@ axiosInstance.interceptors.response.use(
         responseStatus === 401 &&
         !originalConfig._retried &&
         !originalConfig._skipAuthRefresh &&
-        // Only attempt refresh when we still have a session to refresh from.
-        getAuthToken()
+        // Attempt refresh whenever a refresh is still worth trying — either an
+        // access token is present, OR (M1) the session is hydrated with a
+        // refresh token even though the in-memory access token is currently
+        // null (e.g. a transient startup-refresh failure left it unset). Gating
+        // on the access token alone would skip refresh here and log the user
+        // out despite a still-valid refresh token.
+        (getAuthToken() || hasRefreshableSession())
       ) {
         originalConfig._retried = true
         try {
@@ -131,11 +137,16 @@ axiosInstance.interceptors.response.use(
             }
             return axiosInstance.request(originalConfig)
           }
+          // null → the refresh token was rejected as invalid/expired. The
+          // session is genuinely dead, so end it.
+          authLogoutSessionExpired()
         } catch (refreshErr) {
-          logger.error('AUTH_REFRESH_FAILED', refreshErr, { extra: { url } })
+          // Throw → a TRANSIENT refresh failure (network / timeout / 5xx). The
+          // refresh token is still valid; we just couldn't reach the server.
+          // Keep the session and let the original request reject — do NOT log
+          // the user out on a network blip.
+          logger.warn(refreshErr, { code: 'AUTH_REFRESH_TRANSIENT', extra: { url } })
         }
-        // Refresh failed → end the session.
-        authLogoutSessionExpired()
       } else if (responseStatus === 401) {
         // Refresh disabled / already retried / no token → log out.
         authLogoutSessionExpired()

@@ -50,10 +50,22 @@ export const authService = {
   },
 
   /**
-   * Logout user
+   * Logout user — server-side revokes the current refresh token.
    * POST /api/auth/logout
+   *
+   * `accessToken` may be passed explicitly so the call still authenticates when
+   * the store has already cleared its in-memory token (logout clears memory
+   * first for an instant UI logout, then fires this revoke). Skips the auth
+   * interceptor's refresh-on-401 retry — a 401 here just means the session is
+   * already gone, which is the desired end state.
    */
-  logout: () => {
-    return axiosInstance.post<ApiResponse<object>>(ENDPOINT.AUTH.LOGOUT)
+  logout: (accessToken?: string) => {
+    return axiosInstance.post<ApiResponse<object>>(ENDPOINT.AUTH.LOGOUT, undefined, {
+      ...(accessToken
+        ? { headers: { Authorization: `Bearer ${accessToken}` } }
+        : {}),
+      // @ts-expect-error custom flag consumed by api.ts interceptor
+      _skipAuthRefresh: true,
+    })
   },
 }
