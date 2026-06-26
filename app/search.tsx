@@ -1,5 +1,6 @@
 import { useCategoriesQuery, useInfiniteProductsQuery } from '@/api/hooks'
 import ProductCard from '@/components/shared/Cards/ProductCard'
+import MarketplaceEmptyState, { type EmptyReason } from '@/components/shared/MarketplaceEmptyState'
 import { HEADER_HEIGHT } from '@/constants/appLimits'
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
@@ -151,14 +152,30 @@ const SearchPage: React.FC = () => {
         }
     }
 
+    const handleClearFilters = () => {
+        setQuery('')
+        setDebouncedQuery('')
+        setSelectedCategoryId(null)
+    }
+
     const renderEmptyState = () => {
         if (isInitialLoading) return null
+
+        // A query → no search results; an active category filter → too strict;
+        // otherwise the (default) nearby browse is simply empty.
+        const emptyReason: EmptyReason = debouncedQuery
+            ? 'NO_SEARCH_RESULTS'
+            : selectedCategoryId != null
+                ? 'FILTER_TOO_STRICT'
+                : 'NO_NEARBY_PRODUCTS'
+
         return (
-            <View style={styles.emptyBox}>
-                <Text style={[styles.emptyTitle, { color: colors.text }]}>
-                    {t('search_page.no_results')}
-                </Text>
-            </View>
+            <MarketplaceEmptyState
+                reason={emptyReason}
+                onClearFilters={handleClearFilters}
+                onExpandRadius={() => router.push('/(settings)/manage')}
+                onCreateListing={() => router.push('/(post)/create')}
+            />
         )
     }
 

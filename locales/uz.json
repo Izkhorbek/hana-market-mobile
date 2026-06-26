@@ -64,6 +64,44 @@
       "furniture": "Mebel"
     }
   },
+  "empty_states": {
+    "no_location": {
+      "title": "Yaqin atrofdagi e'lonlarni ko'rish uchun joylashuv kerak",
+      "description": "Hana Market sizga yaqin hududdagi e'lonlarni ko'rsatadi. Joylashuv ruxsatini yoqsangiz, yaqinroq natijalarni ko'rasiz.",
+      "primary": "Joylashuvni yoqish",
+      "secondary": "Hududni qo'lda tanlash"
+    },
+    "no_nearby": {
+      "title": "Hozircha yaqin atrofda e'lon topilmadi",
+      "description": "Hana Market bu hududda endi rivojlanmoqda. Radiusni kengaytirib ko'ring yoki birinchi e'lonni o'zingiz joylang.",
+      "primary": "Radiusni kengaytirish",
+      "secondary": "E'lon joylash"
+    },
+    "no_category": {
+      "title": "Bu kategoriyada hali e'lon yo'q",
+      "description": "Birinchi e'lonni siz joylashingiz mumkin. Mahsulot, avtomobil yoki xizmat e'loningizni bepul qo'shing.",
+      "primary": "E'lon joylash",
+      "secondary": "Boshqa kategoriyalarni ko'rish"
+    },
+    "no_search": {
+      "title": "Qidiruvingiz bo'yicha hech narsa topilmadi",
+      "description": "So'zni qisqaroq yozib ko'ring, filtrlarni tozalang yoki radiusni kengaytiring.",
+      "primary": "Filtrlarni tozalash",
+      "secondary": "Radiusni kengaytirish"
+    },
+    "filter_too_strict": {
+      "title": "Tanlangan filtrlar bo'yicha e'lon yo'q",
+      "description": "Filtrlarni tozalab yoki radiusni kengaytirib ko'ring — shunda ko'proq natija chiqadi.",
+      "primary": "Filtrlarni tozalash",
+      "secondary": "Radiusni kengaytirish"
+    },
+    "new_region": {
+      "title": "Hana Market bu hududda endi boshlanyapti",
+      "description": "Siz birinchi sotuvchilardan biri bo'lishingiz mumkin. E'loningizni bepul joylang va yaqin atrofdagi xaridorlarga ko'rsating.",
+      "primary": "Birinchi e'lonni joylash",
+      "secondary": "Do'stlarga ulashish"
+    }
+  },
   "modal": {
     "title": "Modal",
     "description": "Bu modal ekran"

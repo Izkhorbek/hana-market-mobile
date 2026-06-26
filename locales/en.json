@@ -64,6 +64,44 @@
 			"furniture": "Furniture"
 		}
 	},
+	"empty_states": {
+		"no_location": {
+			"title": "Turn on location to see nearby listings",
+			"description": "Hana Market shows listings near you. Enable location access to see closer results.",
+			"primary": "Enable location",
+			"secondary": "Choose manually"
+		},
+		"no_nearby": {
+			"title": "No listings nearby yet",
+			"description": "Hana Market is just getting started in this area. Try expanding your radius or post the first listing yourself.",
+			"primary": "Expand radius",
+			"secondary": "Post a listing"
+		},
+		"no_category": {
+			"title": "No listings in this category yet",
+			"description": "You can post the first one. Add your item, car or service for free.",
+			"primary": "Post a listing",
+			"secondary": "Browse other categories"
+		},
+		"no_search": {
+			"title": "Nothing found for your search",
+			"description": "Try a shorter query, clear the filters, or expand your radius.",
+			"primary": "Clear filters",
+			"secondary": "Expand radius"
+		},
+		"filter_too_strict": {
+			"title": "No listings match the filters",
+			"description": "Clear the filters or expand your radius to see more results.",
+			"primary": "Clear filters",
+			"secondary": "Expand radius"
+		},
+		"new_region": {
+			"title": "Hana Market is just starting in this area",
+			"description": "You could be one of the first sellers. Post your listing for free and show it to nearby buyers.",
+			"primary": "Post the first listing",
+			"secondary": "Share with friends"
+		}
+	},
 	"modal": {
 		"title": "Modal",
 		"description": "This is a modal screen"
