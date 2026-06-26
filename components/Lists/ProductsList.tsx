@@ -1,5 +1,7 @@
 import { useInfiniteProductsQuery } from '@/api/hooks'
+import MarketplaceEmptyState, { type EmptyReason } from '@/components/shared/MarketplaceEmptyState'
 import { classifyGeoApiError, type ApiErrorKind } from '@/utils/apiError'
+import { getCurrentLocationSafe, showLocationErrorAlert } from '@/utils/location'
 import { EProductType } from '@/constants/enums'
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
@@ -69,6 +71,7 @@ const ProductsList: React.FC<ProductsListProps> = ({ selectedFilter, onFilterCha
   const user = useAuthStore((s) => s.user)
   const isHydrated = useAuthStore((s) => s.isHydrated)
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
+  const updateLocation = useAuthStore((s) => s.updateLocation)
 
   const userLat = user?.latitude ?? AppLimits.DefaultCoordinates.TASHKENT_LATITUDE
   const userLng = user?.longitude ?? AppLimits.DefaultCoordinates.TASHKENT_LONGITUDE
@@ -113,15 +116,45 @@ const ProductsList: React.FC<ProductsListProps> = ({ selectedFilter, onFilterCha
     <FilterButtons selectedFilter={selectedFilter} onFilterChange={onFilterChange} />
   )
 
+  // ── Contextual empty state ──────────────────────────────────────────────
+  // Pick the reason from the signals the Home list has (location + category).
+  // Search-specific reasons (NO_SEARCH_RESULTS / FILTER_TOO_STRICT) live on the
+  // search screen; NEW_REGION needs a backend signal we don't have here yet.
+  const hasLocation = user?.latitude != null && user?.longitude != null
+  const emptyReason: EmptyReason = !hasLocation
+    ? 'NO_LOCATION'
+    : selectedFilter !== 'all'
+      ? 'NO_CATEGORY_PRODUCTS'
+      : 'NO_NEARBY_PRODUCTS'
+
+  // Enable location via the existing safe permission/GPS flow, then persist it
+  // through the existing updateLocation action (no new API, no fetch refactor).
+  const handleEnableLocation = useCallback(async () => {
+    const result = await getCurrentLocationSafe()
+    if (!result.ok) {
+      showLocationErrorAlert(result, t)
+      return
+    }
+    try {
+      await updateLocation(result.coords.latitude, result.coords.longitude)
+      // Updating user.latitude/longitude changes the query params → the list
+      // refetches automatically; refetch() covers the same-coords case.
+      refetch()
+    } catch {
+      // updateLocation failures are transient/network — leave the empty state.
+    }
+  }, [updateLocation, refetch, t])
+
   const ListEmpty = isInitialLoading ? null : (
-    <View style={styles.centerBox}>
-      <Text style={[styles.emptyTitle, { color: colors.text }]}>
-        {t('home.empty_state')}
-      </Text>
-      <Text style={[styles.emptySubtitle, { color: colors.subText ?? colors.textMuted }]}>
-        {t('home.empty_state_sub')}
-      </Text>
-    </View>
+    <MarketplaceEmptyState
+      reason={emptyReason}
+      isLoggedIn={isAuthenticated}
+      onEnableLocation={handleEnableLocation}
+      onSelectManualLocation={() => router.push('/(settings)/manage')}
+      onExpandRadius={() => router.push('/(settings)/manage')}
+      onCreateListing={() => router.push('/(post)/create')}
+      onBrowseCategories={() => router.push('/categories')}
+    />
   )
 
   const ListFooter = isFetchingNextPage ? (

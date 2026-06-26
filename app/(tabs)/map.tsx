@@ -152,7 +152,6 @@ const MapPage = () => {
         autoLocate={!hasLocationParams}
         showControls={true}
         onMarkerPress={handleMarkerPress}
-        onMapPress={(coordinate) => console.log('Map pressed:', coordinate)}
       />
 
       <MarkerDetailModal

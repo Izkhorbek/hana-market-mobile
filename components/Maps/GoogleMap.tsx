@@ -3,10 +3,10 @@ import { useThemeColors } from '@/hooks/use-theme-colors'
 import { logger } from '@/utils/logger'
 import * as Location from 'expo-location'
 import { Home, Minus, Plus } from 'lucide-react-native'
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useRef } from 'react'
 import { Alert, StyleSheet, TouchableOpacity, View } from 'react-native'
-import MapView, { Marker, Region } from 'react-native-maps'
-import LocationPinIcon from './LocationPinIcon'
+import MapView, { Region } from 'react-native-maps'
+import ProductMapMarker from './ProductMapMarker'
 
 // Dark mode map style
 const darkMapStyle = [
@@ -131,9 +131,19 @@ const GoogleMap = ({
   const mapRef = useRef<MapView>(null)
   const colors = useThemeColors()
   const colorScheme = useColorScheme()
-  const [currentZoom, setCurrentZoom] = useState(10)
 
   const mapStyle = colorScheme === 'dark' ? darkMapStyle : lightMapStyle
+
+  // Stable marker-press handler: read the latest `onMarkerPress` via a ref so
+  // its identity never changes. This keeps the memoized ProductMapMarker from
+  // re-rendering when the parent passes a fresh inline callback.
+  const onMarkerPressRef = useRef(onMarkerPress)
+  useEffect(() => {
+    onMarkerPressRef.current = onMarkerPress
+  }, [onMarkerPress])
+  const handleMarkerPress = useCallback((marker: MarkerData) => {
+    onMarkerPressRef.current?.(marker)
+  }, [])
 
   useEffect(() => {
     initializeLocation()
@@ -232,12 +242,6 @@ const GoogleMap = ({
     }
   }
 
-  const handleRegionChange = (region: Region) => {
-    // // Calculate approximate zoom level from latitudeDelta
-    const zoom = Math.log2(360 / region.latitudeDelta)
-    setCurrentZoom(zoom)
-  }
-
   return (
     <View style={[styles.container, { height: height as any }]}>
       <MapView
@@ -251,7 +255,6 @@ const GoogleMap = ({
         showsMyLocationButton={false}
         showsCompass={true}
         showsScale={true}
-        onRegionChangeComplete={handleRegionChange}
         onPress={(event) => {
           if (onMapPress) {
             onMapPress(event.nativeEvent.coordinate)
@@ -260,27 +263,12 @@ const GoogleMap = ({
       >
 
         {markers.map((marker) => (
-          <Marker
+          <ProductMapMarker
             key={marker.id}
-            coordinate={{
-              latitude: marker.latitude,
-              longitude: marker.longitude,
-            }}
-            title={marker.title}
-            description={marker.description}
-            onPress={() => onMarkerPress?.(marker)}
-            // Bottom-center of the icon should sit on the coordinate point.
-            // Without this Android defaults to center-center, misplacing the pin.
-            anchor={{ x: 0.5, y: 1 }}
-            // Disable continuous bitmap re-capture on Android — this is the
-            // primary cause of the SVG marker appearing rotated / tilted.
-            // tracksViewChanges={false}
-          >
-            {/* Custom marker view */}
-            <View style={styles.markerContainer}>
-              <LocationPinIcon size={40} color={colors.primaryColor} />
-            </View>
-          </Marker>
+            marker={marker}
+            color={colors.primaryColor}
+            onPress={handleMarkerPress}
+          />
         ))}
       </MapView>
 
