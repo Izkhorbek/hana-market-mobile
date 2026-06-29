@@ -43,7 +43,7 @@ const ProductCardComponent: React.FC<ProductCardProps> = ({
 	onHeartPress,
 }) => {
 	const colors = useThemeColors()
-	const { t } = useTranslations();
+	const { t } = useTranslations()
 
 	return (
 		<TouchableOpacity
@@ -158,7 +158,6 @@ const styles = StyleSheet.create({
 	},
 	title: {
 		fontSize: 18,
-		fontWeight: '500',
 		flex: 1,
 		marginRight: 8,
 		lineHeight: 23,

@@ -6,7 +6,6 @@ import {
   ECarTransmissionType,
   EComplaintType,
   ECurrencyType,
-  EPaymentType,
   EProductSortBy,
   EProductType,
   EWorkCondition,
@@ -377,13 +376,15 @@ export interface ProductListParams {
   user_long: number;
   current_page?: number;
   page_size?: number;
+  status?: ProductStatus;
   category_id?: number;
   product_type?: EProductType;
   search_query?: string;
-  min_price_uzs?: number;
-  max_price_uzs?: number;
-  is_free?: boolean;
-  sort_by?: EProductSortBy;
+  currency_type?: ECurrencyType; // Filter by currency type (UZS or USD)
+  min_price?: number;   // Minimum price filter (in UZS or USD, depending on currency_type)
+  max_price?: number;   // Maximum price filter (in UZS or USD, depending on currency_type)
+  is_free?: boolean;    // Filter for free products
+  sort_by?: EProductSortBy; // Sorting option
 }
 
 export interface ProductLikeDto {

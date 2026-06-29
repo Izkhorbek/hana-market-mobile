@@ -31,6 +31,30 @@ export const useProductsQuery = ({
 }
 
 /**
+ * Hook to query products for the MAP.
+ *
+ * Separate from `useProductsQuery`/`useInfiniteProductsQuery` (list/search) on
+ * purpose: the map is not a scrollable paginated surface — it should show all
+ * relevant listings around the user's location/radius at once. It therefore
+ * uses its own cache key (`['MAP_PRODUCTS', params]`) and the caller requests a
+ * single larger, capped page sorted by distance (see app/(tabs)/map.tsx and
+ * docs/map-data-loading-audit.md). List/search pagination is untouched.
+ */
+export const useMapProductsQuery = ({
+  params,
+  querySettings = {}
+}: {
+  params: ProductListParams;
+  querySettings?: Omit<UseQueryOptions<AxiosResponse<ApiResponse<PaginatedResponse<any>>>>, 'queryKey' | 'queryFn'>;
+}) => {
+  return useQuery({
+    queryKey: ['MAP_PRODUCTS', params],
+    queryFn: () => productService.getAll(params),
+    ...querySettings,
+  })
+}
+
+/**
  * Hook to query single product
  */
 export const useProductQuery = ({
