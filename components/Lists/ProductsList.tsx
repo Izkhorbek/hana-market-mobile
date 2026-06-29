@@ -3,6 +3,7 @@ import MarketplaceEmptyState, { type EmptyReason } from '@/components/shared/Mar
 import { classifyGeoApiError, type ApiErrorKind } from '@/utils/apiError'
 import { getCurrentLocationSafe, showLocationErrorAlert } from '@/utils/location'
 import { EProductType } from '@/constants/enums'
+import { useProductImagePrefetch } from '@/hooks/useProductImagePrefetch'
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
 import { useAuthStore } from '@/modules/Auth/auth-store'
@@ -110,6 +111,10 @@ const ProductsList: React.FC<ProductsListProps> = ({ selectedFilter, onFilterCha
   )
 
   const isInitialLoading = isFetching && products.length === 0
+
+  // Warm the first-viewport card thumbnails (same `?w=260&h=260&q=65` URLs the
+  // cards request) once the query resolves. Fire-and-forget; does not block render.
+  useProductImagePrefetch(products.map((p) => p.main_image_url))
 
   // ── Sub-components ──────────────────────────────────────────────────────
   const ListHeader = (

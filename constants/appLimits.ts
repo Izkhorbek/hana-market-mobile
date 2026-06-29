@@ -105,7 +105,9 @@ export const AppLimits = {
     DEFAULT_PAGE_SIZE: 20,
     MAX_PAGE_SIZE: 200,
   },
-
+  MAP: {
+    MAX_MARKERS_PER_PAGE: 100,
+  },
   Chat: {
     MAX_MESSAGE_LENGTH: 500,
     MIN_MESSAGE_LENGTH: 1,
@@ -125,7 +127,7 @@ export const AppLimits = {
   ProductStatusColors: {
     active: 'blue',
     reserved: 'green',
-    sold: 'black',
+    sold: 'gray',
   } as const,
   Home: {
     SHEET_HEIGHT: 340,

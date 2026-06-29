@@ -1,7 +1,9 @@
-import { useProductsQuery } from '@/api/hooks'
+import { useMapProductsQuery } from '@/api/hooks'
 import GoogleMap, { MarkerData } from '@/components/Maps/GoogleMap'
 import { MarkerDetailModal } from '@/components/Maps/MarkerDetailModal'
 import MapPageHeader from '@/components/headers/MapPageHeader'
+import { AppLimits } from '@/constants/appLimits'
+import { EProductSortBy } from '@/constants/enums'
 import { useTranslations } from '@/hooks/use-translation'
 import { useAuthStore } from '@/modules/Auth/auth-store'
 import { resolveImageUrl } from '@/utils/imageUrl'
@@ -9,9 +11,11 @@ import { useLocalSearchParams } from 'expo-router'
 import React, { useMemo, useState } from 'react'
 import { ActivityIndicator, StyleSheet, View } from 'react-native'
 
-// Default coordinates (Tashkent)
-const DEFAULT_LAT = 41.311081
-const DEFAULT_LNG = 69.240562
+// Marker cap for the map: a single, capped request (NOT list pagination). 100 is
+// the documented server-wide page-size convention; sorted by distance so the cap
+// keeps the *nearest* listings. If a radius ever holds more than this, that's the
+// trigger for the backend /products/map-markers endpoint + clustering — see
+// docs/map-data-loading-audit.md. Deliberately not an unbounded multi-page fetch.
 
 // Product item from API response
 interface MapProductItem {
@@ -50,21 +54,24 @@ const MapPage = () => {
 
   // Get user location from auth store
   const user = useAuthStore((s) => s.user)
-  const userLat = user?.latitude ?? DEFAULT_LAT
-  const userLng = user?.longitude ?? DEFAULT_LNG
+  const userLat = user?.latitude ?? AppLimits.DefaultCoordinates.TASHKENT_LATITUDE
+  const userLng = user?.longitude ?? AppLimits.DefaultCoordinates.TASHKENT_LONGITUDE
 
   // Parse URL params for highlighted location
   const latitudeParam = Number(params.latitude)
   const longitudeParam = Number(params.longitude)
   const hasLocationParams = Number.isFinite(latitudeParam) && Number.isFinite(longitudeParam)
 
-  // Fetch products for map
-  const { data, isLoading } = useProductsQuery({
+  // Fetch products for the map: one capped page of the NEAREST listings in the
+  // user's radius (sorted by distance), not list-style pagination.
+  const { data, isLoading } = useMapProductsQuery({
     params: {
       user_lat: userLat,
       user_long: userLng,
-      page_size: 20,
+      page_size: AppLimits.MAP.MAX_MARKERS_PER_PAGE,
       current_page: 1,
+      status: AppLimits.ProductStatus.active, // Only fetch active products for the map
+      sort_by: EProductSortBy.DISTANCE,
     },
   })
 

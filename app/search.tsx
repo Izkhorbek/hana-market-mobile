@@ -2,6 +2,7 @@ import { useCategoriesQuery, useInfiniteProductsQuery } from '@/api/hooks'
 import ProductCard from '@/components/shared/Cards/ProductCard'
 import MarketplaceEmptyState, { type EmptyReason } from '@/components/shared/MarketplaceEmptyState'
 import { HEADER_HEIGHT } from '@/constants/appLimits'
+import { useProductImagePrefetch } from '@/hooks/useProductImagePrefetch'
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
 import { useAuthStore } from '@/modules/Auth/auth-store'
@@ -106,6 +107,10 @@ const SearchPage: React.FC = () => {
 
     const isInitialLoading = isFetching && products.length === 0
     const isRefreshing = isFetching && !isFetchingNextPage && products.length > 0
+
+    // Warm the first-viewport card thumbnails (same `?w=260&h=260&q=65` URLs the
+    // cards request) once results resolve. Fire-and-forget; does not block render.
+    useProductImagePrefetch(products.map((p) => p.main_image_url))
 
     const getCategoryName = (category: Category) => (locale === 'ru' ? category.name_ru : category.name_uz)
 
