@@ -185,7 +185,7 @@ const FeedbackPage: React.FC = () => {
 						<Controller
 							control={control}
 							name='message'
-							rules={{ required: t('feedback.errors.message_required') }}
+							rules={{ required: t('feedback.errors.message_required'), minLength: { value: 10, message: t('feedback.errors.message_min') } }}
 							render={({ field: { value, onChange, onBlur } }) => (
 								<TextInput
 									style={[styles.textArea, { backgroundColor: colors.profileBackground, borderColor: colors.borderColor, color: colors.text }]}

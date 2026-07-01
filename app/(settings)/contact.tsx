@@ -18,11 +18,11 @@ import {
 	TouchableOpacity,
 	View,
 } from 'react-native'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 interface ContactFormData {
 	name: string
 	email: string
+	phone_number: string
 	subject: string
 	message: string
 }
@@ -70,7 +70,7 @@ const ContactPage: React.FC = () => {
 	const cardColor = useColor('profileCard')
 
 	const { control, handleSubmit, reset, formState: { isValid } } = useForm<ContactFormData>({
-		defaultValues: { name: '', email: '', subject: '', message: '' },
+		defaultValues: { name: '', email: '', phone_number: '', subject: '', message: '' },
 		mode: 'onChange',
 	})
 
@@ -94,6 +94,7 @@ const ContactPage: React.FC = () => {
 		sendMessage({
 			name: data.name,
 			email: data.email,
+			phone_number: data.phone_number,
 			subject: data.subject,
 			message: data.message,
 		})
@@ -154,7 +155,7 @@ const ContactPage: React.FC = () => {
 								<FormInput control={control} name='name' label={t('contact.your_name')} placeholder={t('contact.name_placeholder')} required rules={{ required: t('contact.errors.name_required'), minLength: { value: 2, message: t('contact.errors.name_min') } }} autoCapitalize='words' autoCorrect={false} />
 							</View>
 							<View style={styles.inputGroup}>
-								<FormInput control={control} name='phone' label={t('contact.phone_number')} placeholder={t('contact.phone_placeholder')} required rules={{ required: t('contact.errors.phone_required'), pattern: { value: /^\+[0-9]{10,15}$/, message: t('contact.errors.phone_invalid') } }} keyboardType='phone-pad' autoCapitalize='none' autoCorrect={false} />
+								<FormInput control={control} name='phone_number' label={t('contact.phone_number')} placeholder={t('contact.phone_placeholder')} required rules={{ required: t('contact.errors.phone_required'), pattern: { value: /^\+[0-9]{10,15}$/, message: t('contact.errors.phone_invalid') } }} keyboardType='phone-pad' autoCapitalize='none' autoCorrect={false} />
 							</View>
 							<View style={styles.inputGroup}>
 								<FormInput control={control} name='subject' label={t('contact.subject')} placeholder={t('contact.subject_placeholder')} required rules={{ required: t('contact.errors.subject_required'), minLength: { value: 5, message: t('contact.errors.subject_min') } }} autoCapitalize='sentences' />

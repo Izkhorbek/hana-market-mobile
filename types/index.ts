@@ -743,8 +743,8 @@ export type FeedbackType =
 
 export interface ContactMessageRequest {
   name: string;
-  email: string;
-  phone_number?: string;
+  email?: string;
+  phone_number: string;
   subject: string;
   message: string;
 }
