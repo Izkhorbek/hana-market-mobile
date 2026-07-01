@@ -814,6 +814,8 @@ const ProductDetailPage: React.FC = () => {
           }
           style={styles.stickyImage}
           resizeMode="cover"
+          requestedWidth={120}
+          requestedQuality={65}
         />
 
         {/* Product Info */}

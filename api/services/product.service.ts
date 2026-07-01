@@ -6,6 +6,8 @@ import type {
   ProductImageDto,
   ProductLikeDto,
   ProductListParams,
+  ProductMapMarkerDto,
+  ProductMapMarkerParams,
 } from '../../types'
 import axiosInstance from '../api'
 import ENDPOINT from '../endpoints'
@@ -17,6 +19,15 @@ export const productService = {
    */
   getAll: (params: ProductListParams) => {
     return axiosInstance.get<ApiResponse<PaginatedResponse<any>>>(ENDPOINT.PRODUCT.ALL, { params })
+  },
+
+  /**
+   * Get lightweight map markers (NOT the full product list).
+   * GET /api/product/map-markers
+   * Returns a flat list of ProductMapMarkerDto sorted by distance.
+   */
+  getProductMapMarkers: (params: ProductMapMarkerParams) => {
+    return axiosInstance.get<ApiResponse<ProductMapMarkerDto[]>>(ENDPOINT.PRODUCT.MAP_MARKERS, { params })
   },
 
   /**

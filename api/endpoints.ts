@@ -54,6 +54,8 @@ const ENDPOINT = {
   PRODUCT: {
     CREATE: 'product/create',
     ALL: 'product/all',
+    MAP_MARKERS: 'product/map-markers', // Lightweight markers for the map screen
+
     BY_ID: (id: string | number) => `product/${id}`,
     BY_ID_TO_EDIT: (id: string | number) => `product/${id}/edit`, // New endpoint for fetching product details for editing
     UPDATE: (id: string | number) => `product/${id}`,

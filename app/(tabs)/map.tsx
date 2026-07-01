@@ -1,42 +1,21 @@
-import { useMapProductsQuery } from '@/api/hooks'
+import { useProductMapMarkersQuery } from '@/api/hooks'
 import GoogleMap, { MarkerData } from '@/components/Maps/GoogleMap'
 import { MarkerDetailModal } from '@/components/Maps/MarkerDetailModal'
 import MapPageHeader from '@/components/headers/MapPageHeader'
 import { AppLimits } from '@/constants/appLimits'
-import { EProductSortBy } from '@/constants/enums'
 import { useTranslations } from '@/hooks/use-translation'
 import { useAuthStore } from '@/modules/Auth/auth-store'
-import { resolveImageUrl } from '@/utils/imageUrl'
+import type { ProductMapMarkerDto } from '@/types'
+import { resolveSizedImageUrl } from '@/utils/imageUrl'
 import { useLocalSearchParams } from 'expo-router'
 import React, { useMemo, useState } from 'react'
 import { ActivityIndicator, StyleSheet, View } from 'react-native'
 
-// Marker cap for the map: a single, capped request (NOT list pagination). 100 is
-// the documented server-wide page-size convention; sorted by distance so the cap
-// keeps the *nearest* listings. If a radius ever holds more than this, that's the
-// trigger for the backend /products/map-markers endpoint + clustering — see
-// docs/map-data-loading-audit.md. Deliberately not an unbounded multi-page fetch.
-
-// Product item from API response
-interface MapProductItem {
-  id: number;
-  title: string | null;
-  description: string | null;
-  moljal: string | null;
-  main_image_url: string | null;
-  is_free: boolean;
-  is_negotiable: boolean;
-  status: string;
-  likes_count: number;
-  views_count: number;
-  latitude: number;
-  longitude: number;
-  product_type: string;
-  product_type_name: string;
-  distance: string | null;
-  created_ago: string | null;
-  price: string | null;
-}
+// The map uses the dedicated lightweight endpoint GET /api/product/map-markers
+// (NOT /api/product/all). It's a single capped request (NOT list pagination) of
+// the nearest listings — the server sorts by distance, the client caps at
+// AppLimits.MAP.MARKER_LIMIT. Marker pins render from this minimal DTO; the
+// bottom sheet enriches the *selected* marker with full detail lazily.
 
 const MapPage = () => {
 
@@ -46,9 +25,8 @@ const MapPage = () => {
     markerTitle?: string;
   }>()
 
-  const { t } = useTranslations()
-  const { locale } = useTranslations()
-
+  const {t} = useTranslations()
+  
   const [selectedMarker, setSelectedMarker] = useState<MarkerData | null>(null)
   const [isModalVisible, setIsModalVisible] = useState(false)
 
@@ -62,16 +40,18 @@ const MapPage = () => {
   const longitudeParam = Number(params.longitude)
   const hasLocationParams = Number.isFinite(latitudeParam) && Number.isFinite(longitudeParam)
 
-  // Fetch products for the map: one capped page of the NEAREST listings in the
-  // user's radius (sorted by distance), not list-style pagination.
-  const { data, isLoading } = useMapProductsQuery({
+  // Fetch lightweight markers for the map: a single capped request of the
+  // NEAREST listings (server sorts by distance), not list-style pagination.
+  // Sends the user's saved search radius when set (axios drops the param when
+  // undefined, letting the backend apply its own default); status=active keeps
+  // sold/reserved listings off the map.
+  const { data, isLoading } = useProductMapMarkersQuery({
     params: {
       user_lat: userLat,
       user_long: userLng,
-      page_size: AppLimits.MAP.MAX_MARKERS_PER_PAGE,
-      current_page: 1,
-      status: AppLimits.ProductStatus.active, // Only fetch active products for the map
-      sort_by: EProductSortBy.DISTANCE,
+      radius_km: user?.search_radius_km ?? undefined,
+      status: AppLimits.ProductStatus.active,
+      limit: AppLimits.MAP.MARKER_LIMIT,
     },
   })
 
@@ -88,9 +68,12 @@ const MapPage = () => {
       : null
   }, [hasLocationParams, latitudeParam, longitudeParam, params.markerTitle])
 
-  // Transform products to markers
+  // Transform lightweight DTOs to markers. Only fields present on
+  // ProductMapMarkerDto are used here; the bottom sheet fills in the richer
+  // fields (category name, negotiable / posted-ago, free flag) lazily from full
+  // product detail when a marker is tapped.
   const productMarkers: MarkerData[] = useMemo(() => {
-    const items: MapProductItem[] = data?.data?.data?.items ?? []
+    const items: ProductMapMarkerDto[] = data?.data?.data ?? []
 
     return items
       .filter((item) => item.latitude && item.longitude) // Only include items with valid coordinates
@@ -99,8 +82,9 @@ const MapPage = () => {
         latitude: item.latitude,
         longitude: item.longitude,
         title: item.title || 'Product',
-        description: item.description || item.moljal || '',
-        image: resolveImageUrl(item.main_image_url) || undefined,
+        // Sized variant — the URL is only fetched when the bottom sheet renders
+        // this marker's image (RemoteImage), never for all pins at once.
+        image: resolveSizedImageUrl(item.main_image_url, { width: 260, height: 260, quality: 65 }) || undefined,
         category: item.product_type_name || 'Product',
         categoryTag: item.is_free ? t('post.free') : item.price || undefined,
         distance: item.distance || undefined,

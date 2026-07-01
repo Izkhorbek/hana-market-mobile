@@ -387,6 +387,40 @@ export interface ProductListParams {
   sort_by?: EProductSortBy; // Sorting option
 }
 
+/**
+ * Lightweight marker payload for the map screen.
+ * Returned (as a flat list) by `GET /api/product/map-markers` — intentionally
+ * far smaller than the full product DTO from `/api/product/all`. The bottom
+ * sheet enriches itself with full detail lazily (only for the selected marker).
+ */
+export interface ProductMapMarkerDto {
+  id: number;
+  latitude: number;
+  longitude: number;
+  title: string | null;
+  price: string | null;
+  is_free: boolean;
+  is_negotiable: boolean;
+  product_type: EProductType;
+  product_type_name: string | null;
+  main_image_url: string | null;
+  currency_type: ECurrencyType;
+  distance: string | null;
+  created_ago: string | null;
+}
+
+/** Query params for `GET /api/product/map-markers`. */
+export interface ProductMapMarkerParams {
+  user_lat: number;
+  user_long: number;
+  radius_km?: number;
+  product_type?: EProductType;
+  category_id?: number;
+  search_query?: string;
+  status?: ProductStatus;
+  limit?: number;
+}
+
 export interface ProductLikeDto {
   is_liked: boolean;
 }
@@ -417,7 +451,7 @@ export interface ProductListItemDto {
   description: string | null;
   main_image_url: string | null;
   price: string | null;
-  distance_km?: number | null;
+  distance?: string | null;
   created_ago: string | null;
   is_liked?: boolean;
 }

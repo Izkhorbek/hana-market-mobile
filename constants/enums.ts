@@ -39,11 +39,12 @@ export enum EProductType {
   WORK = 1020,
 }
 
+// keyinroq: 1000 o'rgartirish kerak.
 export enum EProductSortBy {
-  DISTANCE = 'distance',
-  PRICE_ASC = 'price_asc',
-  PRICE_DESC = 'price_desc',
-  NEWEST = 'newest',
+  DISTANCE = 0,
+  PRICE_ASC = 1,
+  PRICE_DESC = 2,
+  NEWEST = 3,
 }
 
 export enum ECarFuelType {

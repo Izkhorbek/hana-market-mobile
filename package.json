@@ -84,7 +84,7 @@
     "eslint-config-expo": "~10.0.0",
     "eslint-import-resolver-typescript": "^4.4.4",
     "eslint-plugin-import": "^2.32.0",
-    "reactotron-react-native": "^5.1.18",
+    "reactotron-react-native": "^5.2.0",
     "sharp": "^0.34.5",
     "typescript": "~5.9.2"
   },

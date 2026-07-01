@@ -8,6 +8,8 @@ import type {
   ProductImageDto,
   ProductLikeDto,
   ProductListParams,
+  ProductMapMarkerDto,
+  ProductMapMarkerParams,
   ProductUpdateRequest,
   SingleProductResponseDto,
 } from '../../types'
@@ -31,25 +33,25 @@ export const useProductsQuery = ({
 }
 
 /**
- * Hook to query products for the MAP.
+ * Hook to query lightweight markers for the MAP.
  *
  * Separate from `useProductsQuery`/`useInfiniteProductsQuery` (list/search) on
- * purpose: the map is not a scrollable paginated surface — it should show all
- * relevant listings around the user's location/radius at once. It therefore
- * uses its own cache key (`['MAP_PRODUCTS', params]`) and the caller requests a
- * single larger, capped page sorted by distance (see app/(tabs)/map.tsx and
- * docs/map-data-loading-audit.md). List/search pagination is untouched.
+ * purpose: the map is not a scrollable paginated surface and does not need full
+ * product DTOs — it only needs coordinates + minimal display data per pin. It
+ * hits the dedicated `GET /api/product/map-markers` endpoint (much smaller
+ * payload than `/api/product/all`) and uses its own cache key
+ * (`['MAP_MARKERS', params]`). List/search pagination is untouched.
  */
-export const useMapProductsQuery = ({
+export const useProductMapMarkersQuery = ({
   params,
   querySettings = {}
 }: {
-  params: ProductListParams;
-  querySettings?: Omit<UseQueryOptions<AxiosResponse<ApiResponse<PaginatedResponse<any>>>>, 'queryKey' | 'queryFn'>;
+  params: ProductMapMarkerParams;
+  querySettings?: Omit<UseQueryOptions<AxiosResponse<ApiResponse<ProductMapMarkerDto[]>>>, 'queryKey' | 'queryFn'>;
 }) => {
   return useQuery({
-    queryKey: ['MAP_PRODUCTS', params],
-    queryFn: () => productService.getAll(params),
+    queryKey: ['MAP_MARKERS', params],
+    queryFn: () => productService.getProductMapMarkers(params),
     ...querySettings,
   })
 }
