@@ -3,6 +3,12 @@ import { AppLimits } from '@/constants/appLimits'
 import React, { useCallback, useRef, useState } from 'react'
 import { FlatList, Pressable, StyleSheet, Text, useWindowDimensions, View, ViewToken } from 'react-native'
 
+// Hero images request a resized variant from the backend (`?w/q`) instead of the
+// full-size original. Fixed values (not device-width) keep the URL stable for
+// server cache reuse. Higher quality than list cards (65) — it's the focal image.
+const HERO_IMAGE_WIDTH = 1080
+const HERO_IMAGE_QUALITY = 80
+
 export interface GalleryImage {
   image_url: string
 }
@@ -63,7 +69,13 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
         onPress={() => handleImagePress(index)}
         disabled={!onImagePress}
       >
-        <RemoteImage src={item || null} style={styles.image} resizeMode='cover' />
+        <RemoteImage
+          src={item || null}
+          style={styles.image}
+          resizeMode='cover'
+          requestedWidth={HERO_IMAGE_WIDTH}
+          requestedQuality={HERO_IMAGE_QUALITY}
+        />
       </Pressable>
     ),
     [width, handleImagePress, onImagePress],

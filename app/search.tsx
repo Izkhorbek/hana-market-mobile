@@ -283,6 +283,11 @@ const SearchPage: React.FC = () => {
                 }
                 onEndReached={handleLoadMore}
                 onEndReachedThreshold={0.4}
+                removeClippedSubviews
+                initialNumToRender={8}
+                maxToRenderPerBatch={8}
+                updateCellsBatchingPeriod={50}
+                windowSize={7}
                 refreshControl={
                     <RefreshControl
                         refreshing={isRefreshing}

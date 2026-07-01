@@ -106,7 +106,10 @@ export const AppLimits = {
     MAX_PAGE_SIZE: 200,
   },
   MAP: {
-    MAX_MARKERS_PER_PAGE: 100,
+    DEFAULT_MARKER_LIMIT: 100,
+    MAX_MARKER_LIMIT: 1000,
+    // Safe cap for the lightweight /product/map-markers request (nearest-first).
+    MARKER_LIMIT: 300,
   },
   Chat: {
     MAX_MESSAGE_LENGTH: 500,

@@ -52,7 +52,7 @@ export function MarkerDetailModal({ marker, isVisible, onClose }: MarkerDetailMo
     }
 
     // Fetch location when modal becomes visible
-    if (isVisible && marker) {
+    if (isVisible && marker?.id) {
       setIsLoadingLocation(true)
       getUserLocation()
     }
