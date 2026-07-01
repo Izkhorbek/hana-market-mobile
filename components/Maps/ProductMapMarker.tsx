@@ -45,7 +45,6 @@ const ProductMapMarker = ({ marker, color, onPress }: ProductMapMarkerProps) => 
     <Marker
       coordinate={{ latitude: marker.latitude, longitude: marker.longitude }}
       title={marker.title}
-      description={marker.description}
       onPress={() => onPress(marker)}
       // Bottom-center of the icon sits on the coordinate point. Without this
       // Android defaults to center-center, misplacing the pin.

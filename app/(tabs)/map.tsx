@@ -63,7 +63,6 @@ const MapPage = () => {
         latitude: latitudeParam,
         longitude: longitudeParam,
         title: params.markerTitle || 'Selected location',
-        description: 'Opened from product detail',
       }
       : null
   }, [hasLocationParams, latitudeParam, longitudeParam, params.markerTitle])
