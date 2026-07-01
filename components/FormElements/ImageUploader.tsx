@@ -9,6 +9,7 @@ import { Control, Controller } from 'react-hook-form'
 import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import RemoteImage from '../shared/RemoteImage'
 import { logger } from '@/utils/logger'
+import { resizeImageForUpload } from '@/utils/resizeImageForUpload'
 
 export interface DraftImageItem {
   uri: string;
@@ -98,7 +99,10 @@ const ImageUploader = ({
       mediaTypes: 'images',
       allowsEditing: false,
       allowsMultipleSelection: true,
-      quality: 0.8,
+      // quality: 1 (no picker compression) — the single JPEG compression is done
+      // once in resizeImageForUpload, avoiding a double encode. See
+      // docs/mobile-image-upload-audit.md.
+      quality: 1,
     })
 
     if (!result.canceled && result.assets && result.assets.length > 0) {
@@ -116,10 +120,24 @@ const ImageUploader = ({
       latestImagesRef.current = combined
       onChange(combined)
 
-      // Upload each image in parallel
-      assetsToAdd.forEach((asset, i) => {
-        uploadSingleImage(asset.uri, startIndex + i, onChange)
-      })
+      // Resize + upload one image at a time. Sequential (not parallel) so we
+      // never decode several full-resolution images at once — bounds peak
+      // memory on low-RAM devices.
+      for (let i = 0; i < assetsToAdd.length; i++) {
+        const asset = assetsToAdd[i]
+        const index = startIndex + i
+
+        const resized = await resizeImageForUpload(asset.uri, asset.width, asset.height)
+
+        // Swap the preview to the resized file so what the user sees is exactly
+        // what gets uploaded.
+        latestImagesRef.current = latestImagesRef.current.map((img, idx) =>
+          idx === index ? { ...img, uri: resized.uri } : img
+        )
+        onChange([...latestImagesRef.current])
+
+        await uploadSingleImage(resized.uri, index, onChange)
+      }
     }
   }
 
