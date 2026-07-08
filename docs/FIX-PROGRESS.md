@@ -3,7 +3,7 @@
 > Jonli hisobot. Manba: [`docs/ANALYSIS.md`](./ANALYSIS.md). Tartib: **P0 → P1 → P2**, bitta-bittalab.
 > Har fixdan keyin shu fayl yangilanadi. Buglar ID'lari ANALYSIS.md bilan mos.
 
-**Branch:** `refactoring` · **Oxirgi yangilanish:** 2026-06-03
+**Branch:** `develop` · **Oxirgi yangilanish:** 2026-07-08
 
 ---
 
@@ -164,6 +164,46 @@
 - **Natija / qabul qilingan qarz:** Merge (2a) saqlanadi — u "qulay zaxira". 4.3/4.5 (har xabarda merge+sort/grouping) **ataylab qoldirildi** — perf ta'siri marginal, regressiya riski yuqori.
 - **Kelajak uchun:** 2b ni qayta urinishdan oldin mirror ishonchliligini runtime log bilan tuzatish shart (nega B'ning store'i A'ning xabarini olmasligini aniqlash).
 - **Tekshiruv:** `npx tsc --noEmit` → EXIT 0; 2a qurilmada ishlaydi.
+
+---
+
+## 🆕 Qo'shimcha (ANALYSIS.md dan tashqari — backend o'zgarishi bilan bog'liq)
+
+### DA-1 — O'chirilgan hisob (deleted-account) 403 ni xavfsiz qayta ishlash `[Feature / Hardening]` ✅
+- **Sana:** 2026-07-08
+- **Sabab (ANALYSIS emas):** Backend endi o'chirilgan hisob request-OTP / verify-OTP / autentifikatsiyalangan chaqiruv qilganda boshqariladigan **403** qaytaradi ("This account has been deleted. Please contact support."). Mobil ilova buni umuman ishlamas edi — 403 oddiy xatolik sifatida ko'rinardi, login qilingan foydalanuvchi buzuq ekranda qolib ketardi.
+- **Fayl(lar):**
+  - `constants/support.ts` **(yangi)** — `SUPPORT_EMAIL` (`app.config` `extra.supportEmail` dan), `SUPPORT_TELEGRAM_HANDLE`, `SUPPORT_TELEGRAM_URL`. Support kontaktlar uchun **yagona manba** (boshqa joyda hardcode qilinmaydi).
+  - `utils/deletedAccount.ts` **(yangi)** — `isDeletedAccountError()` detektor + `showDeletedAccountAlert()`. Auth store'ni **import qilmaydi** → `api/api.ts` dan xavfsiz import qilinadi (aylanma bog'liqlik yo'q).
+  - `api/auth-bridge.ts` — `authAccountDeleted` bridge fn + `setAccountDeletedFn` setter (`authLogoutSessionExpired` patternига mos; `api.ts` store'dan mustaqil qoladi).
+  - `modules/Auth/auth-store.ts` — bridge handler ro'yxatga olindi: dedupe → `logout()` → `showDeletedAccountAlert()`.
+  - `api/api.ts` — interceptorda 401 logikasidan **oldin** deleted-account 403 aniqlanadi → bridge chaqiriladi, reject.
+  - `app/(auth)/auth.tsx` — `handleSend` / `handleResend` / `handleDone` catch bloklariga deleted-account tarmog'i.
+  - `locales/{en,ru,uz}.json` — yangi kalitlar: `alert.account_deleted_title/_message`, `alert.contact_email/_telegram`.
+- **Aniqlash mantig'i (bitta helperda izolyatsiya):** `isAxiosError` bilan narrowing → **status 403** → **yoki** barqaror backend kodi (`code`/`error_code === 'ACCOUNT_DELETED'`, kelajakka mos), **yoki** hisob-o'chirilishiga oid xabar patternlari (`/account has been deleted/i` va h.k.). "account…deleted" so'ziga cheklangan → **blocked-user 403** ("blocked") bilan hech qachon to'qnashmaydi. Tarmoq xatosida (response yo'q) → `false`.
+- **Logout xulqi:**
+  - **Login bo'lgan yo'l:** interceptor → `authAccountDeleted()` → `logout()` (xotira/keychain/query cache/chat tozalanadi, `isAuthenticated=false`) → **AuthGuard** avtomatik `/(auth)/welcome` ga yo'naltiradi. Alert bir marta (store handler + alert helper — ikki qatlamli dedupe).
+  - **verifyOtp deleted-403:** `logout()` **chaqirilmaydi** — `verifyOtp` 403 da token/user yozilishidan oldin throw qiladi, ya'ni qisman saqlangan holat yo'q (Chesterton's-fence izohi qoldirildi).
+- **Login / request-OTP xulqi:** deleted-403 → `showDeletedAccountAlert()` va `return` (block/rate tarmoqlaridan **oldin**) → muvaffaqiyat navigatsiyasi yo'q, phone/OTP oqimida qoladi. Alert tanasida lokalizatsiyalangan xabar + ko'rinadigan email/Telegram, hamda bosiladigan **Email** (`mailto:`) / **Telegram** (`t.me`) tugmalari (`Linking`).
+- **Kontrakt / ehtiyotkorlik:** So'rov URL'lari, token formati, backend, oddiy login, **blocked-user 403** xulqi, `GlobalErrorBoundary` va bog'liq bo'lmagan ekranlarga tegilmadi. Yangi dependency yo'q. 401/refresh/network yo'llari o'zgarmadi.
+- **Tekshiruv:** `npx tsc --noEmit` → EXIT 0 (locale JSON importlari ham kompilyatsiyada tekshirildi).
+- **Qo'lda sinov:** (1) O'chirilgan raqam bilan request-OTP → alert, OTP ga o'tmaydi. (2) verify-OTP deleted → alert, OTP qadamida qoladi. (3) Login holatda istalgan chaqiruv deleted-403 → bitta alert + welcome ga redirect. (4) Blocked user avvalgidek generic xato. (5) Airplane-mode tarmoq xatosi → logout YO'Q.
+- **Risk:** Detektor hozir asosan xabar matniga tayanadi (barqaror backend kodi hali yo'q). Blocked holatidan xavfsiz, lekin backend xabarni **lokalizatsiya** qilsa yoki qайta yozsa, inglizcha regex o'tkazib yuborishi mumkin. **Tavsiya:** backend 403 da barqaror `{ "code": "ACCOUNT_DELETED" }` (yoki `error_code`) qaytarsin — helper allaqachon uni afzal ko'radi, mobil o'zgarish shart bo'lmaydi. Qurilmada jonli deleted-account bilan sinalmagan (backend hisobi mavjud emas).
+
+### DA-2 — Til tanlovi app kill/relaunch dan keyin default'ga qaytadi `[i18n Persistence]` ✅
+- **Sana:** 2026-07-08
+- **Sabab (ANALYSIS emas):** Til o'zgartirilganda joriy sessiyada ishlaydi, lekin ilova to'liq yopilib qayta ochilganda tanlangan til yo'qolib, default (`uz`) ga qaytardi. Kutilgan xulq: tanlangan til doimiy saqlanishi (logout dan keyin ham).
+- **Ildiz sabab (ikki bo'shliq):** (a) `changeLng` (`hooks/use-translation.ts`) faqat `i18n.changeLanguage(lng)` ni xotirada chaqirardi — hech qaerga **saqlamas** edi. (b) `constants/localization.ts` init'i `lng: 'uz'` ni hardcode qiladi va startupda saqlangan qiymatni **tiklamaydi**. Natijada tanlov faqat joriy JS sessiyasida yashab, kill/relaunch da yo'qolardi.
+- **Fayl(lar):**
+  - `constants/localization.ts` — `AsyncStorage` import, `LANGUAGE_STORAGE_KEY`, `SUPPORTED_LANGUAGES`, `persistLanguage()`, `restorePersistedLanguage()` qo'shildi; import'da `void restorePersistedLanguage()` ishga tushiriladi. Init endi nomlangan `DEFAULT_LANGUAGE` ishlatadi.
+  - `hooks/use-translation.ts` — `changeLng` endi `i18n.changeLanguage` dan keyin `void persistLanguage(lng)` chaqiradi.
+- **Saqlash / kalit:** `AsyncStorage` (ilovaning mavjud persistence'iga mos; maxfiy emas → keychain shart emas). Kalit: **`hana-app-language`** — auth blob'idan (`hana-auth-storage`) **alohida** top-level kalit → app-scoped, logout dan keyin ham saqlanadi. Ikkala UI kirish nuqtasi (`LanguageSelector`, `language-switcher`) yagona `changeLng` orqali o'tadi → bitta choke-point hammasini qamraydi.
+- **Startupda tiklash:** `localization.ts` `app/_layout.tsx` tepasida import qilinadi. Init sinxron ravishda `DEFAULT_LANGUAGE` (`uz`) da boshlanadi; `restorePersistedLanguage()` import'da darhol ishga tushib, kalitni o'qiydi, `SUPPORTED_LANGUAGES` ga tekshiradi va faqat farq bo'lsa `changeLanguage` chaqiradi. Yo'q/qo'llab-quvvatlanmaydigan qiymat → default saqlanadi.
+- **Logout xulqi:** Til logout / session-expired / deleted-account logout dan keyin ham **saqlanadi** (afzal ko'rilgan xulq). O'z kalitida yashaydi; hech bir logout yo'li uni tozalamaydi (kodda `AsyncStorage.clear()` yo'q; auth `partialize` uni chiqarib tashlaydi).
+- **Kontrakt / ehtiyotkorlik:** Backend, auth API, product/chat/map va bog'liq bo'lmagan ekranlarga tegilmadi. Yangi dependency yo'q (`@react-native-async-storage/async-storage` allaqachon auth store'da ishlatiladi). Default fallback (`uz`) saqlangan qiymat bo'lmaganda ishlaydi.
+- **Tekshiruv:** `npx tsc --noEmit` → EXIT 0.
+- **Qo'lda sinov:** (1) Tilni uz/ru/en ga o'zgartir → ilovani to'liq yop → qayta och → til saqlanganini tasdiqla. (2) Logout→login → til o'zgarmaydi. (3) App storage tozalangach → `uz` fallback ishlaydi.
+- **Risk:** Kichik first-paint flicker — init `uz` da boshlanadi, so'ng async o'qish tugagach almashadi (bir necha ms, odatda `app/index.tsx` splash'i bilan yashiriladi). Faqat saqlangan til ≠ `uz` va o'qish first-paint dan keyin tugasagina ko'rinadi. To'liq flicker-siz variant (render'ni `languageReady` flag'ga bog'lash) fokusni saqlash uchun **ataylab qoldirildi**. `LanguageSelector` faqat uz/ru ko'rsatadi (en to'liq qo'llab-quvvatlansa ham) — pre-existing, doirada emas.
 
 ---
 

@@ -7,6 +7,7 @@ import { AppLimits, UZBEK_MOBILE_OPERATORS, UZBEK_MOBILE_PHONE_REGEX, UZBEK_MOBI
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
 import { useAuthStore } from '@/modules/Auth/auth-store'
+import { isDeletedAccountError, showDeletedAccountAlert } from '@/utils/deletedAccount'
 import Ionicons from '@expo/vector-icons/Ionicons'
 import * as Haptics from 'expo-haptics'
 import { useRouter } from 'expo-router'
@@ -163,6 +164,12 @@ const AuthPage = () => {
       setCountdown(AppLimits.Otp.RESEND_COOLDOWN_SECONDS)
       setTimeout(() => otpRefs.current[0]?.focus(), 200)
     } catch (error: any) {
+      // Deleted account → support-contact alert; stay on the phone step, do not
+      // navigate to OTP (we already returned before setStep on the success path).
+      if (isDeletedAccountError(error)) {
+        showDeletedAccountAlert()
+        return
+      }
       const status = error?.response?.status
       const message: string =
         error?.response?.data?.message ||
@@ -202,6 +209,10 @@ const AuthPage = () => {
       setCountdown(AppLimits.Otp.RESEND_COOLDOWN_SECONDS)
       setTimeout(() => otpRefs.current[0]?.focus(), 100)
     } catch (error: any) {
+      if (isDeletedAccountError(error)) {
+        showDeletedAccountAlert()
+        return
+      }
        const message: string =
         error?.response?.data?.message ||
         error?.response?.data?.errors?.[0] ||
@@ -255,7 +266,14 @@ const AuthPage = () => {
         return
       }
       router.replace('/(tabs)/home')
-    } catch {
+    } catch (error) {
+      // Deleted account → support-contact alert, stay on the OTP step. No auth
+      // state to clear: verifyOtp throws on the 403 before any token/user is
+      // written to the store, so there is nothing partially stored to wipe.
+      if (isDeletedAccountError(error)) {
+        showDeletedAccountAlert()
+        return
+      }
       setOtpError(t('auth.verification.error_generic'))
     } finally {
       setIsLoading(false)

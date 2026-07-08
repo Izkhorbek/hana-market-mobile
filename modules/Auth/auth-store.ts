@@ -4,6 +4,7 @@ import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
 
 import {
+  setAccountDeletedFn,
   setHasRefreshableSession,
   setSessionExpiredLogoutFn,
   setLogoutFn,
@@ -12,6 +13,7 @@ import {
 } from '@/api/auth-bridge'
 import { queryClient } from '@/api/queryClient'
 import { secureTokenStore } from '@/utils/secureTokenStore'
+import { showDeletedAccountAlert } from '@/utils/deletedAccount'
 import { logger } from '@/utils/logger'
 import { setSentryUser } from '@/utils/sentry'
 import { authService } from '@/api/services/auth.service'
@@ -521,5 +523,23 @@ setSessionExpiredLogoutFn(() => {
   setTimeout(() => { sessionExpiredHandled = false }, 2000)
 })
 
+
+// Deleted-account 403 on an authenticated request: end the session (AuthGuard
+// then redirects to Login) and show the support-contact alert once. Deduped so
+// several failing requests can't trigger multiple logouts/alerts. This is a
+// distinct terminal state from session-expiry — a refresh would be pointless.
+let accountDeletedHandled = false
+setAccountDeletedFn(() => {
+  if (accountDeletedHandled) return
+  accountDeletedHandled = true
+
+  useAuthStore.getState().logout()
+  showDeletedAccountAlert()
+
+  // Allow re-handling on a future session (e.g. next login on a shared device).
+  setTimeout(() => {
+    accountDeletedHandled = false
+  }, 2000)
+})
 
 setRefreshTokenFn(() => useAuthStore.getState().refreshTokens())

@@ -1,10 +1,12 @@
 import Constants from 'expo-constants'
 import {
+  authAccountDeleted,
   authLogoutSessionExpired,
   getAuthToken,
   hasRefreshableSession,
   refreshAuthToken,
 } from '@/api/auth-bridge'
+import { isDeletedAccountError } from '@/utils/deletedAccount'
 import { logger } from '@/utils/logger'
 import axios, { AxiosError, AxiosRequestConfig } from 'axios'
 
@@ -110,6 +112,16 @@ axiosInstance.interceptors.response.use(
         // Network / 4xx → warn (4xx is usually user/validation, network is transient)
         logger.warn(error, { code, ...opts })
       }
+    }
+
+    // Deleted-account 403: the account was removed server-side. End the session
+    // and show a support-contact alert. This is NOT the blocked-user 403 (the
+    // detector is scoped to account-deletion wording, never "blocked") and NOT
+    // a token-expiry 401 — do not attempt a refresh. Placed before the 401
+    // block; the 401/network/blocked paths below are untouched.
+    if (isDeletedAccountError(error)) {
+      authAccountDeleted()
+      return Promise.reject(error)
     }
 
     if (error.response) {

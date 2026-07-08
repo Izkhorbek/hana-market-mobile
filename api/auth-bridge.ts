@@ -10,6 +10,7 @@ let _getToken: () => string | null = () => null
 let _hasRefreshableSession: () => boolean = () => false
 let _logout: () => void = () => {}
 let _logoutSessionExpired: () => void = () => {}
+let _accountDeleted: () => void = () => {}
 let _refresh: () => Promise<string | null> = async () => null
 
 export const setTokenGetter = (fn: () => string | null) => {
@@ -35,6 +36,16 @@ export const setSessionExpiredLogoutFn = (fn: () => void) => {
   _logoutSessionExpired = fn
 }
 
+/**
+ * Register the handler for a deleted-account 403 seen on an authenticated
+ * request: it ends the session (→ AuthGuard redirects to Login) and surfaces
+ * the support-contact alert. Kept behind the bridge so api/api.ts never imports
+ * the auth store.
+ */
+export const setAccountDeletedFn = (fn: () => void) => {
+  _accountDeleted = fn
+}
+
 export const setRefreshTokenFn = (fn: () => Promise<string | null>) => {
   _refresh = fn
 }
@@ -43,4 +54,5 @@ export const getAuthToken = (): string | null => _getToken()
 export const hasRefreshableSession = (): boolean => _hasRefreshableSession()
 export const authLogout = (): void => _logout()
 export const authLogoutSessionExpired = (): void => _logoutSessionExpired()
+export const authAccountDeleted = (): void => _accountDeleted()
 export const refreshAuthToken = (): Promise<string | null> => _refresh()
