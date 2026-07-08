@@ -46,6 +46,8 @@
     "retry_set_address": "Адрес... попробуйте снова",
     "create": "Почта",
     "free": "Бесплатно",
+    "reserved": "Band",
+    "sold": "Sotildi",
     "empty_state": "Товары не найдены",
     "empty_state_sub": "Попробуйте изменить фильтры или зайдите позже",
     "error": "Не удалось загрузить товары",
@@ -158,7 +160,7 @@
   },
   "post": {
     "create_ad": "Разместить объявление",
-    "post": "Post",
+    "post": "E'lon",
     "select_type": "Выберите тип объявления",
     "all": "Hana",
     "things": "Вещи",

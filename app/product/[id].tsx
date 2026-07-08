@@ -931,24 +931,38 @@ const ProductDetailPage: React.FC = () => {
             <View
               style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}
             >
-              {(productStatus === AppLimits.ProductStatus.reserved || productStatus === AppLimits.ProductStatus.sold) && (
+              {productStatus === AppLimits.ProductStatus.reserved && (
                 <Text
                   style={[
                     styles.title,
                     {
-                      color:
-                        productStatus === AppLimits.ProductStatus.sold
-                          ? colors.statusSold
-                          : colors.statusReserved,
-                      backgroundColor: 'rgb(235, 235, 235)',
-                      paddingHorizontal: 4,
+                      color: 'white',
+                      backgroundColor: AppLimits.ProductStatusColors.reserved,
+                      paddingHorizontal: 8,
                       paddingVertical: 1,
                       marginRight: 6,
                       borderRadius: 4,
                     },
                   ]}
                 >
-                  {productStatus}
+                  {t('home.reserved')}
+                </Text>
+              )}
+              {productStatus === AppLimits.ProductStatus.sold && (
+                <Text
+                  style={[
+                    styles.title,
+                    {
+                      color: 'white',
+                      backgroundColor: AppLimits.ProductStatusColors.sold,
+                      paddingHorizontal: 8,
+                      paddingVertical: 1,
+                      marginRight: 6,
+                      borderRadius: 4,
+                    },
+                  ]}
+                >
+                  {t('home.sold')}
                 </Text>
               )}
               <Text style={[styles.title, { color: colors.text }]}>

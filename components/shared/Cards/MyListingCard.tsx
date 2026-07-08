@@ -104,7 +104,7 @@ const MyListingCard: React.FC<MyListingCardProps> = ({
 					paddingHorizontal: 8,
 					paddingVertical: 1,
 					borderRadius: 4,
-					width: 60,
+					maxWidth: 110,
 					textAlign: 'center',
 				}}>
 					{t('home.free')}

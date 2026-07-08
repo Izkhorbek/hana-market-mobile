@@ -46,6 +46,8 @@
 		"retry_set_address": "Address... try setting it again",
 		"create": "Post",
 		"free": "Free",
+		"reserved": "Reserved",
+		"sold": "Sold",
 		"empty_state": "No products found",
 		"empty_state_sub": "Try changing filters or check back later",
 		"error": "Failed to load products",

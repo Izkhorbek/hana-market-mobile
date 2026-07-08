@@ -94,17 +94,28 @@ const ProductCardComponent: React.FC<ProductCardProps> = ({
 				</View>
 				{/* Price and Likes Row */}
 				<View style={styles.footer}>
-					<View style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
-						{(status === 'reserved' || status === 'sold') &&
+					<View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 2, }}>
+						{status === AppLimits.ProductStatus.reserved &&
 							<Text style={{
 								fontSize: 12,
 								color: 'white',
-								backgroundColor: AppLimits.ProductStatusColors[status as keyof typeof AppLimits.ProductStatusColors],
-								paddingHorizontal: 4,
+								backgroundColor: AppLimits.ProductStatusColors.reserved,
+								paddingHorizontal: 8,
 								paddingVertical: 1,
 								borderRadius: 4
 							}}>
-								{status}</Text>
+								{t(`home.reserved`)}</Text>
+						}
+						{status === AppLimits.ProductStatus.sold &&
+							<Text style={{
+								fontSize: 12,
+								color: 'white',
+								backgroundColor: AppLimits.ProductStatusColors.sold,
+								paddingHorizontal: 8,
+								paddingVertical: 1,
+								borderRadius: 4
+							}}>
+								{t(`home.sold`)}</Text>
 						}
 						{is_free && <Text style={{
 							fontSize: 16,
@@ -114,8 +125,8 @@ const ProductCardComponent: React.FC<ProductCardProps> = ({
 							paddingVertical: 1,
 							borderRadius: 4
 						}}>
-							{t('home.free')}
-						</Text>}
+							{t('home.free')}</Text>
+						}
 						<Text style={[styles.price, { color: colors.text }]}>{price}</Text>
 					</View>
 					<TouchableOpacity onPress={onHeartPress} style={styles.likesContainer}>

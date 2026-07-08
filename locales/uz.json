@@ -46,6 +46,8 @@
     "retry_set_address": "Manzilni... qayta sozlab ko'ring",
     "create": "Joylash",
     "free": "Bepul",
+    "reserved": "Band",
+    "sold": "Sotildi",
     "empty_state": "Mahsulotlar topilmadi",
     "empty_state_sub": "Filtrni o'zgartiring yoki keyinroq qaytib keling",
     "error": "Mahsulotlarni yuklashda xatolik",
@@ -741,7 +743,7 @@
   },
   "chat_room": {
     "sold": "Sotildi",
-    "reserved": "Band qilingan",
+    "reserved": "Band",
     "safety_message": "Bu yerda xavfsiz suhbatlashishingiz va kelishuvni muvofiqlashtira olasiz.",
     "reserved_notice": "Bu mahsulot boshqa xaridor bilan band qilingan.",
     "type_message": "Xabar yozing",
