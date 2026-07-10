@@ -9,7 +9,16 @@
 		"ok": "OK",
 		"cancel": "Cancel",
 		"error": "Error",
-		"go_back": "Go Back"
+		"go_back": "Go Back",
+		"our_goal": "Trade with neighbors easily and reliably.",
+		"your_market": "Your app!"
+	},
+	"update": {
+		"required_title": "Update required",
+		"optional_title": "Update available",
+		"default_message": "A new app version is available.",
+		"update_button": "Update",
+		"later_button": "Later"
 	},
 	"alert": {
 		"error_title": "Something went wrong",

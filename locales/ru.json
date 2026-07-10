@@ -9,7 +9,16 @@
     "ok": "ОК",
     "cancel": "Отмена",
     "error": "Ошибка",
-    "go_back": "Назад"
+    "go_back": "Назад",
+    "our_goal": "Торгуйте с соседями легко и надежно.",
+    "your_market": "Ваше приложение!"
+  },
+  "update": {
+    "required_title": "Требуется обновление",
+    "optional_title": "Доступна новая версия",
+    "default_message": "Доступна новая версия приложения.",
+    "update_button": "Обновить",
+    "later_button": "Позже"
   },
   "alert": {
     "error_title": "Что-то пошло не так",

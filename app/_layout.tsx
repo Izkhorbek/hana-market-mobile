@@ -5,6 +5,7 @@ import { ChatBootstrap } from '@/components/providers/ChatBootstrap'
 import { GlobalErrorBoundary } from '@/components/providers/GlobalErrorBoundary'
 import { NetworkProvider } from '@/components/providers/NetworkProvider'
 import { NotificationBootstrap } from '@/components/providers/NotificationBootstrap'
+import { VersionCheckBootstrap } from '@/components/providers/VersionCheckBootstrap'
 import '@/constants/localization'
 import { useColorScheme } from '@/hooks/use-color-scheme'
 import { useThemeColors } from '@/hooks/use-theme-colors'
@@ -45,6 +46,7 @@ function RootLayout() {
 								<AuthGuard />
 								<ChatBootstrap />
 							<NotificationBootstrap />
+								<VersionCheckBootstrap />
 								<Stack screenOptions={{ headerShown: false }}>
 									<Stack.Screen name='index' />
 									<Stack.Screen name='(tabs)' />
