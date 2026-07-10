@@ -4,6 +4,11 @@ const ENDPOINT = {
   // Health
   HEALTH: 'health',
 
+  // App-level policy (version gate, etc.)
+  APP: {
+    VERSION_CHECK: 'app/version-check',
+  },
+
   // Auth
   // NOTE: Backend now uses OTP-only flow. Registration happens implicitly
   // inside verify-otp the first time a phone is verified. The legacy

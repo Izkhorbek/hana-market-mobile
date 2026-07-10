@@ -9,7 +9,16 @@
     "ok": "OK",
     "cancel": "Bekor qilish",
     "error": "Xato",
-    "go_back": "Ortga qaytish"
+    "go_back": "Ortga qaytish",
+    "our_goal": "Qo'shnilar bilan oson va ishonchli savdo qiling.",
+    "your_market": "Sizning ilovangiz!"
+  },
+  "update": {
+    "required_title": "Yangilash talab qilinadi",
+    "optional_title": "Yangi versiya mavjud",
+    "default_message": "Ilovaning yangi versiyasi mavjud.",
+    "update_button": "Yangilash",
+    "later_button": "Keyinroq"
   },
   "alert": {
     "error_title": "Xatolik yuz berdi",

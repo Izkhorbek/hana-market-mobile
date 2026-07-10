@@ -304,10 +304,17 @@ const ProfilePage = () => {
 					/>
 				</ProfileSection>
 
-				{/* App Version */}
+				{/* App with you */}
 				<Text style={[styles.appVersion, { color: mutedTextColor }]}>
-					{t('profile.app_version')}
+					{t('profile.title')} -  {t('common.your_market')}{'\n\n'}
+					{t('common.our_goal')}
 				</Text>
+				
+				{/* App Goal */}
+				<Text style={[styles.appVersion, { color: mutedTextColor }]}>
+					
+				</Text>
+				
 			</ThemedScrollView>
 
 			{/* Language Selector Modal */}

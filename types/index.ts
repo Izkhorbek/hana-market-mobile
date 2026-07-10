@@ -22,6 +22,30 @@ export interface ApiResponse<T> {
   status_code: number;
 }
 
+// ==================== APP VERSION CHECK ====================
+
+/** Query params for GET /api/app/version-check. */
+export interface VersionCheckParams {
+  platform: 'android' | 'ios';
+  /** App semantic version, e.g. "1.0.3". */
+  version: string;
+  /** Native build number. Omitted when it can't be resolved numerically. */
+  build?: number;
+  locale: 'uz' | 'ru' | 'en';
+}
+
+/** Response body (inside ApiResponse.data) for the version-check endpoint. */
+export interface VersionCheckResponse {
+  update_required: boolean;
+  update_recommended: boolean;
+  latest_version: string;
+  latest_build: number;
+  min_supported_version: string;
+  min_supported_build: number;
+  store_url: string;
+  message: string;
+}
+
 // ==================== TELEMETRY ====================
 
 /**
