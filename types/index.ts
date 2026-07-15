@@ -457,6 +457,7 @@ export interface LikedProductDto {
   description: string | null;
   main_image_url: string | null;
   status: string | null;
+  moljal: string | null;
   created_ago: string | null;
   price: string | null;
 }

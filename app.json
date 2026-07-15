@@ -2,14 +2,14 @@
   "expo": {
     "name": "Hana Market",
     "slug": "hana-market",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/icon-iphone.png",
     "scheme": "hana-market",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true,
+      "supportsTablet": false,
       "bundleIdentifier": "com.hanamarket.app"
     },
     "androidStatusBar": {
@@ -39,7 +39,7 @@
       [
         "expo-notifications",
         {
-          "icon": "./assets/images/icon.png",
+          "icon": "./assets/images/icon-iphone.png",
           "color": "#02A348",
           "defaultChannel": "default",
           "sounds": []

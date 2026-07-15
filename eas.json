@@ -40,22 +40,24 @@
       "env": {
         "APP_ENV": "production"
       }
+    },
+    "production-ios": {
+      "extends": "production",
+      "environment": "production",
+      "ios": {
+        "simulator": false
+      }
     }
   },
   "submit": {
     "production": {
       "android": {
-        "//": "Place a Google Play service-account JSON at the path below (gitignored). See https://docs.expo.dev/submit/android/",
-        "serviceAccountKeyPath": "./google-play-service-account.json",
+        "serviceAccountKeyPath": "./google-services.json",
         "track": "internal",
         "releaseStatus": "draft",
         "changesNotSentForReview": false
       },
       "ios": {
-        "//": "Set ASC_API_KEY_PATH / ASC_API_KEY_ID / ASC_API_ISSUER_ID env vars on your build machine, OR replace with appleId/appleTeamId/ascAppId. See https://docs.expo.dev/submit/ios/",
-        "ascApiKeyPath": "./asc-api-key.p8",
-        "ascApiKeyId": "REPLACE_ME",
-        "ascApiIssuerId": "REPLACE_ME"
       }
     }
   }

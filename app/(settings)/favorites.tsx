@@ -105,7 +105,7 @@ const FavoritesPage: React.FC = () => {
                             status={item.status ?? ''}
                             main_image_url={item.main_image_url ?? ''}
                             created_ago={item.created_ago ?? ''}
-                            moljal=''
+                            moljal={item.moljal ?? ''}
                             is_free={!item.price}
                             price={item.price ?? ''}
                             likes_count={item.likes_count ?? 0}

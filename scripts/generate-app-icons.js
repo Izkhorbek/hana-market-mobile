@@ -24,6 +24,7 @@ const sharp = require('sharp')
 
 const ROOT = path.resolve(__dirname, '..')
 const SRC = path.join(ROOT, 'assets/images/icon.png')
+const SRC_IPHONE = path.join(ROOT, 'assets/images/icon-iphone.png')
 const SPLASH_SRC = path.join(ROOT, 'assets/images/splash-wordmark.svg')
 const OUT = path.join(ROOT, 'assets/images')
 
@@ -49,6 +50,11 @@ if (!fs.existsSync(SPLASH_SRC)) {
   process.exit(1)
 }
 
+if (!fs.existsSync(SRC_IPHONE)) {
+  console.error(`iPhone icon source not found: ${SRC_IPHONE}`)
+  process.exit(1)
+}
+
 (async () => {
   // const srcMeta = await sharp(SRC).metadata()
   // console.log(`Source: ${path.basename(SRC)} ${srcMeta.width}x${srcMeta.height}`)
@@ -65,13 +71,13 @@ if (!fs.existsSync(SPLASH_SRC)) {
   })
     .composite([
       {
-        input: await sharp(SRC).resize(820, 820, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } }).toBuffer(),
+        input: await sharp(SRC_IPHONE).resize(820, 820, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } }).toBuffer(),
         gravity: 'center',
       },
     ])
     .flatten({ background: hexToRgba(BG_HEX) })
     .png({ compressionLevel: 9 })
-    .toFile(path.join(OUT, 'icon.png'))
+    .toFile(path.join(OUT, 'icon-iphone.png'))
   // console.log('  -> icon.png (1024x1024 opaque)')
 
   // 2) Splash logo — transparent wordmark so only the text sits on the splash background.

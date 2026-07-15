@@ -133,24 +133,56 @@ function withNetworkSecurityAndroid(config, opts) {
   return config
 }
 
+// A valid SPKI-SHA256 pin is 32 raw bytes → exactly 44 base64 characters
+// (43 payload chars + one "=" pad). Reject anything else. Malformed or
+// placeholder pins (wrong length, an "sha256/" prefix, non-base64 filler)
+// would otherwise be written verbatim into NSPinnedDomains and permanently
+// break TLS to the API — locking every user out of production. Skipping
+// pinning is strictly safer than bricking it: HTTPS + ATS still apply.
+function isValidSpkiPin(pin) {
+  return typeof pin === 'string' && /^[A-Za-z0-9+/]{43}=$/.test(pin)
+}
+
 function withNetworkSecurityIos(
   config,
   { apiHost, apiProtocol, pinSha256, backupPinSha256 },
 ) {
-  if (!apiHost || apiProtocol !== 'https:' || !pinSha256) return config
+  if (!apiHost || apiProtocol !== 'https:') return config
+
+  const validPins = [pinSha256, backupPinSha256].filter(isValidSpkiPin)
+
+  // Require TWO valid pins before activating. Apple's guidelines mandate a
+  // backup pin so that rotating the leaf certificate cannot brick the app;
+  // a single pin (or a malformed/partial config) must NOT activate pinning.
+  // With fewer than two valid pins we skip entirely — HTTPS + ATS still apply.
+  if (validPins.length < 2) {
+    if (pinSha256 || backupPinSha256) {
+      // eslint-disable-next-line no-console
+      console.warn(
+        '[with-network-security] iOS certificate pinning skipped: it requires ' +
+          'TWO valid 44-character base64 SPKI-SHA256 pins (primary + backup). ' +
+          'Fix API_PIN_SHA256 / API_BACKUP_PIN_SHA256 or leave them unset.',
+      )
+    }
+    return config
+  }
 
   return withInfoPlist(config, (cfg) => {
-    const pins = [pinSha256, backupPinSha256].filter(Boolean)
-
-    cfg.modResults.NSPinnedDomains = {
-      ...(cfg.modResults.NSPinnedDomains || {}),
+    // Apple requires NSPinnedDomains to live INSIDE NSAppTransportSecurity —
+    // a top-level NSPinnedDomains key is ignored by iOS (pinning becomes a
+    // silent no-op). Merge into the existing ATS dictionary so the
+    // NSAllowsArbitraryLoads:false set by app.config.ts is preserved.
+    const ats = { ...(cfg.modResults.NSAppTransportSecurity || {}) }
+    ats.NSPinnedDomains = {
+      ...(ats.NSPinnedDomains || {}),
       [apiHost]: {
         NSIncludesSubdomains: true,
-        NSPinnedCAIdentities: pins.map((pin) => ({
+        NSPinnedCAIdentities: validPins.map((pin) => ({
           'SPKI-SHA256-BASE64': pin,
         })),
       },
     }
+    cfg.modResults.NSAppTransportSecurity = ats
 
     return cfg
   })
