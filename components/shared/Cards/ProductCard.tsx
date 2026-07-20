@@ -117,15 +117,8 @@ const ProductCardComponent: React.FC<ProductCardProps> = ({
 							}}>
 								{t(`home.sold`)}</Text>
 						}
-						{is_free && <Text style={{
-							fontSize: 16,
-							color: 'white',
-							backgroundColor: Colors.light.primaryColor,
-							paddingHorizontal: 8,
-							paddingVertical: 1,
-							borderRadius: 4
-						}}>
-							{t('home.free')}</Text>
+						{is_free && <Text style={[styles.price, { color: colors.text }]}>
+							{t('home.free') + ' 💚'}</Text>
 						}
 						<Text style={[styles.price, { color: colors.text }]}>{price}</Text>
 					</View>
