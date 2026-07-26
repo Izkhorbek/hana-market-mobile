@@ -1,4 +1,5 @@
 import ProfilePageHeader from '@/components/headers/ProfilePageHeader'
+import GuestPrompt from '@/components/shared/GuestPrompt'
 import { LanguageSelector } from '@/components/Settings/LanguageSelector'
 import ThemedScrollView from '@/components/themed-scrollview'
 import { Switch } from '@/components/ui/switch'
@@ -124,6 +125,20 @@ const ProfilePage = () => {
 		}
 
 		return languages[code] || code
+	}
+
+	// The profile is account-only — a guest sees a login CTA instead of the
+	// activity / settings menu (which all lead to auth-required screens).
+	if (!isAuthenticated) {
+		return (
+			<View style={[styles.container, { backgroundColor }]}>
+				<ProfilePageHeader />
+				<GuestPrompt
+					title={t('guest.profile_title')}
+					message={t('guest.profile_message')}
+				/>
+			</View>
+		)
 	}
 
 	return (

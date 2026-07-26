@@ -6,6 +6,7 @@ import { ActivityIndicator, Alert, View } from 'react-native'
 
 export default function Index() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
+  const isGuest = useAuthStore((s) => s.isGuest)
   const isHydrated = useAuthStore((s) => s.isHydrated)
   const sessionExpiredOnStart = useAuthStore((s) => s.sessionExpiredOnStart)
   const clearSessionExpiredOnStart = useAuthStore((s) => s.clearSessionExpiredOnStart)
@@ -29,7 +30,9 @@ export default function Index() {
     )
   }
 
-  if (isAuthenticated) {
+  // Authenticated users and guests both land on the tabs; only a fresh /
+  // logged-out user (neither) sees the welcome screen.
+  if (isAuthenticated || isGuest) {
     return <Redirect href="/(tabs)/home" />
   }
 

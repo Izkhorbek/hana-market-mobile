@@ -9,13 +9,17 @@ import { StyleSheet, TouchableOpacity } from 'react-native'
 import { ThemedText } from '../themed-text'
 import { ThemedView } from '../themed-view'
 import { useAuthStore } from '@/modules/Auth/auth-store'
+import { useRequireAuth } from '@/hooks/useRequireAuth'
 import { useTranslations } from '@/hooks/use-translation'
 
 const HomeHeader = () => {
 	const colors = useThemeColors()
+	const requireAuth = useRequireAuth()
 
+	// Managing the saved neighborhood/radius is an auth-only backend action, so
+	// a guest is prompted to log in instead.
 	const handleNeighborhoodPress = () => {
-		router.push('/(settings)/manage')
+		requireAuth(() => router.push('/(settings)/manage'))
 	}
 
 	const handleSearchPress = () => {

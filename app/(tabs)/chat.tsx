@@ -1,5 +1,6 @@
 import { useChatList, useDeleteChatRoomMutation, useMyChatQuery } from '@/api/hooks'
 import ChatPageHeader from '@/components/headers/ChatPageHeader'
+import GuestPrompt from '@/components/shared/GuestPrompt'
 import i18n from '@/constants/localization'
 import { useTranslations } from '@/hooks/use-translation'
 import { useColor } from '@/hooks/useColor'
@@ -64,6 +65,7 @@ const ChatPage = () => {
     isError: false,
   })
   const userId = useAuthStore((s) => s.user?.id)
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
   const queryClient = useQueryClient()
 
   // Connect to SignalR
@@ -103,6 +105,8 @@ const ChatPage = () => {
   } = useMyChatQuery({
     querySettings: {
       staleTime: 1000 * 60, // 1 minute
+      // Guests have no chats and hitting the endpoint would 401 — skip it.
+      enabled: isAuthenticated,
     }
   })
 
@@ -219,6 +223,18 @@ const ChatPage = () => {
       </Swipeable>
     )
   }, [deletingChatId, handleChatPress, handleDeleteChatRoom, userId])
+
+  // Chat is an account-only feature — guests get a login CTA instead.
+  if (!isAuthenticated) {
+    return (
+      <View style={[styles.container, { backgroundColor }]}>
+        <GuestPrompt
+          title={t('guest.chat_title')}
+          message={t('guest.chat_message')}
+        />
+      </View>
+    )
+  }
 
   if (isLoading && !chatListResponse) {
     return (

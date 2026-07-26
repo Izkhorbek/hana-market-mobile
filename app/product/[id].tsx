@@ -25,6 +25,7 @@ import {
   EWorkSalaryType,
   EWorkType,
 } from '@/constants/enums'
+import { useRequireAuth } from '@/hooks/useRequireAuth'
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
 import { useAuthStore } from '@/modules/Auth/auth-store'
@@ -205,7 +206,7 @@ const ProductDetailPage: React.FC = () => {
   const insets = useSafeAreaInsets()
   const [isLiked, setIsLiked] = useState(false)
   const isLikedRef = useRef(false)
-  const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
+  const requireAuth = useRequireAuth()
   const currentUserId = useAuthStore((s) => s.user?.id)
 
   // Image viewer state
@@ -627,45 +628,41 @@ const ProductDetailPage: React.FC = () => {
     useCreateChatMutation()
 
   const handleLike = useCallback(() => {
-    if (!isAuthenticated) {
-      router.push('/(auth)/auth')
-      return
-    }
-    const next = !isLikedRef.current
-    isLikedRef.current = next
-    setIsLiked(next)
-    toggleLike(
-      { id: productId, data: { is_liked: next } },
-      {
-        onError: () => {
-          isLikedRef.current = !next
-          setIsLiked(!next)
+    requireAuth(() => {
+      const next = !isLikedRef.current
+      isLikedRef.current = next
+      setIsLiked(next)
+      toggleLike(
+        { id: productId, data: { is_liked: next } },
+        {
+          onError: () => {
+            isLikedRef.current = !next
+            setIsLiked(!next)
+          },
         },
-      },
-    )
-  }, [isAuthenticated, productId, toggleLike])
+      )
+    })
+  }, [requireAuth, productId, toggleLike])
 
   const handleChat = useCallback(() => {
-    if (!isAuthenticated) {
-      router.push('/(auth)/auth')
-      return
-    }
-    if (isMyProduct || isSoldOrReserved) return
-    if (!productSellerId) return
-    createChat(
-      { seller_id: productSellerId, product_id: productId },
-      {
-        onSuccess: (res) => {
-          // API response is wrapped: { data: ChatRoomDto, message, code }
-          const chatRoomId = res.data?.data?.id
-          if (chatRoomId) {
-            router.push(`/chat/${chatRoomId}`)
-          }
+    requireAuth(() => {
+      if (isMyProduct || isSoldOrReserved) return
+      if (!productSellerId) return
+      createChat(
+        { seller_id: productSellerId, product_id: productId },
+        {
+          onSuccess: (res) => {
+            // API response is wrapped: { data: ChatRoomDto, message, code }
+            const chatRoomId = res.data?.data?.id
+            if (chatRoomId) {
+              router.push(`/chat/${chatRoomId}`)
+            }
+          },
         },
-      },
-    )
+      )
+    })
   }, [
-    isAuthenticated,
+    requireAuth,
     isMyProduct,
     isSoldOrReserved,
     productSellerId,

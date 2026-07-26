@@ -30,10 +30,13 @@ const MapPage = () => {
   const [selectedMarker, setSelectedMarker] = useState<MarkerData | null>(null)
   const [isModalVisible, setIsModalVisible] = useState(false)
 
-  // Get user location from auth store
+  // Get user location from auth store. Falls back to a guest's client-side
+  // coords, then the Tashkent default — so the map centres sensibly for guests.
   const user = useAuthStore((s) => s.user)
-  const userLat = user?.latitude ?? AppLimits.DefaultCoordinates.TASHKENT_LATITUDE
-  const userLng = user?.longitude ?? AppLimits.DefaultCoordinates.TASHKENT_LONGITUDE
+  const guestLatitude = useAuthStore((s) => s.guestLatitude)
+  const guestLongitude = useAuthStore((s) => s.guestLongitude)
+  const userLat = user?.latitude ?? guestLatitude ?? AppLimits.DefaultCoordinates.TASHKENT_LATITUDE
+  const userLng = user?.longitude ?? guestLongitude ?? AppLimits.DefaultCoordinates.TASHKENT_LONGITUDE
 
   // Parse URL params for highlighted location
   const latitudeParam = Number(params.latitude)

@@ -4,6 +4,7 @@ import { classifyGeoApiError, type ApiErrorKind } from '@/utils/apiError'
 import { getCurrentLocationSafe, showLocationErrorAlert } from '@/utils/location'
 import { EProductType } from '@/constants/enums'
 import { useProductImagePrefetch } from '@/hooks/useProductImagePrefetch'
+import { useRequireAuth } from '@/hooks/useRequireAuth'
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
 import { useAuthStore } from '@/modules/Auth/auth-store'
@@ -69,13 +70,22 @@ interface ProductsListProps {
 const ProductsList: React.FC<ProductsListProps> = ({ selectedFilter, onFilterChange, onDotsPress }) => {
   const { t } = useTranslations()
   const colors = useThemeColors()
+  const requireAuth = useRequireAuth()
   const user = useAuthStore((s) => s.user)
   const isHydrated = useAuthStore((s) => s.isHydrated)
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
+  const isGuest = useAuthStore((s) => s.isGuest)
+  const guestLatitude = useAuthStore((s) => s.guestLatitude)
+  const guestLongitude = useAuthStore((s) => s.guestLongitude)
+  const setGuestLocation = useAuthStore((s) => s.setGuestLocation)
   const updateLocation = useAuthStore((s) => s.updateLocation)
 
-  const userLat = user?.latitude ?? AppLimits.DefaultCoordinates.TASHKENT_LATITUDE
-  const userLng = user?.longitude ?? AppLimits.DefaultCoordinates.TASHKENT_LONGITUDE
+  // Location precedence: logged-in user's saved coords → guest's client-side
+  // coords → Tashkent default. Keeps the feed working for guests.
+  const effectiveLat = user?.latitude ?? guestLatitude
+  const effectiveLng = user?.longitude ?? guestLongitude
+  const userLat = effectiveLat ?? AppLimits.DefaultCoordinates.TASHKENT_LATITUDE
+  const userLng = effectiveLng ?? AppLimits.DefaultCoordinates.TASHKENT_LONGITUDE
   const productType = FILTER_TO_PRODUCT_TYPE[selectedFilter]
 
   const {
@@ -95,8 +105,10 @@ const ProductsList: React.FC<ProductsListProps> = ({ selectedFilter, onFilterCha
       product_type: productType,
     },
     // Never fetch before the keychain-derived session is known. Running before
-    // hydration races a not-yet-injected auth token → guaranteed 401.
-    querySettings: { enabled: isHydrated && isAuthenticated },
+    // hydration races a not-yet-injected auth token → guaranteed 401. Guests
+    // browse the public feed too, so the gate allows either a session or guest
+    // mode once hydrated.
+    querySettings: { enabled: isHydrated && (isAuthenticated || isGuest) },
   })
 
   const loadMoreInFlightRef = useRef(false)
@@ -125,7 +137,7 @@ const ProductsList: React.FC<ProductsListProps> = ({ selectedFilter, onFilterCha
   // Pick the reason from the signals the Home list has (location + category).
   // Search-specific reasons (NO_SEARCH_RESULTS / FILTER_TOO_STRICT) live on the
   // search screen; NEW_REGION needs a backend signal we don't have here yet.
-  const hasLocation = user?.latitude != null && user?.longitude != null
+  const hasLocation = effectiveLat != null && effectiveLng != null
   const emptyReason: EmptyReason = !hasLocation
     ? 'NO_LOCATION'
     : selectedFilter !== 'all'
@@ -141,23 +153,28 @@ const ProductsList: React.FC<ProductsListProps> = ({ selectedFilter, onFilterCha
       return
     }
     try {
-      await updateLocation(result.coords.latitude, result.coords.longitude)
-      // Updating user.latitude/longitude changes the query params → the list
-      // refetches automatically; refetch() covers the same-coords case.
+      // Guests store coords client-side (backend location endpoint is
+      // auth-only); logged-in users persist to their profile. Either way the
+      // changed coords re-run the query; refetch() covers the same-coords case.
+      if (isAuthenticated) {
+        await updateLocation(result.coords.latitude, result.coords.longitude)
+      } else {
+        setGuestLocation(result.coords.latitude, result.coords.longitude)
+      }
       refetch()
     } catch {
       // updateLocation failures are transient/network — leave the empty state.
     }
-  }, [updateLocation, refetch, t])
+  }, [isAuthenticated, updateLocation, setGuestLocation, refetch, t])
 
   const ListEmpty = isInitialLoading ? null : (
     <MarketplaceEmptyState
       reason={emptyReason}
       isLoggedIn={isAuthenticated}
       onEnableLocation={handleEnableLocation}
-      onSelectManualLocation={() => router.push('/(settings)/manage')}
-      onExpandRadius={() => router.push('/(settings)/manage')}
-      onCreateListing={() => router.push('/(post)/create')}
+      onSelectManualLocation={() => requireAuth(() => router.push('/(settings)/manage'))}
+      onExpandRadius={() => requireAuth(() => router.push('/(settings)/manage'))}
+      onCreateListing={() => requireAuth(() => router.push('/(post)/create'))}
       onBrowseCategories={() => router.push('/categories')}
     />
   )

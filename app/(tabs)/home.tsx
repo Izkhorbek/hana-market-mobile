@@ -4,6 +4,7 @@ import ProductsList from '@/components/Lists/ProductsList'
 import ComplaintModal from '@/components/shared/ComplaintModal'
 import { ThemedView } from '@/components/themed-view'
 import { AppLimits } from '@/constants/appLimits'
+import { useRequireAuth } from '@/hooks/useRequireAuth'
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
 import Feather from '@expo/vector-icons/Feather'
@@ -41,6 +42,7 @@ export default function HomeScreen() {
   const colorScheme = useColorScheme()
   const { t } = useTranslations()
   const insets = useSafeAreaInsets()
+  const requireAuth = useRequireAuth()
   const [activeFilter, setActiveFilter] = useState('all')
   const [sheetVisible, setSheetVisible] = useState(false)
   const [reportModalVisible, setReportModalVisible] = useState(false)
@@ -105,9 +107,15 @@ export default function HomeScreen() {
     },
   ]
 
+  // Posting and reporting both require an account — a guest is prompted to log
+  // in instead of opening the sheet / report modal.
+  const handleOpenPostSheet = () => requireAuth(openSheet)
+
   const handleReport = (productId: number) => {
-    setSelectedProductId(productId)
-    setReportModalVisible(true)
+    requireAuth(() => {
+      setSelectedProductId(productId)
+      setReportModalVisible(true)
+    })
   }
 
   return (
@@ -123,7 +131,7 @@ export default function HomeScreen() {
         <TouchableOpacity
           testID="home-fab-post"
           style={[styles.fab, { backgroundColor: colors.primaryColor }]}
-          onPress={openSheet}
+          onPress={handleOpenPostSheet}
           activeOpacity={0.85}
         >
           <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 2 }}>

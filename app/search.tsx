@@ -49,14 +49,16 @@ const SearchPage: React.FC = () => {
     const colors = useThemeColors()
     const insets = useSafeAreaInsets()
     const user = useAuthStore((s) => s.user)
+    const guestLatitude = useAuthStore((s) => s.guestLatitude)
+    const guestLongitude = useAuthStore((s) => s.guestLongitude)
     const { categoryId } = useLocalSearchParams<{ categoryId?: string }>()
 
     const [query, setQuery] = useState('')
     const [debouncedQuery, setDebouncedQuery] = useState('')
     const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null)
 
-    const userLat = user?.latitude ?? DEFAULT_LAT
-    const userLng = user?.longitude ?? DEFAULT_LNG
+    const userLat = user?.latitude ?? guestLatitude ?? DEFAULT_LAT
+    const userLng = user?.longitude ?? guestLongitude ?? DEFAULT_LNG
 
     const { data: categoriesRes } = useCategoriesQuery()
     const categories = categoriesRes?.data?.data ?? []

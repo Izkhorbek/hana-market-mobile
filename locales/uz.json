@@ -128,7 +128,8 @@
       "description": "Qo'shnilar bilan ishonchli va erkin savdo",
       "get_started": "Boshlash",
       "already_have_account": "Akkauntingiz bormi?",
-      "login_link": "Kirish"
+      "login_link": "Kirish",
+      "continue_as_guest": "Mehmon sifatida davom etish"
     },
     "verification": {
       "title": "Telefon raqamingizni\nkiriting",
@@ -409,6 +410,17 @@
     "logout_confirm_message": "Haqiqatan ham chiqmoqchimisiz?",
     "logout_cancel": "Bekor qilish",
     "guest": "Mehmon"
+  },
+  "guest": {
+    "login_required_title": "Kirish talab qilinadi",
+    "login_required_message": "Buning uchun akkaunt kerak. Davom etish uchun ro'yxatdan o'ting.",
+    "login_button": "Kirish",
+    "cta_title": "Davom etish uchun kiring",
+    "cta_message": "Bu imkoniyatdan foydalanish uchun ro'yxatdan o'ting.",
+    "chat_title": "Suhbat uchun akkauntingizga kiring",
+    "chat_message": "Sotuvchilarga yozish va suhbatlaringizni ko'rish uchun kiring.",
+    "profile_title": "Akkauntingizga kiring",
+    "profile_message": "E'lonlar, sevimlilar va profilingizni boshqarish uchun akkauntingizga kiring."
   },
   "chat": {
     "title": "Chatlar",

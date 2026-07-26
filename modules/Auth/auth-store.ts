@@ -50,6 +50,22 @@ interface AuthState {
   isHydrated: boolean;
   locationGranted: boolean;
   /**
+   * Guest ("browse without login") mode. Set when the user taps "continue as
+   * guest" on the welcome screen. Persisted so a returning guest lands straight
+   * on the tabs. Independent of `isAuthenticated` (a guest has no token).
+   * Cleared only on a successful `verifyOtp` — NOT in `logout()`, because
+   * startup hydration calls `logout()` on an empty vault and that must not
+   * bounce a returning guest back to the welcome screen.
+   */
+  isGuest: boolean;
+  /**
+   * Client-side location for a guest. Guests can't persist location on the
+   * backend (`user/update/location` is auth-only), so their coordinates live
+   * here and feed the product/map queries as a fallback for `user.latitude`.
+   */
+  guestLatitude: number | null;
+  guestLongitude: number | null;
+  /**
    * Set to true when a startup token validation fails (expired / missing).
    * Cleared after the Alert is shown. NOT persisted.
    */
@@ -58,6 +74,15 @@ interface AuthState {
   // Actions
   setHydrated: (hydrated: boolean) => void;
   clearSessionExpiredOnStart: () => void;
+  /**
+   * Enter guest mode. The app gate (`app/index.tsx`) then routes to the tabs
+   * even though there is no session.
+   */
+  continueAsGuest: () => void;
+  /**
+   * Store a guest's device-GPS coordinates client-side (no backend call).
+   */
+  setGuestLocation: (latitude: number, longitude: number) => void;
   /**
    * Ask the backend to SMS an OTP for this phone. No token is issued yet.
    */
@@ -141,9 +166,19 @@ export const useAuthStore = create<AuthState>()(
       isHydrated: false,
       locationGranted: false,
       sessionExpiredOnStart: false,
+      isGuest: false,
+      guestLatitude: null,
+      guestLongitude: null,
 
       setHydrated: (hydrated) => set({ isHydrated: hydrated }),
       clearSessionExpiredOnStart: () => set({ sessionExpiredOnStart: false }),
+      continueAsGuest: () => set({ isGuest: true }),
+      setGuestLocation: (latitude, longitude) =>
+        set({
+          guestLatitude: latitude,
+          guestLongitude: longitude,
+          locationGranted: true,
+        }),
 
       requestOtp: async (phoneNumber) => {
         // Fire-and-forget from the store's perspective: the SMS is the only
@@ -170,6 +205,9 @@ export const useAuthStore = create<AuthState>()(
           expiresAt: tokens.expiresAt,
           refreshTokenExpiresAt: tokens.refreshTokenExpiresAt,
           isAuthenticated: true,
+          // A guest who logs in is now a real user — leave guest mode so the
+          // gate/UI stop treating them as a guest.
+          isGuest: false,
           // Never write id=0 placeholder user into persisted auth state.
           user: hasValidUserId(userData) ? userData : get().user,
         })
@@ -382,6 +420,11 @@ export const useAuthStore = create<AuthState>()(
       partialize: (state) => ({
         user: state.user,
         locationGranted: state.locationGranted,
+        // Guest mode + guest coordinates are non-secret client state; persist
+        // them so a returning guest reopens straight into the tabs.
+        isGuest: state.isGuest,
+        guestLatitude: state.guestLatitude,
+        guestLongitude: state.guestLongitude,
         // expiresAt timestamps are not secret, but keeping them next to their
         // tokens (in the vault) makes rotation atomic. So they're excluded too.
       }),

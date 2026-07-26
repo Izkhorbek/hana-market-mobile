@@ -22,6 +22,8 @@ const LocationPermissionPage = () => {
   const { t } = useTranslations()
   const updateLocation = useAuthStore((s) => s.updateLocation)
   const setLocationGranted = useAuthStore((s) => s.setLocationGranted)
+  const setGuestLocation = useAuthStore((s) => s.setGuestLocation)
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
 
   const [isLoading, setIsLoading] = useState(false)
 
@@ -43,7 +45,13 @@ const LocationPermissionPage = () => {
         accuracy: Location.Accuracy.Balanced,
       })
 
-      await updateLocation(location.coords.latitude, location.coords.longitude)
+      // Guests can't persist location on the backend (auth-only endpoint) —
+      // store it client-side. Logged-in users save it to their profile.
+      if (isAuthenticated) {
+        await updateLocation(location.coords.latitude, location.coords.longitude)
+      } else {
+        setGuestLocation(location.coords.latitude, location.coords.longitude)
+      }
       router.replace('/(tabs)/home')
     } catch (error: any) {
       const message =

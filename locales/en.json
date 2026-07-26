@@ -128,7 +128,8 @@
 			"description": "Trade with your neighbors confidently and freely",
 			"get_started": "Get Started",
 			"already_have_account": "Already have an account?",
-			"login_link": "Log In"
+			"login_link": "Log In",
+			"continue_as_guest": "Continue as guest"
 		},
 		"verification": {
 			"title": "Enter your\nphone number",
@@ -407,6 +408,17 @@
 		"logout_confirm_message": "Are you sure you want to log out?",
 		"logout_cancel": "Cancel",
 		"guest": "Guest"
+	},
+	"guest": {
+		"login_required_title": "Login required",
+		"login_required_message": "You need an account to do that. Log in to continue.",
+		"login_button": "Log in",
+		"cta_title": "Log in to continue",
+		"cta_message": "Create an account or log in to unlock this feature.",
+		"chat_title": "Log in to chat",
+		"chat_message": "Log in to message sellers and see your conversations.",
+		"profile_title": "Log in to your account",
+		"profile_message": "Log in to manage your listings, favorites and profile."
 	},
 	"chat": {
 		"title": "Chats",

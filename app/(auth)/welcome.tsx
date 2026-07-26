@@ -5,6 +5,7 @@ import { Logo } from '@/constants/images'
 import { Colors } from '@/constants/theme'
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
+import { useAuthStore } from '@/modules/Auth/auth-store'
 import { Link, useRouter } from 'expo-router'
 import React from 'react'
 import { Image, StyleSheet, TouchableOpacity } from 'react-native'
@@ -12,8 +13,17 @@ import { Image, StyleSheet, TouchableOpacity } from 'react-native'
 const WelcomePage = () => {
   const router = useRouter()
   const { t } = useTranslations()
+  const continueAsGuest = useAuthStore((s) => s.continueAsGuest)
 
   const colors = useThemeColors()
+
+  // Enter guest mode, then offer the location prompt before the tabs so guests
+  // get a location-aware feed too (they persist it client-side, not on the
+  // backend). Skipping there still lands them on the tabs.
+  const handleContinueAsGuest = () => {
+    continueAsGuest()
+    router.replace('/(auth)/location-permission')
+  }
   return (
     <ThemedScrollView
       style={styles.container}
@@ -63,6 +73,20 @@ const WelcomePage = () => {
             </ThemedText>
           </TouchableOpacity>
         </ThemedView>
+
+        <TouchableOpacity
+          testID="welcome-continue-guest"
+          style={styles.guestButton}
+          activeOpacity={0.7}
+          onPress={handleContinueAsGuest}
+        >
+          <ThemedText
+            type="default"
+            style={[styles.guestButtonText, { color: colors.primaryColor }]}
+          >
+            {t('auth.welcome_page.continue_as_guest')}
+          </ThemedText>
+        </TouchableOpacity>
       </ThemedView>
     </ThemedScrollView>
   )
@@ -134,6 +158,16 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: Colors.light.primaryColor,
+  },
+  guestButton: {
+    alignItems: 'center',
+    paddingVertical: 14,
+    marginBottom: 8,
+  },
+  guestButtonText: {
+    fontSize: 15,
+    fontWeight: '600',
+    textDecorationLine: 'underline',
   },
   logo: {
     width: 200,
