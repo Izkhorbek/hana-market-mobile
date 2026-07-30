@@ -435,7 +435,21 @@
     "status_pending": "Navbatda",
     "status_current": "Hozir shu yerda",
     "status_delivered": "Oldi",
-    "status_skipped": "Uyda yo'q edi"
+    "status_skipped": "Uyda yo'q edi",
+    "manage_title": "Tarqatishni boshqarish",
+    "create_session": "Sessiya ochish",
+    "date": "Sana",
+    "time": "Vaqt (ixtiyoriy)",
+    "note": "Izoh (ixtiyoriy)",
+    "start": "Boshlash",
+    "pause": "To'xtatib turish",
+    "resume": "Davom ettirish",
+    "complete": "Yakunlash",
+    "session_planned": "Rejalashtirilgan",
+    "session_active": "Faol",
+    "session_paused": "To'xtatilgan",
+    "session_completed": "Yakunlangan",
+    "session_cancelled": "Bekor qilingan"
   },
   "mahalla": {
     "tab": "Mahalla",

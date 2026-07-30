@@ -433,7 +433,21 @@
     "status_pending": "В очереди",
     "status_current": "Сейчас здесь",
     "status_delivered": "Получил",
-    "status_skipped": "Не было дома"
+    "status_skipped": "Не было дома",
+    "manage_title": "Управление раздачей",
+    "create_session": "Создать сессию",
+    "date": "Дата",
+    "time": "Время (необязательно)",
+    "note": "Заметка (необязательно)",
+    "start": "Начать",
+    "pause": "Пауза",
+    "resume": "Продолжить",
+    "complete": "Завершить",
+    "session_planned": "Запланирована",
+    "session_active": "Активна",
+    "session_paused": "Пауза",
+    "session_completed": "Завершена",
+    "session_cancelled": "Отменена"
   },
   "mahalla": {
     "tab": "Махалля",

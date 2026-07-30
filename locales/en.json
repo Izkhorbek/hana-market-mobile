@@ -432,7 +432,21 @@
 		"status_pending": "Waiting",
 		"status_current": "Here now",
 		"status_delivered": "Received",
-		"status_skipped": "Was not home"
+		"status_skipped": "Was not home",
+		"manage_title": "Manage distribution",
+		"create_session": "Create session",
+		"date": "Date",
+		"time": "Time (optional)",
+		"note": "Note (optional)",
+		"start": "Start",
+		"pause": "Pause",
+		"resume": "Resume",
+		"complete": "Complete",
+		"session_planned": "Planned",
+		"session_active": "Active",
+		"session_paused": "Paused",
+		"session_completed": "Completed",
+		"session_cancelled": "Cancelled"
 	},
 	"mahalla": {
 		"tab": "Mahalla",

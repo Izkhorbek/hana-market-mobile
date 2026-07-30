@@ -12,7 +12,7 @@ import { useTranslations } from '@/hooks/use-translation'
 import { useGasStore } from '@/modules/Gas/gas-store'
 import type { GasHouseholdRow, GasHouseholdStatus } from '@/types'
 import { type Href, router } from 'expo-router'
-import { ArrowLeft } from 'lucide-react-native'
+import { ArrowLeft, SlidersHorizontal } from 'lucide-react-native'
 import React, { useEffect } from 'react'
 import {
   ScrollView,
@@ -43,13 +43,19 @@ export default function GasTrackerScreen() {
   const setDetail = useGasStore((s) => s.setDetail)
   const setMyStatus = useGasStore((s) => s.setMyStatus)
   const setMahallaId = useGasStore((s) => s.setMahallaId)
+  const setRole = useGasStore((s) => s.setRole)
+  const role = useGasStore((s) => s.role)
+  const isManager = role === 'mahalla_admin' || role === 'distributor'
 
-  // Seed mahallaId from the user's membership (client state isn't persisted).
+  // Seed mahallaId + role from the user's membership (client state isn't persisted).
   const myMahallaQ = useMyMahallaQuery()
   useEffect(() => {
     const member = myMahallaQ.data?.data?.data
-    if (member) setMahallaId(member.mahalla_id)
-  }, [myMahallaQ.data, setMahallaId])
+    if (member) {
+      setMahallaId(member.mahalla_id)
+      setRole(member.role)
+    }
+  }, [myMahallaQ.data, setMahallaId, setRole])
 
   // Live realtime patches for this mahalla.
   useGasRealtime(mahallaId)
@@ -84,7 +90,17 @@ export default function GasTrackerScreen() {
         <ArrowLeft size={22} color={colors.text} />
       </TouchableOpacity>
       <Text style={[styles.headerTitle, { color: colors.text }]}>{t('gas.title')}</Text>
-      <View style={styles.headerBtn} />
+      {isManager ? (
+        <TouchableOpacity
+          onPress={() => router.push('/gas/manage' as Href)}
+          hitSlop={10}
+          style={styles.headerBtn}
+        >
+          <SlidersHorizontal size={20} color={colors.primaryColor} />
+        </TouchableOpacity>
+      ) : (
+        <View style={styles.headerBtn} />
+      )}
     </View>
   )
 

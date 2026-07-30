@@ -7,6 +7,7 @@ import type {
   GasSessionDetailDto,
   GasSessionDto,
   GasSessionStartedEvent,
+  MahallaRole,
 } from '@/types'
 
 /**
@@ -18,6 +19,8 @@ import type {
 interface GasState {
   /** The mahalla whose session we're tracking. */
   mahallaId: number | null
+  /** The current user's role in the mahalla (gates the admin/runner controls). */
+  role: MahallaRole | null
   /** The active/planned session (resident banner + card). */
   session: GasSessionDto | null
   /** The current user's own household status in the session. */
@@ -27,6 +30,7 @@ interface GasState {
 
   // ── Seeders (from REST) ──
   setMahallaId: (id: number | null) => void
+  setRole: (role: MahallaRole | null) => void
   setSession: (session: GasSessionDto | null) => void
   setMyStatus: (status: GasHouseholdStatusDto | null) => void
   setDetail: (detail: GasSessionDetailDto | null) => void
@@ -42,11 +46,13 @@ interface GasState {
 
 export const useGasStore = create<GasState>((set, get) => ({
   mahallaId: null,
+  role: null,
   session: null,
   myStatus: null,
   detail: null,
 
   setMahallaId: (id) => set({ mahallaId: id }),
+  setRole: (role) => set({ role }),
   setSession: (session) => set({ session }),
   setMyStatus: (status) => set({ myStatus: status }),
   setDetail: (detail) => set({ detail }),
@@ -118,5 +124,5 @@ export const useGasStore = create<GasState>((set, get) => ({
     }
   },
 
-  reset: () => set({ mahallaId: null, session: null, myStatus: null, detail: null }),
+  reset: () => set({ mahallaId: null, role: null, session: null, myStatus: null, detail: null }),
 }))
