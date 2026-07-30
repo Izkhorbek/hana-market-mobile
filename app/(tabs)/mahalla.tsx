@@ -51,7 +51,7 @@ export default function MahallaScreen() {
       iconColor: colors.tabIconSelected,
       // Typed routes for this new screen regenerate on the next `expo start`;
       // cast the href until then.
-      onPress: () => router.push('/create-service' as Href),
+      onPress: () => router.push('/service' as Href),
     },
     {
       key: 'announcements',

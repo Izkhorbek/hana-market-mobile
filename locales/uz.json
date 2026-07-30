@@ -408,6 +408,8 @@
     "availability_placeholder": "masalan, 9:00-18:00",
     "landmark": "Mo'ljal",
     "landmark_placeholder": "masalan, bozor yonida",
+    "call": "Qo'ng'iroq",
+    "no_services": "Yaqin-atrofda xizmat yo'q",
     "post_service": "Xizmatni joylash",
     "errors": {
       "category": "Xizmat turi majburiy",

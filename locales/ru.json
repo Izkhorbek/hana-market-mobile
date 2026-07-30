@@ -406,6 +406,8 @@
     "availability_placeholder": "напр., 9:00-18:00",
     "landmark": "Ориентир",
     "landmark_placeholder": "напр., рядом с базаром",
+    "call": "Позвонить",
+    "no_services": "Поблизости пока нет услуг",
     "post_service": "Разместить услугу",
     "errors": {
       "category": "Тип услуги обязателен",

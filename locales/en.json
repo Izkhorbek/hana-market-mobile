@@ -405,6 +405,8 @@
 		"availability_placeholder": "e.g., 9:00-18:00",
 		"landmark": "Landmark",
 		"landmark_placeholder": "e.g., near the bazaar",
+		"call": "Call",
+		"no_services": "No services nearby yet",
 		"post_service": "Post Service",
 		"errors": {
 			"category": "Service type is required",

@@ -1,0 +1,262 @@
+import { useServiceQuery } from '@/api/hooks'
+import { ThemedView } from '@/components/themed-view'
+import { useThemeColors } from '@/hooks/use-theme-colors'
+import { useTranslations } from '@/hooks/use-translation'
+import type { ApiResponse, SingleServiceDto } from '@/types'
+import { AxiosResponse } from 'axios'
+import { Image } from 'expo-image'
+import { router, useLocalSearchParams } from 'expo-router'
+import { ArrowLeft, Clock, MapPin, Phone, Wrench } from 'lucide-react-native'
+import React from 'react'
+import {
+  ActivityIndicator,
+  Linking,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native'
+
+export default function ServiceDetailScreen() {
+  const { id } = useLocalSearchParams<{ id: string }>()
+  const colors = useThemeColors()
+  const { t } = useTranslations()
+
+  const numericId = Number(id)
+  const { data, isLoading, isError } = useServiceQuery({ id: numericId })
+
+  const service: SingleServiceDto | undefined = (
+    data as AxiosResponse<ApiResponse<SingleServiceDto>> | undefined
+  )?.data?.data
+
+  const handleCall = () => {
+    if (service?.phone_number) Linking.openURL(`tel:${service.phone_number}`)
+  }
+
+  const Header = (
+    <View style={[styles.header, { borderBottomColor: colors.borderColor }]}>
+      <TouchableOpacity onPress={() => router.back()} hitSlop={10} style={styles.headerBtn}>
+        <ArrowLeft size={22} color={colors.text} />
+      </TouchableOpacity>
+      <Text style={[styles.headerTitle, { color: colors.text }]} numberOfLines={1}>
+        {t('mahalla.services_title')}
+      </Text>
+      <View style={styles.headerBtn} />
+    </View>
+  )
+
+  if (isLoading) {
+    return (
+      <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
+        {Header}
+        <ActivityIndicator style={styles.loader} color={colors.primaryColor} />
+      </ThemedView>
+    )
+  }
+
+  if (isError || !service) {
+    return (
+      <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
+        {Header}
+        <View style={styles.center}>
+          <Text style={[styles.errorText, { color: colors.subText }]}>{t('post.error')}</Text>
+        </View>
+      </ThemedView>
+    )
+  }
+
+  const image = service.images?.[0]
+
+  return (
+    <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
+      {Header}
+
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        {image ? (
+          <Image source={{ uri: image }} style={styles.image} contentFit="cover" transition={150} />
+        ) : (
+          <View style={[styles.imagePlaceholder, { backgroundColor: colors.tabIconBackground }]}>
+            <Wrench size={40} color={colors.tabIconSelected} strokeWidth={1.5} />
+          </View>
+        )}
+
+        <Text style={[styles.title, { color: colors.text }]}>{service.title}</Text>
+
+        <View style={styles.chipRow}>
+          {!!service.category_name && (
+            <View style={[styles.chip, { backgroundColor: colors.tabIconBackground }]}>
+              <Text style={[styles.chipText, { color: colors.tabIconSelected }]}>
+                {service.category_name}
+              </Text>
+            </View>
+          )}
+          <Text style={[styles.price, { color: colors.primaryColor }]}>
+            {service.price ?? t('service.negotiable')}
+            {!!service.price_type_name && (
+              <Text style={[styles.priceType, { color: colors.subText }]}>
+                {' '}
+                · {service.price_type_name}
+              </Text>
+            )}
+          </Text>
+        </View>
+
+        <View style={styles.metaList}>
+          {!!service.distance && (
+            <View style={styles.metaItem}>
+              <MapPin size={16} color={colors.subText} />
+              <Text style={[styles.metaText, { color: colors.subText }]}>
+                {service.distance}
+                {!!service.moljal && ` · ${service.moljal}`}
+              </Text>
+            </View>
+          )}
+          {!!service.availability && (
+            <View style={styles.metaItem}>
+              <Clock size={16} color={colors.subText} />
+              <Text style={[styles.metaText, { color: colors.subText }]}>{service.availability}</Text>
+            </View>
+          )}
+        </View>
+
+        {!!service.description && (
+          <Text style={[styles.description, { color: colors.text }]}>{service.description}</Text>
+        )}
+      </ScrollView>
+
+      {/* Fixed bottom Call button */}
+      <View style={[styles.footer, { borderTopColor: colors.borderColor }]}>
+        <TouchableOpacity
+          style={[styles.callBtn, { backgroundColor: colors.primaryColor }]}
+          onPress={handleCall}
+          activeOpacity={0.85}
+          disabled={!service.phone_number}
+        >
+          <Phone size={18} color="#fff" />
+          <Text style={styles.callBtnText}>{t('service.call')}</Text>
+        </TouchableOpacity>
+      </View>
+    </ThemedView>
+  )
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  headerBtn: {
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  headerTitle: {
+    fontSize: 17,
+    fontWeight: '600',
+    letterSpacing: -0.2,
+    flex: 1,
+    textAlign: 'center',
+  },
+  content: {
+    padding: 16,
+    paddingBottom: 24,
+  },
+  image: {
+    width: '100%',
+    height: 220,
+    borderRadius: 16,
+    marginBottom: 16,
+  },
+  imagePlaceholder: {
+    width: '100%',
+    height: 160,
+    borderRadius: 16,
+    marginBottom: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: '700',
+    letterSpacing: -0.3,
+  },
+  chipRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginTop: 10,
+    flexWrap: 'wrap',
+  },
+  chip: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 999,
+  },
+  chipText: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  price: {
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  priceType: {
+    fontSize: 12,
+    fontWeight: '400',
+  },
+  metaList: {
+    marginTop: 16,
+    gap: 8,
+  },
+  metaItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  metaText: {
+    fontSize: 13,
+  },
+  description: {
+    fontSize: 14,
+    lineHeight: 21,
+    marginTop: 16,
+  },
+  footer: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderTopWidth: StyleSheet.hairlineWidth,
+  },
+  callBtn: {
+    height: 52,
+    borderRadius: 14,
+    flexDirection: 'row',
+    gap: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  callBtnText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  loader: {
+    paddingVertical: 40,
+  },
+  center: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  errorText: {
+    fontSize: 14,
+  },
+})
