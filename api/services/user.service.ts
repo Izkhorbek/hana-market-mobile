@@ -1,7 +1,14 @@
 import type {
+  AcceptTermsRequest,
+  AcceptTermsResponse,
   ApiResponse,
+  BlockedUserDto,
+  BlockUserRequest,
+  BlockUserResponse,
   LikedProductDto,
   MyProductDto,
+  PaginatedResponse,
+  UnblockUserRequest,
   UpdateLocationRequest,
   UpdateProfileRequest,
   User,
@@ -66,5 +73,41 @@ export const userService = {
    */
   deleteAccount: () => {
     return axiosInstance.post<ApiResponse<object>>(ENDPOINT.USER.DELETE)
+  },
+
+  // ── UGC safety (Apple 1.2) ────────────────────────────────────────────────
+
+  /**
+   * Block a user. Enforcement (hiding listings/chats both ways) is server-side.
+   * POST /api/user/block
+   */
+  blockUser: (data: BlockUserRequest) => {
+    return axiosInstance.post<ApiResponse<BlockUserResponse>>(ENDPOINT.USER.BLOCK, data)
+  },
+
+  /**
+   * Unblock a previously blocked user.
+   * POST /api/user/unblock
+   */
+  unblockUser: (data: UnblockUserRequest) => {
+    return axiosInstance.post<ApiResponse<{ blocked_user_id: number }>>(ENDPOINT.USER.UNBLOCK, data)
+  },
+
+  /**
+   * Paginated list of users the current user has blocked.
+   * GET /api/user/blocked
+   */
+  getBlockedUsers: (page = 1, pageSize = 20) => {
+    return axiosInstance.get<ApiResponse<PaginatedResponse<BlockedUserDto>>>(ENDPOINT.USER.BLOCKED, {
+      params: { current_page: page, page_size: pageSize },
+    })
+  },
+
+  /**
+   * Record acceptance of the current Terms of Service & Privacy Policy.
+   * POST /api/user/accept-terms
+   */
+  acceptTerms: (data: AcceptTermsRequest) => {
+    return axiosInstance.post<ApiResponse<AcceptTermsResponse>>(ENDPOINT.USER.ACCEPT_TERMS, data)
   },
 }

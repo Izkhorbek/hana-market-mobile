@@ -36,8 +36,13 @@ const COMPLAINT_TYPE_OPTIONS: { value: EComplaintType; labelKey: string }[] = [
 interface ComplaintModalProps {
   /** Controls whether the modal should be presented */
   visible: boolean
-  /** The product being reported. Pass null when no product is selected. */
+  /** The product being reported. Pass null when reporting a user instead. */
   productId: number | null
+  /**
+   * The user being reported (e.g. from a chat or seller page). Pass null/omit
+   * when reporting a product. Exactly one of productId / userId should be set.
+   */
+  userId?: number | null
   /** Called when the modal should be dismissed (after animation completes) */
   onClose: () => void
 }
@@ -46,6 +51,7 @@ interface ComplaintModalProps {
 const ComplaintModalComponent: React.FC<ComplaintModalProps> = ({
   visible,
   productId,
+  userId = null,
   onClose,
 }) => {
   const { t } = useTranslations()
@@ -79,7 +85,7 @@ const ComplaintModalComponent: React.FC<ComplaintModalProps> = ({
   // Reacts only to the modal becoming visible; closing is handled internally
   // so we avoid triggering a second close animation after submission.
   useEffect(() => {
-    if (visible && productId !== null) {
+    if (visible && (productId !== null || userId !== null)) {
       // Reset form for each new report session
       setSelectedType(null)
       setDescription('')
@@ -94,7 +100,7 @@ const ComplaintModalComponent: React.FC<ComplaintModalProps> = ({
       }).start()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [visible, productId])
+  }, [visible, productId, userId])
 
   // ── Close sheet (with animation) ──────────────────────────────────────────
   const closeSheet = useCallback(
@@ -122,7 +128,7 @@ const ComplaintModalComponent: React.FC<ComplaintModalProps> = ({
   // ── Submit ────────────────────────────────────────────────────────────────
   const handleSubmit = useCallback(() => {
     if (isPending) return
-    if (!productId) return
+    if (!productId && !userId) return
 
     if (!selectedType) {
       Alert.alert(t('alert.error_title'), t('complaint.error_no_reason'))
@@ -133,7 +139,9 @@ const ComplaintModalComponent: React.FC<ComplaintModalProps> = ({
 
     createComplaint(
       {
-        reported_product_id: productId,
+        // Report a product OR a user — the backend accepts either target.
+        ...(productId ? { reported_product_id: productId } : {}),
+        ...(userId ? { reported_user_id: userId } : {}),
         complaint_type: selectedType,
         ...(trimmedDescription.length > 0 ? { description: trimmedDescription } : {}),
       },
@@ -170,6 +178,7 @@ const ComplaintModalComponent: React.FC<ComplaintModalProps> = ({
   }, [
     isPending,
     productId,
+    userId,
     selectedType,
     description,
     createComplaint,

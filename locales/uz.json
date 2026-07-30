@@ -58,7 +58,7 @@
     "address_not_set": "Manzil...",
     "retry_set_address": "Manzilni... qayta sozlab ko'ring",
     "create": "Joylash",
-    "free": "Bepul",
+    "free": "Tekin",
     "reserved": "Band",
     "sold": "Sotildi",
     "empty_state": "Mahsulotlar topilmadi",
@@ -156,14 +156,22 @@
       "error_generic": "Ro'yxatdan o'tishda xatolik yuz berdi. Qayta urinib ko'ring."
     },
     "location": {
-      "title": "Joylashuvingizni ulashing",
-      "description": "Yaqin-atrofdagi mahsulotlarni ko'rsatish uchun Hana Market ga joylashuvingizga ruxsat bering.",
-      "allow_button": "Joylashuvga ruxsat berish",
-      "skip_button": "Hozircha o'tkazib yuborish",
+      "title": "Yaqin-atrofdagi e'lonlar",
+      "description": "Hana Market yaqin-atrofdagi e'lonlarni ko'rsatish va joylagan buyumlaringiz qayerda chiqishini belgilash uchun joylashuvingizdan foydalanadi.",
+      "continue_button": "Davom etish",
+      "system_note": "Keyingi qadamda qurilmangiz joylashuvga ruxsat so'raydi. Rad etsangiz ham ko'rishda davom eta olasiz.",
       "permission_denied_title": "Ruxsat berilmadi",
       "permission_denied_message": "Joylashuvga ruxsat berilmadi. Sozlamalardan yoqishingiz mumkin.",
       "error_title": "Joylashuv xatosi",
       "error_generic": "Joylashuvingizni yangilab bo'lmadi. Qayta urinib ko'ring."
+    },
+    "terms": {
+      "policy_note": "Hana Market nomaqbul kontent va tajovuzkor xatti-harakatlarga nisbatan mutlaqo murosasiz. Qoidabuzar kontent o'chirilishi, hisob esa cheklanishi yoki bloklanishi mumkin. Nomaqbul kontent haqida shikoyat qilishingiz mumkin.",
+      "agree_prefix": "Men ",
+      "terms_link": "Foydalanish shartlari",
+      "agree_middle": " va ",
+      "privacy_link": "Maxfiylik siyosati",
+      "agree_suffix": "ga roziman."
     }
   },
   "tabs": {
@@ -192,7 +200,7 @@
     "category": "Kategoriya",
     "description": "Tavsif",
     "for_sale": "Sotish uchun",
-    "free": "Bepul",
+    "free": "Tekin",
     "price": "Narx",
     "can_deal": "Kelishish mumkin",
     "landmark": "Mo`ljal (shahar yoki tuman va mahalla)",
@@ -421,6 +429,27 @@
     "chat_message": "Sotuvchilarga yozish va suhbatlaringizni ko'rish uchun kiring.",
     "profile_title": "Akkauntingizga kiring",
     "profile_message": "E'lonlar, sevimlilar va profilingizni boshqarish uchun akkauntingizga kiring."
+  },
+  "block": {
+    "block_user": "Foydalanuvchini bloklash",
+    "confirm_title": "Ushbu foydalanuvchi bloklansinmi?",
+    "confirm_message": "Bir-biringizning e'lonlaringiz va xabarlaringizni ko'rmaysiz. Keyinroq Sozlamalardan blokdan chiqarishingiz mumkin.",
+    "success": "Foydalanuvchi bloklandi",
+    "error_title": "Bloklab bo'lmadi",
+    "error": "Xatolik yuz berdi. Qayta urinib ko'ring.",
+    "cannot_chat": "Bu foydalanuvchiga xabar yozib bo'lmaydi.",
+    "blocked_users_title": "Bloklangan foydalanuvchilar",
+    "unblock": "Blokdan chiqarish",
+    "empty_title": "Bloklangan foydalanuvchilar yo'q",
+    "empty_subtitle": "Siz bloklagan odamlar shu yerda ko'rinadi."
+  },
+  "chat_unavailable": {
+    "title": "Xabar yozib bo'lmaydi",
+    "reserved": "Bu mahsulot band qilingan — sotuvchiga xabar yozib bo'lmaydi.",
+    "sold": "Bu mahsulot sotilgan — sotuvchiga xabar yozib bo'lmaydi.",
+    "hidden": "Bu mahsulot hozircha mavjud emas — sotuvchiga xabar yozib bo'lmaydi.",
+    "deleted": "Bu e'lon o'chirilgan — sotuvchiga xabar yozib bo'lmaydi.",
+    "generic": "Bu mahsulot bo'yicha sotuvchiga xabar yozib bo'lmaydi."
   },
   "chat": {
     "title": "Chatlar",
@@ -769,6 +798,8 @@
   "chat_room": {
     "sold": "Sotildi",
     "reserved": "Band",
+    "product_deleted": "O'chirilgan",
+    "product_deleted_notice": "Bu e'lon o'chirilgan. Endi xabar yuborib bo'lmaydi.",
     "safety_message": "Bu yerda xavfsiz suhbatlashishingiz va kelishuvni muvofiqlashtira olasiz.",
     "reserved_notice": "Bu mahsulot boshqa xaridor bilan band qilingan.",
     "type_message": "Xabar yozing",
@@ -851,6 +882,8 @@
   },
   "complaint": {
     "title": "E'lonni shikoyat qilish",
+    "report_user": "Foydalanuvchini shikoyat qilish",
+    "report_listing": "E'lonni shikoyat qilish",
     "subtitle": "Shikoyat sababini tanlang",
     "description_label": "Qo'shimcha ma'lumot (ixtiyoriy)",
     "description_placeholder": "Muammoni batafsil tasvirlab bering...",

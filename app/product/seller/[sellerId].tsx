@@ -1,12 +1,13 @@
-import { useProductsBySellerQuery } from '@/api/hooks'
+import { useBlockUserMutation, useProductsBySellerQuery } from '@/api/hooks'
 import ProductCard from '@/components/shared/Cards/ProductCard'
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
 import { router, useLocalSearchParams } from 'expo-router'
-import { ArrowLeft } from 'lucide-react-native'
+import { ArrowLeft, MoreVertical } from 'lucide-react-native'
 import React, { useEffect, useMemo, useState } from 'react'
 import {
     ActivityIndicator,
+    Alert,
     FlatList,
     RefreshControl,
     StyleSheet,
@@ -85,6 +86,28 @@ const SellerProductsPage: React.FC = () => {
         if (typeof sellerName === 'string' && sellerName.trim().length > 0) return sellerName
         return null
     }, [sellerName])
+
+    const { mutate: blockUser, isPending: isBlocking } = useBlockUserMutation({
+        onSuccess: () => {
+            // Server hides this seller's listings/chats from now on — leave the page.
+            router.back()
+        },
+        onError: () => {
+            Alert.alert(t('block.error_title'), t('block.error'))
+        },
+    })
+
+    const handleBlockSeller = () => {
+        if (parsedSellerId <= 0 || isBlocking) return
+        Alert.alert(t('block.confirm_title'), t('block.confirm_message'), [
+            { text: t('common.cancel'), style: 'cancel' },
+            {
+                text: t('block.block_user'),
+                style: 'destructive',
+                onPress: () => blockUser({ blocked_user_id: parsedSellerId }),
+            },
+        ])
+    }
 
     const handleOpenProduct = (id: number) => {
         router.push(`/product/${id}`)
@@ -167,7 +190,13 @@ const SellerProductsPage: React.FC = () => {
                         </Text>
                     ) : null}
                 </View>
-                <View style={styles.headerSpacer} />
+                {parsedSellerId > 0 ? (
+                    <TouchableOpacity onPress={handleBlockSeller} hitSlop={12} disabled={isBlocking}>
+                        <MoreVertical size={24} color={colors.text} />
+                    </TouchableOpacity>
+                ) : (
+                    <View style={styles.headerSpacer} />
+                )}
             </View>
 
             {isInitialLoading ? (

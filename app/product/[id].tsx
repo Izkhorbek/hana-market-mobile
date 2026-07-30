@@ -10,7 +10,9 @@ import ProductImageGallery from '@/components/ProductDetail/ProductImageGallery'
 import SimilarProductCard, {
   SimilarProduct,
 } from '@/components/ProductDetail/SimilarProductCard'
+import ComplaintModal from '@/components/shared/ComplaintModal'
 import RemoteImage from '@/components/shared/RemoteImage'
+import { chatUnavailableMessage, isChatBlockedStatus } from '@/utils/chatAvailability'
 import { BottomSheet } from '@/components/ui/bottom-sheet'
 import ImageViewer from '@/components/ui/ImageViewer'
 import { AppLimits } from '@/constants/appLimits'
@@ -35,6 +37,7 @@ import {
   ArrowLeft,
   ChevronRight,
   Clock3,
+  Flag,
   Heart,
   MessageCircle,
   Share2,
@@ -42,6 +45,7 @@ import {
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   ActivityIndicator,
+  Alert,
   Platform,
   Share,
   StyleSheet,
@@ -205,6 +209,7 @@ const ProductDetailPage: React.FC = () => {
   const { t } = useTranslations()
   const insets = useSafeAreaInsets()
   const [isLiked, setIsLiked] = useState(false)
+  const [reportVisible, setReportVisible] = useState(false)
   const isLikedRef = useRef(false)
   const requireAuth = useRequireAuth()
   const currentUserId = useAuthStore((s) => s.user?.id)
@@ -247,8 +252,6 @@ const ProductDetailPage: React.FC = () => {
   const productCreated = product?.created_ago ?? ''
   const isNegotiable = product?.is_negotiable ?? false
   const productStatus = product?.status ?? 'sold'
-  const isSoldOrReserved =
-    productStatus === 'sold' || productStatus === 'reserved'
   const productIsLiked = product?.is_liked ?? false
   const normalizedProductType = Number(product?.product_type)
   const carData = product?.car_data
@@ -646,8 +649,17 @@ const ProductDetailPage: React.FC = () => {
 
   const handleChat = useCallback(() => {
     requireAuth(() => {
-      if (isMyProduct || isSoldOrReserved) return
+      if (isMyProduct) return
       if (!productSellerId) return
+      // Only an active listing is chattable. Reserved / sold / hidden / deleted
+      // all get an explanatory alert instead of opening a chat.
+      if (isChatBlockedStatus(productStatus)) {
+        Alert.alert(
+          t('chat_unavailable.title'),
+          chatUnavailableMessage(productStatus, t),
+        )
+        return
+      }
       createChat(
         { seller_id: productSellerId, product_id: productId },
         {
@@ -658,17 +670,32 @@ const ProductDetailPage: React.FC = () => {
               router.push(`/chat/${chatRoomId}`)
             }
           },
+          onError: (error: any) => {
+            // Server blocks chat between block-paired users (Apple 1.2).
+            const status = error?.response?.status
+            const code = error?.response?.data?.errors?.[0]
+            if (status === 403 && code === 'blocked') {
+              Alert.alert(t('block.error_title'), t('block.cannot_chat'))
+            }
+          },
         },
       )
     })
   }, [
     requireAuth,
     isMyProduct,
-    isSoldOrReserved,
+    productStatus,
     productSellerId,
     productId,
     createChat,
+    t,
   ])
+
+  // Report this listing (Apple 1.2). Requires an account — guests are prompted
+  // to log in first. Reuses the shared complaint sheet + complaint/create.
+  const handleReport = useCallback(() => {
+    requireAuth(() => setReportVisible(true))
+  }, [requireAuth])
 
   const handleShare = useCallback(async () => {
     try {
@@ -868,15 +895,28 @@ const ProductDetailPage: React.FC = () => {
             >
               <ArrowLeft size={18} color={colors.text} />
             </TouchableOpacity>
-            <TouchableOpacity
-              style={[
-                styles.circleButton,
-                { backgroundColor: colors.background },
-              ]}
-              onPress={handleShare}
-            >
-              <Share2 size={18} color={colors.text} />
-            </TouchableOpacity>
+            <View style={styles.heroRightButtons}>
+              <TouchableOpacity
+                style={[
+                  styles.circleButton,
+                  { backgroundColor: colors.background },
+                ]}
+                onPress={handleReport}
+                accessibilityRole="button"
+                accessibilityLabel={t('complaint.report_listing')}
+              >
+                <Flag size={18} color={colors.text} />
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  styles.circleButton,
+                  { backgroundColor: colors.background },
+                ]}
+                onPress={handleShare}
+              >
+                <Share2 size={18} color={colors.text} />
+              </TouchableOpacity>
+            </View>
           </Animated.View>
         </View>
 
@@ -1164,12 +1204,11 @@ const ProductDetailPage: React.FC = () => {
             styles.chatButton,
             {
               backgroundColor: colors.primaryColor,
-              opacity:
-                chatPending || isMyProduct || isSoldOrReserved ? 0.45 : 1,
+              opacity: chatPending || isMyProduct ? 0.45 : 1,
             },
           ]}
           onPress={handleChat}
-          disabled={chatPending || isMyProduct || isSoldOrReserved}
+          disabled={chatPending || isMyProduct}
         >
           <MessageCircle size={20} color="#fff" />
           <Text style={styles.chatButtonText}>
@@ -1194,6 +1233,13 @@ const ProductDetailPage: React.FC = () => {
         onClose={() => setActiveSheet(null)}
         onPressProduct={handleOpenProduct}
         colors={colors}
+      />
+
+      {/* Report this listing (Apple 1.2). */}
+      <ComplaintModal
+        visible={reportVisible}
+        productId={productId}
+        onClose={() => setReportVisible(false)}
       />
     </View>
   )
@@ -1277,6 +1323,10 @@ const styles = StyleSheet.create({
     right: 16,
     flexDirection: 'row',
     justifyContent: 'space-between',
+  },
+  heroRightButtons: {
+    flexDirection: 'row',
+    gap: 10,
   },
   circleButton: {
     width: 38,

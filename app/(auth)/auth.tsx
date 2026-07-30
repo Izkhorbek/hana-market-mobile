@@ -1,3 +1,4 @@
+import { useAcceptTermsMutation, usePrivacyQuery, useTermsQuery } from '@/api/hooks'
 import { userService } from '@/api/services/user.service'
 import KeyboardAvoidWrapper from '@/components/shared/KeyboardAvoidWrapper'
 import { ThemedText } from '@/components/themed-text'
@@ -9,12 +10,16 @@ import { useTranslations } from '@/hooks/use-translation'
 import { useAuthStore } from '@/modules/Auth/auth-store'
 import { isDeletedAccountError, showDeletedAccountAlert } from '@/utils/deletedAccount'
 import Ionicons from '@expo/vector-icons/Ionicons'
+import Constants from 'expo-constants'
 import * as Haptics from 'expo-haptics'
 import { useRouter } from 'expo-router'
+import * as WebBrowser from 'expo-web-browser'
+import { Check } from 'lucide-react-native'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import {
   ActivityIndicator,
   Alert,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -52,10 +57,36 @@ const AuthPage = () => {
   const { t } = useTranslations()
   
   const { requestOtp, verifyOtp } = useAuthStore()
+  const setTermsAccepted = useAuthStore((s) => s.setTermsAccepted)
+
+  // Current Terms/Privacy versions (public, cached) — sent to the backend to
+  // record acceptance against the exact version the user agreed to.
+  const { data: termsRes } = useTermsQuery()
+  const { data: privacyRes } = usePrivacyQuery()
+  const { mutate: acceptTerms } = useAcceptTermsMutation()
+  const termsVersion = termsRes?.data?.data?.version
+  const privacyVersion = privacyRes?.data?.data?.version
 
   const [phoneNumber, setPhoneNumber] = useState('')
   const [phoneError, setPhoneError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  // App Store Guideline 1.2 — the user must explicitly accept the Terms /
+  // Privacy Policy before authentication can proceed. Starts UNCHECKED.
+  const [agreedToTerms, setAgreedToTerms] = useState(false)
+
+  // Legal URLs come from app config (env-overridable), with safe defaults.
+  const legal = (Constants.expoConfig?.extra ?? {}) as {
+    termsUrl?: string
+    privacyPolicyUrl?: string
+  }
+  const termsUrl = legal.termsUrl ?? 'https://hana.uz/terms-of-service'
+  const privacyUrl = legal.privacyPolicyUrl ?? 'https://hana.uz/privacy-policy'
+
+  const openLegal = useCallback((url: string) => {
+    WebBrowser.openBrowserAsync(url).catch(() => {
+      /* noop — nothing else to do if the in-app browser can't open */
+    })
+  }, [])
   const phoneInputRef = useRef<TextInput>(null)
   const lastRejectedPhoneInputRef = useRef('')
 
@@ -249,6 +280,23 @@ const AuthPage = () => {
     setIsLoading(true)
     try {
       await verifyOtp(`+998${phoneNumber}`, code)
+      // Record the Terms acceptance the user gave on the phone step, now that
+      // an authenticated account exists to attach it to (Guideline 1.2).
+      setTermsAccepted(new Date().toISOString())
+      // Best-effort server-side record. Only sent when we know both versions;
+      // never blocks navigation and swallows its own errors.
+      if (termsVersion && privacyVersion) {
+        acceptTerms(
+          {
+            terms_version: termsVersion,
+            privacy_version: privacyVersion,
+            accepted_at: new Date().toISOString(),
+            app_version: Constants.expoConfig?.version ?? undefined,
+            platform: Platform.OS === 'ios' ? 'ios' : 'android',
+          },
+          { onError: () => { /* non-blocking; client record already set */ } },
+        )
+      }
       const loggedInUser = useAuthStore.getState().user
       if (
         loggedInUser &&
@@ -278,7 +326,7 @@ const AuthPage = () => {
     } finally {
       setIsLoading(false)
     }
-  }, [otpCode, isLoading, phoneNumber, verifyOtp, router, t])
+  }, [otpCode, isLoading, phoneNumber, verifyOtp, setTermsAccepted, acceptTerms, termsVersion, privacyVersion, router, t])
 
   // Step 3: save username then navigate home
   const handleSaveUsername = useCallback(async () => {
@@ -303,7 +351,9 @@ const AuthPage = () => {
   }, [username, isLoading, router, t])
 
   const phoneOperator = getPhoneOperator(phoneNumber)
-  const isSendEnabled = isValidUzbekPhoneNumber(phoneNumber) && !isLoading
+  // Send OTP stays disabled until the user explicitly agrees to the Terms.
+  const isSendEnabled =
+    isValidUzbekPhoneNumber(phoneNumber) && !isLoading && agreedToTerms
   const isDoneEnabled =
     otpCode.join('').length === AppLimits.Otp.CODE_LENGTH && !isLoading
   const isUsernameReady = validateUsername(username) && !isLoading
@@ -513,6 +563,54 @@ const AuthPage = () => {
           ]}
         >
           {step === 'phone' && (
+            <View style={styles.consentContainer}>
+              <Text style={[styles.policyNote, { color: colors.subText }]}>
+                {t('auth.terms.policy_note')}
+              </Text>
+              <TouchableOpacity
+                testID="auth-terms-checkbox"
+                style={styles.checkboxRow}
+                onPress={() => setAgreedToTerms((v) => !v)}
+                activeOpacity={0.7}
+                accessibilityRole="checkbox"
+                accessibilityState={{ checked: agreedToTerms }}
+              >
+                <View
+                  style={[
+                    styles.checkbox,
+                    {
+                      borderColor: agreedToTerms
+                        ? colors.primaryColor
+                        : colors.borderColor,
+                      backgroundColor: agreedToTerms
+                        ? colors.primaryColor
+                        : 'transparent',
+                    },
+                  ]}
+                >
+                  {agreedToTerms && <Check size={15} color="#fff" strokeWidth={3} />}
+                </View>
+                <Text style={[styles.consentLabel, { color: colors.text }]}>
+                  {t('auth.terms.agree_prefix')}
+                  <Text
+                    style={[styles.consentLink, { color: colors.primaryColor }]}
+                    onPress={() => openLegal(termsUrl)}
+                  >
+                    {t('auth.terms.terms_link')}
+                  </Text>
+                  {t('auth.terms.agree_middle')}
+                  <Text
+                    style={[styles.consentLink, { color: colors.primaryColor }]}
+                    onPress={() => openLegal(privacyUrl)}
+                  >
+                    {t('auth.terms.privacy_link')}
+                  </Text>
+                  {t('auth.terms.agree_suffix')}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          )}
+          {step === 'phone' && (
             <TouchableOpacity
               testID="auth-send-btn"
               style={[
@@ -712,6 +810,37 @@ const styles = StyleSheet.create({
   doneButtonText: {
     fontSize: 16,
     fontWeight: '600',
+  },
+  consentContainer: {
+    marginBottom: 14,
+    gap: 10,
+  },
+  policyNote: {
+    fontSize: 12,
+    lineHeight: 17,
+  },
+  checkboxRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 10,
+  },
+  checkbox: {
+    width: 22,
+    height: 22,
+    borderRadius: 6,
+    borderWidth: 2,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 1,
+  },
+  consentLabel: {
+    flex: 1,
+    fontSize: 13,
+    lineHeight: 19,
+  },
+  consentLink: {
+    fontWeight: '600',
+    textDecorationLine: 'underline',
   },
 })
 

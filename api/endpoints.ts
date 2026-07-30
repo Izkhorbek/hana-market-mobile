@@ -27,6 +27,12 @@ const ENDPOINT = {
     UPLOAD_PROFILE_IMAGE: 'user/upload/profile-image',
     UPDATE_LOCATION: 'user/update/location',
     SELLER_INFO: (sellerId: string | number) => `user/seller/${sellerId}`,
+    // UGC safety (Apple 1.2). Paths are prefix-less to match the rest of this
+    // file; the axios baseURL already includes `/api`.
+    BLOCK: 'user/block',
+    UNBLOCK: 'user/unblock',
+    BLOCKED: 'user/blocked',
+    ACCEPT_TERMS: 'user/accept-terms',
   },
 
   // Notifications

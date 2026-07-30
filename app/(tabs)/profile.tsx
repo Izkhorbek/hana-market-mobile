@@ -26,6 +26,7 @@ import {
 	MessageSquare,
 	Moon,
 	Package,
+	ShieldOff,
 	Sparkles
 } from 'lucide-react-native'
 import React, { useCallback, useState } from 'react'
@@ -96,6 +97,8 @@ const ProfilePage = () => {
 			router.push('/(settings)/favorites')
 		} else if (route === 'my-complaints') {
 			router.push('/(settings)/my-complaint')
+		} else if (route === 'blocked-users') {
+			router.push('/(settings)/blocked-users')
 		} else if (route === 'verification') {
 			router.push('/(settings)/verification')
 		} else if (route === 'settings') {
@@ -177,6 +180,11 @@ const ProfilePage = () => {
 						icon={Flag}
 						title={t('profile.my_complaints')}
 						onPress={() => handleNavigation('my-complaints')}
+					/>
+					<ProfileMenuItem
+						icon={ShieldOff}
+						title={t('block.blocked_users_title')}
+						onPress={() => handleNavigation('blocked-users')}
 					/>
 				</ProfileSection>
 

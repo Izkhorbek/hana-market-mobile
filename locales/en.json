@@ -156,14 +156,22 @@
 			"error_generic": "Something went wrong. Please try again."
 		},
 		"location": {
-			"title": "Share Your Location",
-			"description": "Allow Hana Market to access your location so we can show you nearby products and neighbors.",
-			"allow_button": "Allow Location",
-			"skip_button": "Skip for now",
+			"title": "See listings near you",
+			"description": "Hana Market uses your location to show nearby listings and to set where the items you post appear.",
+			"continue_button": "Continue",
+			"system_note": "On the next step, your device will ask for location permission. You can decline and still browse.",
 			"permission_denied_title": "Permission Denied",
 			"permission_denied_message": "Location access was denied. You can enable it later in Settings.",
 			"error_title": "Location Error",
 			"error_generic": "Could not update your location. Please try again."
+		},
+		"terms": {
+			"policy_note": "Hana Market has zero tolerance for objectionable content and abusive behavior. Violating content may be removed and accounts may be suspended or banned. You can report content you find objectionable.",
+			"agree_prefix": "I agree to the ",
+			"terms_link": "Terms of Service",
+			"agree_middle": " and the ",
+			"privacy_link": "Privacy Policy",
+			"agree_suffix": "."
 		}
 	},
 	"tabs": {
@@ -419,6 +427,27 @@
 		"chat_message": "Log in to message sellers and see your conversations.",
 		"profile_title": "Log in to your account",
 		"profile_message": "Log in to manage your listings, favorites and profile."
+	},
+	"block": {
+		"block_user": "Block user",
+		"confirm_title": "Block this user?",
+		"confirm_message": "You will no longer see each other's listings or messages. You can unblock later in Settings.",
+		"success": "User blocked",
+		"error_title": "Couldn't block",
+		"error": "Something went wrong. Please try again.",
+		"cannot_chat": "You can't message this user.",
+		"blocked_users_title": "Blocked users",
+		"unblock": "Unblock",
+		"empty_title": "No blocked users",
+		"empty_subtitle": "People you block will appear here."
+	},
+	"chat_unavailable": {
+		"title": "Messaging unavailable",
+		"reserved": "This item is reserved — you can't message the seller.",
+		"sold": "This item is sold — you can't message the seller.",
+		"hidden": "This item isn't available — you can't message the seller.",
+		"deleted": "This listing was deleted — you can't message the seller.",
+		"generic": "You can't message the seller about this item."
 	},
 	"chat": {
 		"title": "Chats",
@@ -762,6 +791,8 @@
 	"chat_room": {
 		"sold": "Sold",
 		"reserved": "Reserved",
+		"product_deleted": "Deleted",
+		"product_deleted_notice": "This listing was deleted. You can no longer send messages.",
 		"safety_message": "You can safely chat and coordinate the deal here.",
 		"reserved_notice": "This item is reserved with another buyer.",
 		"type_message": "Type a message",
@@ -831,6 +862,8 @@
 	},
 	"complaint": {
 		"title": "Report Listing",
+		"report_user": "Report user",
+		"report_listing": "Report listing",
 		"subtitle": "Select a reason for reporting this listing",
 		"description_label": "Additional details (optional)",
 		"description_placeholder": "Describe the issue in more detail...",

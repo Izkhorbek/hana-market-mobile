@@ -100,6 +100,7 @@ export const AppLimits = {
     reserved: 'reserved',
     sold: 'sold',
     hidden: 'hidden',
+    deleted: 'deleted',
   } as const,
   Pagination: {
     DEFAULT_PAGE_SIZE: 20,

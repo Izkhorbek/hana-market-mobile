@@ -66,6 +66,14 @@ interface AuthState {
   guestLatitude: number | null;
   guestLongitude: number | null;
   /**
+   * ISO timestamp of when the user explicitly accepted the Terms of Service &
+   * Privacy Policy (App Store Guideline 1.2). Persisted so we don't re-prompt
+   * an account that has already agreed. `null` = never recorded on this device.
+   * NOTE: this is a client-side record; recording acceptance server-side
+   * (version + timestamp + user id) is a recommended backend follow-up.
+   */
+  termsAcceptedAt: string | null;
+  /**
    * Set to true when a startup token validation fails (expired / missing).
    * Cleared after the Alert is shown. NOT persisted.
    */
@@ -74,6 +82,11 @@ interface AuthState {
   // Actions
   setHydrated: (hydrated: boolean) => void;
   clearSessionExpiredOnStart: () => void;
+  /**
+   * Record that the user accepted the Terms & Privacy Policy (pass an ISO
+   * timestamp). Called right after a successful OTP verification.
+   */
+  setTermsAccepted: (acceptedAt: string) => void;
   /**
    * Enter guest mode. The app gate (`app/index.tsx`) then routes to the tabs
    * even though there is no session.
@@ -169,9 +182,11 @@ export const useAuthStore = create<AuthState>()(
       isGuest: false,
       guestLatitude: null,
       guestLongitude: null,
+      termsAcceptedAt: null,
 
       setHydrated: (hydrated) => set({ isHydrated: hydrated }),
       clearSessionExpiredOnStart: () => set({ sessionExpiredOnStart: false }),
+      setTermsAccepted: (acceptedAt) => set({ termsAcceptedAt: acceptedAt }),
       continueAsGuest: () => set({ isGuest: true }),
       setGuestLocation: (latitude, longitude) =>
         set({
@@ -425,6 +440,9 @@ export const useAuthStore = create<AuthState>()(
         isGuest: state.isGuest,
         guestLatitude: state.guestLatitude,
         guestLongitude: state.guestLongitude,
+        // Terms/Privacy acceptance record — persist so a returning, already-
+        // agreed account is not re-prompted.
+        termsAcceptedAt: state.termsAcceptedAt,
         // expiresAt timestamps are not secret, but keeping them next to their
         // tokens (in the vault) makes rotation atomic. So they're excluded too.
       }),

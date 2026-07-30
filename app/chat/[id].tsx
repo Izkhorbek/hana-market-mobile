@@ -1,4 +1,5 @@
 import {
+  useBlockUserMutation,
   useChatMessagesInfiniteQuery,
   useChatRoom,
   useDeleteChatMessageMutation,
@@ -10,6 +11,8 @@ import {
   useUserOnlineStatus,
 } from '@/api/hooks'
 import MannerReviewModal from '@/components/manner/MannerReviewModal'
+import ActionSheet, { type ActionSheetOption } from '@/components/shared/ActionSheet'
+import ComplaintModal from '@/components/shared/ComplaintModal'
 import KeyboardAvoidWrapper from '@/components/shared/KeyboardAvoidWrapper'
 import RemoteImage from '@/components/shared/RemoteImage'
 import { AppLimits } from '@/constants/appLimits'
@@ -26,6 +29,7 @@ import {
   DisplayMessage,
 } from '@/types'
 import i18n from '@/constants/localization'
+import { chatUnavailableMessage, isChatBlockedStatus } from '@/utils/chatAvailability'
 import { parseBackendDateTime } from '@/utils/dateTime'
 import { logger } from '@/utils/logger'
 import { useQueryClient } from '@tanstack/react-query'
@@ -36,11 +40,13 @@ import {
   Check,
   CheckCheck,
   MoreVertical,
+  Send,
 } from 'lucide-react-native'
 import { default as React, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   ActivityIndicator,
   Alert,
+  Animated,
   FlatList,
   StyleSheet,
   Text,
@@ -189,7 +195,7 @@ const ProductCard: React.FC<{
     >
         <RemoteImage
           src={product.image}
-          style={styles.productImage}
+          style={[styles.productImage, product.isDeleted && styles.productImageDimmed]}
           resizeMode="cover"
           cachePolicy="disk"
           requestedWidth={100}
@@ -197,20 +203,27 @@ const ProductCard: React.FC<{
           requestedQuality={60}
         />
       <View style={styles.productInfo}>
-        {product.isSold && (
+        {product.isDeleted ? (
+          <View style={styles.deletedBadge}>
+            <Text style={styles.deletedBadgeText}>{t('chat_room.product_deleted')}</Text>
+          </View>
+        ) : product.isSold ? (
           <View style={styles.soldBadge}>
             <Text style={styles.soldBadgeText}>{t('chat_room.sold')}</Text>
             <Check size={12} color="#fff" strokeWidth={3} />
           </View>
-        )}
-        {product.isReserved && (
+        ) : product.isReserved ? (
           <View style={styles.soldBadge}>
             <Text style={styles.soldBadgeText}>{t('chat_room.reserved')}</Text>
             <Check size={12} color="#fff" strokeWidth={3} />
           </View>
-        )}
+        ) : null}
         <Text
-          style={[styles.productTitle, { color: colors.text }]}
+          style={[
+            styles.productTitle,
+            { color: product.isDeleted ? colors.textMuted : colors.text },
+            product.isDeleted && styles.deletedTitle,
+          ]}
           numberOfLines={1}
         >
           {product.title}
@@ -412,6 +425,41 @@ const MessageInput: React.FC<{
     onTyping?.()
   }
 
+  // ── Send-button micro-interactions ────────────────────────────────────────
+  const hasText = value.trim().length > 0
+  const sendScale = useRef(new Animated.Value(1)).current
+  const wasEmptyRef = useRef(true)
+
+  // Subtle "pop" the first time the button becomes active (empty → has text).
+  useEffect(() => {
+    if (hasText && wasEmptyRef.current) {
+      sendScale.setValue(0.8)
+      Animated.spring(sendScale, {
+        toValue: 1,
+        useNativeDriver: true,
+        friction: 5,
+        tension: 140,
+      }).start()
+    }
+    wasEmptyRef.current = !hasText
+  }, [hasText, sendScale])
+
+  const handleSendPressIn = () => {
+    Animated.spring(sendScale, {
+      toValue: 0.85,
+      useNativeDriver: true,
+      friction: 6,
+    }).start()
+  }
+  const handleSendPressOut = () => {
+    Animated.spring(sendScale, {
+      toValue: 1,
+      useNativeDriver: true,
+      friction: 5,
+      tension: 160,
+    }).start()
+  }
+
   return (
     <View
       style={[
@@ -437,10 +485,9 @@ const MessageInput: React.FC<{
         style={[
           styles.textInput,
           {
-            backgroundColor: colors.background,
+            backgroundColor: colors.card,
             color: colors.text,
-            borderColor: colors.textMuted,
-            borderWidth: 1,
+            borderColor: colors.borderColor,
           },
         ]}
         placeholder={t('chat_room.type_message')}
@@ -451,24 +498,26 @@ const MessageInput: React.FC<{
         maxLength={1000}
         editable={!isSending}
       />
-      <TouchableOpacity
-        onPress={onSend}
-        style={[
-          styles.sendButton,
-          {
-            backgroundColor: value.trim()
-              ? colors.primaryColor
-              : colors.borderColor,
-          },
-        ]}
-        disabled={!value.trim() || isSending}
-      >
-        {isSending ? (
-          <ActivityIndicator size={16} color="#fff" />
-        ) : (
-          <Text style={styles.sendIcon}>➤</Text>
-        )}
-      </TouchableOpacity>
+      <Animated.View style={{ transform: [{ scale: sendScale }] }}>
+        <TouchableOpacity
+          onPress={onSend}
+          onPressIn={handleSendPressIn}
+          onPressOut={handleSendPressOut}
+          style={[
+            styles.sendButton,
+            { backgroundColor: hasText ? colors.primaryColor : colors.borderColor },
+            hasText && { shadowColor: colors.primaryColor, ...styles.sendButtonShadow },
+          ]}
+          disabled={!hasText || isSending}
+          activeOpacity={0.85}
+        >
+          {isSending ? (
+            <ActivityIndicator size={16} color="#fff" />
+          ) : (
+            <Send size={19} color="#fff" style={styles.sendIcon} />
+          )}
+        </TouchableOpacity>
+      </Animated.View>
     </View>
   )
 }
@@ -488,6 +537,8 @@ const ChatRoomPage: React.FC = () => {
   )
   const [isDeletingRoom, setIsDeletingRoom] = useState(false)
   const [mannerModalVisible, setMannerModalVisible] = useState(false)
+  const [reportModalVisible, setReportModalVisible] = useState(false)
+  const [moreMenuVisible, setMoreMenuVisible] = useState(false)
   const [snackbar, setSnackbar] = useState<{
     visible: boolean;
     message: string;
@@ -714,6 +765,17 @@ const ChatRoomPage: React.FC = () => {
     },
   })
 
+  const { mutate: blockUser, isPending: isBlocking } = useBlockUserMutation({
+    onSuccess: () => {
+      setSnackbar({ visible: true, message: t('block.success'), isError: false })
+      // Server now hides this pair's chats/listings; leave the room.
+      setTimeout(() => router.back(), 1200)
+    },
+    onError: () => {
+      setSnackbar({ visible: true, message: t('block.error'), isError: true })
+    },
+  })
+
   const { mutate: deleteChatMessage } = useDeleteChatMessageMutation({
     onSuccess: (_res, variables) => {
       const currentMessages =
@@ -858,6 +920,7 @@ const ChatRoomPage: React.FC = () => {
           image: chatData_source.product.image_url || '',
           isSold: chatData_source.product.status === 'sold',
           isReserved: chatData_source.product.status === 'reserved',
+          isDeleted: chatData_source.product.status === 'deleted',
           status: chatData_source.product.status,
         },
       }
@@ -887,6 +950,7 @@ const ChatRoomPage: React.FC = () => {
           image: chatRoom.product?.image_url || '',
           isSold: chatRoom.product?.status === 'sold',
           isReserved: chatRoom.product?.status === 'reserved',
+          isDeleted: chatRoom.product?.status === 'deleted',
           status: chatRoom.product?.status,
         },
       }
@@ -942,9 +1006,22 @@ const ChatRoomPage: React.FC = () => {
     ])
   }
 
-  const handleMore = () => {
-    if (!chatRoomId || isDeletingRoom) return
+  const confirmBlockUser = () => {
+    if (!otherUserId || currentUserId === otherUserId || isBlocking) return
+    Alert.alert(t('block.confirm_title'), t('block.confirm_message'), [
+      { text: t('common.cancel'), style: 'cancel' },
+      {
+        text: t('block.block_user'),
+        style: 'destructive',
+        onPress: () => blockUser({ blocked_user_id: otherUserId }),
+      },
+    ])
+  }
 
+  // Build the overflow-menu options. Rendered in a cross-platform ActionSheet
+  // (NOT Alert.alert) because Android's native alert only shows up to three
+  // buttons, which was silently dropping options such as Cancel.
+  const buildMoreOptions = (): ActionSheetOption[] => {
     // Phase 1: optional "Leave feedback" entry point. Shown only when collection
     // is enabled and we know the other participant. The backend enforces the real
     // eligibility rules (message count, room age, duplicates, self-review).
@@ -953,18 +1030,23 @@ const ChatRoomPage: React.FC = () => {
       !!currentUserId &&
       !!otherUserId &&
       currentUserId !== otherUserId
+    const canBlock = !!otherUserId && currentUserId !== otherUserId
 
-    if (!canLeaveFeedback) {
-      // Unchanged original behavior: go straight to the delete confirmation.
-      confirmDeleteRoom()
-      return
+    const opts: ActionSheetOption[] = []
+    if (canLeaveFeedback) {
+      opts.push({ label: t('mannerReview.entry'), onPress: () => setMannerModalVisible(true) })
     }
+    if (canBlock) {
+      opts.push({ label: t('complaint.report_user'), onPress: () => setReportModalVisible(true) })
+      opts.push({ label: t('block.block_user'), destructive: true, onPress: confirmBlockUser })
+    }
+    opts.push({ label: t('chat.delete'), destructive: true, onPress: confirmDeleteRoom })
+    return opts
+  }
 
-    Alert.alert(t('mannerReview.menu_title'), undefined, [
-      { text: t('mannerReview.entry'), onPress: () => setMannerModalVisible(true) },
-      { text: t('chat.delete'), style: 'destructive', onPress: confirmDeleteRoom },
-      { text: t('common.cancel'), style: 'cancel' },
-    ])
+  const handleMore = () => {
+    if (!chatRoomId || isDeletingRoom || isBlocking) return
+    setMoreMenuVisible(true)
   }
 
   const handleDeleteMessage = useCallback((message: DisplayMessage) => {
@@ -1132,10 +1214,12 @@ const ChatRoomPage: React.FC = () => {
 
       <ProductCard
         product={effectiveChatData.product}
-        onPressImage={handlePressProductImage}
+        onPressImage={
+          effectiveChatData.product.isDeleted ? undefined : handlePressProductImage
+        }
       />
 
-      <SafetyBanner />
+      {!isChatBlockedStatus(effectiveChatData.product.status) && <SafetyBanner />}
 
       <FlatList
         ref={flatListRef}
@@ -1189,13 +1273,26 @@ const ChatRoomPage: React.FC = () => {
 
       <QuickReplies replies={quickReplies} onSelect={handleQuickReply} />
 
-      <MessageInput
-        value={inputText}
-        onChangeText={setInputText}
-        onSend={handleSend}
-        onTyping={handleTyping}
-        isSending={isSending || !!effectiveChatData.product.isSold}
-      />
+      {isChatBlockedStatus(effectiveChatData.product.status) ? (
+        <View
+          style={[
+            styles.unavailableBar,
+            { backgroundColor: colors.card, borderTopColor: colors.borderColor },
+          ]}
+        >
+          <Text style={[styles.unavailableText, { color: colors.textMuted }]}>
+            {chatUnavailableMessage(effectiveChatData.product.status, t)}
+          </Text>
+        </View>
+      ) : (
+        <MessageInput
+          value={inputText}
+          onChangeText={setInputText}
+          onSend={handleSend}
+          onTyping={handleTyping}
+          isSending={isSending}
+        />
+      )}
 
       {snackbar.visible && (
         <View
@@ -1217,6 +1314,24 @@ const ChatRoomPage: React.FC = () => {
           onClose={() => setMannerModalVisible(false)}
         />
       ) : null}
+
+      {/* Report the other user (Apple 1.2 — report available in DMs). */}
+      <ComplaintModal
+        visible={reportModalVisible}
+        productId={null}
+        userId={otherUserId || null}
+        onClose={() => setReportModalVisible(false)}
+      />
+
+      {/* Overflow menu (report / block / delete) — cross-platform, unlike a
+          many-buttoned Alert which drops options on Android. */}
+      <ActionSheet
+        visible={moreMenuVisible}
+        onClose={() => setMoreMenuVisible(false)}
+        title={effectiveChatData.name || t('chat_room.unknown_user')}
+        options={buildMoreOptions()}
+        cancelLabel={t('common.cancel')}
+      />
     </KeyboardAvoidWrapper>
   )
 }
@@ -1287,8 +1402,27 @@ const styles = StyleSheet.create({
     height: 50,
     borderRadius: 8,
   },
+  productImageDimmed: {
+    opacity: 0.45,
+  },
   productInfo: {
     flex: 1,
+  },
+  deletedBadge: {
+    alignSelf: 'flex-start',
+    backgroundColor: '#9CA3AF',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 4,
+    marginBottom: 4,
+  },
+  deletedBadgeText: {
+    color: '#fff',
+    fontSize: 11,
+    fontWeight: '600',
+  },
+  deletedTitle: {
+    textDecorationLine: 'line-through',
   },
   soldBadge: {
     flexDirection: 'row',
@@ -1451,6 +1585,19 @@ const styles = StyleSheet.create({
     gap: 10,
     borderTopWidth: 1,
   },
+  unavailableBar: {
+    paddingHorizontal: 20,
+    paddingVertical: 18,
+    borderTopWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  unavailableText: {
+    fontSize: 14,
+    fontWeight: '500',
+    textAlign: 'center',
+    lineHeight: 20,
+  },
   attachButton: {
     width: 36,
     height: 36,
@@ -1463,24 +1610,33 @@ const styles = StyleSheet.create({
   },
   textInput: {
     flex: 1,
-    minHeight: 36,
-    maxHeight: 100,
-    borderRadius: 18,
+    minHeight: 42,
+    maxHeight: 120,
+    borderRadius: 21,
+    borderWidth: 1,
     paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingVertical: 10,
     fontSize: 15,
+    lineHeight: 20,
   },
   sendButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 42,
+    height: 42,
+    borderRadius: 21,
     alignItems: 'center',
     justifyContent: 'center',
   },
+  // Soft colored lift, applied only when the button is active (has text).
+  sendButtonShadow: {
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.35,
+    shadowRadius: 6,
+    elevation: 5,
+  },
+  // Optical centering: the paper-plane's visual mass leans left, so nudge it
+  // a touch to the right inside the circular button.
   sendIcon: {
-    color: '#fff',
-    fontSize: 16,
-    transform: [{ rotate: '-20deg' }],
+    marginLeft: 2,
   },
 
   // Load More

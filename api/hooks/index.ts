@@ -1,4 +1,5 @@
 export * from './useAuth'
+export * from './useBlock'
 export * from './useCategories'
 export * from './useChat'
 export * from './useComplaint'

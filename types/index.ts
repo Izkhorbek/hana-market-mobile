@@ -168,6 +168,58 @@ export interface User {
   blocked_info?: BlockedInfo | null;
   total_products?: number;
   total_likes?: number;
+  /** Server-side Terms/Privacy acceptance status (App Store 1.2). */
+  terms_acceptance?: TermsAcceptanceStatus | null;
+}
+
+/** Whether the user has accepted the current Terms/Privacy (from GET user/my). */
+export interface TermsAcceptanceStatus {
+  accepted: boolean;
+  terms_version: string | null;
+  privacy_version: string | null;
+  accepted_at: string | null;
+  /** false when a newer Terms/Privacy version was published after acceptance. */
+  up_to_date: boolean;
+}
+
+// ==================== UGC SAFETY: BLOCK & TERMS (Apple 1.2) ====================
+
+export interface BlockUserRequest {
+  blocked_user_id: number;
+  reason?: string;
+}
+
+export interface UnblockUserRequest {
+  blocked_user_id: number;
+}
+
+export interface BlockUserResponse {
+  blocked_user_id: number;
+  created_at: string;
+}
+
+/** One row of GET user/blocked (paginated). */
+export interface BlockedUserDto {
+  user_id: number;
+  username: string | null;
+  profile_image_url: string | null;
+  reason: string | null;
+  created_at: string;
+}
+
+export interface AcceptTermsRequest {
+  terms_version: string;
+  privacy_version: string;
+  /** Informational — the server stamps its own authoritative timestamp. */
+  accepted_at?: string;
+  app_version?: string;
+  platform?: 'ios' | 'android';
+}
+
+export interface AcceptTermsResponse {
+  accepted: boolean;
+  terms_version: string;
+  accepted_at: string;
 }
 
 export interface UpdateProfileRequest {
@@ -214,6 +266,7 @@ export interface ChatData {
     status: string;
     isSold?: boolean;
     isReserved?: boolean;
+    isDeleted?: boolean;
   };
 }
 
@@ -731,11 +784,14 @@ export interface ContentSection {
 }
 
 export interface TermsDto {
+  /** Machine-comparable version id used to record & re-check acceptance. */
+  version?: string;
   last_updated: string;
   sections: ContentSection[];
 }
 
 export interface PrivacyDto {
+  version?: string;
   last_updated: string;
   sections: ContentSection[];
 }
