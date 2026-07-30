@@ -39,8 +39,7 @@ export default function MahallaScreen() {
       Icon: Fuel,
       iconBg: '#FDECE4',
       iconColor: '#E8663A',
-      onPress: comingSoon,
-      comingSoon: true,
+      onPress: () => router.push('/gas' as Href),
     },
     {
       key: 'services',

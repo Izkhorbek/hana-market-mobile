@@ -421,6 +421,22 @@
       "landmark": "Mo'ljal majburiy"
     }
   },
+  "gas": {
+    "title": "Gaz navbati",
+    "no_mahalla": "Siz hali mahallaga bog'lanmagansiz",
+    "no_session": "Bugun faol gaz tarqatish yo'q",
+    "now_distributing": "Hozir tarqatilmoqda",
+    "eta_houses": "Sizgacha ~{{count}} uy",
+    "progress": "{{done}} / {{total}} uy tarqatildi",
+    "your_house": "Sizning uyingiz",
+    "received": "Oldim",
+    "not_received": "Kelmadi",
+    "queue": "Navbat",
+    "status_pending": "Navbatda",
+    "status_current": "Hozir shu yerda",
+    "status_delivered": "Oldi",
+    "status_skipped": "Uyda yo'q edi"
+  },
   "mahalla": {
     "tab": "Mahalla",
     "title": "Mahalla",

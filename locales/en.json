@@ -418,6 +418,22 @@
 			"landmark": "Landmark is required"
 		}
 	},
+	"gas": {
+		"title": "Gas queue",
+		"no_mahalla": "You are not linked to a mahalla yet",
+		"no_session": "No active gas distribution today",
+		"now_distributing": "Distributing now",
+		"eta_houses": "~{{count}} houses to you",
+		"progress": "{{done}} / {{total}} houses served",
+		"your_house": "Your house",
+		"received": "Received",
+		"not_received": "Didn't come",
+		"queue": "Queue",
+		"status_pending": "Waiting",
+		"status_current": "Here now",
+		"status_delivered": "Received",
+		"status_skipped": "Was not home"
+	},
 	"mahalla": {
 		"tab": "Mahalla",
 		"title": "Mahalla",

@@ -59,6 +59,7 @@ function RootLayout() {
 									<Stack.Screen name='product/location' />
 									<Stack.Screen name='service/index' />
 									<Stack.Screen name='service/[id]' />
+									<Stack.Screen name='gas/index' />
 									<Stack.Screen name='chat/[id]' />
 								</Stack>
 							</SafeAreaView>

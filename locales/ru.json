@@ -419,6 +419,22 @@
       "landmark": "Ориентир обязателен"
     }
   },
+  "gas": {
+    "title": "Очередь на газ",
+    "no_mahalla": "Вы ещё не привязаны к махалле",
+    "no_session": "Сегодня нет активной раздачи газа",
+    "now_distributing": "Идёт раздача",
+    "eta_houses": "До вас ~{{count}} домов",
+    "progress": "{{done}} / {{total}} домов обслужено",
+    "your_house": "Ваш дом",
+    "received": "Получил",
+    "not_received": "Не пришли",
+    "queue": "Очередь",
+    "status_pending": "В очереди",
+    "status_current": "Сейчас здесь",
+    "status_delivered": "Получил",
+    "status_skipped": "Не было дома"
+  },
   "mahalla": {
     "tab": "Махалля",
     "title": "Махалля",
