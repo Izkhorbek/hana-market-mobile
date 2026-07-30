@@ -37,11 +37,30 @@ Qisqacha:
 
 ---
 
-## PRIORITET 3 — Gaz navbati (keyinroq)
+## PRIORITET 3 — Mahalla (membership) — Gaz'ning ASOSI
+
+**Spec:** [MAHALLA_BACKEND_SPEC.md](MAHALLA_BACKEND_SPEC.md)
+
+Foydalanuvchini mahallaga bog'laydi (`mahallaId` manbai). Gaz busiz ishlamaydi.
+- Jadvallar: `mahalla`, `mahalla_member`, `household`
+- 4 endpoint: `GET /api/mahalla` (public), `GET /api/mahalla/my` (auth),
+  `POST /api/mahalla/join` (auth), `GET /api/mahalla/{id}` (public)
+- `MahallaMemberDto.mahalla` ichida to'liq `MahallaDto` bo'lishi shart
+
+## PRIORITET 4 — Gaz navbati
 
 **Spec:** [GAZ_NAVBATI_BACKEND_SPEC.md](GAZ_NAVBATI_BACKEND_SPEC.md)
 
-Tayyor, lekin frontend hali qurilmoqda — 1 va 2 dan keyin qarasangiz bo'ladi.
+Frontend endi **to'liq tayyor** (type → data → hook → store → SignalR → tracker
+ekran). Backend qismini kutadi:
+- Jadvallar: `distribution_session`, `household_status` (+ Mahalla'nikilar)
+- 10 REST endpoint (sessions active/{id}/my-status, create, start/pause/complete,
+  position, household status, confirm)
+- SignalR (chat hub'iga qo'shiladi): `GasSessionStarted`, `GasPositionUpdated`,
+  `GasHouseholdStatusChanged`, `GasSessionCompleted` + `JoinMahalla`/`LeaveMahalla`
+  hub metodlari, `mahalla:{id}` guruh
+
+**Tavsiya etilgan tartib:** Service → Guest → **Mahalla** → Gas.
 
 ---
 
