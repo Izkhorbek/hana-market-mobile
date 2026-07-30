@@ -6,6 +6,12 @@ import {
 } from '@microsoft/signalr'
 import { MessageTypeString } from '../../constants/appLimits'
 import { ChatRoomDto } from '../../types'
+import type {
+  GasHouseholdStatusChangedEvent,
+  GasPositionUpdatedEvent,
+  GasSessionCompletedEvent,
+  GasSessionStartedEvent,
+} from '../../types'
 import { IMAGE_BASE_URL } from '../api'
 import { getAuthToken } from '../auth-bridge'
 import { logger } from '@/utils/logger'
@@ -20,6 +26,15 @@ export const SignalREvents = {
   ChatRoomCreated: 'ChatRoomCreated',
   MessageDeleted: 'MessageDeleted',
   ChatRoomDeleted: 'ChatRoomDeleted'
+} as const
+
+// Gaz navbati (Gas distribution) realtime events. Additive — independent of the
+// chat events above; delivered over the mahalla:{id} group.
+export const GasSignalREvents = {
+  GasSessionStarted: 'GasSessionStarted',
+  GasPositionUpdated: 'GasPositionUpdated',
+  GasHouseholdStatusChanged: 'GasHouseholdStatusChanged',
+  GasSessionCompleted: 'GasSessionCompleted',
 } as const
 
 // SignalR event payloads (matching API documentation - snake_case from backend)
@@ -104,6 +119,12 @@ export const HubMethods = {
   IsUserOnline: 'IsUserOnline',
 } as const
 
+// Gaz navbati hub methods (join/leave the mahalla group for live updates).
+export const GasHubMethods = {
+  JoinMahalla: 'JoinMahalla',
+  LeaveMahalla: 'LeaveMahalla',
+} as const
+
 // Send message request (matching API format)
 export interface SendMessageRequest {
   chat_room_id: number;
@@ -141,6 +162,12 @@ class SignalRService {
   private chatRoomCreatedListeners: EventCallback<ChatRoomCreatedPayload>[] = []
   private messageDeletedListeners: EventCallback<MessageDeletedPayload>[] = []
   private chatRoomDeletedListeners: EventCallback<ChatRoomDeletedPayload>[] = []
+  // Gaz navbati listeners — intentionally NOT cleared by clearAllListeners() so
+  // the chat listener reset does not wipe gas subscriptions.
+  private gasSessionStartedListeners: EventCallback<GasSessionStartedEvent>[] = []
+  private gasPositionUpdatedListeners: EventCallback<GasPositionUpdatedEvent>[] = []
+  private gasHouseholdStatusChangedListeners: EventCallback<GasHouseholdStatusChangedEvent>[] = []
+  private gasSessionCompletedListeners: EventCallback<GasSessionCompletedEvent>[] = []
 
   private getHubUrl(): string {
     // SignalR hub URL from API documentation
@@ -322,6 +349,16 @@ class SignalRService {
     await this.invokeMethod(HubMethods.LeaveChatRoom, chatRoomId)
   }
 
+  /** Join a mahalla group to receive live gas-distribution updates. */
+  async joinMahalla(mahallaId: number): Promise<void> {
+    await this.invokeMethod(GasHubMethods.JoinMahalla, mahallaId)
+  }
+
+  /** Leave a mahalla group. */
+  async leaveMahalla(mahallaId: number): Promise<void> {
+    await this.invokeMethod(GasHubMethods.LeaveMahalla, mahallaId)
+  }
+
   /**
    * Check if a user is online
    * @param userId The ID of the user to check
@@ -426,6 +463,40 @@ async isUserOnline(userId: number): Promise<boolean> {
     }
   }
 
+  // ========== Gaz Navbati Event Subscriptions ==========
+
+  /** Subscribe to "a gas session started". Returns an unsubscriber. */
+  onGasSessionStarted(callback: EventCallback<GasSessionStartedEvent>): () => void {
+    this.gasSessionStartedListeners.push(callback)
+    return () => {
+      this.gasSessionStartedListeners = this.gasSessionStartedListeners.filter((cb) => cb !== callback)
+    }
+  }
+
+  /** Subscribe to live "where are we now" position updates. Returns an unsubscriber. */
+  onGasPositionUpdated(callback: EventCallback<GasPositionUpdatedEvent>): () => void {
+    this.gasPositionUpdatedListeners.push(callback)
+    return () => {
+      this.gasPositionUpdatedListeners = this.gasPositionUpdatedListeners.filter((cb) => cb !== callback)
+    }
+  }
+
+  /** Subscribe to per-household status changes. Returns an unsubscriber. */
+  onGasHouseholdStatusChanged(callback: EventCallback<GasHouseholdStatusChangedEvent>): () => void {
+    this.gasHouseholdStatusChangedListeners.push(callback)
+    return () => {
+      this.gasHouseholdStatusChangedListeners = this.gasHouseholdStatusChangedListeners.filter((cb) => cb !== callback)
+    }
+  }
+
+  /** Subscribe to "session completed". Returns an unsubscriber. */
+  onGasSessionCompleted(callback: EventCallback<GasSessionCompletedEvent>): () => void {
+    this.gasSessionCompletedListeners.push(callback)
+    return () => {
+      this.gasSessionCompletedListeners = this.gasSessionCompletedListeners.filter((cb) => cb !== callback)
+    }
+  }
+
   // ========== Private Methods ==========
 
   private setupConnectionHandlers(): void {
@@ -520,6 +591,32 @@ async isUserOnline(userId: number): Promise<boolean> {
       SignalREvents.ChatRoomDeleted,
       (payload: ChatRoomDeletedPayload) => {
         this.chatRoomDeletedListeners.forEach((cb) => cb(payload))
+      },
+    )
+
+    // ── Gaz navbati events (additive; dispatch to gas listeners) ──
+    this.connection.on(
+      GasSignalREvents.GasSessionStarted,
+      (payload: GasSessionStartedEvent) => {
+        this.gasSessionStartedListeners.forEach((cb) => cb(payload))
+      },
+    )
+    this.connection.on(
+      GasSignalREvents.GasPositionUpdated,
+      (payload: GasPositionUpdatedEvent) => {
+        this.gasPositionUpdatedListeners.forEach((cb) => cb(payload))
+      },
+    )
+    this.connection.on(
+      GasSignalREvents.GasHouseholdStatusChanged,
+      (payload: GasHouseholdStatusChangedEvent) => {
+        this.gasHouseholdStatusChangedListeners.forEach((cb) => cb(payload))
+      },
+    )
+    this.connection.on(
+      GasSignalREvents.GasSessionCompleted,
+      (payload: GasSessionCompletedEvent) => {
+        this.gasSessionCompletedListeners.forEach((cb) => cb(payload))
       },
     )
   }
