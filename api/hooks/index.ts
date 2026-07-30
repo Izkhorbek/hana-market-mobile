@@ -7,6 +7,7 @@ export * from './useContact'
 export * from './useContent'
 export * from './useNotifications'
 export * from './useProduct'
+export * from './useService'
 export * from './useSignalR'
 export * from './useUser'
 

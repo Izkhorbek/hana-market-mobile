@@ -95,6 +95,18 @@ const ENDPOINT = {
       `product/categories/${parentId}/subcategories`,
   },
 
+  // Service (Xizmat). Separate domain from Product (own DB table). Providers
+  // are contacted by phone (Path A) — no chat coupling. Draft images reuse the
+  // shared product draft-upload endpoint.
+  SERVICE: {
+    CREATE: 'service/create',
+    ALL: 'service/all',
+    MY: 'service/my',
+    BY_ID: (id: string | number) => `service/${id}`,
+    UPDATE: (id: string | number) => `service/${id}`,
+    DELETE: (id: string | number) => `service/${id}`,
+  },
+
   // Complaints
   COMPLAINT: {
     CREATE: 'complaint/create',

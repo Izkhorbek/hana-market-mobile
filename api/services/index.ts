@@ -8,6 +8,7 @@ export * from './content.service'
 export * from './manner.service'
 export * from './notification.service'
 export * from './product.service'
+export * from './service.service'
 export * from './telemetry.service'
 export * from './user.service'
 
