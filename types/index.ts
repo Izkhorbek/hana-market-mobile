@@ -940,3 +940,8 @@ export interface CreateMannerReviewResponse {
   review: MannerReviewResponse;
   summary: MannerTemperatureSummaryResponse;
 }
+
+// ==================== SERVICE (XIZMAT) ====================
+// Feature-scoped types live in their own file (ARCHITECTURE.md §4) and are
+// re-exported here so existing `@/types` imports keep working.
+export * from './service'

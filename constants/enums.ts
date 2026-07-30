@@ -119,3 +119,26 @@ export enum EMessageType {
   FILE = 1020,
   SYSTEM = 1030
 }
+
+// ==================== SERVICE (XIZMAT) ====================
+// Xizmat (service) domeni product'dan alohida (o'z DB jadvali). Ustaga telefon
+// orqali bog'lanadi (Path A). Bu qiymatlar BACKEND bilan aynan bir xil bo'lishi shart.
+
+export enum EServiceCategory {
+  PLUMBER = 1000, // Santexnik
+  ELECTRICIAN = 1010, // Elektrik
+  REPAIR = 1020, // Usta / ta'mir
+  CLEANING = 1030, // Tozalash
+  MOVING = 1040, // Ko'chirish / yuk tashish
+  TUTOR = 1050, // Repetitor / o'qituvchi
+  GARDENER = 1060, // Bog'bon
+  APPLIANCE = 1070, // Maishiy texnika ustasi
+  BEAUTY = 1080, // Go'zallik (uyda xizmat)
+  OTHER = 1090, // Boshqa
+}
+
+export enum EServicePriceType {
+  HOURLY = 1000, // Soatlik
+  PER_JOB = 1010, // Ish boshiga
+  NEGOTIABLE = 1020, // Kelishiladi
+}
