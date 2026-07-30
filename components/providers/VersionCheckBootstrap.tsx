@@ -1,3 +1,4 @@
+// eslint-disable-next-line import/no-restricted-paths -- TODO(arch): route through a hook (ARCHITECTURE.md §1)
 import { appService } from '@/api/services/app.service'
 import CustomAlert from '@/components/ui/CustomAlert'
 import { SUPPORTED_LANGUAGES, type SupportedLanguage } from '@/constants/localization'

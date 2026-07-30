@@ -1,4 +1,5 @@
-﻿import { notificationService } from '@/api/services/notification.service'
+﻿// eslint-disable-next-line import/no-restricted-paths -- TODO(arch): route through a hook (ARCHITECTURE.md §1)
+import { notificationService } from '@/api/services/notification.service'
 import { useAuthStore } from '@/modules/Auth/auth-store'
 import { NotificationType } from '@/types'
 import { logger } from '@/utils/logger'

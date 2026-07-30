@@ -1,4 +1,5 @@
 import { useAcceptTermsMutation, usePrivacyQuery, useTermsQuery } from '@/api/hooks'
+// eslint-disable-next-line import/no-restricted-paths -- TODO(arch): route through a hook (ARCHITECTURE.md §1)
 import { userService } from '@/api/services/user.service'
 import KeyboardAvoidWrapper from '@/components/shared/KeyboardAvoidWrapper'
 import { ThemedText } from '@/components/themed-text'
