@@ -107,6 +107,23 @@ const ENDPOINT = {
     DELETE: (id: string | number) => `service/${id}`,
   },
 
+  // Gaz navbati (Gas distribution). Live/stateful — realtime via SignalR
+  // (modules/Gas). See docs/GAZ_NAVBATI_BACKEND_SPEC.md.
+  GAS: {
+    CREATE_SESSION: 'gas/sessions',
+    ACTIVE_SESSION: 'gas/sessions/active',
+    SESSION_BY_ID: (id: string | number) => `gas/sessions/${id}`,
+    MY_STATUS: (id: string | number) => `gas/sessions/${id}/my-status`,
+    START: (id: string | number) => `gas/sessions/${id}/start`,
+    PAUSE: (id: string | number) => `gas/sessions/${id}/pause`,
+    COMPLETE: (id: string | number) => `gas/sessions/${id}/complete`,
+    POSITION: (id: string | number) => `gas/sessions/${id}/position`,
+    HOUSEHOLD_STATUS: (id: string | number, householdId: string | number) =>
+      `gas/sessions/${id}/households/${householdId}/status`,
+    CONFIRM: (id: string | number, householdId: string | number) =>
+      `gas/sessions/${id}/households/${householdId}/confirm`,
+  },
+
   // Complaints
   COMPLAINT: {
     CREATE: 'complaint/create',
