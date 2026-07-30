@@ -945,3 +945,6 @@ export interface CreateMannerReviewResponse {
 // Feature-scoped types live in their own file (ARCHITECTURE.md §4) and are
 // re-exported here so existing `@/types` imports keep working.
 export * from './service'
+
+// ==================== GAZ (GAS DISTRIBUTION) ====================
+export * from './gas'
