@@ -4,13 +4,14 @@ import {
   useGasRealtime,
   useGasSessionQuery,
   useMyGasStatusQuery,
+  useMyMahallaQuery,
 } from '@/api/hooks'
 import { ThemedView } from '@/components/themed-view'
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
 import { useGasStore } from '@/modules/Gas/gas-store'
 import type { GasHouseholdRow, GasHouseholdStatus } from '@/types'
-import { router } from 'expo-router'
+import { type Href, router } from 'expo-router'
 import { ArrowLeft } from 'lucide-react-native'
 import React, { useEffect } from 'react'
 import {
@@ -41,6 +42,14 @@ export default function GasTrackerScreen() {
   const setSession = useGasStore((s) => s.setSession)
   const setDetail = useGasStore((s) => s.setDetail)
   const setMyStatus = useGasStore((s) => s.setMyStatus)
+  const setMahallaId = useGasStore((s) => s.setMahallaId)
+
+  // Seed mahallaId from the user's membership (client state isn't persisted).
+  const myMahallaQ = useMyMahallaQuery()
+  useEffect(() => {
+    const member = myMahallaQ.data?.data?.data
+    if (member) setMahallaId(member.mahalla_id)
+  }, [myMahallaQ.data, setMahallaId])
 
   // Live realtime patches for this mahalla.
   useGasRealtime(mahallaId)
@@ -86,6 +95,13 @@ export default function GasTrackerScreen() {
         {Header}
         <View style={styles.center}>
           <Text style={[styles.emptyText, { color: colors.subText }]}>{t('gas.no_mahalla')}</Text>
+          <TouchableOpacity
+            style={[styles.ctaBtn, { backgroundColor: colors.primaryColor }]}
+            onPress={() => router.push('/mahalla/join' as Href)}
+            activeOpacity={0.85}
+          >
+            <Text style={styles.ctaBtnText}>{t('mahalla.select_mahalla')}</Text>
+          </TouchableOpacity>
         </View>
       </ThemedView>
     )
@@ -209,8 +225,10 @@ const styles = StyleSheet.create({
   headerBtn: { width: 40, height: 40, justifyContent: 'center', alignItems: 'center' },
   headerTitle: { fontSize: 17, fontWeight: '600', letterSpacing: -0.2 },
   content: { padding: 16, gap: 14, paddingBottom: 28 },
-  center: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24 },
+  center: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24, gap: 16 },
   emptyText: { fontSize: 14, textAlign: 'center' },
+  ctaBtn: { paddingHorizontal: 24, paddingVertical: 12, borderRadius: 12 },
+  ctaBtnText: { color: '#fff', fontSize: 14, fontWeight: '600' },
 
   banner: { backgroundColor: '#E8663A', borderRadius: 16, padding: 14 },
   bannerTop: { color: '#fff', fontSize: 12, fontWeight: '600', opacity: 0.95 },
