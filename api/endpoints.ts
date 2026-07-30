@@ -107,6 +107,14 @@ const ENDPOINT = {
     DELETE: (id: string | number) => `service/${id}`,
   },
 
+  // Mahalla (neighborhood) membership — powers hyperlocal features.
+  MAHALLA: {
+    LIST: 'mahalla',
+    MY: 'mahalla/my',
+    JOIN: 'mahalla/join',
+    BY_ID: (id: string | number) => `mahalla/${id}`,
+  },
+
   // Gaz navbati (Gas distribution). Live/stateful — realtime via SignalR
   // (modules/Gas). See docs/GAZ_NAVBATI_BACKEND_SPEC.md.
   GAS: {

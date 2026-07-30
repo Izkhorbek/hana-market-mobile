@@ -948,3 +948,6 @@ export * from './service'
 
 // ==================== GAZ (GAS DISTRIBUTION) ====================
 export * from './gas'
+
+// ==================== MAHALLA (NEIGHBORHOOD) ====================
+export * from './mahalla'
