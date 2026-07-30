@@ -5,7 +5,7 @@ import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
 import { useChatStore } from '@/modules/Chat/chat-store'
 import { Tabs } from 'expo-router'
-import { House, Map, MessageSquare, UserRound } from 'lucide-react-native'
+import { Building2, House, Map, MessageSquare, UserRound } from 'lucide-react-native'
 import React from 'react'
 import { StyleSheet } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -52,6 +52,15 @@ export default function TabLayout() {
           },
           tabBarIcon: ({ color, focused }) => (
             <TabIcon Icon={House} focused={focused} title={t('tabs.home')} color={color} />
+          ),
+        }}
+      />
+
+      <Tabs.Screen
+        name="mahalla"
+        options={{
+          tabBarIcon: ({ color, focused }) => (
+            <TabIcon Icon={Building2} focused={focused} title={t('mahalla.tab')} color={color} />
           ),
         }}
       />

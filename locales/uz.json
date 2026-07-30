@@ -419,6 +419,21 @@
       "landmark": "Mo'ljal majburiy"
     }
   },
+  "mahalla": {
+    "tab": "Mahalla",
+    "title": "Mahalla",
+    "subtitle": "Mahallangiz xizmatlari va ma'lumotlari",
+    "gas_title": "Gaz & Kommunal",
+    "gas_subtitle": "Gaz navbati, suv, svet",
+    "services_title": "Xizmatlar",
+    "services_subtitle": "Usta, repetitor, tozalash",
+    "announcements_title": "E'lonlar",
+    "announcements_subtitle": "To'y, ta'ziya, hashar",
+    "lostfound_title": "Yo'qolgan / Tekin",
+    "lostfound_subtitle": "Topilgan narsalar, bepul bering",
+    "coming_soon": "Tez orada",
+    "coming_soon_message": "Bu bo'lim tez orada ishga tushadi."
+  },
   "profile": {
     "title": "Hana Market",
     "active": "Faol",

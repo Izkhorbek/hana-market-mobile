@@ -417,6 +417,21 @@
       "landmark": "Ориентир обязателен"
     }
   },
+  "mahalla": {
+    "tab": "Махалля",
+    "title": "Махалля",
+    "subtitle": "Услуги и информация вашей махалли",
+    "gas_title": "Газ и коммунальные",
+    "gas_subtitle": "Очередь на газ, вода, свет",
+    "services_title": "Услуги",
+    "services_subtitle": "Мастер, репетитор, уборка",
+    "announcements_title": "Объявления",
+    "announcements_subtitle": "Свадьбы, соболезнования, хашар",
+    "lostfound_title": "Потеряно / Бесплатно",
+    "lostfound_subtitle": "Найденное, отдам даром",
+    "coming_soon": "Скоро",
+    "coming_soon_message": "Этот раздел скоро появится."
+  },
   "profile": {
     "title": "Hana Market",
     "active": "Активен",

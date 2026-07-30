@@ -416,6 +416,21 @@
 			"landmark": "Landmark is required"
 		}
 	},
+	"mahalla": {
+		"tab": "Mahalla",
+		"title": "Mahalla",
+		"subtitle": "Your neighborhood's services and info",
+		"gas_title": "Gas & Utilities",
+		"gas_subtitle": "Gas queue, water, electricity",
+		"services_title": "Services",
+		"services_subtitle": "Handyman, tutor, cleaning",
+		"announcements_title": "Announcements",
+		"announcements_subtitle": "Weddings, condolences, hashar",
+		"lostfound_title": "Lost / Free",
+		"lostfound_subtitle": "Found items, giveaways",
+		"coming_soon": "Coming soon",
+		"coming_soon_message": "This section will be available soon."
+	},
 	"profile": {
 		"title": "Hana Market",
 		"active": "Active",
