@@ -445,6 +445,8 @@
     "pause": "To'xtatib turish",
     "resume": "Davom ettirish",
     "complete": "Yakunlash",
+    "deliver_next": "Berildi → keyingi",
+    "mark_skipped": "Uyda yo'q",
     "session_planned": "Rejalashtirilgan",
     "session_active": "Faol",
     "session_paused": "To'xtatilgan",

@@ -442,6 +442,8 @@
 		"pause": "Pause",
 		"resume": "Resume",
 		"complete": "Complete",
+		"deliver_next": "Delivered → next",
+		"mark_skipped": "Not home",
 		"session_planned": "Planned",
 		"session_active": "Active",
 		"session_paused": "Paused",

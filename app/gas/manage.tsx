@@ -2,14 +2,17 @@ import {
   useActiveGasSessionQuery,
   useCompleteGasSessionMutation,
   useCreateGasSessionMutation,
+  useGasSessionQuery,
   usePauseGasSessionMutation,
   useStartGasSessionMutation,
+  useUpdateGasHouseholdStatusMutation,
+  useUpdateGasPositionMutation,
 } from '@/api/hooks'
 import { ThemedView } from '@/components/themed-view'
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
 import { useGasStore } from '@/modules/Gas/gas-store'
-import type { GasSessionDto, GasSessionStatus } from '@/types'
+import type { GasHouseholdRow, GasHouseholdStatus, GasSessionDto, GasSessionStatus } from '@/types'
 import { parseApiError } from '@/utils/apiError'
 import { AxiosResponse } from 'axios'
 import { router } from 'expo-router'
@@ -34,6 +37,25 @@ const sessionStatusKey = (s: GasSessionStatus) =>
     | 'gas.session_paused'
     | 'gas.session_completed'
     | 'gas.session_cancelled'
+
+// One-line: map a household status to its i18n label key.
+const householdStatusKey = (s: GasHouseholdStatus) =>
+  ({
+    pending: 'gas.status_pending',
+    current: 'gas.status_current',
+    delivered: 'gas.status_delivered',
+    skipped: 'gas.status_skipped',
+  })[s]
+
+// One-line: id of the next 'pending' household after the current one (wraps to first).
+const nextPendingId = (households: GasHouseholdRow[], currentId: number | null): number | null => {
+  const startIdx =
+    currentId != null ? households.findIndex((h) => h.household_id === currentId) : -1
+  for (let i = startIdx + 1; i < households.length; i++) {
+    if (households[i].status === 'pending') return households[i].household_id
+  }
+  return households.find((h) => h.status === 'pending')?.household_id ?? null
+}
 
 export default function GasManageScreen() {
   const colors = useThemeColors()
@@ -76,6 +98,32 @@ export default function GasManageScreen() {
     onSuccess: applyResult,
     onError,
   })
+
+  // Live queue (households) for the running session.
+  const detail = useGasStore((s) => s.detail)
+  const setDetail = useGasStore((s) => s.setDetail)
+  const detailQ = useGasSessionQuery({ id: session?.id ?? 0 })
+  useEffect(() => {
+    if (detailQ.data) setDetail(detailQ.data.data?.data ?? null)
+  }, [detailQ.data, setDetail])
+
+  const { mutate: markStatus, isPending: marking } = useUpdateGasHouseholdStatusMutation({ onError })
+  const { mutate: setPosition } = useUpdateGasPositionMutation({ onError })
+
+  // Mark the current household delivered/skipped, then advance to the next pending one.
+  const advance = (status: 'delivered' | 'skipped') => {
+    if (!session || session.current_household_id == null) return
+    const currentId = session.current_household_id
+    markStatus({ id: session.id, householdId: currentId, data: { status } })
+    const next = nextPendingId(detail?.households ?? [], currentId)
+    if (next != null) setPosition({ id: session.id, data: { current_household_id: next } })
+  }
+
+  // Jump the live position to a specific household.
+  const setCurrent = (householdId: number) => {
+    if (!session) return
+    setPosition({ id: session.id, data: { current_household_id: householdId } })
+  }
 
   const busy = creating || starting || pausing || completing
 
@@ -175,6 +223,57 @@ export default function GasManageScreen() {
                 </TouchableOpacity>
               )}
             </View>
+
+            {/* Live queue + runner controls */}
+            {(session.status === 'active' || session.status === 'paused') &&
+              !!detail?.households.length && (
+                <View style={styles.queueBlock}>
+                  <Text style={[styles.queueLabel, { color: colors.subText }]}>{t('gas.queue')}</Text>
+                  {detail.households.map((h) => {
+                    const isCurrent = h.household_id === session.current_household_id
+                    return (
+                      <TouchableOpacity
+                        key={h.household_id}
+                        onPress={() => setCurrent(h.household_id)}
+                        activeOpacity={0.7}
+                        style={[
+                          styles.row,
+                          { borderColor: isCurrent ? colors.primaryColor : colors.borderColor },
+                        ]}
+                      >
+                        <Text style={[styles.rowNo, { color: colors.text }]}>{h.house_number}</Text>
+                        <Text style={[styles.rowAddr, { color: colors.subText }]} numberOfLines={1}>
+                          {h.address_label}
+                        </Text>
+                        <Text style={[styles.rowStatus, { color: colors.subText }]}>
+                          {t(householdStatusKey(h.status))}
+                        </Text>
+                      </TouchableOpacity>
+                    )
+                  })}
+
+                  {session.status === 'active' && session.current_household_id != null && (
+                    <View style={styles.actions}>
+                      <TouchableOpacity
+                        style={[styles.actionPrimary, { backgroundColor: colors.primaryColor, opacity: marking ? 0.6 : 1 }]}
+                        onPress={() => advance('delivered')}
+                        disabled={marking}
+                        activeOpacity={0.85}
+                      >
+                        <Text style={styles.primaryBtnText}>{t('gas.deliver_next')}</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={[styles.actionOutline, { borderColor: colors.borderColor }]}
+                        onPress={() => advance('skipped')}
+                        disabled={marking}
+                        activeOpacity={0.85}
+                      >
+                        <Text style={[styles.outlineBtnText, { color: colors.text }]}>{t('gas.mark_skipped')}</Text>
+                      </TouchableOpacity>
+                    </View>
+                  )}
+                </View>
+              )}
           </View>
         )}
       </ScrollView>
@@ -209,4 +308,21 @@ const styles = StyleSheet.create({
   sessionDate: { fontSize: 15, fontWeight: '700' },
   sessionStatus: { fontSize: 13, fontWeight: '600', marginTop: 4 },
   lifecycle: { gap: 0 },
+  queueBlock: { marginTop: 20, gap: 7 },
+  queueLabel: { fontSize: 11, fontWeight: '700', letterSpacing: 0.4, textTransform: 'uppercase', marginBottom: 2 },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    borderWidth: 1,
+    borderRadius: 11,
+    paddingHorizontal: 12,
+    paddingVertical: 11,
+  },
+  rowNo: { fontSize: 14, fontWeight: '700', minWidth: 36 },
+  rowAddr: { flex: 1, fontSize: 12 },
+  rowStatus: { fontSize: 11 },
+  actions: { flexDirection: 'row', gap: 8, marginTop: 12 },
+  actionPrimary: { flex: 1, height: 48, borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
+  actionOutline: { flex: 1, height: 48, borderRadius: 12, borderWidth: 1, justifyContent: 'center', alignItems: 'center' },
 })

@@ -443,6 +443,8 @@
     "pause": "Пауза",
     "resume": "Продолжить",
     "complete": "Завершить",
+    "deliver_next": "Выдано → далее",
+    "mark_skipped": "Нет дома",
     "session_planned": "Запланирована",
     "session_active": "Активна",
     "session_paused": "Пауза",
