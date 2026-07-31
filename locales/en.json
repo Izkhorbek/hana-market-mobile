@@ -377,6 +377,7 @@
 		"service_information": "Service Information",
 		"category": "Service Type",
 		"category_select": "Select service type",
+		"all": "All",
 		"plumber": "Plumber",
 		"electrician": "Electrician",
 		"repair": "Repair / Handyman",

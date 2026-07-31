@@ -1,5 +1,6 @@
 import { useInfiniteServicesQuery } from '@/api/hooks'
 import { AppLimits } from '@/constants/appLimits'
+import { EServiceCategory } from '@/constants/enums'
 import { ThemedView } from '@/components/themed-view'
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
@@ -8,20 +9,37 @@ import type { ApiResponse, PaginatedResponse, ServiceListItemDto } from '@/types
 import { AxiosResponse } from 'axios'
 import { type Href, router } from 'expo-router'
 import { ArrowLeft, Phone, Plus, Wrench } from 'lucide-react-native'
-import React, { useCallback, useMemo, useRef } from 'react'
+import React, { useCallback, useMemo, useRef, useState } from 'react'
 import {
   ActivityIndicator,
   FlatList,
   Linking,
+  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native'
 
+// Category filter chips ("Barchasi" + each service category).
+const CATEGORY_CHIPS: { value?: EServiceCategory; labelKey: string }[] = [
+  { value: undefined, labelKey: 'service.all' },
+  { value: EServiceCategory.PLUMBER, labelKey: 'service.plumber' },
+  { value: EServiceCategory.ELECTRICIAN, labelKey: 'service.electrician' },
+  { value: EServiceCategory.REPAIR, labelKey: 'service.repair' },
+  { value: EServiceCategory.CLEANING, labelKey: 'service.cleaning' },
+  { value: EServiceCategory.MOVING, labelKey: 'service.moving' },
+  { value: EServiceCategory.TUTOR, labelKey: 'service.tutor' },
+  { value: EServiceCategory.GARDENER, labelKey: 'service.gardener' },
+  { value: EServiceCategory.APPLIANCE, labelKey: 'service.appliance' },
+  { value: EServiceCategory.BEAUTY, labelKey: 'service.beauty' },
+  { value: EServiceCategory.OTHER, labelKey: 'service.other' },
+]
+
 export default function ServiceListScreen() {
   const colors = useThemeColors()
   const { t } = useTranslations()
+  const [selectedCategory, setSelectedCategory] = useState<EServiceCategory | undefined>(undefined)
 
   const user = useAuthStore((s) => s.user)
   const isHydrated = useAuthStore((s) => s.isHydrated)
@@ -48,6 +66,7 @@ export default function ServiceListScreen() {
       user_lat: userLat,
       user_long: userLng,
       page_size: AppLimits.Pagination.DEFAULT_PAGE_SIZE,
+      category: selectedCategory,
     },
     querySettings: { enabled: isHydrated && (isAuthenticated || isGuest) },
   })
@@ -160,6 +179,36 @@ export default function ServiceListScreen() {
         </TouchableOpacity>
       </View>
 
+      {/* Category filter chips */}
+      <View style={styles.chipsWrap}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.chipsRow}
+        >
+          {CATEGORY_CHIPS.map((c) => {
+            const active = selectedCategory === c.value
+            return (
+              <TouchableOpacity
+                key={c.labelKey}
+                style={[
+                  styles.chip,
+                  active
+                    ? { backgroundColor: colors.primaryColor, borderColor: colors.primaryColor }
+                    : { backgroundColor: colors.background, borderColor: colors.borderColor },
+                ]}
+                onPress={() => setSelectedCategory(c.value)}
+                activeOpacity={0.8}
+              >
+                <Text style={[styles.chipText, { color: active ? '#fff' : colors.text }]}>
+                  {t(c.labelKey)}
+                </Text>
+              </TouchableOpacity>
+            )
+          })}
+        </ScrollView>
+      </View>
+
       <FlatList
         showsVerticalScrollIndicator={false}
         data={services}
@@ -199,6 +248,23 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: '600',
     letterSpacing: -0.2,
+  },
+  chipsWrap: {
+    paddingVertical: 10,
+  },
+  chipsRow: {
+    paddingHorizontal: 16,
+    gap: 8,
+  },
+  chip: {
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 999,
+    borderWidth: 1,
+  },
+  chipText: {
+    fontSize: 13,
+    fontWeight: '600',
   },
   list: {
     padding: 16,
