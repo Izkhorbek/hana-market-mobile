@@ -1,5 +1,4 @@
-﻿// eslint-disable-next-line import/no-restricted-paths -- TODO(arch): route through a hook (ARCHITECTURE.md §1)
-import { notificationService } from '@/api/services/notification.service'
+﻿import { useDeactivatePushTokenMutation, useRegisterPushTokenMutation } from '@/api/hooks'
 import { useAuthStore } from '@/modules/Auth/auth-store'
 import { NotificationType } from '@/types'
 import { logger } from '@/utils/logger'
@@ -76,6 +75,8 @@ function navigateFromNotification(data: NotificationData | null | undefined) {
  */
 export function NotificationBootstrap() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
+  const { mutateAsync: registerPushToken } = useRegisterPushTokenMutation()
+  const { mutateAsync: deactivatePushToken } = useDeactivatePushTokenMutation()
 
   const deviceTokenRef = useRef<string | null>(null)
   const foregroundListenerRef = useRef<Notifications.EventSubscription | null>(null)
@@ -98,9 +99,7 @@ export function NotificationBootstrap() {
     if (!isAuthenticated) {
       // Deactivate push token so backend stops sending after logout.
       if (deviceTokenRef.current) {
-        notificationService
-          .deactivateToken({ device_token: deviceTokenRef.current })
-          .catch(() => {})
+        deactivatePushToken({ device_token: deviceTokenRef.current }).catch(() => {})
         deviceTokenRef.current = null
       }
 
@@ -159,7 +158,7 @@ export function NotificationBootstrap() {
         deviceTokenRef.current = deviceToken
 
         // ── Register with backend ──────────────────────────────────────────
-        await notificationService.registerToken({
+        await registerPushToken({
           device_token: deviceToken,
           platform: Platform.OS === 'ios' ? 'ios' : 'android',
         })
@@ -192,7 +191,7 @@ export function NotificationBootstrap() {
       foregroundListenerRef.current = null
       tapListenerRef.current = null
     }
-  }, [isAuthenticated])
+  }, [isAuthenticated, registerPushToken, deactivatePushToken])
 
   return null
 }

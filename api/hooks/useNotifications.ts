@@ -1,5 +1,6 @@
 import {
   useMutation,
+  UseMutationOptions,
   useQuery,
   useQueryClient,
   UseQueryOptions,
@@ -7,9 +8,11 @@ import {
 import { AxiosResponse } from 'axios'
 import type {
   ApiResponse,
+  DeactivatePushTokenDto,
   MarkNotificationsReadDto,
   NotificationListItemDto,
   PaginatedResponse,
+  RegisterPushTokenDto,
 } from '../../types'
 import {
   notificationService,
@@ -27,6 +30,26 @@ export const NOTIFICATION_KEYS = {
 /**
  * Paginated notification list.
  */
+/** Register this device's push token with the backend (on login). */
+export const useRegisterPushTokenMutation = (
+  options?: UseMutationOptions<AxiosResponse<ApiResponse<void>>, Error, RegisterPushTokenDto>,
+) => {
+  return useMutation<AxiosResponse<ApiResponse<void>>, Error, RegisterPushTokenDto>({
+    mutationFn: (data) => notificationService.registerToken(data),
+    ...options,
+  })
+}
+
+/** Deactivate this device's push token (on logout). */
+export const useDeactivatePushTokenMutation = (
+  options?: UseMutationOptions<AxiosResponse<ApiResponse<void>>, Error, DeactivatePushTokenDto>,
+) => {
+  return useMutation<AxiosResponse<ApiResponse<void>>, Error, DeactivatePushTokenDto>({
+    mutationFn: (data) => notificationService.deactivateToken(data),
+    ...options,
+  })
+}
+
 export const useNotificationsQuery = ({
   params,
   querySettings = {},

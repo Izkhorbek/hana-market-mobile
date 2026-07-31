@@ -1,5 +1,4 @@
-// eslint-disable-next-line import/no-restricted-paths -- TODO(arch): route through a hook (ARCHITECTURE.md §1)
-import { productService } from '@/api/services'
+import { useDeleteDraftImageMutation, useUploadDraftImagesMutation } from '@/api/hooks'
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
 import { useColor } from '@/hooks/useColor'
@@ -43,6 +42,8 @@ const ImageUploader = ({
   const borderColor = useColor('borderColor')
   const primaryColor = useColor('primaryColor')
   const { t } = useTranslations()
+  const { mutateAsync: uploadDraftImages } = useUploadDraftImagesMutation()
+  const { mutateAsync: deleteDraftImage } = useDeleteDraftImageMutation()
 
   // Ref to always have the latest images array in async callbacks (avoids stale closures)
   const latestImagesRef = useRef<DraftImageItem[]>([])
@@ -60,7 +61,7 @@ const ImageUploader = ({
         name: `image_${Date.now()}_${index}.jpg`,
       } as any)
 
-      const response = await productService.uploadDraftImages(formData)
+      const response = await uploadDraftImages(formData)
       const draftImage = response?.data?.data?.[0]
 
       latestImagesRef.current = latestImagesRef.current.map((img, i) =>
@@ -153,7 +154,7 @@ const ImageUploader = ({
     onChange(updated)
 
     if (imageToRemove?.draft_uuid) {
-      productService.deleteDraftImage(imageToRemove.draft_uuid).catch((err) => {
+      deleteDraftImage(imageToRemove.draft_uuid).catch((err) => {
         console.warn('Failed to delete draft image:', imageToRemove.draft_uuid, err)
       })
     }

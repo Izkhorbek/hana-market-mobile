@@ -209,6 +209,19 @@ export const useUploadDraftImagesMutation = (
 }
 
 /**
+ * Hook to delete a draft image by uuid (before the product is created)
+ */
+export const useDeleteDraftImageMutation = (
+  options?: UseMutationOptions<AxiosResponse<unknown>, Error, string>,
+) => {
+  return useMutation<AxiosResponse<unknown>, Error, string>({
+    mutationKey: ['DELETE_DRAFT_IMAGE'],
+    mutationFn: (draftUuid) => productService.deleteDraftImage(draftUuid),
+    ...options,
+  })
+}
+
+/**
  * Hook to fetch products with infinite scroll / pagination
  */
 export const useInfiniteProductsQuery = ({

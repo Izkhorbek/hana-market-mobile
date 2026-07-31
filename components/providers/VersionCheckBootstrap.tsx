@@ -1,5 +1,4 @@
-// eslint-disable-next-line import/no-restricted-paths -- TODO(arch): route through a hook (ARCHITECTURE.md §1)
-import { appService } from '@/api/services/app.service'
+import { useAppVersionCheckMutation } from '@/api/hooks'
 import CustomAlert from '@/components/ui/CustomAlert'
 import { SUPPORTED_LANGUAGES, type SupportedLanguage } from '@/constants/localization'
 import { useTranslations } from '@/hooks/use-translation'
@@ -40,6 +39,7 @@ export function VersionCheckBootstrap() {
   const { t, i18n } = useTranslations()
   const [mode, setMode] = useState<Mode>('none')
   const [result, setResult] = useState<VersionCheckResponse | null>(null)
+  const { mutateAsync: checkAppVersion } = useAppVersionCheckMutation()
 
   useEffect(() => {
     if (versionCheckStarted) return
@@ -50,7 +50,7 @@ export function VersionCheckBootstrap() {
     void (async () => {
       try {
         const build = getAppBuild()
-        const res = await appService.checkAppVersion({
+        const res = await checkAppVersion({
           platform: getAppPlatform(),
           version: getAppVersion(),
           // Omit `build` entirely when it can't be resolved numerically rather
@@ -83,7 +83,7 @@ export function VersionCheckBootstrap() {
     return () => {
       cancelled = true
     }
-  }, [i18n.language])
+  }, [i18n.language, checkAppVersion])
 
   const openStore = () => {
     const url = result?.store_url

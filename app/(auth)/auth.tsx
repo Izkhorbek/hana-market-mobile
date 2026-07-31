@@ -1,6 +1,4 @@
-import { useAcceptTermsMutation, usePrivacyQuery, useTermsQuery } from '@/api/hooks'
-// eslint-disable-next-line import/no-restricted-paths -- TODO(arch): route through a hook (ARCHITECTURE.md §1)
-import { userService } from '@/api/services/user.service'
+import { useAcceptTermsMutation, usePrivacyQuery, useTermsQuery, useUpdateProfileMutation } from '@/api/hooks'
 import KeyboardAvoidWrapper from '@/components/shared/KeyboardAvoidWrapper'
 import { ThemedText } from '@/components/themed-text'
 import { ThemedView } from '@/components/themed-view'
@@ -330,11 +328,12 @@ const AuthPage = () => {
   }, [otpCode, isLoading, phoneNumber, verifyOtp, setTermsAccepted, acceptTerms, termsVersion, privacyVersion, router, t])
 
   // Step 3: save username then navigate home
+  const { mutateAsync: updateProfile } = useUpdateProfileMutation()
   const handleSaveUsername = useCallback(async () => {
     if (!validateUsername(username) || isLoading) return
     setIsLoading(true)
     try {
-      await userService.updateProfile({ username })
+      await updateProfile({ username })
       setIsLoading(false)
       const loggedInUser = useAuthStore.getState().user
       if (
@@ -349,7 +348,7 @@ const AuthPage = () => {
       setIsLoading(false)
       setUsernameError(t('auth.register.error_generic'))
     }
-  }, [username, isLoading, router, t])
+  }, [username, isLoading, router, t, updateProfile])
 
   const phoneOperator = getPhoneOperator(phoneNumber)
   // Send OTP stays disabled until the user explicitly agrees to the Terms.
