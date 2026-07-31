@@ -192,7 +192,7 @@ DraftImageDto        = { draft_uuid, draft_image_url, sort_order }
 1. **`category_name` / `price_type_name`** — backend lokalizatsiyalangan ko'rinish
    nomini beradi (Product'dagi `category_name_uz/ru` yondashuvi; til `Accept-Language`
    yoki so'rov konteksti bo'yicha).
-2. **`price`** — ro'yxat/detalда **formatlangan string** (Product kabi); `negotiable`
+2. **`price`** — ro'yxat/detalda **formatlangan string** (Product kabi); `negotiable`
    bo'lsa `null`. Xom `price_uzs/usd` faqat create/update'da.
 3. **Guest ko'rishi** — `all`/`{id}` public, chunki xizmatlar telefon orqali,
    ochiq katalog mantiqiy (Product feed'i kabi).

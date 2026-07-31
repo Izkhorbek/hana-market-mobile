@@ -2,7 +2,7 @@
 
 > Mobil ilovaga yangi **Xizmat (Mahalla xizmatlari)** bo'limi qo'shildi.
 > Frontend to'liq tayyor va backend qismini kutyapti. `develop` branch'dan
-> tortib oling; batafsil kontraktlar `docs/` ичida.
+> tortib oling; batafsil kontraktlar `docs/` ichida.
 
 ---
 
@@ -26,7 +26,7 @@ Qisqacha:
 - DTO maydon nomlari `snake_case`, spec §4 dagidek aynan
 - `create` — multipart; `images_json` product'ning mavjud draft-upload'ini qayta
   ishlatadi (yangi upload endpoint kerak emas)
-- `price` — ro'yxat/detalда formatlangan string; "kelishiladi" bo'lsa `null`
+- `price` — ro'yxat/detalda formatlangan string; "kelishiladi" bo'lsa `null`
 
 ---
 
