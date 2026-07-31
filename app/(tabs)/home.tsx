@@ -10,7 +10,7 @@ import { useTranslations } from '@/hooks/use-translation'
 import Feather from '@expo/vector-icons/Feather'
 import { router } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
-import { Briefcase, Car, ChevronRight, Package } from 'lucide-react-native'
+import { Briefcase, Car, ChevronRight, Map, Package } from 'lucide-react-native'
 import { useRef, useState } from 'react'
 import {
   Animated,
@@ -141,6 +141,18 @@ export default function HomeScreen() {
         </TouchableOpacity>
       </View>
 
+      {/* ── Map toggle (Bozor → xarita) ─────────────────────────────────── */}
+      <View style={[styles.mapFabContainer, { bottom: insets.bottom }]}>
+        <TouchableOpacity
+          style={[styles.mapFab, { backgroundColor: colors.background, borderColor: colors.borderColor }]}
+          onPress={() => router.push('/map')}
+          activeOpacity={0.85}
+        >
+          <Map size={20} color={colors.text} />
+          <Text style={[styles.mapFabText, { color: colors.text }]}>{t('tabs.map')}</Text>
+        </TouchableOpacity>
+      </View>
+
       {/* ── Create Post Bottom Sheet ───────────────────────────────────── */}
       <Modal
         visible={sheetVisible}
@@ -255,6 +267,31 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.18,
     shadowRadius: 8,
+  },
+
+  // ── Map toggle button (bottom-left) ───────────────────────────────────────
+  mapFabContainer: {
+    position: 'absolute',
+    bottom: 24,
+    left: 24,
+  },
+  mapFab: {
+    height: 44,
+    paddingHorizontal: 16,
+    borderRadius: 22,
+    borderWidth: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 6,
+  },
+  mapFabText: {
+    fontSize: 14,
+    fontWeight: '600',
   },
 
   // ── Bottom sheet ──────────────────────────────────────────────────────────

@@ -5,7 +5,7 @@ import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
 import { useChatStore } from '@/modules/Chat/chat-store'
 import { Tabs } from 'expo-router'
-import { Building2, House, Map, MessageSquare, UserRound } from 'lucide-react-native'
+import { Building2, House, MessageSquare, UserRound } from 'lucide-react-native'
 import React from 'react'
 import { StyleSheet } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -65,14 +65,9 @@ export default function TabLayout() {
         }}
       />
 
-      <Tabs.Screen
-        name="map"
-        options={{
-          tabBarIcon: ({ color, focused }) => (
-            <TabIcon Icon={Map} focused={focused} title={t('tabs.map')} color={color} />
-          ),
-        }}
-      />
+      {/* Map moved into Bozor as a button — hidden from the tab bar but still a
+          route (product "view on map" links keep working). */}
+      <Tabs.Screen name="map" options={{ href: null }} />
 
       <Tabs.Screen
         name="chat"
