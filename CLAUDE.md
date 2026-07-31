@@ -6,6 +6,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Hana Market (a.k.a. Nebor) — a location-based marketplace mobile app (Carrot/Karrot-style) built with Expo + React Native, talking to a .NET 8 backend over REST + SignalR. Three languages (uz/ru/en). The npm package name is `hana-market`; the display/store name is "Nebor".
 
+## Coding rules
+
+1. **`snake_case` at the data boundary.** API request/response DTOs, model and store *data* shapes, and any object that crosses to/from the backend use `snake_case` (matches the .NET backend). Internal-only React code — component props, hook names, local variables, functions — stays idiomatic `camelCase`.
+2. **Keep a clean architecture.** Respect the existing layering (`UI → hooks → services → axios/SignalR`); screens never call services directly, only through hooks. Prefer small, single-responsibility modules; no cross-layer shortcuts.
+3. **One-line comment per method/function.** Every method or function has a short one-line comment stating what it does.
+
 ## Commands
 
 ```bash
@@ -33,13 +39,19 @@ Run a single E2E flow by pointing `maestro test` at a specific `.maestro/flows/*
 
 ## Configuration & Environment
 
-- **`app.config.ts` is the source of truth for build config**, not `app.json`. It imports `app.json` as a base, then injects env-driven values (Sentry DSN, Google Maps keys, cert-pinning hashes, legal URLs) and computes platform blocks. Edit static fields (icons, splash) in `app.json`; edit anything env-dependent or permission-related in `app.config.ts`.
+- **`app.config.js` is the source of truth for build config**, not `app.json`. It imports `app.json` as a base, then injects env-driven values (Sentry DSN, Google Maps keys, cert-pinning hashes, legal URLs) and computes platform blocks. Edit static fields (icons, splash) in `app.json`; edit anything env-dependent or permission-related in `app.config.js`.
 - Env vars live in `.env` (see `.env.example`). `EXPO_PUBLIC_*` vars are bundled into the app; non-prefixed ones (e.g. `SENTRY_AUTH_TOKEN`, `API_PIN_SHA256`) are build/CI only.
 - `EXPO_PUBLIC_API_URL` **must be HTTPS in production** — `api/api.ts` throws at startup otherwise, and cleartext is blocked at the platform level (`plugins/with-network-security.js` writes the Android network-security-config + iOS ATS, with optional SPKI cert pinning).
 - `APP_ENV` (`development|staging|production`) is read via `Constants.expoConfig.extra.appEnv` and drives prod-only guards.
 - **Path alias:** `@/*` maps to the repo root (`tsconfig.json` + `babel.config.js` module-resolver). Always import via `@/...`.
 
 ## Architecture
+
+> **New code follows [ARCHITECTURE.md](ARCHITECTURE.md)** — layering rules, the
+> `modules/` vs global decision, feature-module skeleton, design patterns, and an
+> add-a-feature checklist. The Dependency Rule is **ESLint-enforced**
+> (`import/no-restricted-paths` in `eslint.config.js`): UI must reach `api/services`
+> only through a hook. Read it before non-trivial work.
 
 ### Layering
 `UI (app/, components/) → hooks (api/hooks/, hooks/) → services (api/services/) → axios/SignalR`. Screens never call services directly except through hooks. Two state systems coexist:
