@@ -3,7 +3,8 @@
 // Mirrors docs/GAZ_NAVBATI_BACKEND_SPEC.md §2 (mahalla, mahalla_member,
 // household) and §4.1. Pure types — no imports.
 
-export type MahallaRole = 'resident' | 'mahalla_admin' | 'distributor'
+// Hierarchy: mahalla_rais (manager, controls admin roles) > mahalla_admin > distributor > resident.
+export type MahallaRole = 'resident' | 'mahalla_admin' | 'distributor' | 'mahalla_rais'
 
 export interface MahallaDto {
   id: number
@@ -18,6 +19,8 @@ export interface MahallaMemberDto {
   mahalla_id: number
   user_id: number
   role: MahallaRole
+  /** false = pending (awaiting the rais's verification). */
+  is_verified: boolean
   household_id: number | null
   /** Convenience: the mahalla itself, so /my needs no second call. */
   mahalla: MahallaDto

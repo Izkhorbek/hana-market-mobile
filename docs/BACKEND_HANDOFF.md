@@ -59,8 +59,12 @@ kutilayotgan talab — hali bajarilmagan bo'lsa, shu bilan birga bajaring.)
 - Jadvallar: `mahalla`, `mahalla_member`, `household`.
 - 4 endpoint (jadvalda).
 - **Must-match:** `MahallaMemberDto.mahalla` ichida to'liq `MahallaDto` bo'lishi shart
-  (frontend `/my`ni ikkinchi so'rovsiz ishlatadi). `role` = `resident` |
-  `mahalla_admin` | `distributor`.
+  (frontend `/my`ni ikkinchi so'rovsiz ishlatadi). `role` (ierarxiya) = `resident` |
+  `distributor` | `mahalla_admin` | `mahalla_rais`.
+- **Membership + verification:** self-join → member `is_verified=false` (pending);
+  **mahalla_rais** tasdiqlaydi. Rais admin/distributor tayinlaydi; raisni faqat
+  platforma tayinlaydi. Rais paneli endpointlari + ruxsatlar matritsasi — spec §2.5/§4.
+  Gaz navbatiga faqat verified xonadonlar kiradi.
 
 ## PRIORITET 4 — Gaz navbati
 
@@ -92,7 +96,7 @@ kutilayotgan talab — hali bajarilmagan bo'lsa, shu bilan birga bajaring.)
 | Mahalla | `GET /api/mahalla/my` | auth |
 | Mahalla | `POST /api/mahalla/join` | auth |
 | Mahalla | `GET /api/mahalla/{id}` | public |
-| Gaz | `POST /api/gas/sessions` | mahalla_admin |
+| Gaz | `POST /api/gas/sessions` | mahalla_admin / rais |
 | Gaz | `GET /api/gas/sessions/active?mahalla_id=` | a'zo |
 | Gaz | `GET /api/gas/sessions/{id}` | a'zo |
 | Gaz | `GET /api/gas/sessions/{id}/my-status` | a'zo |
@@ -112,7 +116,7 @@ EServiceCategory:  PLUMBER=1000 ELECTRICIAN=1010 REPAIR=1020 CLEANING=1030
 EServicePriceType: HOURLY=1000 PER_JOB=1010 NEGOTIABLE=1020
 ECurrencyType:     UZS=1000 USD=1010        (mavjud)
 
-MahallaRole:        "resident" | "mahalla_admin" | "distributor"
+MahallaRole:        "resident" | "distributor" | "mahalla_admin" | "mahalla_rais"
 GasSessionStatus:   "planned" | "active" | "paused" | "completed" | "cancelled"
 GasHouseholdStatus: "pending" | "current" | "delivered" | "skipped"
 ```

@@ -18,9 +18,10 @@
 
 | Rol | Kim | Huquqlar |
 |---|---|---|
-| `resident` | Oddiy foydalanuvchi | O'z uyini "claim" qilish, sessiyani kuzatish, "oldim/olmadim" tasdiqlash |
-| `mahalla_admin` | Mahalla raisi / kotib | Xonadonlarni boshqarish, sessiya ochish, e'lon berish, status belgilash |
+| `mahalla_rais` | Mahalla rahbari | Admin'larni tayinlash, rezidentlarni tasdiqlash + barcha admin amallari |
+| `mahalla_admin` | Operatsion (rais tayinlaydi) | Xonadonlarni boshqarish, sessiya ochish, e'lon berish, status belgilash |
 | `distributor` | Gaz tarqatuvchi (ixtiyoriy) | Sessiya davomida "hozir qayerda" + uy statusini belgilash |
+| `resident` | Oddiy foydalanuvchi | O'z uyini "claim" qilish, sessiyani kuzatish, "oldim/olmadim" tasdiqlash |
 
 Rol `mahalla_member` jadvalida saqlanadi (pastga qarang). Bir foydalanuvchi bir
 nechta mahallada har xil rolga ega bo'lishi mumkin.
@@ -72,7 +73,7 @@ Foydalanuvchi ↔ mahalla ↔ rol bog'lovchisi.
 | `id` | PK | |
 | `mahalla_id` | FK → mahalla | |
 | `user_id` | FK → user | |
-| `role` | enum | `resident` \| `mahalla_admin` \| `distributor` |
+| `role` | enum | `resident` \| `distributor` \| `mahalla_admin` \| `mahalla_rais` |
 | `household_id` | FK → household? | resident uchun |
 | `created_at` | datetime | |
 

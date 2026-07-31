@@ -45,7 +45,7 @@ export default function GasTrackerScreen() {
   const setMahallaId = useGasStore((s) => s.setMahallaId)
   const setRole = useGasStore((s) => s.setRole)
   const role = useGasStore((s) => s.role)
-  const isManager = role === 'mahalla_admin' || role === 'distributor'
+  const isManager = role === 'mahalla_admin' || role === 'mahalla_rais' || role === 'distributor'
 
   // Seed mahallaId + role from the user's membership (client state isn't persisted).
   const myMahallaQ = useMyMahallaQuery()
