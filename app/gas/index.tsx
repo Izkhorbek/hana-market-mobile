@@ -11,10 +11,13 @@ import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
 import { useGasStore } from '@/modules/Gas/gas-store'
 import type { GasHouseholdRow, GasHouseholdStatus } from '@/types'
+import { parseApiError } from '@/utils/apiError'
 import { type Href, router } from 'expo-router'
 import { ArrowLeft, SlidersHorizontal } from 'lucide-react-native'
-import React, { useEffect } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import {
+  Alert,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
@@ -71,33 +74,81 @@ export default function GasTrackerScreen() {
   // Live realtime patches for this mahalla.
   useGasRealtime(mahallaId)
 
+  // Polling = a fallback for realtime (SignalR). Only poll while it matters:
+  // the queue/position move only during an ACTIVE run (fast); a session's
+  // existence/lifecycle is polled slower unless it's already finished.
+  const sessionActive = session?.status === 'active'
+  const sessionLive = !session || (session.status !== 'completed' && session.status !== 'cancelled')
+
   // Seed the store from REST: active session, then its detail + my status.
   // refetchOnMount 'always' → re-entering the screen fetches the live state
   // instead of re-seeding the store from a still-fresh (≤5m) cached response.
   const activeQ = useActiveGasSessionQuery({
     mahallaId: mahallaId ?? 0,
-    querySettings: { refetchOnMount: 'always' },
+    querySettings: { refetchOnMount: 'always', refetchInterval: sessionLive ? 30000 : false },
   })
   useEffect(() => {
     if (activeQ.data) setSession(activeQ.data.data?.data ?? null)
   }, [activeQ.data, setSession])
 
   const sessionId = session?.id ?? 0
-  const detailQ = useGasSessionQuery({ id: sessionId, querySettings: { refetchOnMount: 'always' } })
+  const detailQ = useGasSessionQuery({
+    id: sessionId,
+    querySettings: { refetchOnMount: 'always', refetchInterval: sessionActive ? 20000 : false },
+  })
   useEffect(() => {
     if (detailQ.data) setDetail(detailQ.data.data?.data ?? null)
   }, [detailQ.data, setDetail])
 
-  const myStatusQ = useMyGasStatusQuery({ id: sessionId, querySettings: { refetchOnMount: 'always' } })
+  const myStatusQ = useMyGasStatusQuery({
+    id: sessionId,
+    querySettings: { refetchOnMount: 'always', refetchInterval: sessionActive ? 20000 : false },
+  })
   useEffect(() => {
     if (myStatusQ.data) setMyStatus(myStatusQ.data.data?.data ?? null)
   }, [myStatusQ.data, setMyStatus])
 
+  // Pull-to-refresh: force-refetch everything the screen shows (own spinner,
+  // so the silent background polling above never flashes the refresh control).
+  const [refreshing, setRefreshing] = useState(false)
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true)
+    await Promise.all([
+      myMahallaQ.refetch(),
+      activeQ.refetch(),
+      detailQ.refetch(),
+      myStatusQ.refetch(),
+    ])
+    setRefreshing(false)
+  }, [myMahallaQ, activeQ, detailQ, myStatusQ])
+
   const { mutate: confirmReceipt, isPending: confirming } = useConfirmGasReceiptMutation()
 
-  const onConfirm = (received: boolean) => {
+  // MVP: a resident can only CONFIRM receipt ("Oldim"). Marking a house skipped
+  // ("Uyda yo'q") is an admin/rais action — residents never see a skip button.
+  // Optimistically reflect the confirmation, revert on failure.
+  const doReceived = () => {
     if (!session || !myStatus) return
-    confirmReceipt({ id: session.id, householdId: myStatus.household_id, data: { received } })
+    const prev = myStatus
+    setMyStatus({ ...myStatus, status: 'delivered', resident_confirmed: true })
+    confirmReceipt(
+      { id: session.id, householdId: myStatus.household_id, data: { received: true } },
+      {
+        onError: (e: any) => {
+          setMyStatus(prev)
+          Alert.alert(t('post.error'), parseApiError(e, t('post.error')))
+        },
+      },
+    )
+  }
+
+  // Ask for an explicit confirmation before recording receipt.
+  const onReceived = () => {
+    if (!session || !myStatus) return
+    Alert.alert(t('gas.confirm_title'), t('gas.confirm_received_msg'), [
+      { text: t('common.cancel'), style: 'cancel' },
+      { text: t('common.yes'), onPress: doReceived },
+    ])
   }
 
   const Header = (
@@ -160,9 +211,20 @@ export default function GasTrackerScreen() {
       <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
         {Header}
         {CycleWarningBanner}
-        <View style={styles.center}>
+        {/* Scrollable so the resident can pull-to-refresh while waiting for a session. */}
+        <ScrollView
+          contentContainerStyle={styles.centerScroll}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor={colors.primaryColor}
+              colors={[colors.primaryColor]}
+            />
+          }
+        >
           <Text style={[styles.emptyText, { color: colors.subText }]}>{t('gas.no_session')}</Text>
-        </View>
+        </ScrollView>
       </ThemedView>
     )
   }
@@ -177,7 +239,18 @@ export default function GasTrackerScreen() {
     <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
       {Header}
       {CycleWarningBanner}
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={colors.primaryColor}
+            colors={[colors.primaryColor]}
+          />
+        }
+      >
         {/* Live banner */}
         {session.status === 'active' && (
           <View style={styles.banner}>
@@ -210,24 +283,32 @@ export default function GasTrackerScreen() {
                 myStatus.houses_ahead != null &&
                 ` · ${t('gas.eta_houses', { count: myStatus.houses_ahead })}`}
             </Text>
-            <View style={styles.mineBtns}>
+            {myStatus.status === 'delivered' ? (
+              <Text style={[styles.mineFinal, { color: colors.primaryColor }]}>
+                {t('gas.received_confirmed')}
+              </Text>
+            ) : myStatus.status === 'skipped' ? (
+              <Text style={[styles.mineFinal, { color: colors.subText }]}>
+                {t('gas.skipped_note')}
+              </Text>
+            ) : myStatus.resident_confirmed ? (
+              <Text style={[styles.mineFinal, { color: colors.subText }]}>
+                {t('gas.answer_sent')}
+              </Text>
+            ) : session.status === 'active' ? (
               <TouchableOpacity
-                style={[styles.btn, { backgroundColor: colors.primaryColor }]}
-                onPress={() => onConfirm(true)}
+                style={[styles.btn, styles.btnFull, { backgroundColor: colors.primaryColor }]}
+                onPress={onReceived}
                 disabled={confirming}
                 activeOpacity={0.85}
               >
                 <Text style={styles.btnText}>{t('gas.received')}</Text>
               </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.btnOutline, { borderColor: colors.borderColor }]}
-                onPress={() => onConfirm(false)}
-                disabled={confirming}
-                activeOpacity={0.85}
-              >
-                <Text style={[styles.btnOutlineText, { color: colors.text }]}>{t('gas.not_received')}</Text>
-              </TouchableOpacity>
-            </View>
+            ) : (
+              <Text style={[styles.mineHint, { color: colors.subText }]}>
+                {t('gas.awaiting_start')}
+              </Text>
+            )}
           </View>
         )}
 
@@ -276,6 +357,7 @@ const styles = StyleSheet.create({
   headerTitle: { fontSize: 17, fontWeight: '600', letterSpacing: -0.2 },
   content: { padding: 16, gap: 14, paddingBottom: 28 },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24, gap: 16 },
+  centerScroll: { flexGrow: 1, justifyContent: 'center', alignItems: 'center', padding: 24, gap: 16 },
   emptyText: { fontSize: 14, textAlign: 'center' },
   ctaBtn: { paddingHorizontal: 24, paddingVertical: 12, borderRadius: 12 },
   ctaBtnText: { color: '#fff', fontSize: 14, fontWeight: '600' },
@@ -309,11 +391,11 @@ const styles = StyleSheet.create({
   mineLabel: { fontSize: 11 },
   mineAddr: { fontSize: 15, fontWeight: '700', marginTop: 2 },
   mineStatus: { fontSize: 12, marginTop: 4 },
-  mineBtns: { flexDirection: 'row', gap: 8, marginTop: 12 },
+  mineFinal: { fontSize: 13, fontWeight: '600', marginTop: 10 },
+  mineHint: { fontSize: 11, marginTop: 8 },
   btn: { flex: 1, height: 42, borderRadius: 10, justifyContent: 'center', alignItems: 'center' },
-  btnText: { color: '#fff', fontSize: 13, fontWeight: '600' },
-  btnOutline: { flex: 1, height: 42, borderRadius: 10, borderWidth: 1, justifyContent: 'center', alignItems: 'center' },
-  btnOutlineText: { fontSize: 13, fontWeight: '600' },
+  btnFull: { flex: 0, alignSelf: 'stretch', height: 46, marginTop: 12 },
+  btnText: { color: '#fff', fontSize: 14, fontWeight: '600' },
 
   queueLabel: { fontSize: 11, fontWeight: '700', letterSpacing: 0.4, textTransform: 'uppercase', marginTop: 4 },
   row: {
