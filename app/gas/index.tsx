@@ -47,34 +47,48 @@ export default function GasTrackerScreen() {
   const role = useGasStore((s) => s.role)
   const cycleWarning = useGasStore((s) => s.cycleWarning)
   const clearCycleWarning = useGasStore((s) => s.clearCycleWarning)
+  const reset = useGasStore((s) => s.reset)
   const isManager = role === 'mahalla_admin' || role === 'mahalla_rais' || role === 'distributor'
 
   // Seed mahallaId + role from the user's membership (client state isn't persisted).
-  const myMahallaQ = useMyMahallaQuery()
+  // Always refetch on entry so a re-visit never re-seeds from a stale 5m cache.
+  const myMahallaQ = useMyMahallaQuery({ querySettings: { refetchOnMount: 'always' } })
   useEffect(() => {
-    const member = myMahallaQ.data?.data?.data
+    if (!myMahallaQ.isSuccess) return
+    const member = myMahallaQ.data?.data?.data ?? null
+    // Membership changed (different mahalla) or was lost → drop the previous
+    // mahalla's session/detail/status so we never render another context's data.
+    const storedMahallaId = useGasStore.getState().mahallaId
+    if (!member || (storedMahallaId !== null && storedMahallaId !== member.mahalla_id)) {
+      reset()
+    }
     if (member) {
       setMahallaId(member.mahalla_id)
       setRole(member.role)
     }
-  }, [myMahallaQ.data, setMahallaId, setRole])
+  }, [myMahallaQ.isSuccess, myMahallaQ.data, setMahallaId, setRole, reset])
 
   // Live realtime patches for this mahalla.
   useGasRealtime(mahallaId)
 
   // Seed the store from REST: active session, then its detail + my status.
-  const activeQ = useActiveGasSessionQuery({ mahallaId: mahallaId ?? 0 })
+  // refetchOnMount 'always' → re-entering the screen fetches the live state
+  // instead of re-seeding the store from a still-fresh (≤5m) cached response.
+  const activeQ = useActiveGasSessionQuery({
+    mahallaId: mahallaId ?? 0,
+    querySettings: { refetchOnMount: 'always' },
+  })
   useEffect(() => {
     if (activeQ.data) setSession(activeQ.data.data?.data ?? null)
   }, [activeQ.data, setSession])
 
   const sessionId = session?.id ?? 0
-  const detailQ = useGasSessionQuery({ id: sessionId })
+  const detailQ = useGasSessionQuery({ id: sessionId, querySettings: { refetchOnMount: 'always' } })
   useEffect(() => {
     if (detailQ.data) setDetail(detailQ.data.data?.data ?? null)
   }, [detailQ.data, setDetail])
 
-  const myStatusQ = useMyGasStatusQuery({ id: sessionId })
+  const myStatusQ = useMyGasStatusQuery({ id: sessionId, querySettings: { refetchOnMount: 'always' } })
   useEffect(() => {
     if (myStatusQ.data) setMyStatus(myStatusQ.data.data?.data ?? null)
   }, [myStatusQ.data, setMyStatus])

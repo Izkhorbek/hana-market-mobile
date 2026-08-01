@@ -103,7 +103,7 @@ export const gasService = {
     )
   },
 
-  // ── Cikl (fairness) — GAZ spec §10 ──────────────────────────────────────
+  // ── Davr (fairness) — GAZ spec §10 ──────────────────────────────────────
 
   /**
    * Start a new cycle. Blocked (409) if one is in progress; force overrides.

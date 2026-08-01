@@ -116,7 +116,7 @@ export interface GasSessionCompletedEvent {
   session_id: number
 }
 
-// ── Cikl (Cycle) — fairness guarantee (GAZ spec §10) ────────────────────────
+// ── Davr (Cycle) — fairness guarantee (GAZ spec §10) ────────────────────────
 
 export type GasCycleStatus = 'in_progress' | 'completed'
 

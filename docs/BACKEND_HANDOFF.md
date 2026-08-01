@@ -77,11 +77,11 @@ kutilayotgan talab — hali bajarilmagan bo'lsa, shu bilan birga bajaring.)
   (alohida hub EMAS). Guruh: `mahalla:{id}`. Hub metodlari: `JoinMahalla(mahallaId)`,
   `LeaveMahalla(mahallaId)`. Eventlar: `GasSessionStarted`, `GasPositionUpdated`,
   `GasHouseholdStatusChanged`, `GasSessionCompleted`, `GasCycleWarning` (spec §5/§10).
-- **Cikl (adolat kafolati) — spec §10:** taqsimot butun mahalladan bir to'liq o'tish
-  (1→N). Gaz kam kelsa cikl bir necha sessiyaga bo'linadi, **oxirgi pozitsiyadan
-  davom etadi**. Uy **2 marta** o'tkazib yuborilsa → `skipped`. Cikl hamma
-  `delivered`/`skipped` bo'lganda yopiladi; skipped keyingi ciklda **prioritet**.
-  **Tugamaguncha yangi cikl bloklangan** (409); `?force=true` → override +
+- **Davr (adolat kafolati) — spec §10:** taqsimot butun mahalladan bir to'liq o'tish
+  (1→N). Gaz kam kelsa davr bir necha sessiyaga bo'linadi, **oxirgi pozitsiyadan
+  davom etadi**. Uy **2 marta** o'tkazib yuborilsa → `skipped`. Davr hamma
+  `delivered`/`skipped` bo'lganda yopiladi; skipped keyingi davrda **prioritet**.
+  **Tugamaguncha yangi davr bloklangan** (409); `?force=true` → override +
   `cycle_override` log + hammaga warning.
 
 ---

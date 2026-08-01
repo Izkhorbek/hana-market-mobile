@@ -131,7 +131,7 @@ const ENDPOINT = {
       `gas/sessions/${id}/households/${householdId}/status`,
     CONFIRM: (id: string | number, householdId: string | number) =>
       `gas/sessions/${id}/households/${householdId}/confirm`,
-    // Cikl (fairness) — GAZ spec §10
+    // Davr (fairness) — GAZ spec §10
     CREATE_CYCLE: 'gas/cycles',
     CURRENT_CYCLE: 'gas/cycles/current',
     CYCLE_HOUSEHOLDS: (id: string | number) => `gas/cycles/${id}/households`,

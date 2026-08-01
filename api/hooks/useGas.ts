@@ -167,7 +167,7 @@ export const useConfirmGasReceiptMutation = (
   })
 }
 
-// ── Cikl (fairness) hooks — GAZ spec §10 ────────────────────────────────────
+// ── Davr (fairness) hooks — GAZ spec §10 ────────────────────────────────────
 
 /** The current in-progress cycle for a mahalla (position + progress). */
 export const useCurrentGasCycleQuery = ({

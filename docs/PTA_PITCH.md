@@ -82,7 +82,7 @@
 - LEKIN "qachon keladi, kim oldi, qayerda qoldi" — **xonadon darajasida shaffoflik yo'q**
 - Nebor buni to'ldiradi: **jonli tracker** — tarqatuvchining joriy joyi, "sizgacha N uy", adolatli navbat, push xabar
 - Rais bir tugma bilan e'lon → butun mahalla + Telegram ko'prik
-- **⚖️ Adolat algoritmi (cikl):** har uy — hamma olmaguncha — ikkinchi marta olmaydi; navbat buzilsa hammaga warning ketadi (batafsil — Ilova)
+- **⚖️ Adolat algoritmi (davr):** har uy — hamma olmaguncha — ikkinchi marta olmaydi; navbat buzilsa hammaga warning ketadi (batafsil — Ilova)
 
 **So'zlovchi:** "Bu — bizning noyob wedge'imiz. Davlat 'yetkazib ber' dedi; biz 'shaffof qil' deymiz. Hech bir raqobatchida bu yo'q. Va biz shaffoflikdan bir qadam narida — adolatni **algoritm bilan kafolatlaymiz**."
 
@@ -179,15 +179,15 @@
 
 ---
 
-## Ilova — Cikl: adolat algoritmi (bonus / qo'shimcha slayd)
+## Ilova — Davr: adolat algoritmi (bonus / qo'shimcha slayd)
 
 Gaz taqsimoti odatda adolatsiz: tarqatuvchi doim "oson" uylardan (bazaga yaqin,
 tanishlar) boshlaydi, uzoq uylar chetda qoladi. Nebor buni **algoritm bilan** hal qiladi:
 
-- **Cikl invarianti:** har uy — butun mahalla bir marta olmaguncha — ikkinchi marta olmaydi.
-- **Davomiylik:** gaz kam kelsa cikl bir necha kunga cho'ziladi, lekin **oxirgi joydan davom etadi** (1-uydan qayta boshlamaydi).
-- **Deadlock yo'q:** uy 2 marta uyda bo'lmasa → "skipped", keyingi ciklda **birinchi navbat** (o'z-o'zini davolaydi).
-- **Anti-manipulatsiya:** kimdir ciklni tugatmasdan buzsa → **butun mahallaga warning** (kim, qachon, necha uy qoldi). Jamoat nazorati.
+- **Davr invarianti:** har uy — butun mahalla bir marta olmaguncha — ikkinchi marta olmaydi.
+- **Davomiylik:** gaz kam kelsa davr bir necha kunga cho'ziladi, lekin **oxirgi joydan davom etadi** (1-uydan qayta boshlamaydi).
+- **Deadlock yo'q:** uy 2 marta uyda bo'lmasa → "skipped", keyingi davrda **birinchi navbat** (o'z-o'zini davolaydi).
+- **Anti-manipulatsiya:** kimdir davrni tugatmasdan buzsa → **butun mahallaga warning** (kim, qachon, necha uy qoldi). Jamoat nazorati.
 
 **PTA uchun kuchli xabar:** Nebor nafaqat shaffoflikni ta'minlaydi, balki
 **adolatni algoritm bilan kafolatlaydi** — texnik chuqurlik + ijtimoiy ta'sir birga.

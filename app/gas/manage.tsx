@@ -12,6 +12,7 @@ import {
   useUpdateGasPositionMutation,
 } from '@/api/hooks'
 import { ThemedView } from '@/components/themed-view'
+import { DatePicker } from '@/components/ui/date-picker'
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
 import { useGasStore } from '@/modules/Gas/gas-store'
@@ -24,9 +25,10 @@ import type {
 } from '@/types'
 import { parseApiError } from '@/utils/apiError'
 import { AxiosResponse } from 'axios'
+import { format } from 'date-fns'
 import { router } from 'expo-router'
 import { ArrowLeft } from 'lucide-react-native'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import {
   ActivityIndicator,
   Alert,
@@ -75,15 +77,26 @@ export default function GasManageScreen() {
   const session = useGasStore((s) => s.session)
   const setSession = useGasStore((s) => s.setSession)
 
-  const activeQ = useActiveGasSessionQuery({ mahallaId: mahallaId ?? 0 })
+  // refetchOnMount 'always' → re-entering refetches live state, not a ≤5m cache.
+  const activeQ = useActiveGasSessionQuery({
+    mahallaId: mahallaId ?? 0,
+    querySettings: { refetchOnMount: 'always' },
+  })
   useEffect(() => {
     if (activeQ.data) setSession(activeQ.data.data?.data ?? null)
   }, [activeQ.data, setSession])
 
   // Create-session form (defaults date to today; street order is left to the backend for MVP).
-  const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10))
-  const [time, setTime] = useState('')
+  const [dateVal, setDateVal] = useState<Date | undefined>(() => new Date())
+  const [timeVal, setTimeVal] = useState<Date | undefined>(undefined)
   const [note, setNote] = useState('')
+
+  // Earliest selectable session date = start of today (scheduling in the past is invalid).
+  const startOfToday = useMemo(() => {
+    const d = new Date()
+    d.setHours(0, 0, 0, 0)
+    return d
+  }, [])
 
   // Any lifecycle/create success returns the fresh session; mirror it into the store.
   const applyResult = (res: AxiosResponse<{ data?: GasSessionDto }>) => {
@@ -109,10 +122,13 @@ export default function GasManageScreen() {
     onError,
   })
 
-  // ── Cikl (fairness) ──
+  // ── Davr (fairness) ──
   const cycle = useGasStore((s) => s.cycle)
   const setCycle = useGasStore((s) => s.setCycle)
-  const cycleQ = useCurrentGasCycleQuery({ mahallaId: mahallaId ?? 0 })
+  const cycleQ = useCurrentGasCycleQuery({
+    mahallaId: mahallaId ?? 0,
+    querySettings: { refetchOnMount: 'always' },
+  })
   useEffect(() => {
     if (cycleQ.data) setCycle(cycleQ.data.data?.data ?? null)
   }, [cycleQ.data, setCycle])
@@ -151,13 +167,19 @@ export default function GasManageScreen() {
   }
 
   // Cycle household roster (all households + cycle status / miss_count / priority).
-  const cycleHhQ = useGasCycleHouseholdsQuery({ id: cycle?.id ?? 0 })
+  const cycleHhQ = useGasCycleHouseholdsQuery({
+    id: cycle?.id ?? 0,
+    querySettings: { refetchOnMount: 'always' },
+  })
   const cycleHouseholds: CycleHouseholdDto[] = cycleHhQ.data?.data?.data?.items ?? []
 
   // Live queue (households) for the running session.
   const detail = useGasStore((s) => s.detail)
   const setDetail = useGasStore((s) => s.setDetail)
-  const detailQ = useGasSessionQuery({ id: session?.id ?? 0 })
+  const detailQ = useGasSessionQuery({
+    id: session?.id ?? 0,
+    querySettings: { refetchOnMount: 'always' },
+  })
   useEffect(() => {
     if (detailQ.data) setDetail(detailQ.data.data?.data ?? null)
   }, [detailQ.data, setDetail])
@@ -182,12 +204,13 @@ export default function GasManageScreen() {
 
   const busy = creating || starting || pausing || completing
 
+  // Format the picked dates into the agreed backend contract (date: yyyy-MM-dd, time: HH:mm).
   const onCreate = () => {
-    if (!mahallaId || !date.trim()) return
+    if (!mahallaId || !dateVal) return
     createSession({
       mahalla_id: mahallaId,
-      scheduled_date: date.trim(),
-      scheduled_time: time.trim() || undefined,
+      scheduled_date: format(dateVal, 'yyyy-MM-dd'),
+      scheduled_time: timeVal ? format(timeVal, 'HH:mm') : undefined,
       street_order: [],
       note: note.trim() || undefined,
     })
@@ -220,7 +243,7 @@ export default function GasManageScreen() {
     <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
       {Header}
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-        {/* ── Cikl (fairness) ── */}
+        {/* ── Davr (fairness) ── */}
         <View style={[styles.cycleCard, { borderColor: colors.borderColor }]}>
           <Text style={[styles.cycleTitle, { color: colors.text }]}>
             {cycle ? t('gas.cycle_n', { n: cycle.cycle_number }) : t('gas.cycle')}
@@ -261,7 +284,7 @@ export default function GasManageScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Cikl uylar ro'yxati (ordinal, holat, miss_count, prioritet) */}
+        {/* Davr uylar ro'yxati (ordinal, holat, miss_count, prioritet) */}
         {!!cycle && cycleHouseholds.length > 0 && (
           <View style={styles.block}>
             <Text style={[styles.queueLabel, { color: colors.subText }]}>{t('gas.queue')}</Text>
@@ -287,10 +310,24 @@ export default function GasManageScreen() {
             <Text style={[styles.blockTitle, { color: colors.text }]}>{t('gas.create_session')}</Text>
 
             <Text style={[styles.label, { color: colors.subText }]}>{t('gas.date')}</Text>
-            <TextInput style={inputStyle} value={date} onChangeText={setDate} placeholder="YYYY-MM-DD" placeholderTextColor={colors.subText} />
+            <DatePicker
+              mode="date"
+              value={dateVal}
+              onChange={setDateVal}
+              minimumDate={startOfToday}
+              placeholder={t('gas.date_placeholder')}
+              style={styles.picker}
+            />
 
             <Text style={[styles.label, { color: colors.subText }]}>{t('gas.time')}</Text>
-            <TextInput style={inputStyle} value={time} onChangeText={setTime} placeholder="14:00" placeholderTextColor={colors.subText} />
+            <DatePicker
+              mode="time"
+              value={timeVal}
+              onChange={setTimeVal}
+              timeFormat="24"
+              placeholder={t('gas.time_placeholder')}
+              style={styles.picker}
+            />
 
             <Text style={[styles.label, { color: colors.subText }]}>{t('gas.note')}</Text>
             <TextInput style={inputStyle} value={note} onChangeText={setNote} placeholderTextColor={colors.subText} />
@@ -461,6 +498,7 @@ const styles = StyleSheet.create({
   blockTitle: { fontSize: 16, fontWeight: '700', marginBottom: 4 },
   label: { fontSize: 13, fontWeight: '500', marginTop: 6 },
   input: { borderWidth: 1, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, fontSize: 15 },
+  picker: { marginTop: 2 },
   primaryBtn: { height: 50, borderRadius: 14, justifyContent: 'center', alignItems: 'center', marginTop: 14 },
   primaryBtnText: { color: '#fff', fontSize: 15, fontWeight: '600' },
   outlineBtn: { height: 50, borderRadius: 14, borderWidth: 1, justifyContent: 'center', alignItems: 'center', marginTop: 14 },
