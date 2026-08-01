@@ -2,7 +2,7 @@ import { ThemedView } from '@/components/themed-view'
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
 import { type Href, router } from 'expo-router'
-import { ChevronRight, Fuel, Megaphone, PackageSearch, Wrench } from 'lucide-react-native'
+import { ChevronRight, Fuel, Megaphone, PackageSearch, Phone, Wrench } from 'lucide-react-native'
 import React from 'react'
 import {
   Alert,
@@ -51,6 +51,15 @@ export default function MahallaScreen() {
       // Typed routes for this new screen regenerate on the next `expo start`;
       // cast the href until then.
       onPress: () => router.push('/service' as Href),
+    },
+    {
+      key: 'distributors',
+      titleKey: 'mahalla.distributors_title',
+      subtitleKey: 'mahalla.distributors_subtitle',
+      Icon: Phone,
+      iconBg: '#E7F0FB',
+      iconColor: '#3B82C4',
+      onPress: () => router.push('/mahalla/distributors' as Href),
     },
     {
       key: 'announcements',
