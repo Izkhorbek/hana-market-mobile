@@ -2,6 +2,7 @@ import { queryClient } from '@/api/queryClient'
 import { useThemeNavigationBar } from '@/components/AnroidNavbarButtonsColorChange'
 import { AuthGuard } from '@/components/providers/AuthGuard'
 import { ChatBootstrap } from '@/components/providers/ChatBootstrap'
+import { MahallaBootstrap } from '@/components/providers/MahallaBootstrap'
 import { GlobalErrorBoundary } from '@/components/providers/GlobalErrorBoundary'
 import { NetworkProvider } from '@/components/providers/NetworkProvider'
 import { NotificationBootstrap } from '@/components/providers/NotificationBootstrap'
@@ -45,6 +46,7 @@ function RootLayout() {
 							<SafeAreaView style={{ flex: 1, backgroundColor: colorScheme === 'dark' ? colors.background : colors.background }} edges={edgesList}>
 								<AuthGuard />
 								<ChatBootstrap />
+								<MahallaBootstrap />
 							<NotificationBootstrap />
 								<VersionCheckBootstrap />
 								<Stack screenOptions={{ headerShown: false }}>
@@ -61,6 +63,8 @@ function RootLayout() {
 									<Stack.Screen name='service/[id]' />
 									<Stack.Screen name='gas/index' />
 									<Stack.Screen name='gas/manage' />
+									<Stack.Screen name='gas/history' />
+									<Stack.Screen name='gas/session/[id]' />
 									<Stack.Screen name='mahalla/join' />
 									<Stack.Screen name='mahalla/distributors' />
 									<Stack.Screen name='chat/[id]' />
