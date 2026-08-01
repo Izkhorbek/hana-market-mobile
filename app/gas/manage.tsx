@@ -4,7 +4,6 @@ import {
   useCreateGasCycleMutation,
   useCreateGasSessionMutation,
   useCurrentGasCycleQuery,
-  useGasCycleHouseholdsQuery,
   useGasSessionQuery,
   usePauseGasSessionMutation,
   useStartGasSessionMutation,
@@ -17,7 +16,6 @@ import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
 import { useGasStore } from '@/modules/Gas/gas-store'
 import type {
-  CycleHouseholdDto,
   GasHouseholdRow,
   GasHouseholdStatus,
   GasSessionDto,
@@ -78,7 +76,8 @@ const nextPendingId = (households: GasHouseholdRow[], currentId: number | null):
   for (let i = startIdx + 1; i < households.length; i++) {
     if (households[i].status === 'pending') return households[i].household_id
   }
-  return households.find((h) => h.status === 'pending')?.household_id ?? null
+  // Wrap fallback — exclude the current house so a stale-local 'pending' can't loop back.
+  return households.find((h) => h.status === 'pending' && h.household_id !== currentId)?.household_id ?? null
 }
 
 export default function GasManageScreen() {
@@ -89,10 +88,14 @@ export default function GasManageScreen() {
   const session = useGasStore((s) => s.session)
   const setSession = useGasStore((s) => s.setSession)
 
+  // Interim realtime (SignalR pending): poll while the runner screen is open so a
+  // concurrent change (another admin, or a resident's "Oldim") isn't acted on stale.
+  const sessionActive = session?.status === 'active'
+
   // refetchOnMount 'always' → re-entering refetches live state, not a ≤5m cache.
   const activeQ = useActiveGasSessionQuery({
     mahallaId: mahallaId ?? 0,
-    querySettings: { refetchOnMount: 'always' },
+    querySettings: { refetchOnMount: 'always', refetchInterval: mahallaId ? 30000 : false },
   })
   useEffect(() => {
     if (activeQ.data) setSession(activeQ.data.data?.data ?? null)
@@ -185,19 +188,12 @@ export default function GasManageScreen() {
     )
   }
 
-  // Cycle household roster (all households + cycle status / miss_count / priority).
-  const cycleHhQ = useGasCycleHouseholdsQuery({
-    id: cycle?.id ?? 0,
-    querySettings: { refetchOnMount: 'always' },
-  })
-  const cycleHouseholds: CycleHouseholdDto[] = cycleHhQ.data?.data?.data?.items ?? []
-
   // Live queue (households) for the running session.
   const detail = useGasStore((s) => s.detail)
   const setDetail = useGasStore((s) => s.setDetail)
   const detailQ = useGasSessionQuery({
     id: session?.id ?? 0,
-    querySettings: { refetchOnMount: 'always' },
+    querySettings: { refetchOnMount: 'always', refetchInterval: sessionActive ? 15000 : false },
   })
   useEffect(() => {
     if (detailQ.data) setDetail(detailQ.data.data?.data ?? null)
@@ -333,26 +329,6 @@ export default function GasManageScreen() {
             <Text style={[styles.outlineBtnText, { color: colors.text }]}>{t('gas.new_cycle')}</Text>
           </TouchableOpacity>
         </View>
-
-        {/* Davr uylar ro'yxati (ordinal, holat, miss_count, prioritet)
-        {!!cycle && cycleHouseholds.length > 0 && (
-          <View style={styles.block}>
-            <Text style={[styles.queueLabel, { color: colors.subText }]}>{t('gas.queue')}</Text>
-            {cycleHouseholds.map((h) => (
-              <View key={h.household_id} style={[styles.row, { borderColor: colors.borderColor }]}>
-                <Text style={[styles.rowNo, { color: colors.text }]}>{h.house_number}</Text>
-                <Text style={[styles.rowAddr, { color: colors.subText }]} numberOfLines={1}>
-                  {h.is_priority ? '⭐ ' : ''}
-                  {h.address_label}
-                </Text>
-                <Text style={[styles.rowStatus, { color: colors.subText }]}>
-                  {t(householdStatusKey(h.status))}
-                  {h.miss_count > 0 && h.status === 'pending' ? ` (${h.miss_count})` : ''}
-                </Text>
-              </View>
-            ))}
-          </View>
-        )} */}
 
         {!session ? (
           // ── No session: create one ──

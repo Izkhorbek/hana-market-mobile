@@ -74,18 +74,18 @@ export default function GasTrackerScreen() {
   // Live realtime patches for this mahalla.
   useGasRealtime(mahallaId)
 
-  // Polling = a fallback for realtime (SignalR). Only poll while it matters:
-  // the queue/position move only during an ACTIVE run (fast); a session's
-  // existence/lifecycle is polled slower unless it's already finished.
+  // Polling = a fallback for realtime (SignalR). The queue/position move only
+  // during an ACTIVE run (fast); the "which session is current" query is polled
+  // slower and ALWAYS while the screen is open — so a NEXT session created after
+  // this one completes is still discovered without leaving the screen.
   const sessionActive = session?.status === 'active'
-  const sessionLive = !session || (session.status !== 'completed' && session.status !== 'cancelled')
 
   // Seed the store from REST: active session, then its detail + my status.
   // refetchOnMount 'always' → re-entering the screen fetches the live state
   // instead of re-seeding the store from a still-fresh (≤5m) cached response.
   const activeQ = useActiveGasSessionQuery({
     mahallaId: mahallaId ?? 0,
-    querySettings: { refetchOnMount: 'always', refetchInterval: sessionLive ? 30000 : false },
+    querySettings: { refetchOnMount: 'always', refetchInterval: mahallaId ? 30000 : false },
   })
   useEffect(() => {
     if (activeQ.data) setSession(activeQ.data.data?.data ?? null)
@@ -113,14 +113,15 @@ export default function GasTrackerScreen() {
   const [refreshing, setRefreshing] = useState(false)
   const onRefresh = useCallback(async () => {
     setRefreshing(true)
+    // detail/my-status are keyed on a session id; skip them when there's none
+    // (id 0 → the queries are disabled, but refetch() would still hit /sessions/0).
     await Promise.all([
       myMahallaQ.refetch(),
       activeQ.refetch(),
-      detailQ.refetch(),
-      myStatusQ.refetch(),
+      ...(sessionId ? [detailQ.refetch(), myStatusQ.refetch()] : []),
     ])
     setRefreshing(false)
-  }, [myMahallaQ, activeQ, detailQ, myStatusQ])
+  }, [myMahallaQ, activeQ, detailQ, myStatusQ, sessionId])
 
   const { mutate: confirmReceipt, isPending: confirming } = useConfirmGasReceiptMutation()
 

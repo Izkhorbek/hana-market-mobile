@@ -35,7 +35,7 @@ export default function MahallaDistributorsScreen() {
 
   // Open the phone dialer with the distributor's public number.
   const handleCall = useCallback((phone: string) => {
-    if (phone) Linking.openURL(`tel:${phone}`)
+    if (phone) Linking.openURL(`tel:${phone}`).catch(() => {})
   }, [])
 
   // One labelled official-info row; renders nothing when the value is empty.
@@ -149,7 +149,7 @@ export default function MahallaDistributorsScreen() {
         contentContainerStyle={styles.list}
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={
-          distQ.isFetching ? (
+          distQ.isFetching || myMahallaQ.isFetching ? (
             <ActivityIndicator style={styles.loader} color={colors.primaryColor} />
           ) : (
             <Text style={[styles.muted, styles.emptyText, { color: colors.subText }]}>

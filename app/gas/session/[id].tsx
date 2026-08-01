@@ -94,7 +94,7 @@ export default function GasSessionDetailScreen() {
             <ActivityIndicator style={styles.loader} color={colors.primaryColor} />
           ) : (
             <Text style={[styles.muted, styles.emptyText, { color: colors.subText }]}>
-              {t('gas.no_sessions')}
+              {t('gas.no_households')}
             </Text>
           )
         }
