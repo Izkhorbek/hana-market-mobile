@@ -1,7 +1,9 @@
 import {
   useActiveGasSessionQuery,
   useCompleteGasSessionMutation,
+  useCreateGasCycleMutation,
   useCreateGasSessionMutation,
+  useCurrentGasCycleQuery,
   useGasSessionQuery,
   usePauseGasSessionMutation,
   useStartGasSessionMutation,
@@ -21,6 +23,7 @@ import React, { useEffect, useState } from 'react'
 import {
   ActivityIndicator,
   Alert,
+  Modal,
   ScrollView,
   StyleSheet,
   Text,
@@ -99,6 +102,47 @@ export default function GasManageScreen() {
     onError,
   })
 
+  // ── Cikl (fairness) ──
+  const cycle = useGasStore((s) => s.cycle)
+  const setCycle = useGasStore((s) => s.setCycle)
+  const cycleQ = useCurrentGasCycleQuery({ mahallaId: mahallaId ?? 0 })
+  useEffect(() => {
+    if (cycleQ.data) setCycle(cycleQ.data.data?.data ?? null)
+  }, [cycleQ.data, setCycle])
+
+  const [overrideOpen, setOverrideOpen] = useState(false)
+  const [reason, setReason] = useState('')
+  const { mutate: createCycle, isPending: cycleBusy } = useCreateGasCycleMutation()
+
+  // New cycle: try normally; a 409 (current cycle unfinished) opens the override modal.
+  const onNewCycle = () => {
+    if (!mahallaId) return
+    createCycle(
+      { data: { mahalla_id: mahallaId }, force: false },
+      {
+        onError: (e: any) => {
+          if (e?.response?.status === 409) setOverrideOpen(true)
+          else onError(e)
+        },
+      },
+    )
+  }
+
+  // Force a new cycle (breaks the current one) — needs a reason; warns all members.
+  const onForceCycle = () => {
+    if (!mahallaId || !reason.trim()) return
+    createCycle(
+      { data: { mahalla_id: mahallaId, reason: reason.trim() }, force: true },
+      {
+        onSuccess: () => {
+          setOverrideOpen(false)
+          setReason('')
+        },
+        onError,
+      },
+    )
+  }
+
   // Live queue (households) for the running session.
   const detail = useGasStore((s) => s.detail)
   const setDetail = useGasStore((s) => s.setDetail)
@@ -165,6 +209,47 @@ export default function GasManageScreen() {
     <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
       {Header}
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+        {/* ── Cikl (fairness) ── */}
+        <View style={[styles.cycleCard, { borderColor: colors.borderColor }]}>
+          <Text style={[styles.cycleTitle, { color: colors.text }]}>
+            {cycle ? t('gas.cycle_n', { n: cycle.cycle_number }) : t('gas.cycle')}
+          </Text>
+          {cycle ? (
+            <>
+              <View style={[styles.cycleBar, { backgroundColor: colors.borderColor }]}>
+                <View
+                  style={[
+                    styles.cycleBarFill,
+                    {
+                      backgroundColor: colors.primaryColor,
+                      width: `${
+                        cycle.total_count > 0
+                          ? Math.min(100, ((cycle.delivered_count + cycle.skipped_count) / cycle.total_count) * 100)
+                          : 0
+                      }%`,
+                    },
+                  ]}
+                />
+              </View>
+              <Text style={[styles.cycleMeta, { color: colors.subText }]}>
+                {cycle.delivered_count + cycle.skipped_count} / {cycle.total_count}
+                {`  ·  ${t('gas.status_delivered')}: ${cycle.delivered_count}`}
+                {`  ·  ${t('gas.status_skipped')}: ${cycle.skipped_count}`}
+              </Text>
+            </>
+          ) : (
+            <Text style={[styles.cycleMeta, { color: colors.subText }]}>{t('gas.no_cycle')}</Text>
+          )}
+          <TouchableOpacity
+            style={[styles.outlineBtn, { borderColor: colors.borderColor, marginTop: 12 }]}
+            onPress={onNewCycle}
+            disabled={cycleBusy}
+            activeOpacity={0.85}
+          >
+            <Text style={[styles.outlineBtnText, { color: colors.text }]}>{t('gas.new_cycle')}</Text>
+          </TouchableOpacity>
+        </View>
+
         {!session ? (
           // ── No session: create one ──
           <View style={styles.block}>
@@ -277,6 +362,51 @@ export default function GasManageScreen() {
           </View>
         )}
       </ScrollView>
+
+      {/* Override — force a new cycle (breaks the current one) */}
+      <Modal
+        visible={overrideOpen}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setOverrideOpen(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalCard, { backgroundColor: colors.background }]}>
+            <Text style={[styles.modalTitle, { color: colors.text }]}>{t('gas.cycle_blocked_title')}</Text>
+            <Text style={[styles.modalMsg, { color: colors.subText }]}>{t('gas.cycle_blocked_msg')}</Text>
+            <TextInput
+              style={[styles.input, { borderColor: colors.borderColor, color: colors.text, marginTop: 12 }]}
+              value={reason}
+              onChangeText={setReason}
+              placeholder={t('gas.override_reason_placeholder')}
+              placeholderTextColor={colors.subText}
+            />
+            <View style={styles.modalBtns}>
+              <TouchableOpacity
+                style={[styles.outlineBtn, { borderColor: colors.borderColor, flex: 1, marginTop: 0 }]}
+                onPress={() => {
+                  setOverrideOpen(false)
+                  setReason('')
+                }}
+                activeOpacity={0.85}
+              >
+                <Text style={[styles.outlineBtnText, { color: colors.text }]}>{t('gas.cancel')}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  styles.primaryBtn,
+                  { backgroundColor: '#D45B5B', flex: 1, marginTop: 0, opacity: !reason.trim() || cycleBusy ? 0.5 : 1 },
+                ]}
+                onPress={onForceCycle}
+                disabled={!reason.trim() || cycleBusy}
+                activeOpacity={0.85}
+              >
+                <Text style={styles.primaryBtnText}>{t('gas.force_start')}</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </ThemedView>
   )
 }
@@ -325,4 +455,14 @@ const styles = StyleSheet.create({
   actions: { flexDirection: 'row', gap: 8, marginTop: 12 },
   actionPrimary: { flex: 1, height: 48, borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
   actionOutline: { flex: 1, height: 48, borderRadius: 12, borderWidth: 1, justifyContent: 'center', alignItems: 'center' },
+  cycleCard: { borderWidth: 1, borderRadius: 14, padding: 14, marginBottom: 14 },
+  cycleTitle: { fontSize: 16, fontWeight: '700' },
+  cycleBar: { height: 8, borderRadius: 99, marginTop: 10, overflow: 'hidden' },
+  cycleBarFill: { height: '100%', borderRadius: 99 },
+  cycleMeta: { fontSize: 12, marginTop: 8 },
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', paddingHorizontal: 24 },
+  modalCard: { borderRadius: 16, padding: 18 },
+  modalTitle: { fontSize: 17, fontWeight: '700' },
+  modalMsg: { fontSize: 13, marginTop: 8, lineHeight: 18 },
+  modalBtns: { flexDirection: 'row', gap: 10, marginTop: 16 },
 })

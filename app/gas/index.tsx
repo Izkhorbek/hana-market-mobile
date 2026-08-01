@@ -45,6 +45,8 @@ export default function GasTrackerScreen() {
   const setMahallaId = useGasStore((s) => s.setMahallaId)
   const setRole = useGasStore((s) => s.setRole)
   const role = useGasStore((s) => s.role)
+  const cycleWarning = useGasStore((s) => s.cycleWarning)
+  const clearCycleWarning = useGasStore((s) => s.clearCycleWarning)
   const isManager = role === 'mahalla_admin' || role === 'mahalla_rais' || role === 'distributor'
 
   // Seed mahallaId + role from the user's membership (client state isn't persisted).
@@ -104,6 +106,22 @@ export default function GasTrackerScreen() {
     </View>
   )
 
+  // Realtime cycle-broken warning (dismissible), shown to every member.
+  const CycleWarningBanner = cycleWarning ? (
+    <View style={styles.warnBanner}>
+      <View style={styles.warnBody}>
+        <Text style={styles.warnTitle}>{t('gas.cycle_warning_title')}</Text>
+        <Text style={styles.warnText}>
+          {t('gas.cycle_warning_body', { count: cycleWarning.unserved_count })}
+          {!!cycleWarning.reason && ` — ${cycleWarning.reason}`}
+        </Text>
+      </View>
+      <TouchableOpacity onPress={clearCycleWarning} hitSlop={8} style={styles.warnClose}>
+        <Text style={styles.warnCloseText}>✕</Text>
+      </TouchableOpacity>
+    </View>
+  ) : null
+
   // ── Empty states ──
   if (!mahallaId) {
     return (
@@ -127,6 +145,7 @@ export default function GasTrackerScreen() {
     return (
       <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
         {Header}
+        {CycleWarningBanner}
         <View style={styles.center}>
           <Text style={[styles.emptyText, { color: colors.subText }]}>{t('gas.no_session')}</Text>
         </View>
@@ -143,6 +162,7 @@ export default function GasTrackerScreen() {
   return (
     <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
       {Header}
+      {CycleWarningBanner}
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         {/* Live banner */}
         {session.status === 'active' && (
@@ -245,6 +265,23 @@ const styles = StyleSheet.create({
   emptyText: { fontSize: 14, textAlign: 'center' },
   ctaBtn: { paddingHorizontal: 24, paddingVertical: 12, borderRadius: 12 },
   ctaBtnText: { color: '#fff', fontSize: 14, fontWeight: '600' },
+  warnBanner: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 10,
+    marginHorizontal: 16,
+    marginTop: 12,
+    padding: 12,
+    borderRadius: 12,
+    backgroundColor: '#FDECEC',
+    borderWidth: 1,
+    borderColor: '#E6B0B0',
+  },
+  warnBody: { flex: 1 },
+  warnTitle: { fontSize: 13, fontWeight: '700', color: '#B4232A' },
+  warnText: { fontSize: 12, color: '#8A3B3B', marginTop: 2, lineHeight: 16 },
+  warnClose: { paddingHorizontal: 4 },
+  warnCloseText: { fontSize: 14, color: '#B4232A', fontWeight: '700' },
 
   banner: { backgroundColor: '#E8663A', borderRadius: 16, padding: 14 },
   bannerTop: { color: '#fff', fontSize: 12, fontWeight: '600', opacity: 0.95 },

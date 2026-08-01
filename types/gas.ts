@@ -155,6 +155,8 @@ export interface CycleHouseholdDto {
 /** POST /api/gas/cycles — start a new cycle (blocked if one is in progress). */
 export interface CreateGasCycleRequest {
   mahalla_id: number
+  /** Required when force-overriding an in-progress cycle (goes into the warning). */
+  reason?: string
 }
 
 /** SignalR: a cycle was force-broken before completion (accountability). */
