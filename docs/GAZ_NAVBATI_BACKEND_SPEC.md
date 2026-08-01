@@ -179,6 +179,10 @@ POST  gas/sessions                       // admin ochadi
 GET   gas/sessions/active?mahalla_id={id} // ASOSIY rezident ko'rinishi
       → ApiResponse<SessionDto | null>    // joriy active/planned sessiya
 
+GET   gas/sessions?mahalla_id={id}&current_page=&page_size=   // TARIX — rais/admin
+      → ApiResponse<Paginated<SessionDto>> // o'tgan sessiyalar (yangi→eski)
+      // "kim oldi/olmadi" tahlili uchun; detali /gas/sessions/{id} orqali
+
 GET   gas/sessions/{id}                   // to'liq: statuslar bilan
       → ApiResponse<SessionDetailDto>     // { session, streets[], households[] with status }
 
@@ -205,8 +209,28 @@ PATCH gas/sessions/{id}/households/{household_id}/status   // admin/distributor
 POST  gas/sessions/{id}/households/{household_id}/confirm  // rezident o'zi
       body: { received: boolean, note? }
       → ApiResponse<HouseholdStatusDto>
-      // received=false → "kelmadingiz" flag; adolat daftariga tushadi
+      // → SignalR: GasHouseholdStatusChanged
 ```
+
+**Rezident tasdig'i (`confirm`) — MVP: SODDA model.** Rezidentда faqat BITTA
+tugma bor: **"Oldim"**. Rezident uyni `skipped` qila OLMAYDI — `skipped`ni faqat
+admin/rais belgilaydi ("Uyda yo'q", §4.4 PATCH status). Bu boshlanғich bosqichда
+foydalanuvchi uchun eng sodda ish oqimi.
+
+| Kim | Amal | `received` | Natija (sessiya `gas_household.status`) |
+|-----|------|-----------|-----------------------------------------|
+| **Rezident** | "Oldim" | `true` | `status = delivered`, `resident_confirmed=true`, `confirmed_by=resident` |
+| **Admin/rais** | "Berildi → keyingi" | — (PATCH status) | `status = delivered`, `confirmed_by=distributor/admin` |
+| **Admin/rais** | "Uyda yo'q" | — (PATCH status) | `status = skipped`, `confirmed_by=distributor/admin` |
+
+- **MVP'да `received=false` ishlatilmaydi** — rezidentда "kelmadi" tugmasi YO'Q.
+  Endpoint `received: boolean` qabul qiladi, lekin frontend faqat `true` yuboradi.
+- **`miss_count++` (davr) faqat RASMIY `skipped`da** — ya'ni admin/rais "Uyda yo'q"
+  belgilaganда, YOKI sessiya oxirida yetkazilmagan (`pending`) uy avtomatik
+  `skipped` bo'lganда. Rezidentning o'zi miss keltirib chiqara olmaydi.
+- **Kelajak (MVP'дан keyin):** rezident "olmadim" deb **shikoyat** qila olishi
+  (`received=false` → `resident_reported_missed` bayrog'i + dispute), rasmiy
+  `skipped`ни esa baribir admin/rais tasdiqlaydi. Hozircha bu YO'Q.
 
 ### 4.5 E'lonlar (rais posti — Telegramni yengadigan qatlam)
 ```
