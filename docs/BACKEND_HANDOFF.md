@@ -70,15 +70,19 @@ kutilayotgan talab — hali bajarilmagan bo'lsa, shu bilan birga bajaring.)
 
 **Spec:** [GAZ_NAVBATI_BACKEND_SPEC.md](GAZ_NAVBATI_BACKEND_SPEC.md)
 
-- Jadvallar: `distribution_session`, `household_status` (+ Mahalla'nikilar).
-- 10 REST endpoint (jadvalda) + realtime.
+- Jadvallar: `distribution_session`, `distribution_cycle`, `cycle_household`
+  (+ Mahalla'nikilar).
+- REST endpointlar (jadvalda) + realtime.
 - **Realtime — muhim:** gaz eventlari **mavjud chat hub'iga** (`/hubs/chat`) qo'shiladi
   (alohida hub EMAS). Guruh: `mahalla:{id}`. Hub metodlari: `JoinMahalla(mahallaId)`,
-  `LeaveMahalla(mahallaId)`. Serverdan yuboriladigan eventlar: `GasSessionStarted`,
-  `GasPositionUpdated`, `GasHouseholdStatusChanged`, `GasSessionCompleted`
-  (payloadlar spec §5da).
-- **Adolat mantig'i:** oldingi sessiyada `skipped` bo'lgan uylar keyingi sessiyada
-  birinchi navbatga chiqadi.
+  `LeaveMahalla(mahallaId)`. Eventlar: `GasSessionStarted`, `GasPositionUpdated`,
+  `GasHouseholdStatusChanged`, `GasSessionCompleted`, `GasCycleWarning` (spec §5/§10).
+- **Cikl (adolat kafolati) — spec §10:** taqsimot butun mahalladan bir to'liq o'tish
+  (1→N). Gaz kam kelsa cikl bir necha sessiyaga bo'linadi, **oxirgi pozitsiyadan
+  davom etadi**. Uy **2 marta** o'tkazib yuborilsa → `skipped`. Cikl hamma
+  `delivered`/`skipped` bo'lganda yopiladi; skipped keyingi ciklda **prioritet**.
+  **Tugamaguncha yangi cikl bloklangan** (409); `?force=true` → override +
+  `cycle_override` log + hammaga warning.
 
 ---
 
@@ -104,6 +108,9 @@ kutilayotgan talab — hali bajarilmagan bo'lsa, shu bilan birga bajaring.)
 | Gaz | `PATCH /api/gas/sessions/{id}/position` | admin/distributor |
 | Gaz | `PATCH /api/gas/sessions/{id}/households/{hid}/status` | admin/distributor |
 | Gaz | `POST /api/gas/sessions/{id}/households/{hid}/confirm` | resident |
+| Gaz | `POST /api/gas/cycles?force=` | admin/distributor |
+| Gaz | `GET /api/gas/cycles/current?mahalla_id=` | a'zo |
+| Gaz | `GET /api/gas/cycles/{id}/households` | a'zo |
 
 ---
 

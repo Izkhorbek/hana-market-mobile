@@ -84,6 +84,7 @@ Bitta gaz taqsimlash "yurishi".
 |---|---|---|
 | `id` | PK | |
 | `mahalla_id` | FK → mahalla | |
+| `cycle_id` | FK → distribution_cycle | Sessiya qaysi ciklga tegishli (§10) |
 | `resource_type` | enum | `gas_balloon` (kelajakda `water`, `electricity`) |
 | `scheduled_date` | date | |
 | `scheduled_time` | time? | |
@@ -304,3 +305,106 @@ export interface HouseholdStatusDto {
 4. **Bitta odam yetarli** — hatto faqat `current_household_id` yangilansa ham
    (uy-uy status belgilamasdan) rezident "sizgacha N uy" ni ko'radi. Bu — eng
    kam mehnat bilan asosiy qiymat.
+
+---
+
+## 10. Cikl (Cycle) — adolat kafolati
+
+> **Invariant:** hech bir uy — hamma uy bir marta xizmat olmaguncha — ikkinchi
+> marta olmaydi. Cikl = butun mahalladan bir to'liq o'tish (1→N). Gaz kam kelsa
+> cikl bir necha **sessiya**ga bo'linadi va **oxirgi pozitsiyadan davom etadi**.
+> Cikl tugamaguncha yangi cikl boshlanmaydi.
+
+### 10.1 `distribution_cycle` (yangi jadval, mahalla darajasida)
+| Ustun | Tur | Izoh |
+|---|---|---|
+| `id` | PK | |
+| `mahalla_id` | FK → mahalla | |
+| `cycle_number` | int | 1, 2, 3… (mahalla bo'yicha ketma-ket) |
+| `status` | enum | `in_progress` \| `completed` |
+| `total_count` | int | Cikldagi jami (active) xonadon |
+| `delivered_count` / `skipped_count` | int | Denormalize |
+| `current_household_id` | FK → household? | Oxirgi xizmat ko'rilgan o'rin (davom uchun) |
+| `started_at` / `completed_at` | datetime? | |
+
+### 10.2 `cycle_household` (cikl darajasidagi ro'yxat — AUTHORITATIVE)
+Cikl ichida har uyning holati. Bu — "ciklda xizmat ko'rildimi"ning **yagona haqiqat manbai**
+(§2.6 `household_status` endi ixtiyoriy sessiya-audit bo'lib qoladi).
+
+| Ustun | Tur | Izoh |
+|---|---|---|
+| `id` | PK | |
+| `cycle_id` | FK → distribution_cycle | |
+| `household_id` | FK → household | |
+| `status` | enum | `pending` \| `delivered` \| `skipped` |
+| `miss_count` | int | 0 / 1 / 2 — cikl bo'yicha |
+| `ordinal` | int | `street_order` + `house_number` bo'yicha barqaror tartib |
+| `is_priority` | bool | Oldingi ciklda `skipped` bo'lgani uchun birinchi navbat |
+| `delivered_at` | datetime? | |
+
+### 10.3 Uy holat mashinasi (cikl ichida)
+```
+pending (miss=0)
+  ├── berildi ──────────────► delivered   (terminal)
+  ├── uyda yo'q (1-marta) ──► pending (miss=1)   # shu ciklda yana urinilaydi
+  └── uyda yo'q (2-marta) ──► skipped     (terminal, shu cikl uchun)
+
+Cikl tugaydi  ⟺  bironta `pending` qolmaganda (hamma delivered yoki skipped)
+```
+Har uyga cikl ichida **2 urinish**. Bu deadlock'ni oldini oladi — doimiy bo'sh uy
+2 miss'dan keyin `skipped` bo'ladi va cikl yopiladi (rais aralashuvi shart emas).
+
+### 10.4 Carry-forward (adolat tiklanishi)
+Yangi cikl ochilganda: oldingi ciklda `skipped` bo'lgan uylar `cycle_household`ga
+**`is_priority=true`** bilan kiritiladi va **ordinal tartibida birinchi** xizmat oladi.
+`miss_count` 0 ga tushadi. Shunda 2 marta yo'q bo'lgan odam keyingi ciklda eng oldin oladi.
+
+### 10.5 Yangi cikl ochish — blok algoritmi
+```
+POST /api/gas/cycles  (yangi cikl)
+  joriy = mahalla ning status='in_progress' cikli
+  agar joriy == null:
+      → RUXSAT: cycle_number = oxirgi+1, cycle_household to'ldiriladi
+                (barcha active household + oldingi skipped → is_priority)
+  aks holda:
+      → BLOK (409): "Joriy cikl tugamagan. { qolgan_pending } uy bor."
+                     override uchun ?force=true kerak (§10.6)
+```
+**Sessiya** (`POST /api/gas/sessions`) **doim joriy ciklga bog'lanadi** va
+`current_household_id`dan davom etadi — hech qachon 1-uydan qayta emas.
+
+### 10.6 Override + warning (yakka javobgarlik)
+Tarqatuvchi ciklni tugatmasdan yangisini `?force=true` bilan boshlashi mumkin —
+**rais ruxsati shart emas**. Lekin:
+1. Eski cikl `completed` (majburan yopilgan) belgilanadi; qolgan `pending`/`skipped`
+   uylar yangi ciklga `is_priority` bilan o'tadi.
+2. `cycle_override` yoziladi: `{ cycle_id, forced_by_user_id, reason, unserved_count, created_at }`.
+   **`reason` majburiy.**
+3. Barcha mahalla a'zolariga **doimiy warning**: push + mahalla lentasida qoladi
+   (kim/qachon buzganini ko'rsatadi) + SignalR `GasCycleWarning`.
+
+> Bu — "soft-lock + shaffoflik" modeli: default bloklangan, override mumkin, lekin
+> ko'rinadigan narx bilan. Jamoat nazorati (hard-prevention emas).
+
+### 10.7 Yangi endpointlar
+```
+POST  gas/cycles?force=false            → ApiResponse<GasCycleDto>   (blok/override)
+GET   gas/cycles/current?mahalla_id=     → ApiResponse<GasCycleDto | null>
+                                           (cycle_number, pozitsiya, qolgan, progress)
+GET   gas/cycles/{id}/households          → ApiResponse<PaginatedResponse<CycleHouseholdDto>>
+```
+`gas/sessions/{id}/households/{hid}/status` (mavjud) endi `cycle_household`ni
+yangilaydi: `delivered` → status; `skipped` → `miss_count++` (2 da → `skipped`).
+
+### 10.8 SignalR (qo'shimcha)
+| Event | Payload | Qachon |
+|---|---|---|
+| `GasCycleWarning` | `{ mahalla_id, cycle_number, forced_by_user_id, unserved_count, reason }` | Cikl majburan buzilganda |
+
+### 10.9 Parity (cikl)
+- [ ] `distribution_cycle` + `cycle_household` (+ `session.cycle_id`)
+- [ ] Uy: 2 miss → skipped; cikl tugaydi ⟺ pending yo'q
+- [ ] Yangi cikl blok (409); `?force=true` → override + `cycle_override` + warning
+- [ ] Carry-forward: skipped → keyingi ciklda `is_priority`
+- [ ] Sessiya joriy ciklga bog'lanadi, oxirgi pozitsiyadan davom etadi
+- [ ] `GasCycleWarning` (chat hub, `mahalla:{id}` guruh)
