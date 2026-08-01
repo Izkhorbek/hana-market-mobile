@@ -93,10 +93,25 @@ Self-join qilgan a'zolarni tasdiqlash va rollarni boshqarish uchun. Ruxsat: `mah
 - **Gaz navbatiga faqat `is_verified=true` xonadonlar kiradi.**
 
 ### 2.6 `GET /api/mahalla/{id}/distributors` — **auth (a'zo)**
-Mahalla a'zolari tarqatuvchiga qo'ng'iroq qilishi uchun. Faqat verified
-tarqatuvchilar (role=`distributor`) va ularning **ochiq** raqami (`contact_phone`)
-qaytadi — shaxsiy OTP raqam EMAS.
+Mahalla a'zolari tarqatuvchi **kompaniyani** ko'rishi va qo'ng'iroq qilishi uchun.
+Har bir yozuv — gaz tarqatuvchi tashkilotning rasmiy/yuridik ma'lumotlari
+(`MahallaDistributorDto`) + **ochiq** `phone` (shaxsiy OTP raqam EMAS).
 **Javob:** `ApiResponse<MahallaDistributorDto[]>`
+
+**Ma'lumot manbai / kim kiritadi:** rasmiy maydonlarni (STIR, yuridik manzil,
+OKED, holat, QQS, ro'yxat sanasi/raqami, direktor F.I.SH.) **Hana Market platforma
+admini** o'zining **admin dashboard**idan kiritadi va tahrirlaydi — mobil app
+foydalanuvchisi (rais/admin/rezident) EMAS. Bu davlat reestridan olingan,
+ishonch/tekshiruv uchun ko'rsatiladigan ma'lumot.
+
+**Backend uchun (admin CRUD — mobil app'dan tashqarida):**
+- `distributor_company` jadvali (quyidagi DTO maydonlari + `mahalla_id`).
+- Admin-only endpointlar: `POST/PUT/DELETE /api/admin/distributors` (platforma
+  admin roli bilan himoyalangan). Ushbu mobil spec faqat rezidentga qaytadigan
+  **GET**ni belgilaydi; admin endpointlari admin-panel loyihasida.
+- `company_status` enum: `active` | `liquidating` | `suspended`.
+- `user_id` — jonli gaz sessiyalarini yurituvchi akkaunt bo'lsa bog'lanadi, aks
+  holda `null` (kompaniya profili akkauntsiz ham bo'lishi mumkin).
 
 ---
 
@@ -126,10 +141,22 @@ JoinMahallaRequest {
   street_name?: string
 }
 
+// Tarqatuvchi kompaniya profili — rasmiy maydonlarni PLATFORMA ADMINI
+// admin dashboard'dan kiritadi (mobil app foydalanuvchisi emas).
 MahallaDistributorDto {
-  user_id: number
-  name: string
-  phone: string        // ochiq contact_phone (E.164) — OTP raqam emas
+  id: number
+  user_id: number | null      // jonli sessiya yurituvchi akkaunt (bo'lsa), aks holda null
+  company_name: string        // rasmiy kompaniya / YATT nomi
+  tin: string                 // STIR (INN) — 9 xonali soliq to'lovchi raqami
+  legal_address: string | null
+  oked: string | null         // OKED (IFUT) — "kod — nomi"
+  company_status: "active" | "liquidating" | "suspended"
+  is_vat_payer: boolean       // QQS to'lovchisi maqomi
+  vat_certificate_no: string | null
+  registered_at: string | null // davlat ro'yxatidan o'tgan sana (yyyy-MM-dd)
+  registry_number: string | null
+  director_name: string | null // MChJ rahbari F.I.SH. (YATT uchun null)
+  phone: string               // ochiq raqam (E.164) — OTP raqam emas
 }
 ```
 
