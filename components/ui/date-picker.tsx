@@ -1,13 +1,13 @@
-import { BottomSheet, useBottomSheet } from '@/components/ui/bottom-sheet';
-import { Button } from '@/components/ui/button';
-import { Icon } from '@/components/ui/icon';
-import { ScrollView } from '@/components/ui/scroll-view';
-import { Text } from '@/components/ui/text';
-import { View } from '@/components/ui/view';
-import { useThemeColors } from '@/hooks/use-theme-colors';
-import { useTranslations } from '@/hooks/use-translation';
-import { useColor } from '@/hooks/useColor';
-import { BORDER_RADIUS, CORNERS, FONT_SIZE } from '@/theme/globals';
+import { BottomSheet, useBottomSheet } from '@/components/ui/bottom-sheet'
+import { Button } from '@/components/ui/button'
+import { Icon } from '@/components/ui/icon'
+import { ScrollView } from '@/components/ui/scroll-view'
+import { Text } from '@/components/ui/text'
+import { View } from '@/components/ui/view'
+import { useThemeColors } from '@/hooks/use-theme-colors'
+import { useTranslations } from '@/hooks/use-translation'
+import { useColor } from '@/hooks/useColor'
+import { BORDER_RADIUS, CORNERS, FONT_SIZE } from '@/theme/globals'
 import {
   ArrowRight,
   Calendar,
@@ -17,9 +17,9 @@ import {
   ChevronLeft,
   ChevronRight,
   Clock,
-} from 'lucide-react-native';
-import { useCallback, useMemo, useState } from 'react';
-import { TextStyle, TouchableOpacity, ViewStyle } from 'react-native';
+} from 'lucide-react-native'
+import { useCallback, useMemo, useState } from 'react'
+import { TextStyle, TouchableOpacity, ViewStyle } from 'react-native'
 
 export interface DateRange {
   startDate: Date | null;
@@ -56,8 +56,8 @@ interface DatePickerPropsDate extends BaseDatePickerProps {
 export type DatePickerProps = DatePickerPropsRange | DatePickerPropsDate;
 
 // Generate year range (current year ± 50 years)
-const currentYear = new Date().getFullYear();
-const YEARS = Array.from({ length: 101 }, (_, i) => currentYear - 50 + i);
+const currentYear = new Date().getFullYear()
+const YEARS = Array.from({ length: 101 }, (_, i) => currentYear - 50 + i)
 
 // Type guard to check if value is DateRange
 const isDateRange = (
@@ -69,8 +69,8 @@ const isDateRange = (
     value !== null &&
     'startDate' in value &&
     'endDate' in value
-  );
-};
+  )
+}
 
 export function DatePicker(props: DatePickerProps) {
   const {
@@ -85,85 +85,85 @@ export function DatePicker(props: DatePickerProps) {
     variant = 'filled',
     labelStyle,
     errorStyle,
-  } = props;
+  } = props
 
-  const { t } = useTranslations();
-  const MONTHS: string[] = t('date_picker.months', { returnObjects: true }) as string[];
-  const DAYS: string[] = t('date_picker.days', { returnObjects: true }) as string[];
+  const { t } = useTranslations()
+  const MONTHS: string[] = t('date_picker.months', { returnObjects: true }) as string[]
+  const DAYS: string[] = t('date_picker.days', { returnObjects: true }) as string[]
 
-  const mode = props.mode || 'date';
-  const value = props.value;
-  const onChange = props.onChange;
+  const mode = props.mode || 'date'
+  const value = props.value
+  const onChange = props.onChange
 
-  const { isVisible, open, close } = useBottomSheet();
+  const { isVisible, open, close } = useBottomSheet()
 
   // Get the current date for navigation, prioritizing single date or range start date
   const getCurrentDate = useCallback(() => {
     if (mode === 'range') {
       const rangeValue = isDateRange(value)
         ? value
-        : { startDate: null, endDate: null };
-      return rangeValue.startDate || new Date();
+        : { startDate: null, endDate: null }
+      return rangeValue.startDate || new Date()
     }
-    return (value as Date) || new Date();
-  }, [value, mode]);
+    return (value as Date) || new Date()
+  }, [value, mode])
 
-  const [currentDate, setCurrentDate] = useState(() => getCurrentDate());
+  const [currentDate, setCurrentDate] = useState(() => getCurrentDate())
   const [viewMode, setViewMode] = useState<'date' | 'time' | 'month' | 'year'>(
     'date'
-  );
-  const [showMonthPicker, setShowMonthPicker] = useState(false);
-  const [showYearPicker, setShowYearPicker] = useState(false);
+  )
+  const [showMonthPicker, setShowMonthPicker] = useState(false)
+  const [showYearPicker, setShowYearPicker] = useState(false)
 
   // Range selection state for temporary storage during selection
   const [tempRange, setTempRange] = useState<DateRange>(() =>
     mode === 'range' && isDateRange(value)
       ? value
       : { startDate: null, endDate: null }
-  );
+  )
 
   // Theme colors
-  const colors = useThemeColors();
-  const backgroundColor = useColor('background');
-  const cardColor = useColor('card');
-  const borderColor = useColor('border');
-  const primaryColor = useColor('primary');
-  const primaryForegroundColor = useColor('primaryForeground');
-  const mutedColor = useColor('muted');
-  const textMutedColor = useColor('textMuted');
-  const mutedForegroundColor = useColor('mutedForeground');
-  const textColor = useColor('text');
-  const destructiveColor = useColor('destructive');
+  const colors = useThemeColors()
+  const backgroundColor = useColor('background')
+  const cardColor = useColor('card')
+  const borderColor = useColor('border')
+  const primaryColor = useColor('primary')
+  const primaryForegroundColor = useColor('primaryForeground')
+  const mutedColor = useColor('muted')
+  const textMutedColor = useColor('textMuted')
+  const mutedForegroundColor = useColor('mutedForeground')
+  const textColor = useColor('text')
+  const destructiveColor = useColor('destructive')
 
   const formatDisplayValue = useCallback(() => {
     if (mode === 'range') {
       const rangeValue = isDateRange(value)
         ? value
-        : { startDate: null, endDate: null };
+        : { startDate: null, endDate: null }
 
       if (!rangeValue.startDate && !rangeValue.endDate) {
-        return placeholder;
+        return placeholder
       }
 
       const startStr = rangeValue.startDate
         ? rangeValue.startDate.toLocaleDateString()
-        : '';
+        : ''
       const endStr = rangeValue.endDate
         ? rangeValue.endDate.toLocaleDateString()
-        : '';
+        : ''
 
       if (startStr && endStr) {
-        return `${startStr} - ${endStr}`;
+        return `${startStr} - ${endStr}`
       } else if (startStr) {
-        return `${startStr} - Select end date`;
+        return `${startStr} - ${t('date_picker.select_end_date')}`
       } else if (endStr) {
-        return `Select start date - ${endStr}`;
+        return `${t('date_picker.select_start_date')} - ${endStr}`
       }
-      return placeholder;
+      return placeholder
     }
 
-    const dateValue = value as Date;
-    if (!dateValue) return placeholder;
+    const dateValue = value as Date
+    if (!dateValue) return placeholder
 
     switch (mode) {
       case 'time':
@@ -172,13 +172,13 @@ export function DatePicker(props: DatePickerProps) {
             hour: '2-digit',
             minute: '2-digit',
             hour12: true,
-          });
+          })
         }
         return dateValue.toLocaleTimeString([], {
           hour: '2-digit',
           minute: '2-digit',
           hour12: false,
-        });
+        })
       case 'datetime':
         const timeStr =
           timeFormat === '12'
@@ -191,95 +191,95 @@ export function DatePicker(props: DatePickerProps) {
                 hour: '2-digit',
                 minute: '2-digit',
                 hour12: false,
-              });
-        return `${dateValue.toLocaleDateString()} ${timeStr}`;
+              })
+        return `${dateValue.toLocaleDateString()} ${timeStr}`
       default:
-        return dateValue.toLocaleDateString();
+        return dateValue.toLocaleDateString()
     }
-  }, [value, mode, placeholder, timeFormat]);
+  }, [value, mode, placeholder, timeFormat, t])
 
   // Helper function to check if a date is disabled
   const isDateDisabled = useCallback(
     (date: Date) => {
-      if (minimumDate && date < minimumDate) return true;
-      if (maximumDate && date > maximumDate) return true;
-      return false;
+      if (minimumDate && date < minimumDate) return true
+      if (maximumDate && date > maximumDate) return true
+      return false
     },
     [minimumDate, maximumDate]
-  );
+  )
 
   // Helper function to check if a date is in range
   const isDateInRange = useCallback(
     (date: Date) => {
       if (mode !== 'range' || !tempRange.startDate || !tempRange.endDate) {
-        return false;
+        return false
       }
 
       // Create new date objects to avoid mutation
-      const startDate = new Date(tempRange.startDate);
-      const endDate = new Date(tempRange.endDate);
-      const checkDate = new Date(date);
+      const startDate = new Date(tempRange.startDate)
+      const endDate = new Date(tempRange.endDate)
+      const checkDate = new Date(date)
 
       // Normalize dates for comparison (remove time)
-      startDate.setHours(0, 0, 0, 0);
-      endDate.setHours(0, 0, 0, 0);
-      checkDate.setHours(0, 0, 0, 0);
+      startDate.setHours(0, 0, 0, 0)
+      endDate.setHours(0, 0, 0, 0)
+      checkDate.setHours(0, 0, 0, 0)
 
-      return checkDate >= startDate && checkDate <= endDate;
+      return checkDate >= startDate && checkDate <= endDate
     },
     [mode, tempRange]
-  );
+  )
 
   // Helper function to check if a date is a range endpoint
   const isRangeEndpoint = useCallback(
     (date: Date) => {
       if (mode !== 'range') {
-        return { isStart: false, isEnd: false };
+        return { isStart: false, isEnd: false }
       }
 
-      const normalizedDate = new Date(date);
-      normalizedDate.setHours(0, 0, 0, 0);
+      const normalizedDate = new Date(date)
+      normalizedDate.setHours(0, 0, 0, 0)
 
       const isStart =
         tempRange.startDate &&
         new Date(tempRange.startDate).setHours(0, 0, 0, 0) ===
-          normalizedDate.getTime();
+          normalizedDate.getTime()
       const isEnd =
         tempRange.endDate &&
         new Date(tempRange.endDate).setHours(0, 0, 0, 0) ===
-          normalizedDate.getTime();
+          normalizedDate.getTime()
 
-      return { isStart: !!isStart, isEnd: !!isEnd };
+      return { isStart: !!isStart, isEnd: !!isEnd }
     },
     [mode, tempRange]
-  );
+  )
 
   // Memoized calendar calculations
   const calendarData = useMemo(() => {
-    const year = currentDate.getFullYear();
-    const month = currentDate.getMonth();
+    const year = currentDate.getFullYear()
+    const month = currentDate.getMonth()
 
     // Get first day of month and number of days
-    const firstDay = new Date(year, month, 1).getDay();
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const firstDay = new Date(year, month, 1).getDay()
+    const daysInMonth = new Date(year, month + 1, 0).getDate()
 
     // Create calendar grid with proper positioning
-    const weeks: (number | null)[][] = [];
-    let currentWeek: (number | null)[] = [];
+    const weeks: (number | null)[][] = []
+    let currentWeek: (number | null)[] = []
 
     // Fill empty cells for days before month starts
     for (let i = 0; i < firstDay; i++) {
-      currentWeek.push(null);
+      currentWeek.push(null)
     }
 
     // Add days of the month
     for (let day = 1; day <= daysInMonth; day++) {
-      currentWeek.push(day);
+      currentWeek.push(day)
 
       // If week is complete (7 days) or it's the last day, start a new week
       if (currentWeek.length === 7) {
-        weeks.push([...currentWeek]);
-        currentWeek = [];
+        weeks.push([...currentWeek])
+        currentWeek = []
       }
     }
 
@@ -287,134 +287,134 @@ export function DatePicker(props: DatePickerProps) {
     if (currentWeek.length > 0) {
       // Fill remaining cells with null
       while (currentWeek.length < 7) {
-        currentWeek.push(null);
+        currentWeek.push(null)
       }
-      weeks.push(currentWeek);
+      weeks.push(currentWeek)
     }
 
-    return { weeks, year, month, daysInMonth };
-  }, [currentDate]);
+    return { weeks, year, month, daysInMonth }
+  }, [currentDate])
 
   const handleRangeSelect = (day: number) => {
     const selectedDate = new Date(
       currentDate.getFullYear(),
       currentDate.getMonth(),
       day
-    );
+    )
 
     // Check if date is disabled
-    if (isDateDisabled(selectedDate)) return;
+    if (isDateDisabled(selectedDate)) return
 
     // If no start date or both dates are selected, start fresh
     if (!tempRange.startDate || (tempRange.startDate && tempRange.endDate)) {
       setTempRange({
         startDate: selectedDate,
         endDate: null,
-      });
+      })
     } else {
       // We have a start date but no end date
-      const startDate = tempRange.startDate;
+      const startDate = tempRange.startDate
 
       if (selectedDate < startDate) {
         // If selected date is before start date, make it the new start date
         setTempRange({
           startDate: selectedDate,
           endDate: null,
-        });
+        })
       } else {
         // Selected date is after start date, make it the end date
         setTempRange({
           startDate: startDate,
           endDate: selectedDate,
-        });
+        })
       }
     }
-  };
+  }
 
   const handleDateSelect = (day: number) => {
     if (mode === 'range') {
-      handleRangeSelect(day);
-      return;
+      handleRangeSelect(day)
+      return
     }
 
     const newDate = new Date(
       currentDate.getFullYear(),
       currentDate.getMonth(),
       day
-    );
+    )
 
     // Check if date is disabled
-    if (isDateDisabled(newDate)) return;
+    if (isDateDisabled(newDate)) return
 
-    setCurrentDate(newDate);
+    setCurrentDate(newDate)
 
     if (mode === 'date') {
-      (onChange as (value: Date | undefined) => void)?.(newDate);
-      close();
+      (onChange as (value: Date | undefined) => void)?.(newDate)
+      close()
     } else if (mode === 'datetime') {
-      setViewMode('time');
+      setViewMode('time')
     }
-  };
+  }
 
   const handleTimeChange = (hours: number, minutes: number) => {
-    const newDate = new Date(currentDate);
-    newDate.setHours(hours, minutes, 0, 0);
-    setCurrentDate(newDate);
-  };
+    const newDate = new Date(currentDate)
+    newDate.setHours(hours, minutes, 0, 0)
+    setCurrentDate(newDate)
+  }
 
   const navigateMonth = (direction: 'prev' | 'next') => {
-    const newDate = new Date(currentDate);
+    const newDate = new Date(currentDate)
     if (direction === 'prev') {
-      newDate.setMonth(newDate.getMonth() - 1);
+      newDate.setMonth(newDate.getMonth() - 1)
     } else {
-      newDate.setMonth(newDate.getMonth() + 1);
+      newDate.setMonth(newDate.getMonth() + 1)
     }
-    setCurrentDate(newDate);
-  };
+    setCurrentDate(newDate)
+  }
 
   const handleMonthSelect = (monthIndex: number) => {
-    const newDate = new Date(currentDate);
-    newDate.setMonth(monthIndex);
-    setCurrentDate(newDate);
-    setShowMonthPicker(false);
-  };
+    const newDate = new Date(currentDate)
+    newDate.setMonth(monthIndex)
+    setCurrentDate(newDate)
+    setShowMonthPicker(false)
+  }
 
   const handleYearSelect = (year: number) => {
-    const newDate = new Date(currentDate);
-    newDate.setFullYear(year);
-    setCurrentDate(newDate);
-    setShowYearPicker(false);
-  };
+    const newDate = new Date(currentDate)
+    newDate.setFullYear(year)
+    setCurrentDate(newDate)
+    setShowYearPicker(false)
+  }
 
   const handleConfirm = () => {
     if (mode === 'range') {
-      (onChange as (value: DateRange | undefined) => void)?.(tempRange);
+      (onChange as (value: DateRange | undefined) => void)?.(tempRange)
     } else {
-      (onChange as (value: Date | undefined) => void)?.(currentDate);
+      (onChange as (value: Date | undefined) => void)?.(currentDate)
     }
-    close();
-  };
+    close()
+  }
 
   const resetToToday = () => {
-    const today = new Date();
-    setCurrentDate(today);
+    const today = new Date()
+    setCurrentDate(today)
 
     if (mode === 'range') {
-      setTempRange({ startDate: today, endDate: null });
+      setTempRange({ startDate: today, endDate: null })
     } else if (mode === 'date') {
-      (onChange as (value: Date | undefined) => void)?.(today);
-      close();
+      (onChange as (value: Date | undefined) => void)?.(today)
+      close()
     }
-  };
+  }
 
   const clearSelection = () => {
     if (mode === 'range') {
       setTempRange({ startDate: null, endDate: null });
-      (onChange as (value: DateRange | undefined) => void)?.(undefined);
+      (onChange as (value: DateRange | undefined) => void)?.(undefined)
     } else {
-      (onChange as (value: Date | undefined) => void)?.(undefined);
+      (onChange as (value: Date | undefined) => void)?.(undefined)
     }
-  };
+  }
 
   const renderMonthYearHeader = () => (
     <View
@@ -497,7 +497,7 @@ export function DatePicker(props: DatePickerProps) {
         <ChevronRight size={20} color={textColor} />
       </TouchableOpacity>
     </View>
-  );
+  )
 
   const renderCalendar = () => (
     <View>
@@ -538,7 +538,7 @@ export function DatePicker(props: DatePickerProps) {
             {week.map((day, dayIndex) => {
               const dayDate = day
                 ? new Date(calendarData.year, calendarData.month, day)
-                : null;
+                : null
 
               const isSelected =
                 day &&
@@ -546,21 +546,21 @@ export function DatePicker(props: DatePickerProps) {
                 !isDateRange(value) &&
                 value.getDate() === day &&
                 value.getMonth() === calendarData.month &&
-                value.getFullYear() === calendarData.year;
+                value.getFullYear() === calendarData.year
 
               const isToday =
                 day &&
                 new Date().getDate() === day &&
                 new Date().getMonth() === calendarData.month &&
-                new Date().getFullYear() === calendarData.year;
+                new Date().getFullYear() === calendarData.year
 
-              const disabled = dayDate ? isDateDisabled(dayDate) : false;
+              const disabled = dayDate ? isDateDisabled(dayDate) : false
 
               // Range-specific styling
-              const inRange = dayDate ? isDateInRange(dayDate) : false;
+              const inRange = dayDate ? isDateInRange(dayDate) : false
               const rangeEndpoints = dayDate
                 ? isRangeEndpoint(dayDate)
-                : { isStart: false, isEnd: false };
+                : { isStart: false, isEnd: false }
 
               return (
                 <View
@@ -651,7 +651,7 @@ export function DatePicker(props: DatePickerProps) {
                     <View style={{ width: 40, height: 40 }} />
                   )}
                 </View>
-              );
+              )
             })}
           </View>
         ))}
@@ -674,7 +674,7 @@ export function DatePicker(props: DatePickerProps) {
           <Text variant='subtitle' style={{ flex: 1 }}>
             {tempRange.startDate
               ? `${tempRange.startDate.toLocaleDateString()}`
-              : 'Start date'}
+              : t('date_picker.start_date')}
           </Text>
 
           <View
@@ -686,18 +686,18 @@ export function DatePicker(props: DatePickerProps) {
           <Text variant='subtitle' style={{ flex: 1, textAlign: 'right' }}>
             {tempRange.endDate
               ? `${tempRange.endDate.toLocaleDateString()}`
-              : 'End date'}
+              : t('date_picker.end_date')}
           </Text>
         </View>
       )}
     </View>
-  );
+  )
 
   const renderTimePicker = () => {
-    const selectedHours = currentDate.getHours();
-    const selectedMinutes = currentDate.getMinutes();
+    const selectedHours = currentDate.getHours()
+    const selectedMinutes = currentDate.getMinutes()
 
-    const isPM = selectedHours >= 12;
+    const isPM = selectedHours >= 12
 
     return (
       <View style={{ height: 300 }}>
@@ -714,7 +714,7 @@ export function DatePicker(props: DatePickerProps) {
               variant='caption'
               style={{ textAlign: 'center', marginBottom: 12 }}
             >
-              Hours
+              {t('date_picker.hours')}
             </Text>
             <ScrollView
               showsVerticalScrollIndicator={false}
@@ -734,9 +734,9 @@ export function DatePicker(props: DatePickerProps) {
                       : isPM
                       ? hour + 12
                       : hour
-                    : hour;
+                    : hour
 
-                const isSelected = actualHour === selectedHours;
+                const isSelected = actualHour === selectedHours
 
                 return (
                   <TouchableOpacity
@@ -765,7 +765,7 @@ export function DatePicker(props: DatePickerProps) {
                       {hour.toString().padStart(2, '0')}
                     </Text>
                   </TouchableOpacity>
-                );
+                )
               })}
             </ScrollView>
           </View>
@@ -776,7 +776,7 @@ export function DatePicker(props: DatePickerProps) {
               variant='caption'
               style={{ textAlign: 'center', marginBottom: 12 }}
             >
-              Minutes
+              {t('date_picker.minutes')}
             </Text>
             <ScrollView
               showsVerticalScrollIndicator={false}
@@ -822,7 +822,7 @@ export function DatePicker(props: DatePickerProps) {
                 variant='caption'
                 style={{ textAlign: 'center', marginBottom: 12 }}
               >
-                Period
+                {t('date_picker.period')}
               </Text>
               <View
                 style={{
@@ -831,8 +831,8 @@ export function DatePicker(props: DatePickerProps) {
                 }}
               >
                 {['AM', 'PM'].map((period) => {
-                  const isAM = period === 'AM';
-                  const isSelected = isAM ? !isPM : isPM;
+                  const isAM = period === 'AM'
+                  const isSelected = isAM ? !isPM : isPM
 
                   return (
                     <TouchableOpacity
@@ -844,8 +844,8 @@ export function DatePicker(props: DatePickerProps) {
                             : selectedHours
                           : selectedHours < 12
                           ? selectedHours + 12
-                          : selectedHours;
-                        handleTimeChange(newHours, selectedMinutes);
+                          : selectedHours
+                        handleTimeChange(newHours, selectedMinutes)
                       }}
                       style={{
                         paddingVertical: 12,
@@ -869,15 +869,15 @@ export function DatePicker(props: DatePickerProps) {
                         {period}
                       </Text>
                     </TouchableOpacity>
-                  );
+                  )
                 })}
               </View>
             </View>
           )}
         </View>
       </View>
-    );
-  };
+    )
+  }
 
   const renderMonthPicker = () => (
     <View style={{ height: 300 }}>
@@ -917,7 +917,7 @@ export function DatePicker(props: DatePickerProps) {
         ))}
       </ScrollView>
     </View>
-  );
+  )
 
   const renderYearPicker = () => (
     <View style={{ height: 300 }}>
@@ -957,42 +957,44 @@ export function DatePicker(props: DatePickerProps) {
         ))}
       </ScrollView>
     </View>
-  );
+  )
 
   const getBottomSheetContent = () => {
-    if (showMonthPicker) return renderMonthPicker();
-    if (showYearPicker) return renderYearPicker();
+    if (showMonthPicker) return renderMonthPicker()
+    if (showYearPicker) return renderYearPicker()
 
     if (mode === 'datetime') {
-      return viewMode === 'date' ? renderCalendar() : renderTimePicker();
+      return viewMode === 'date' ? renderCalendar() : renderTimePicker()
     }
 
-    if (mode === 'time') return renderTimePicker();
-    return renderCalendar();
-  };
+    if (mode === 'time') return renderTimePicker()
+    return renderCalendar()
+  }
 
   const getBottomSheetTitle = () => {
-    if (showMonthPicker) return 'Select Month';
-    if (showYearPicker) return 'Select Year';
+    if (showMonthPicker) return t('date_picker.select_month')
+    if (showYearPicker) return t('date_picker.select_year')
 
     if (mode === 'datetime') {
-      return viewMode === 'date' ? 'Select Date' : 'Select Time';
+      return viewMode === 'date'
+        ? t('date_picker.select_date')
+        : t('date_picker.select_time')
     }
 
-    if (mode === 'time') return 'Select Time';
+    if (mode === 'time') return t('date_picker.select_time')
 
-    if (mode === 'range') return 'Select Range';
+    if (mode === 'range') return t('date_picker.select_range')
 
-    return 'Select Date';
-  };
+    return t('date_picker.select_date')
+  }
 
   const handleOpenPicker = () => {
-    setCurrentDate(new Date());
-    setViewMode('date');
-    setShowMonthPicker(false);
-    setShowYearPicker(false);
-    open();
-  };
+    setCurrentDate(new Date())
+    setViewMode('date')
+    setShowMonthPicker(false)
+    setShowYearPicker(false)
+    open()
+  }
 
   const triggerStyle: ViewStyle = {
     height: 52,
@@ -1004,7 +1006,7 @@ export function DatePicker(props: DatePickerProps) {
     backgroundColor: backgroundColor,
     flexDirection: 'row',
     alignItems: 'center',
-  };
+  }
 
   return (
     <>
@@ -1078,9 +1080,9 @@ export function DatePicker(props: DatePickerProps) {
       <BottomSheet
         isVisible={isVisible}
         onClose={() => {
-          close();
-          setShowMonthPicker(false);
-          setShowYearPicker(false);
+          close()
+          setShowMonthPicker(false)
+          setShowYearPicker(false)
         }}
         title={getBottomSheetTitle()}
         snapPoints={[0.7]}
@@ -1105,34 +1107,36 @@ export function DatePicker(props: DatePickerProps) {
               }}
             >
               <Button variant='outline' onPress={resetToToday}>
-                Today
+                {t('date_picker.today')}
               </Button>
 
               <Button
                 variant='outline'
                 onPress={() => {
-                  close();
-                  setShowMonthPicker(false);
-                  setShowYearPicker(false);
-                  clearSelection();
+                  close()
+                  setShowMonthPicker(false)
+                  setShowYearPicker(false)
+                  clearSelection()
                 }}
               >
-                {mode === 'range' ? 'Clear' : 'Cancel'}
+                {mode === 'range'
+                  ? t('date_picker.clear')
+                  : t('date_picker.cancel')}
               </Button>
             </View>
 
             {mode === 'datetime' && viewMode === 'date' ? (
               <Button onPress={() => setViewMode('time')} style={{ flex: 1 }}>
-                Next
+                {t('date_picker.next')}
               </Button>
             ) : (
               <Button onPress={handleConfirm} style={{ flex: 1 }}>
-                Done
+                {t('date_picker.done')}
               </Button>
             )}
           </View>
         </View>
       </BottomSheet>
     </>
-  );
+  )
 }
