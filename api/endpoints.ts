@@ -113,6 +113,7 @@ const ENDPOINT = {
     MY: 'mahalla/my',
     JOIN: 'mahalla/join',
     BY_ID: (id: string | number) => `mahalla/${id}`,
+    DISTRIBUTORS: (id: string | number) => `mahalla/${id}/distributors`,
   },
 
   // Gaz navbati (Gas distribution). Live/stateful — realtime via SignalR

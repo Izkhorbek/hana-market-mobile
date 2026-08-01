@@ -100,6 +100,7 @@ kutilayotgan talab — hali bajarilmagan bo'lsa, shu bilan birga bajaring.)
 | Mahalla | `GET /api/mahalla/my` | auth |
 | Mahalla | `POST /api/mahalla/join` | auth |
 | Mahalla | `GET /api/mahalla/{id}` | public |
+| Mahalla | `GET /api/mahalla/{id}/distributors` | auth (a'zo) |
 | Gaz | `POST /api/gas/sessions` | mahalla_admin / rais |
 | Gaz | `GET /api/gas/sessions/active?mahalla_id=` | a'zo |
 | Gaz | `GET /api/gas/sessions/{id}` | a'zo |

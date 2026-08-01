@@ -9,6 +9,7 @@ import { AxiosResponse } from 'axios'
 import type {
   ApiResponse,
   JoinMahallaRequest,
+  MahallaDistributorDto,
   MahallaDto,
   MahallaListParams,
   MahallaMemberDto,
@@ -39,6 +40,22 @@ export const useMyMahallaQuery = ({
   return useQuery({
     queryKey: ['MAHALLA_MY'],
     queryFn: () => mahallaService.getMy(),
+    ...querySettings,
+  })
+}
+
+/** The mahalla's distributors with their public contact (for members to call). */
+export const useMahallaDistributorsQuery = ({
+  mahallaId,
+  querySettings = {},
+}: {
+  mahallaId: number;
+  querySettings?: Omit<UseQueryOptions<AxiosResponse<ApiResponse<MahallaDistributorDto[]>>>, 'queryKey' | 'queryFn'>;
+}) => {
+  return useQuery({
+    queryKey: ['MAHALLA_DISTRIBUTORS', mahallaId],
+    queryFn: () => mahallaService.getDistributors(mahallaId),
+    enabled: !!mahallaId,
     ...querySettings,
   })
 }

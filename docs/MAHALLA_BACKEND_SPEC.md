@@ -15,7 +15,8 @@
 
 - **`mahalla`** — id, name, district, region, (center_lat/lng ixtiyoriy), is_active
 - **`mahalla_member`** — id, mahalla_id, user_id, role, household_id?,
-  **`is_verified`** (default `false`), **`verified_by`** (rais user_id)?, **`verified_at`**?
+  **`is_verified`** (default `false`), **`verified_by`** (rais user_id)?, **`verified_at`**?,
+  **`contact_phone`**? (distributor uchun ochiq raqam — shaxsiy OTP raqam EMAS)
 - **`household`** — id, mahalla_id, street_id?, house_number, address_label,
   owner_user_id?, is_verified
 
@@ -91,6 +92,12 @@ Self-join qilgan a'zolarni tasdiqlash va rollarni boshqarish uchun. Ruxsat: `mah
 - Rol o'zgarishlarini **log qiling** (audit).
 - **Gaz navbatiga faqat `is_verified=true` xonadonlar kiradi.**
 
+### 2.6 `GET /api/mahalla/{id}/distributors` — **auth (a'zo)**
+Mahalla a'zolari tarqatuvchiga qo'ng'iroq qilishi uchun. Faqat verified
+tarqatuvchilar (role=`distributor`) va ularning **ochiq** raqami (`contact_phone`)
+qaytadi — shaxsiy OTP raqam EMAS.
+**Javob:** `ApiResponse<MahallaDistributorDto[]>`
+
 ---
 
 ## 3. DTO'lar (frontend `types/mahalla.ts`ga AYNAN mos)
@@ -117,6 +124,12 @@ JoinMahallaRequest {
   mahalla_id: number
   house_number: string
   street_name?: string
+}
+
+MahallaDistributorDto {
+  user_id: number
+  name: string
+  phone: string        // ochiq contact_phone (E.164) — OTP raqam emas
 }
 ```
 

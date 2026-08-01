@@ -1,6 +1,7 @@
 import type {
   ApiResponse,
   JoinMahallaRequest,
+  MahallaDistributorDto,
   MahallaDto,
   MahallaListParams,
   MahallaMemberDto,
@@ -31,5 +32,15 @@ export const mahallaService = {
   /** Join a mahalla and claim a household. POST /api/mahalla/join */
   join: (data: JoinMahallaRequest) => {
     return axiosInstance.post<ApiResponse<MahallaMemberDto>>(ENDPOINT.MAHALLA.JOIN, data)
+  },
+
+  /**
+   * The mahalla's distributors with their public contact (name + phone).
+   * GET /api/mahalla/{id}/distributors
+   */
+  getDistributors: (id: number) => {
+    return axiosInstance.get<ApiResponse<MahallaDistributorDto[]>>(
+      ENDPOINT.MAHALLA.DISTRIBUTORS(id),
+    )
   },
 }

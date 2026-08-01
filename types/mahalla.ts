@@ -39,3 +39,11 @@ export interface JoinMahallaRequest {
   house_number: string
   street_name?: string
 }
+
+/** A mahalla distributor's public contact (GET /api/mahalla/{id}/distributors). */
+export interface MahallaDistributorDto {
+  user_id: number
+  name: string
+  /** Public contact number (E.164) — NOT the private account/OTP phone. */
+  phone: string
+}
