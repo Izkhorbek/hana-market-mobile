@@ -1,6 +1,5 @@
 import { create } from 'zustand'
 import type {
-  GasCycleDto,
   GasCycleWarningEvent,
   GasHouseholdStatusChangedEvent,
   GasHouseholdStatusDto,
@@ -29,9 +28,7 @@ interface GasState {
   myStatus: GasHouseholdStatusDto | null
   /** Full queue (streets + households) when the tracker screen is open. */
   detail: GasSessionDetailDto | null
-  /** Current distribution cycle (Plan page). */
-  cycle: GasCycleDto | null
-  /** Live warning shown when a cycle is force-broken (banner). */
+  /** Live "order broken" warning shown to all members (accountability banner). */
   cycleWarning: GasCycleWarningEvent | null
 
   // ── Seeders (from REST) ──
@@ -40,7 +37,6 @@ interface GasState {
   setSession: (session: GasSessionDto | null) => void
   setMyStatus: (status: GasHouseholdStatusDto | null) => void
   setDetail: (detail: GasSessionDetailDto | null) => void
-  setCycle: (cycle: GasCycleDto | null) => void
   setCycleWarning: (warning: GasCycleWarningEvent | null) => void
   clearCycleWarning: () => void
 
@@ -59,7 +55,6 @@ export const useGasStore = create<GasState>((set, get) => ({
   session: null,
   myStatus: null,
   detail: null,
-  cycle: null,
   cycleWarning: null,
 
   setMahallaId: (id) => set({ mahallaId: id }),
@@ -67,7 +62,6 @@ export const useGasStore = create<GasState>((set, get) => ({
   setSession: (session) => set({ session }),
   setMyStatus: (status) => set({ myStatus: status }),
   setDetail: (detail) => set({ detail }),
-  setCycle: (cycle) => set({ cycle }),
   setCycleWarning: (warning) => set({ cycleWarning: warning }),
   clearCycleWarning: () => set({ cycleWarning: null }),
 
@@ -145,7 +139,6 @@ export const useGasStore = create<GasState>((set, get) => ({
       session: null,
       myStatus: null,
       detail: null,
-      cycle: null,
       cycleWarning: null,
     }),
 }))

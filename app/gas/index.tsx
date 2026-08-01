@@ -152,6 +152,14 @@ export default function GasTrackerScreen() {
     ])
   }
 
+  // Uzbek "d-MMMM, yyyy" from a yyyy-MM-dd string (parsed manually to avoid TZ shift).
+    const months = t('date_picker.months', { returnObjects: true }) as string[]
+    const formatUzDate = (isoDate: string) => {
+      const [y, m, d] = isoDate.split('-').map(Number)
+      if (!y || !m || !d) return isoDate
+      return `${d}-${months[m - 1] ?? m}, ${y}`
+    }
+
   const Header = (
     <View style={[styles.header, { borderBottomColor: colors.borderColor }]}>
       <TouchableOpacity onPress={() => router.back()} hitSlop={10} style={styles.headerBtn}>
@@ -254,7 +262,7 @@ export default function GasTrackerScreen() {
       >
         {/* Live banner */}
         {session.status === 'active' && (
-          <View style={styles.banner}>
+          <View style={[styles.banner, { backgroundColor: colors.primaryColor }]}>
             <Text style={styles.bannerTop}>● {t('gas.now_distributing')}</Text>
             <Text style={styles.bannerLoc}>
               {currentHouse ? currentHouse.address_label : '—'}
@@ -269,6 +277,17 @@ export default function GasTrackerScreen() {
             </View>
             <Text style={styles.barLabel}>
               {t('gas.progress', { done: session.delivered_count, total: session.total_count })}
+            </Text>
+          </View>
+        )}
+
+        {/* Planned banner — prominent upcoming date (Uzbek format) */}
+        {session.status === 'planned' && (
+          <View style={styles.plannedBanner}>
+            <Text style={styles.bannerTop}>● {t('gas.planned_distribution')}</Text>
+            <Text style={styles.bannerLoc}>
+              {session.scheduled_date ? formatUzDate(session.scheduled_date) : '—'}
+              {!!session.scheduled_time && ` · ${session.scheduled_time}`}
             </Text>
           </View>
         )}
@@ -305,7 +324,12 @@ export default function GasTrackerScreen() {
               >
                 <Text style={styles.btnText}>{t('gas.received')}</Text>
               </TouchableOpacity>
-            ) : (
+            ) : session.status === 'planned' ? (
+               <Text style={[styles.mineHint, { color: colors.subText }]}>
+                 {t('gas.awaiting_start')}
+              </Text>
+            ) 
+            : (
               <Text style={[styles.mineHint, { color: colors.subText }]}>
                 {t('gas.awaiting_start')}
               </Text>
@@ -382,6 +406,7 @@ const styles = StyleSheet.create({
 
   banner: { backgroundColor: '#E8663A', borderRadius: 16, padding: 14 },
   bannerTop: { color: '#fff', fontSize: 12, fontWeight: '600', opacity: 0.95 },
+  plannedBanner: { backgroundColor: '#F59E0B', borderRadius: 16, padding: 14, marginBottom: 12 },
   bannerLoc: { color: '#fff', fontSize: 22, fontWeight: '800', marginTop: 6, letterSpacing: -0.3 },
   bannerEta: { color: '#fff', fontSize: 12, opacity: 0.92, marginTop: 2 },
   bar: { height: 6, borderRadius: 99, backgroundColor: 'rgba(255,255,255,0.35)', marginTop: 10, overflow: 'hidden' },
