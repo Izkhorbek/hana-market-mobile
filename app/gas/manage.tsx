@@ -4,6 +4,7 @@ import {
   useCreateGasCycleMutation,
   useCreateGasSessionMutation,
   useCurrentGasCycleQuery,
+  useGasCycleHouseholdsQuery,
   useGasSessionQuery,
   usePauseGasSessionMutation,
   useStartGasSessionMutation,
@@ -14,7 +15,13 @@ import { ThemedView } from '@/components/themed-view'
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
 import { useGasStore } from '@/modules/Gas/gas-store'
-import type { GasHouseholdRow, GasHouseholdStatus, GasSessionDto, GasSessionStatus } from '@/types'
+import type {
+  CycleHouseholdDto,
+  GasHouseholdRow,
+  GasHouseholdStatus,
+  GasSessionDto,
+  GasSessionStatus,
+} from '@/types'
 import { parseApiError } from '@/utils/apiError'
 import { AxiosResponse } from 'axios'
 import { router } from 'expo-router'
@@ -143,6 +150,10 @@ export default function GasManageScreen() {
     )
   }
 
+  // Cycle household roster (all households + cycle status / miss_count / priority).
+  const cycleHhQ = useGasCycleHouseholdsQuery({ id: cycle?.id ?? 0 })
+  const cycleHouseholds: CycleHouseholdDto[] = cycleHhQ.data?.data?.data?.items ?? []
+
   // Live queue (households) for the running session.
   const detail = useGasStore((s) => s.detail)
   const setDetail = useGasStore((s) => s.setDetail)
@@ -249,6 +260,26 @@ export default function GasManageScreen() {
             <Text style={[styles.outlineBtnText, { color: colors.text }]}>{t('gas.new_cycle')}</Text>
           </TouchableOpacity>
         </View>
+
+        {/* Cikl uylar ro'yxati (ordinal, holat, miss_count, prioritet) */}
+        {!!cycle && cycleHouseholds.length > 0 && (
+          <View style={styles.block}>
+            <Text style={[styles.queueLabel, { color: colors.subText }]}>{t('gas.queue')}</Text>
+            {cycleHouseholds.map((h) => (
+              <View key={h.household_id} style={[styles.row, { borderColor: colors.borderColor }]}>
+                <Text style={[styles.rowNo, { color: colors.text }]}>{h.house_number}</Text>
+                <Text style={[styles.rowAddr, { color: colors.subText }]} numberOfLines={1}>
+                  {h.is_priority ? '⭐ ' : ''}
+                  {h.address_label}
+                </Text>
+                <Text style={[styles.rowStatus, { color: colors.subText }]}>
+                  {t(householdStatusKey(h.status))}
+                  {h.miss_count > 0 && h.status === 'pending' ? ` (${h.miss_count})` : ''}
+                </Text>
+              </View>
+            ))}
+          </View>
+        )}
 
         {!session ? (
           // ── No session: create one ──

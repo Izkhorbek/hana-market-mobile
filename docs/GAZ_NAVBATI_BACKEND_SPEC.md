@@ -389,6 +389,8 @@ Tarqatuvchi ciklni tugatmasdan yangisini `?force=true` bilan boshlashi mumkin �
 ### 10.7 Yangi endpointlar
 ```
 POST  gas/cycles?force=false            → ApiResponse<GasCycleDto>   (blok/override)
+      body: { mahalla_id, reason? }      # reason MAJBURIY force=true bo'lganda
+                                          (warning'ga tushadi); blok → 409
 GET   gas/cycles/current?mahalla_id=     → ApiResponse<GasCycleDto | null>
                                            (cycle_number, pozitsiya, qolgan, progress)
 GET   gas/cycles/{id}/households          → ApiResponse<PaginatedResponse<CycleHouseholdDto>>
