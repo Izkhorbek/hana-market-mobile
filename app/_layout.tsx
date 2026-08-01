@@ -67,6 +67,7 @@ function RootLayout() {
 									<Stack.Screen name='gas/session/[id]' />
 									<Stack.Screen name='mahalla/join' />
 									<Stack.Screen name='mahalla/distributors' />
+									<Stack.Screen name='mahalla/emergency' />
 									<Stack.Screen name='chat/[id]' />
 								</Stack>
 							</SafeAreaView>

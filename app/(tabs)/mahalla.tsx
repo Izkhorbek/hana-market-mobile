@@ -2,7 +2,7 @@ import { ThemedView } from '@/components/themed-view'
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
 import { type Href, router } from 'expo-router'
-import { ChevronRight, Fuel, Megaphone, PackageSearch, Phone, Wrench } from 'lucide-react-native'
+import { ChevronRight, Fuel, Megaphone, PackageSearch, Phone, Siren, Wrench } from 'lucide-react-native'
 import React from 'react'
 import {
   Alert,
@@ -40,6 +40,15 @@ export default function MahallaScreen() {
       iconBg: '#FDECE4',
       iconColor: '#E8663A',
       onPress: () => router.push('/gas' as Href),
+    },
+    {
+      key: 'emergency',
+      titleKey: 'mahalla.emergency_title',
+      subtitleKey: 'mahalla.emergency_subtitle',
+      Icon: Siren,
+      iconBg: '#FDE7E7',
+      iconColor: '#DC2626',
+      onPress: () => router.push('/mahalla/emergency' as Href),
     },
     {
       key: 'services',
