@@ -1,7 +1,9 @@
+import { useEmergencyNumbersQuery } from '@/api/hooks'
 import { ThemedView } from '@/components/themed-view'
-import { EMERGENCY_SECTIONS, type EmergencyNumber } from '@/constants/emergencyNumbers'
+import { EMERGENCY_SECTIONS } from '@/constants/emergencyNumbers'
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
+import type { EmergencyNumberDto } from '@/types'
 import { router } from 'expo-router'
 import { ArrowLeft, Phone } from 'lucide-react-native'
 import React, { useCallback } from 'react'
@@ -23,14 +25,16 @@ export default function MahallaEmergencyScreen() {
     if (number) Linking.openURL(`tel:${number}`).catch(() => {})
   }, [])
 
-  const sections = EMERGENCY_SECTIONS.map((s) => ({
-    key: s.key,
+  // Admin-managed list from the backend; fall back to the local seed until it loads.
+  const q = useEmergencyNumbersQuery()
+  const source = q.data?.data?.data?.length ? q.data.data.data : EMERGENCY_SECTIONS
+  const sections = source.map((s) => ({
     emoji: s.emoji,
-    title: t(`mahalla.em_cat_${s.key}` as 'mahalla.em_cat_emergency'),
+    title: s.title,
     data: s.items,
   }))
 
-  const renderItem = ({ item }: { item: EmergencyNumber }) => (
+  const renderItem = ({ item }: { item: EmergencyNumberDto }) => (
     <TouchableOpacity
       style={[styles.row, { backgroundColor: colors.background, borderColor: colors.borderColor }]}
       onPress={() => handleCall(item.number)}

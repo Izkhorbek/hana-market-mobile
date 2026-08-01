@@ -19,6 +19,7 @@ import { setSentryUser } from '@/utils/sentry'
 import { authService } from '@/api/services/auth.service'
 import { userService } from '@/api/services/user.service'
 import { useChatStore }  from '@/modules/Chat/chat-store'
+import { useGasStore } from '@/modules/Gas/gas-store'
 
 // ── Types ──
 export interface User {
@@ -384,8 +385,10 @@ export const useAuthStore = create<AuthState>()(
           })
         }
 
-        // Lazy import to break circular dependency
+        // Reset client stores so no previous user's state (chat, or mahalla
+        // role/mahallaId/session) bleeds into the next session on a shared device.
         useChatStore.getState().reset()
+        useGasStore.getState().reset()
 
         // Wipe the entire React Query cache so no previous user's data
         // (chat list, messages, profile, unread counts, product queries, etc.)

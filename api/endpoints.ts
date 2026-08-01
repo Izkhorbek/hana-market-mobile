@@ -107,6 +107,11 @@ const ENDPOINT = {
     DELETE: (id: string | number) => `service/${id}`,
   },
 
+  // Emergency short numbers (admin-managed; shown under the Mahalla tab).
+  EMERGENCY: {
+    LIST: 'emergency-numbers',
+  },
+
   // Mahalla (neighborhood) membership — powers hyperlocal features.
   MAHALLA: {
     LIST: 'mahalla',
@@ -127,15 +132,12 @@ const ENDPOINT = {
     START: (id: string | number) => `gas/sessions/${id}/start`,
     PAUSE: (id: string | number) => `gas/sessions/${id}/pause`,
     COMPLETE: (id: string | number) => `gas/sessions/${id}/complete`,
+    CANCEL: (id: string | number) => `gas/sessions/${id}/cancel`,
     POSITION: (id: string | number) => `gas/sessions/${id}/position`,
     HOUSEHOLD_STATUS: (id: string | number, householdId: string | number) =>
       `gas/sessions/${id}/households/${householdId}/status`,
     CONFIRM: (id: string | number, householdId: string | number) =>
       `gas/sessions/${id}/households/${householdId}/confirm`,
-    // Davr (fairness) — GAZ spec §10
-    CREATE_CYCLE: 'gas/cycles',
-    CURRENT_CYCLE: 'gas/cycles/current',
-    CYCLE_HOUSEHOLDS: (id: string | number) => `gas/cycles/${id}/households`,
   },
 
   // Complaints

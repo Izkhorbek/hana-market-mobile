@@ -1,25 +1,13 @@
-// Uzbekistan public short numbers — SEED data from public sources (MVP fallback).
-// The admin dashboard will later provide the authoritative, localized list; until
-// then hyperlocal screens read from here. Service names stay in Uzbek (national
-// services); the screen chrome (title/categories) is translated via i18n.
+import type { EmergencySectionDto } from '@/types'
 
-export interface EmergencyNumber {
-  /** Dialable short number. */
-  number: string
-  /** Service name (Uzbek). */
-  name: string
-}
+// Pre-backend SEED for the emergency-numbers screen (public sources). Once the
+// backend serves GET /api/emergency-numbers, that response replaces this; the
+// admin dashboard adds/removes sections and numbers. Kept only as a fallback so
+// the screen isn't empty before the endpoint exists. Titles are Uzbek.
 
-export interface EmergencySection {
-  /** Stable key → i18n label `mahalla.em_cat_{key}`. */
-  key: string
-  emoji: string
-  items: EmergencyNumber[]
-}
-
-export const EMERGENCY_SECTIONS: EmergencySection[] = [
+export const EMERGENCY_SECTIONS: EmergencySectionDto[] = [
   {
-    key: 'emergency',
+    title: 'Shoshilinch xizmatlar',
     emoji: '🚨',
     items: [
       { number: '101', name: "Yong'in xavfsizligi xizmati" },
@@ -30,7 +18,7 @@ export const EMERGENCY_SECTIONS: EmergencySection[] = [
     ],
   },
   {
-    key: 'government',
+    title: 'Davlat portali va Hokimiyat',
     emoji: '🏛️',
     items: [
       { number: '1000', name: 'Prezident Virtual qabulxonasi (yoki 1110)' },
@@ -39,7 +27,7 @@ export const EMERGENCY_SECTIONS: EmergencySection[] = [
     ],
   },
   {
-    key: 'utilities',
+    title: 'Gaz va Elektr energiyasi',
     emoji: '💡',
     items: [
       { number: '1154', name: 'Hududiy elektr tarmoqlari (uzilishlar)' },
@@ -47,7 +35,7 @@ export const EMERGENCY_SECTIONS: EmergencySection[] = [
     ],
   },
   {
-    key: 'anticorruption',
+    title: 'Korrupsiyaga qarshi va Huquq',
     emoji: '🛡️',
     items: [
       { number: '1082', name: 'Korrupsiyaga qarshi kurashish agentligi' },
@@ -57,7 +45,7 @@ export const EMERGENCY_SECTIONS: EmergencySection[] = [
     ],
   },
   {
-    key: 'other',
+    title: 'Boshqa foydali raqamlar',
     emoji: '⚖️',
     items: [
       { number: '1100', name: "Davlat soliq qo'mitasi" },

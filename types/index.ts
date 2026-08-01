@@ -951,3 +951,4 @@ export * from './gas'
 
 // ==================== MAHALLA (NEIGHBORHOOD) ====================
 export * from './mahalla'
+export * from './emergency'
