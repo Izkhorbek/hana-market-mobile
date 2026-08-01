@@ -12,6 +12,7 @@ export const useGasRealtime = (mahallaId: number | null) => {
   const applyPositionUpdate = useGasStore((s) => s.applyPositionUpdate)
   const applyHouseholdStatusChange = useGasStore((s) => s.applyHouseholdStatusChange)
   const applySessionCompleted = useGasStore((s) => s.applySessionCompleted)
+  const setCycleWarning = useGasStore((s) => s.setCycleWarning)
 
   useEffect(() => {
     if (!mahallaId) return
@@ -33,6 +34,7 @@ export const useGasRealtime = (mahallaId: number | null) => {
       signalRService.onGasPositionUpdated(applyPositionUpdate),
       signalRService.onGasHouseholdStatusChanged(applyHouseholdStatusChange),
       signalRService.onGasSessionCompleted(applySessionCompleted),
+      signalRService.onGasCycleWarning(setCycleWarning),
     ]
 
     return () => {
@@ -46,5 +48,6 @@ export const useGasRealtime = (mahallaId: number | null) => {
     applyPositionUpdate,
     applyHouseholdStatusChange,
     applySessionCompleted,
+    setCycleWarning,
   ])
 }

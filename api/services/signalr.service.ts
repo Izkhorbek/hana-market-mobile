@@ -7,6 +7,7 @@ import {
 import { MessageTypeString } from '../../constants/appLimits'
 import { ChatRoomDto } from '../../types'
 import type {
+  GasCycleWarningEvent,
   GasHouseholdStatusChangedEvent,
   GasPositionUpdatedEvent,
   GasSessionCompletedEvent,
@@ -35,6 +36,7 @@ export const GasSignalREvents = {
   GasPositionUpdated: 'GasPositionUpdated',
   GasHouseholdStatusChanged: 'GasHouseholdStatusChanged',
   GasSessionCompleted: 'GasSessionCompleted',
+  GasCycleWarning: 'GasCycleWarning',
 } as const
 
 // SignalR event payloads (matching API documentation - snake_case from backend)
@@ -168,6 +170,7 @@ class SignalRService {
   private gasPositionUpdatedListeners: EventCallback<GasPositionUpdatedEvent>[] = []
   private gasHouseholdStatusChangedListeners: EventCallback<GasHouseholdStatusChangedEvent>[] = []
   private gasSessionCompletedListeners: EventCallback<GasSessionCompletedEvent>[] = []
+  private gasCycleWarningListeners: EventCallback<GasCycleWarningEvent>[] = []
 
   private getHubUrl(): string {
     // SignalR hub URL from API documentation
@@ -497,6 +500,14 @@ async isUserOnline(userId: number): Promise<boolean> {
     }
   }
 
+  /** Subscribe to "a cycle was force-broken" warnings. Returns an unsubscriber. */
+  onGasCycleWarning(callback: EventCallback<GasCycleWarningEvent>): () => void {
+    this.gasCycleWarningListeners.push(callback)
+    return () => {
+      this.gasCycleWarningListeners = this.gasCycleWarningListeners.filter((cb) => cb !== callback)
+    }
+  }
+
   // ========== Private Methods ==========
 
   private setupConnectionHandlers(): void {
@@ -617,6 +628,12 @@ async isUserOnline(userId: number): Promise<boolean> {
       GasSignalREvents.GasSessionCompleted,
       (payload: GasSessionCompletedEvent) => {
         this.gasSessionCompletedListeners.forEach((cb) => cb(payload))
+      },
+    )
+    this.connection.on(
+      GasSignalREvents.GasCycleWarning,
+      (payload: GasCycleWarningEvent) => {
+        this.gasCycleWarningListeners.forEach((cb) => cb(payload))
       },
     )
   }

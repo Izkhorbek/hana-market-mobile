@@ -1,5 +1,7 @@
 import { create } from 'zustand'
 import type {
+  GasCycleDto,
+  GasCycleWarningEvent,
   GasHouseholdStatusChangedEvent,
   GasHouseholdStatusDto,
   GasPositionUpdatedEvent,
@@ -27,6 +29,10 @@ interface GasState {
   myStatus: GasHouseholdStatusDto | null
   /** Full queue (streets + households) when the tracker screen is open. */
   detail: GasSessionDetailDto | null
+  /** Current distribution cycle (Plan page). */
+  cycle: GasCycleDto | null
+  /** Live warning shown when a cycle is force-broken (banner). */
+  cycleWarning: GasCycleWarningEvent | null
 
   // ── Seeders (from REST) ──
   setMahallaId: (id: number | null) => void
@@ -34,6 +40,9 @@ interface GasState {
   setSession: (session: GasSessionDto | null) => void
   setMyStatus: (status: GasHouseholdStatusDto | null) => void
   setDetail: (detail: GasSessionDetailDto | null) => void
+  setCycle: (cycle: GasCycleDto | null) => void
+  setCycleWarning: (warning: GasCycleWarningEvent | null) => void
+  clearCycleWarning: () => void
 
   // ── Realtime patches (from SignalR) ──
   applySessionStarted: (e: GasSessionStartedEvent) => void
@@ -50,12 +59,17 @@ export const useGasStore = create<GasState>((set, get) => ({
   session: null,
   myStatus: null,
   detail: null,
+  cycle: null,
+  cycleWarning: null,
 
   setMahallaId: (id) => set({ mahallaId: id }),
   setRole: (role) => set({ role }),
   setSession: (session) => set({ session }),
   setMyStatus: (status) => set({ myStatus: status }),
   setDetail: (detail) => set({ detail }),
+  setCycle: (cycle) => set({ cycle }),
+  setCycleWarning: (warning) => set({ cycleWarning: warning }),
+  clearCycleWarning: () => set({ cycleWarning: null }),
 
   applySessionStarted: (e) => {
     const { session } = get()
@@ -124,5 +138,14 @@ export const useGasStore = create<GasState>((set, get) => ({
     }
   },
 
-  reset: () => set({ mahallaId: null, role: null, session: null, myStatus: null, detail: null }),
+  reset: () =>
+    set({
+      mahallaId: null,
+      role: null,
+      session: null,
+      myStatus: null,
+      detail: null,
+      cycle: null,
+      cycleWarning: null,
+    }),
 }))
