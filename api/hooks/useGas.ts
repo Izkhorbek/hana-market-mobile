@@ -44,6 +44,22 @@ export const useActiveGasSessionQuery = ({
   })
 }
 
+/** Past sessions for a mahalla (history list — rais/admin). */
+export const useGasSessionsQuery = ({
+  mahallaId,
+  querySettings = {},
+}: {
+  mahallaId: number;
+  querySettings?: Omit<UseQueryOptions<AxiosResponse<ApiResponse<PaginatedResponse<GasSessionDto>>>>, 'queryKey' | 'queryFn'>;
+}) => {
+  return useQuery({
+    queryKey: ['GAS_SESSIONS', mahallaId],
+    queryFn: () => gasService.listSessions(mahallaId),
+    enabled: !!mahallaId,
+    ...querySettings,
+  })
+}
+
 /** Full session with its queue. */
 export const useGasSessionQuery = ({
   id,

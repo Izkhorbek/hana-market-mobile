@@ -31,6 +31,16 @@ export const gasService = {
   },
 
   /**
+   * Past/all sessions for a mahalla (history — rais/admin review).
+   * GET /api/gas/sessions?mahalla_id=&current_page=&page_size=
+   */
+  listSessions: (mahallaId: number, page = 1, pageSize = 20) => {
+    return axiosInstance.get<ApiResponse<PaginatedResponse<GasSessionDto>>>(ENDPOINT.GAS.LIST_SESSIONS, {
+      params: { mahalla_id: mahallaId, current_page: page, page_size: pageSize },
+    })
+  },
+
+  /**
    * Full session with its street/household queue.
    * GET /api/gas/sessions/{id}
    */

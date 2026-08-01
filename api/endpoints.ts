@@ -120,6 +120,7 @@ const ENDPOINT = {
   // (modules/Gas). See docs/GAZ_NAVBATI_BACKEND_SPEC.md.
   GAS: {
     CREATE_SESSION: 'gas/sessions',
+    LIST_SESSIONS: 'gas/sessions', // GET (history — rais/admin)
     ACTIVE_SESSION: 'gas/sessions/active',
     SESSION_BY_ID: (id: string | number) => `gas/sessions/${id}`,
     MY_STATUS: (id: string | number) => `gas/sessions/${id}/my-status`,

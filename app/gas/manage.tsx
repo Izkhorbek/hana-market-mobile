@@ -26,8 +26,8 @@ import type {
 import { parseApiError } from '@/utils/apiError'
 import { AxiosResponse } from 'axios'
 import { format } from 'date-fns'
-import { router } from 'expo-router'
-import { ArrowLeft } from 'lucide-react-native'
+import { type Href, router } from 'expo-router'
+import { ArrowLeft, Check, History, X } from 'lucide-react-native'
 import React, { useEffect, useMemo, useState } from 'react'
 import {
   ActivityIndicator,
@@ -40,6 +40,18 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native'
+
+// Session time options — tap-based (no scroll wheel). Daytime gas-delivery window.
+const HOURS = Array.from({ length: 17 }, (_, i) => i + 6) // 06:00–22:00
+const MINUTES = [0, 15, 30, 45]
+const pad2 = (n: number) => String(n).padStart(2, '0')
+
+// One-line: true when two dates fall on the same calendar day.
+const isSameDay = (a?: Date, b?: Date) =>
+  !!a && !!b &&
+  a.getFullYear() === b.getFullYear() &&
+  a.getMonth() === b.getMonth() &&
+  a.getDate() === b.getDate()
 
 // One-line: map a session status to its i18n label key.
 const sessionStatusKey = (s: GasSessionStatus) =>
@@ -88,13 +100,20 @@ export default function GasManageScreen() {
 
   // Create-session form (defaults date to today; street order is left to the backend for MVP).
   const [dateVal, setDateVal] = useState<Date | undefined>(() => new Date())
-  const [timeVal, setTimeVal] = useState<Date | undefined>(undefined)
+  const [timeHour, setTimeHour] = useState<number | null>(null)
+  const [timeMinute, setTimeMinute] = useState(0)
   const [note, setNote] = useState('')
 
-  // Earliest selectable session date = start of today (scheduling in the past is invalid).
+  // Earliest selectable date = start of today; quick "today/tomorrow" chips use these.
   const startOfToday = useMemo(() => {
     const d = new Date()
     d.setHours(0, 0, 0, 0)
+    return d
+  }, [])
+  const tomorrow = useMemo(() => {
+    const d = new Date()
+    d.setHours(0, 0, 0, 0)
+    d.setDate(d.getDate() + 1)
     return d
   }, [])
 
@@ -187,13 +206,23 @@ export default function GasManageScreen() {
   const { mutate: markStatus, isPending: marking } = useUpdateGasHouseholdStatusMutation({ onError })
   const { mutate: setPosition } = useUpdateGasPositionMutation({ onError })
 
-  // Mark the current household delivered/skipped, then advance to the next pending one.
-  const advance = (status: 'delivered' | 'skipped') => {
-    if (!session || session.current_household_id == null) return
-    const currentId = session.current_household_id
-    markStatus({ id: session.id, householdId: currentId, data: { status } })
-    const next = nextPendingId(detail?.households ?? [], currentId)
-    if (next != null) setPosition({ id: session.id, data: { current_household_id: next } })
+  // Mark ANY household delivered/skipped from its own row. If it's the current
+  // one, advance the live position to the next pending house.
+  const markHousehold = (householdId: number, status: 'delivered' | 'skipped') => {
+    if (!session) return
+    markStatus({ id: session.id, householdId, data: { status } })
+    if (householdId === session.current_household_id) {
+      const next = nextPendingId(detail?.households ?? [], householdId)
+      if (next != null) setPosition({ id: session.id, data: { current_household_id: next } })
+    }
+  }
+
+  // Skipping affects fairness (miss_count) — confirm before marking a house skipped.
+  const confirmSkipHousehold = (householdId: number) => {
+    Alert.alert(t('gas.confirm_title'), t('gas.confirm_skipped_msg'), [
+      { text: t('common.cancel'), style: 'cancel' },
+      { text: t('common.yes'), onPress: () => markHousehold(householdId, 'skipped') },
+    ])
   }
 
   // Jump the live position to a specific household.
@@ -210,7 +239,7 @@ export default function GasManageScreen() {
     createSession({
       mahalla_id: mahallaId,
       scheduled_date: format(dateVal, 'yyyy-MM-dd'),
-      scheduled_time: timeVal ? format(timeVal, 'HH:mm') : undefined,
+      scheduled_time: timeHour != null ? `${pad2(timeHour)}:${pad2(timeMinute)}` : undefined,
       street_order: [],
       note: note.trim() || undefined,
     })
@@ -218,13 +247,34 @@ export default function GasManageScreen() {
 
   const inputStyle = [styles.input, { borderColor: colors.borderColor, color: colors.text }]
 
+  // One-line: a small selectable pill used for date shortcuts + hour/minute slots.
+  const Chip = ({ label, selected, onPress }: { label: string; selected: boolean; onPress: () => void }) => (
+    <TouchableOpacity
+      onPress={onPress}
+      activeOpacity={0.8}
+      style={[
+        styles.chip,
+        { borderColor: colors.borderColor },
+        selected && { backgroundColor: colors.primaryColor, borderColor: colors.primaryColor },
+      ]}
+    >
+      <Text style={[styles.chipText, { color: selected ? '#fff' : colors.text }]}>{label}</Text>
+    </TouchableOpacity>
+  )
+
   const Header = (
     <View style={[styles.header, { borderBottomColor: colors.borderColor }]}>
       <TouchableOpacity onPress={() => router.back()} hitSlop={10} style={styles.headerBtn}>
         <ArrowLeft size={22} color={colors.text} />
       </TouchableOpacity>
       <Text style={[styles.headerTitle, { color: colors.text }]}>{t('gas.manage_title')}</Text>
-      <View style={styles.headerBtn} />
+      <TouchableOpacity
+        onPress={() => router.push('/gas/history' as Href)}
+        hitSlop={10}
+        style={styles.headerBtn}
+      >
+        <History size={20} color={colors.primaryColor} />
+      </TouchableOpacity>
     </View>
   )
 
@@ -284,7 +334,7 @@ export default function GasManageScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Davr uylar ro'yxati (ordinal, holat, miss_count, prioritet) */}
+        {/* Davr uylar ro'yxati (ordinal, holat, miss_count, prioritet)
         {!!cycle && cycleHouseholds.length > 0 && (
           <View style={styles.block}>
             <Text style={[styles.queueLabel, { color: colors.subText }]}>{t('gas.queue')}</Text>
@@ -302,7 +352,7 @@ export default function GasManageScreen() {
               </View>
             ))}
           </View>
-        )}
+        )} */}
 
         {!session ? (
           // ── No session: create one ──
@@ -310,6 +360,18 @@ export default function GasManageScreen() {
             <Text style={[styles.blockTitle, { color: colors.text }]}>{t('gas.create_session')}</Text>
 
             <Text style={[styles.label, { color: colors.subText }]}>{t('gas.date')}</Text>
+            <View style={styles.chipRow}>
+              <Chip
+                label={t('gas.today')}
+                selected={isSameDay(dateVal, startOfToday)}
+                onPress={() => setDateVal(startOfToday)}
+              />
+              <Chip
+                label={t('gas.tomorrow')}
+                selected={isSameDay(dateVal, tomorrow)}
+                onPress={() => setDateVal(tomorrow)}
+              />
+            </View>
             <DatePicker
               mode="date"
               value={dateVal}
@@ -320,14 +382,33 @@ export default function GasManageScreen() {
             />
 
             <Text style={[styles.label, { color: colors.subText }]}>{t('gas.time')}</Text>
-            <DatePicker
-              mode="time"
-              value={timeVal}
-              onChange={setTimeVal}
-              timeFormat="24"
-              placeholder={t('gas.time_placeholder')}
-              style={styles.picker}
-            />
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.hourRow}
+              keyboardShouldPersistTaps="handled"
+            >
+              {HOURS.map((h) => (
+                <Chip
+                  key={h}
+                  label={pad2(h)}
+                  selected={timeHour === h}
+                  onPress={() => setTimeHour(timeHour === h ? null : h)}
+                />
+              ))}
+            </ScrollView>
+            {timeHour != null && (
+              <View style={styles.chipRow}>
+                {MINUTES.map((m) => (
+                  <Chip
+                    key={m}
+                    label={`:${pad2(m)}`}
+                    selected={timeMinute === m}
+                    onPress={() => setTimeMinute(m)}
+                  />
+                ))}
+              </View>
+            )}
 
             <Text style={[styles.label, { color: colors.subText }]}>{t('gas.note')}</Text>
             <TextInput style={inputStyle} value={note} onChangeText={setNote} placeholderTextColor={colors.subText} />
@@ -382,49 +463,58 @@ export default function GasManageScreen() {
               !!detail?.households.length && (
                 <View style={styles.queueBlock}>
                   <Text style={[styles.queueLabel, { color: colors.subText }]}>{t('gas.queue')}</Text>
+                  <Text style={[styles.queueHint, { color: colors.subText }]}>{t('gas.queue_hint')}</Text>
                   {detail.households.map((h) => {
                     const isCurrent = h.household_id === session.current_household_id
+                    const actionable =
+                      session.status === 'active' && (h.status === 'pending' || h.status === 'current')
                     return (
-                      <TouchableOpacity
+                      <View
                         key={h.household_id}
-                        onPress={() => setCurrent(h.household_id)}
-                        activeOpacity={0.7}
                         style={[
                           styles.row,
                           { borderColor: isCurrent ? colors.primaryColor : colors.borderColor },
                         ]}
                       >
-                        <Text style={[styles.rowNo, { color: colors.text }]}>{h.house_number}</Text>
-                        <Text style={[styles.rowAddr, { color: colors.subText }]} numberOfLines={1}>
-                          {h.address_label}
-                        </Text>
-                        <Text style={[styles.rowStatus, { color: colors.subText }]}>
-                          {t(householdStatusKey(h.status))}
-                        </Text>
-                      </TouchableOpacity>
+                        <TouchableOpacity
+                          style={styles.rowMain}
+                          onPress={() => setCurrent(h.household_id)}
+                          activeOpacity={0.7}
+                        >
+                          <Text style={[styles.rowNo, { color: colors.text }]}>{h.house_number}</Text>
+                          <Text style={[styles.rowAddr, { color: colors.subText }]} numberOfLines={1}>
+                            {h.address_label}
+                          </Text>
+                        </TouchableOpacity>
+                        {actionable ? (
+                          <View style={styles.rowActions}>
+                            <TouchableOpacity
+                              onPress={() => markHousehold(h.household_id, 'delivered')}
+                              disabled={marking}
+                              hitSlop={6}
+                              activeOpacity={0.85}
+                              style={[styles.rowActBtn, { backgroundColor: colors.primaryColor }]}
+                            >
+                              <Check size={16} color="#fff" />
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                              onPress={() => confirmSkipHousehold(h.household_id)}
+                              disabled={marking}
+                              hitSlop={6}
+                              activeOpacity={0.85}
+                              style={[styles.rowActBtn, styles.rowActSkip, { borderColor: colors.borderColor }]}
+                            >
+                              <X size={16} color={colors.text} />
+                            </TouchableOpacity>
+                          </View>
+                        ) : (
+                          <Text style={[styles.rowStatus, { color: colors.subText }]}>
+                            {t(householdStatusKey(h.status))}
+                          </Text>
+                        )}
+                      </View>
                     )
                   })}
-
-                  {session.status === 'active' && session.current_household_id != null && (
-                    <View style={styles.actions}>
-                      <TouchableOpacity
-                        style={[styles.actionPrimary, { backgroundColor: colors.primaryColor, opacity: marking ? 0.6 : 1 }]}
-                        onPress={() => advance('delivered')}
-                        disabled={marking}
-                        activeOpacity={0.85}
-                      >
-                        <Text style={styles.primaryBtnText}>{t('gas.deliver_next')}</Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity
-                        style={[styles.actionOutline, { borderColor: colors.borderColor }]}
-                        onPress={() => advance('skipped')}
-                        disabled={marking}
-                        activeOpacity={0.85}
-                      >
-                        <Text style={[styles.outlineBtnText, { color: colors.text }]}>{t('gas.mark_skipped')}</Text>
-                      </TouchableOpacity>
-                    </View>
-                  )}
                 </View>
               )}
           </View>
@@ -499,6 +589,10 @@ const styles = StyleSheet.create({
   label: { fontSize: 13, fontWeight: '500', marginTop: 6 },
   input: { borderWidth: 1, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, fontSize: 15 },
   picker: { marginTop: 2 },
+  chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 6 },
+  hourRow: { flexDirection: 'row', gap: 8, marginTop: 6, paddingRight: 16 },
+  chip: { paddingHorizontal: 14, paddingVertical: 9, borderRadius: 10, borderWidth: 1, minWidth: 46, alignItems: 'center' },
+  chipText: { fontSize: 14, fontWeight: '600' },
   primaryBtn: { height: 50, borderRadius: 14, justifyContent: 'center', alignItems: 'center', marginTop: 14 },
   primaryBtnText: { color: '#fff', fontSize: 15, fontWeight: '600' },
   outlineBtn: { height: 50, borderRadius: 14, borderWidth: 1, justifyContent: 'center', alignItems: 'center', marginTop: 14 },
@@ -518,12 +612,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 11,
   },
+  rowMain: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10 },
   rowNo: { fontSize: 14, fontWeight: '700', minWidth: 36 },
   rowAddr: { flex: 1, fontSize: 12 },
   rowStatus: { fontSize: 11 },
-  actions: { flexDirection: 'row', gap: 8, marginTop: 12 },
-  actionPrimary: { flex: 1, height: 48, borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
-  actionOutline: { flex: 1, height: 48, borderRadius: 12, borderWidth: 1, justifyContent: 'center', alignItems: 'center' },
+  queueHint: { fontSize: 11, marginBottom: 2 },
+  rowActions: { flexDirection: 'row', gap: 6 },
+  rowActBtn: { width: 34, height: 34, borderRadius: 9, justifyContent: 'center', alignItems: 'center' },
+  rowActSkip: { borderWidth: 1 },
   cycleCard: { borderWidth: 1, borderRadius: 14, padding: 14, marginBottom: 14 },
   cycleTitle: { fontSize: 16, fontWeight: '700' },
   cycleBar: { height: 8, borderRadius: 99, marginTop: 10, overflow: 'hidden' },
