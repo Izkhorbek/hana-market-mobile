@@ -115,3 +115,53 @@ export interface GasHouseholdStatusChangedEvent {
 export interface GasSessionCompletedEvent {
   session_id: number
 }
+
+// ── Cikl (Cycle) — fairness guarantee (GAZ spec §10) ────────────────────────
+
+export type GasCycleStatus = 'in_progress' | 'completed'
+
+/** Per-cycle household status (no 'current' — that's session-level). */
+export type CycleHouseholdStatus = 'pending' | 'delivered' | 'skipped'
+
+/** A distribution cycle (one full pass 1→N over the mahalla). */
+export interface GasCycleDto {
+  id: number
+  mahalla_id: number
+  cycle_number: number
+  status: GasCycleStatus
+  total_count: number
+  delivered_count: number
+  skipped_count: number
+  /** Last served position — sessions continue from here. */
+  current_household_id: number | null
+  started_at: string | null
+  completed_at: string | null
+}
+
+/** One household row within a cycle (authoritative per-cycle roster). */
+export interface CycleHouseholdDto {
+  household_id: number
+  house_number: string
+  address_label: string
+  status: CycleHouseholdStatus
+  /** 0/1/2 — at 2 the household becomes `skipped` for this cycle. */
+  miss_count: number
+  /** Stable order by street_order + house_number. */
+  ordinal: number
+  /** Carried over as skipped from the previous cycle → served first. */
+  is_priority: boolean
+}
+
+/** POST /api/gas/cycles — start a new cycle (blocked if one is in progress). */
+export interface CreateGasCycleRequest {
+  mahalla_id: number
+}
+
+/** SignalR: a cycle was force-broken before completion (accountability). */
+export interface GasCycleWarningEvent {
+  mahalla_id: number
+  cycle_number: number
+  forced_by_user_id: number
+  unserved_count: number
+  reason: string
+}

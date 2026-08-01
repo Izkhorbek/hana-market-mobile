@@ -9,10 +9,14 @@ import { AxiosResponse } from 'axios'
 import type {
   ApiResponse,
   ConfirmGasReceiptRequest,
+  CreateGasCycleRequest,
   CreateGasSessionRequest,
+  CycleHouseholdDto,
+  GasCycleDto,
   GasHouseholdStatusDto,
   GasSessionDetailDto,
   GasSessionDto,
+  PaginatedResponse,
   UpdateGasHouseholdStatusRequest,
   UpdateGasPositionRequest,
 } from '../../types'
@@ -159,6 +163,55 @@ export const useConfirmGasReceiptMutation = (
       queryClient.invalidateQueries({ queryKey: ['GAS_MY_STATUS', variables.id] })
       queryClient.invalidateQueries({ queryKey: ['GAS_SESSION', variables.id] })
       options?.onSuccess?.(data, variables, onMutateResult, context)
+    },
+  })
+}
+
+// ── Cikl (fairness) hooks — GAZ spec §10 ────────────────────────────────────
+
+/** The current in-progress cycle for a mahalla (position + progress). */
+export const useCurrentGasCycleQuery = ({
+  mahallaId,
+  querySettings = {},
+}: {
+  mahallaId: number;
+  querySettings?: Omit<UseQueryOptions<AxiosResponse<ApiResponse<GasCycleDto | null>>>, 'queryKey' | 'queryFn'>;
+}) => {
+  return useQuery({
+    queryKey: ['GAS_CURRENT_CYCLE', mahallaId],
+    queryFn: () => gasService.getCurrentCycle(mahallaId),
+    enabled: !!mahallaId,
+    ...querySettings,
+  })
+}
+
+/** The cycle's household roster (ordinal, status, miss_count, priority). */
+export const useGasCycleHouseholdsQuery = ({
+  id,
+  querySettings = {},
+}: {
+  id: number;
+  querySettings?: Omit<UseQueryOptions<AxiosResponse<ApiResponse<PaginatedResponse<CycleHouseholdDto>>>>, 'queryKey' | 'queryFn'>;
+}) => {
+  return useQuery({
+    queryKey: ['GAS_CYCLE_HOUSEHOLDS', id],
+    queryFn: () => gasService.getCycleHouseholds(id),
+    enabled: !!id,
+    ...querySettings,
+  })
+}
+
+/** Start a new cycle (force overrides an in-progress one → warning). */
+export const useCreateGasCycleMutation = (
+  options?: UseMutationOptions<AxiosResponse<ApiResponse<GasCycleDto>>, Error, { data: CreateGasCycleRequest; force?: boolean }>,
+) => {
+  const queryClient = useQueryClient()
+  return useMutation<AxiosResponse<ApiResponse<GasCycleDto>>, Error, { data: CreateGasCycleRequest; force?: boolean }>({
+    mutationFn: ({ data, force }) => gasService.createCycle(data, force),
+    ...options,
+    onSuccess: (res, variables, onMutateResult, context) => {
+      queryClient.invalidateQueries({ queryKey: ['GAS_CURRENT_CYCLE', variables.data.mahalla_id] })
+      options?.onSuccess?.(res, variables, onMutateResult, context)
     },
   })
 }
