@@ -148,7 +148,12 @@ export default function GasManageScreen() {
     onSuccess: () => setSession(null),
     onError,
   })
-  const { mutate: markStatus, isPending: marking } = useUpdateGasHouseholdStatusMutation({ onError })
+  // Which household row is currently being marked (drives the per-row spinner).
+  const [markingId, setMarkingId] = useState<number | null>(null)
+  const { mutate: markStatus, isPending: marking } = useUpdateGasHouseholdStatusMutation({
+    onError,
+    onSettled: () => setMarkingId(null),
+  })
   const { mutate: setPosition } = useUpdateGasPositionMutation({ onError })
 
   const busy = creating || starting || pausing || completing || cancelling
@@ -177,6 +182,7 @@ export default function GasManageScreen() {
   // Mark a household delivered/skipped; if it's the current one, advance the position.
   const markHousehold = (householdId: number, status: 'delivered' | 'skipped') => {
     if (!session) return
+    setMarkingId(householdId)
     markStatus({ id: session.id, householdId, data: { status } })
     if (householdId === session.current_household_id) {
       const next = nextPendingId(detail?.households ?? [], householdId)
@@ -308,22 +314,22 @@ export default function GasManageScreen() {
             <View style={styles.lifecycle}>
               {(session.status === 'planned' || session.status === 'paused') && (
                 <TouchableOpacity style={[styles.primaryBtn, { backgroundColor: colors.primaryColor, opacity: busy ? 0.6 : 1 }]} onPress={() => startSession(session.id)} disabled={busy} activeOpacity={0.85}>
-                  <Text style={styles.primaryBtnText}>{session.status === 'paused' ? t('gas.resume') : t('gas.start')}</Text>
+                  {starting ? <ActivityIndicator color="#fff" /> : <Text style={styles.primaryBtnText}>{session.status === 'paused' ? t('gas.resume') : t('gas.start')}</Text>}
                 </TouchableOpacity>
               )}
               {session.status === 'active' && (
                 <TouchableOpacity style={[styles.outlineBtn, { borderColor: colors.borderColor }]} onPress={() => pauseSession(session.id)} disabled={busy} activeOpacity={0.85}>
-                  <Text style={[styles.outlineBtnText, { color: colors.text }]}>{t('gas.pause')}</Text>
+                  {pausing ? <ActivityIndicator color={colors.text} /> : <Text style={[styles.outlineBtnText, { color: colors.text }]}>{t('gas.pause')}</Text>}
                 </TouchableOpacity>
               )}
               {(session.status === 'active' || session.status === 'paused') && (
                 <TouchableOpacity style={[styles.primaryBtn, { backgroundColor: colors.primaryColor, opacity: busy ? 0.6 : 1 }]} onPress={() => completeSession(session.id)} disabled={busy} activeOpacity={0.85}>
-                  <Text style={styles.primaryBtnText}>{t('gas.complete')}</Text>
+                  {completing ? <ActivityIndicator color="#fff" /> : <Text style={styles.primaryBtnText}>{t('gas.complete')}</Text>}
                 </TouchableOpacity>
               )}
               {(session.status === 'planned' || session.status === 'paused') && (
                 <TouchableOpacity style={[styles.outlineBtn, { borderColor: '#E6B0B0' }]} onPress={onCancelSession} disabled={busy} activeOpacity={0.85}>
-                  <Text style={[styles.outlineBtnText, { color: '#B4232A' }]}>{t('gas.cancel_session')}</Text>
+                  {cancelling ? <ActivityIndicator color="#B4232A" /> : <Text style={[styles.outlineBtnText, { color: '#B4232A' }]}>{t('gas.cancel_session')}</Text>}
                 </TouchableOpacity>
               )}
             </View>
@@ -343,26 +349,30 @@ export default function GasManageScreen() {
                         <Text style={[styles.rowAddr, { color: colors.subText }]} numberOfLines={1}>{h.address_label}</Text>
                       </TouchableOpacity>
                       {actionable ? (
-                        <View style={styles.rowActions}>
-                          <TouchableOpacity
-                            onPress={() => markHousehold(h.household_id, 'delivered')}
-                            disabled={marking}
-                            hitSlop={6}
-                            activeOpacity={0.85}
-                            style={[styles.rowActBtn, { backgroundColor: colors.primaryColor }]}
-                          >
-                            <Check size={16} color="#fff" />
-                          </TouchableOpacity>
-                          <TouchableOpacity
-                            onPress={() => confirmSkipHousehold(h.household_id)}
-                            disabled={marking}
-                            hitSlop={6}
-                            activeOpacity={0.85}
-                            style={[styles.rowActBtn, styles.rowActSkip, { borderColor: colors.borderColor }]}
-                          >
-                            <X size={16} color={colors.text} />
-                          </TouchableOpacity>
-                        </View>
+                        markingId === h.household_id ? (
+                          <ActivityIndicator color={colors.primaryColor} style={styles.rowSpinner} />
+                        ) : (
+                          <View style={styles.rowActions}>
+                            <TouchableOpacity
+                              onPress={() => markHousehold(h.household_id, 'delivered')}
+                              disabled={marking}
+                              hitSlop={6}
+                              activeOpacity={0.85}
+                              style={[styles.rowActBtn, { backgroundColor: colors.primaryColor }]}
+                            >
+                              <Check size={16} color="#fff" />
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                              onPress={() => confirmSkipHousehold(h.household_id)}
+                              disabled={marking}
+                              hitSlop={6}
+                              activeOpacity={0.85}
+                              style={[styles.rowActBtn, styles.rowActSkip, { borderColor: colors.borderColor }]}
+                            >
+                              <X size={16} color={colors.text} />
+                            </TouchableOpacity>
+                          </View>
+                        )
                       ) : (
                         <Text style={[styles.rowStatus, { color: colors.subText }]}>{t(householdStatusKey(h.status))}</Text>
                       )}
@@ -430,4 +440,5 @@ const styles = StyleSheet.create({
   rowActions: { flexDirection: 'row', gap: 6 },
   rowActBtn: { width: 34, height: 34, borderRadius: 9, justifyContent: 'center', alignItems: 'center' },
   rowActSkip: { borderWidth: 1 },
+  rowSpinner: { width: 74, alignItems: 'center' },
 })

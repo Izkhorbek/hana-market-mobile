@@ -11,6 +11,7 @@ import { ArrowLeft, Mail, MessageCircle, Phone, Send } from 'lucide-react-native
 import React from 'react'
 import { useForm } from 'react-hook-form'
 import {
+	ActivityIndicator,
 	Alert,
 	Linking,
 	StyleSheet,
@@ -170,7 +171,7 @@ const ContactPage: React.FC = () => {
 								disabled={isSubmitting || !isValid}
 								activeOpacity={0.8}
 							>
-								<Send size={18} color='#fff' />
+								{isSubmitting ? <ActivityIndicator size='small' color='#fff' /> : <Send size={18} color='#fff' />}
 								<Text style={styles.submitButtonText}>
 									{isSubmitting ? t('contact.sending') : t('contact.send_message_btn')}
 								</Text>

@@ -16,6 +16,7 @@ import { type Href, router } from 'expo-router'
 import { ArrowLeft, SlidersHorizontal } from 'lucide-react-native'
 import React, { useCallback, useEffect, useState } from 'react'
 import {
+  ActivityIndicator,
   Alert,
   RefreshControl,
   ScrollView,
@@ -282,9 +283,9 @@ export default function GasTrackerScreen() {
         )}
 
         {/* Planned banner — prominent upcoming date (Uzbek format) */}
-        {session.status === 'planned' && (
+        {(session.status === 'planned' || session.status === 'paused') && (
           <View style={styles.plannedBanner}>
-            <Text style={styles.bannerTop}>● {t('gas.planned_distribution')}</Text>
+            <Text style={styles.bannerTop}>● { session.status === 'planned' ? t('gas.planned_distribution') : t('gas.paused_distribution') }</Text>
             <Text style={styles.bannerLoc}>
               {session.scheduled_date ? formatUzDate(session.scheduled_date) : '—'}
               {!!session.scheduled_time && ` · ${session.scheduled_time}`}
@@ -322,7 +323,7 @@ export default function GasTrackerScreen() {
                 disabled={confirming}
                 activeOpacity={0.85}
               >
-                <Text style={styles.btnText}>{t('gas.received')}</Text>
+                {confirming ? <ActivityIndicator color="#fff" /> : <Text style={styles.btnText}>{t('gas.received')}</Text>}
               </TouchableOpacity>
             ) : session.status === 'planned' ? (
                <Text style={[styles.mineHint, { color: colors.subText }]}>

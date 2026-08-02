@@ -6,6 +6,7 @@ import { parseApiError } from '@/utils/apiError'
 import Feather from '@expo/vector-icons/Feather'
 import React, { memo, useCallback, useEffect, useRef, useState } from 'react'
 import {
+  ActivityIndicator,
   Alert,
   Animated,
   Modal,
@@ -360,9 +361,11 @@ const MannerReviewModalComponent: React.FC<MannerReviewModalProps> = ({
             accessibilityRole="button"
             accessibilityState={{ disabled: isPending || rating < 1 }}
           >
-            <Text style={styles.submitText}>
-              {isPending ? t('mannerReview.submitting') : t('mannerReview.submit')}
-            </Text>
+            {isPending ? (
+              <ActivityIndicator size='small' color='#fff' />
+            ) : (
+              <Text style={styles.submitText}>{t('mannerReview.submit')}</Text>
+            )}
           </TouchableOpacity>
         </View>
 

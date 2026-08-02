@@ -11,6 +11,7 @@ import { ArrowLeft, MessageSquare, Send, Star } from 'lucide-react-native'
 import React from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import {
+	ActivityIndicator,
 	Alert,
 	Platform,
 	StyleSheet,
@@ -210,7 +211,7 @@ const FeedbackPage: React.FC = () => {
 						disabled={isSubmitting || !canSubmit}
 						activeOpacity={0.8}
 					>
-						<Send size={18} color='#fff' />
+						{isSubmitting ? <ActivityIndicator size='small' color='#fff' /> : <Send size={18} color='#fff' />}
 						<Text style={styles.submitButtonText}>
 							{isSubmitting ? t('feedback.submitting') : t('feedback.submit_button')}
 						</Text>

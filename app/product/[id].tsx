@@ -1210,10 +1210,16 @@ const ProductDetailPage: React.FC = () => {
           onPress={handleChat}
           disabled={chatPending || isMyProduct}
         >
-          <MessageCircle size={20} color="#fff" />
-          <Text style={styles.chatButtonText}>
-            {t('product_detail.chat_with_seller')}
-          </Text>
+          {chatPending ? (
+            <ActivityIndicator size="small" color="#fff" />
+          ) : (
+            <>
+              <MessageCircle size={20} color="#fff" />
+              <Text style={styles.chatButtonText}>
+                {t('product_detail.chat_with_seller')}
+              </Text>
+            </>
+          )}
         </TouchableOpacity>
       </Animated.View>
 
