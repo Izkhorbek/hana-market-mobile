@@ -2,10 +2,9 @@ import { ThemedView } from '@/components/themed-view'
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
 import { type Href, router } from 'expo-router'
-import { ChevronRight, Fuel, Megaphone, PackageSearch, Phone, Siren, Wrench } from 'lucide-react-native'
+import { ChevronRight, Flame, Phone, Siren, Wrench } from 'lucide-react-native'
 import React from 'react'
 import {
-  Alert,
   ScrollView,
   StyleSheet,
   Text,
@@ -28,18 +27,29 @@ export default function MahallaScreen() {
   const colors = useThemeColors()
   const { t } = useTranslations()
 
-  const comingSoon = () =>
-    Alert.alert(t('mahalla.coming_soon'), t('mahalla.coming_soon_message'))
+  // const comingSoon = () =>
+  //   Alert.alert(t('mahalla.coming_soon'), t('mahalla.coming_soon_message'))
 
   const items: HubItem[] = [
     {
       key: 'gas',
       titleKey: 'mahalla.gas_title',
       subtitleKey: 'mahalla.gas_subtitle',
-      Icon: Fuel,
+      Icon: Flame,
       iconBg: '#FDECE4',
       iconColor: '#E8663A',
       onPress: () => router.push('/gas' as Href),
+    },
+     {
+      key: 'services',
+      titleKey: 'mahalla.services_title',
+      subtitleKey: 'mahalla.services_subtitle',
+      Icon: Wrench,
+      iconBg: '#d0f7e3',
+      iconColor: colors.tabIconSelected,
+      // Typed routes for this new screen regenerate on the next `expo start`;
+      // cast the href until then.
+      onPress: () => router.push('/service' as Href),
     },
     {
       key: 'emergency',
@@ -51,17 +61,6 @@ export default function MahallaScreen() {
       onPress: () => router.push('/mahalla/emergency' as Href),
     },
     {
-      key: 'services',
-      titleKey: 'mahalla.services_title',
-      subtitleKey: 'mahalla.services_subtitle',
-      Icon: Wrench,
-      iconBg: colors.tabIconBackground,
-      iconColor: colors.tabIconSelected,
-      // Typed routes for this new screen regenerate on the next `expo start`;
-      // cast the href until then.
-      onPress: () => router.push('/service' as Href),
-    },
-    {
       key: 'distributors',
       titleKey: 'mahalla.distributors_title',
       subtitleKey: 'mahalla.distributors_subtitle',
@@ -70,26 +69,26 @@ export default function MahallaScreen() {
       iconColor: '#3B82C4',
       onPress: () => router.push('/mahalla/distributors' as Href),
     },
-    {
-      key: 'announcements',
-      titleKey: 'mahalla.announcements_title',
-      subtitleKey: 'mahalla.announcements_subtitle',
-      Icon: Megaphone,
-      iconBg: '#E8F0FE',
-      iconColor: '#3B82C4',
-      onPress: comingSoon,
-      comingSoon: true,
-    },
-    {
-      key: 'lostfound',
-      titleKey: 'mahalla.lostfound_title',
-      subtitleKey: 'mahalla.lostfound_subtitle',
-      Icon: PackageSearch,
-      iconBg: '#E7F5EE',
-      iconColor: '#4FA07A',
-      onPress: comingSoon,
-      comingSoon: true,
-    },
+    // {
+    //   key: 'announcements',
+    //   titleKey: 'mahalla.announcements_title',
+    //   subtitleKey: 'mahalla.announcements_subtitle',
+    //   Icon: Megaphone,
+    //   iconBg: '#E8F0FE',
+    //   iconColor: '#3B82C4',
+    //   onPress: comingSoon,
+    //   comingSoon: true,
+    // },
+    // {
+    //   key: 'lostfound',
+    //   titleKey: 'mahalla.lostfound_title',
+    //   subtitleKey: 'mahalla.lostfound_subtitle',
+    //   Icon: PackageSearch,
+    //   iconBg: '#E7F5EE',
+    //   iconColor: '#4FA07A',
+    //   onPress: comingSoon,
+    //   comingSoon: true,
+    // },
   ]
 
   return (

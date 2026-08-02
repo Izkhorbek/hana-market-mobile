@@ -464,6 +464,7 @@
     "cancel_session": "Отменить сессию",
     "confirm_cancel_session_msg": "Отменить сессию?",
     "planned_distribution": "Запланированная раздача",
+    "paused_distribution": "Раздача приостановлена",
     "cycle": "Цикл",
     "session": "Сессия",
     "cancel": "Отмена",
@@ -991,7 +992,7 @@
     "period": "AM/PM",
     "today": "Сегодня",
     "next": "Далее",
-    "done": "Готово",
+    "done": "✓",
     "clear": "Очистить",
     "ok": "ОК",
     "cancel": "Отмена"

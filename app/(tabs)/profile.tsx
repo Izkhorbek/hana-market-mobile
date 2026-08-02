@@ -245,7 +245,8 @@ const ProfilePage = () => {
 					/>
 				</ProfileSection>
 
-				<ProfileSection title={t('profile.abbreviations_section')}>
+				{/* Vaqtincha o'chirib turamiz		 */}
+				{/* <ProfileSection title={t('profile.abbreviations_section')}>
 					<View
 						style={[
 							styles.abbreviationCard,
@@ -271,9 +272,6 @@ const ProfilePage = () => {
 									]}
 								>
 									<View style={styles.abbreviationMeta}>
-										{/* <Text style={[styles.abbreviationBadge, { color: infoCardText }]}>
-											{item.short}
-										</Text> */}
 										<Text style={[styles.abbreviationLabel, { color: textColor }]}>
 											{item.label}
 										</Text>
@@ -286,7 +284,7 @@ const ProfilePage = () => {
 							))}
 						</View>
 					</View>
-				</ProfileSection>
+				</ProfileSection> */}
 
 				{/* Support & Information Section */}
 				<ProfileSection title={t('profile.support_information')}>

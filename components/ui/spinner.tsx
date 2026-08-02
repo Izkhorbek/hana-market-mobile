@@ -1,9 +1,9 @@
-import { Text } from '@/components/ui/text';
-import { useColor } from '@/hooks/useColor';
-import { BORDER_RADIUS, CORNERS, FONT_SIZE } from '@/theme/globals';
-import { Loader2 } from 'lucide-react-native';
-import React, { useEffect, useMemo } from 'react';
-import { ActivityIndicator, StyleSheet, View, ViewStyle } from 'react-native';
+import { Text } from '@/components/ui/text'
+import { useColor } from '@/hooks/useColor'
+import { BORDER_RADIUS, CORNERS, FONT_SIZE } from '@/theme/globals'
+import { Loader2 } from 'lucide-react-native'
+import React, { useEffect, useMemo } from 'react'
+import { ActivityIndicator, StyleSheet, View, ViewStyle } from 'react-native'
 import Animated, {
   Easing,
   SharedValue,
@@ -13,7 +13,7 @@ import Animated, {
   withRepeat,
   withSequence,
   withTiming,
-} from 'react-native-reanimated';
+} from 'react-native-reanimated'
 
 // Types
 type SpinnerSize = 'default' | 'sm' | 'lg' | 'icon';
@@ -58,13 +58,13 @@ const sizeConfig: Record<SpinnerSize, SpinnerConfig> = {
   },
   lg: { size: 32, iconSize: 32, fontSize: 16, gap: 10, thickness: 3 },
   icon: { size: 24, iconSize: 24, fontSize: FONT_SIZE, gap: 8, thickness: 2 },
-};
+}
 
 const speedConfig = {
   slow: 1500,
   normal: 1000,
   fast: 500,
-};
+}
 
 // --- Helper Animated Components for Dots and Bars ---
 
@@ -79,7 +79,7 @@ const AnimatedDot = React.memo(
   ({ anim, color, size, style }: AnimatedShapeProps) => {
     const animatedStyle = useAnimatedStyle(() => ({
       opacity: anim.value,
-    }));
+    }))
     return (
       <Animated.View
         style={[
@@ -88,15 +88,15 @@ const AnimatedDot = React.memo(
           animatedStyle,
         ]}
       />
-    );
+    )
   }
-);
+)
 
 const AnimatedBar = React.memo(
   ({ anim, color, size, style }: AnimatedShapeProps) => {
     const animatedStyle = useAnimatedStyle(() => ({
       opacity: anim.value,
-    }));
+    }))
     return (
       <Animated.View
         style={[
@@ -105,9 +105,9 @@ const AnimatedBar = React.memo(
           animatedStyle,
         ]}
       />
-    );
+    )
   }
-);
+)
 
 // Main Spinner Component
 export function Spinner({
@@ -120,38 +120,38 @@ export function Spinner({
   speed = 'normal',
 }: SpinnerProps) {
   // Reanimated shared values
-  const rotate = useSharedValue(0);
-  const pulse = useSharedValue(1);
+  const rotate = useSharedValue(0)
+  const pulse = useSharedValue(1)
 
   // --- FIX: Call hooks at the top level ---
   // 1. Call useSharedValue at the top level for each dot/bar
-  const dotAnim1 = useSharedValue(0.3);
-  const dotAnim2 = useSharedValue(0.3);
-  const dotAnim3 = useSharedValue(0.3);
+  const dotAnim1 = useSharedValue(0.3)
+  const dotAnim2 = useSharedValue(0.3)
+  const dotAnim3 = useSharedValue(0.3)
 
-  const barAnim1 = useSharedValue(0.3);
-  const barAnim2 = useSharedValue(0.3);
-  const barAnim3 = useSharedValue(0.3);
-  const barAnim4 = useSharedValue(0.3);
+  const barAnim1 = useSharedValue(0.3)
+  const barAnim2 = useSharedValue(0.3)
+  const barAnim3 = useSharedValue(0.3)
+  const barAnim4 = useSharedValue(0.3)
 
   // 2. Use useMemo to create a stable array reference from the values
   const dotsAnims = useMemo(
     () => [dotAnim1, dotAnim2, dotAnim3],
     [dotAnim1, dotAnim2, dotAnim3]
-  );
+  )
   const barsAnims = useMemo(
     () => [barAnim1, barAnim2, barAnim3, barAnim4],
     [barAnim1, barAnim2, barAnim3, barAnim4]
-  );
+  )
   // --- END FIX ---
 
   // Theme colors
-  const primaryColor = useColor('text');
-  const textColor = useColor('text');
+  const primaryColor = useColor('text')
+  const textColor = useColor('text')
 
-  const config = sizeConfig[size];
-  const spinnerColor = color || primaryColor;
-  const animationDuration = speedConfig[speed];
+  const config = sizeConfig[size]
+  const spinnerColor = color || primaryColor
+  const animationDuration = speedConfig[speed]
 
   // Rotation animation
   useEffect(() => {
@@ -159,11 +159,11 @@ export function Spinner({
       rotate.value = withRepeat(
         withTiming(360, { duration: animationDuration, easing: Easing.linear }),
         -1
-      );
+      )
     } else {
-      rotate.value = 0; // Reset
+      rotate.value = 0 // Reset
     }
-  }, [rotate, variant, animationDuration]);
+  }, [rotate, variant, animationDuration])
 
   // Pulse animation
   useEffect(() => {
@@ -175,11 +175,11 @@ export function Spinner({
         ),
         -1,
         true
-      );
+      )
     } else {
-      pulse.value = 1; // Reset
+      pulse.value = 1 // Reset
     }
-  }, [pulse, variant, animationDuration]);
+  }, [pulse, variant, animationDuration])
 
   // Dots animation
   useEffect(() => {
@@ -194,12 +194,12 @@ export function Spinner({
             withTiming(0.3, { duration: animationDuration / 3 })
           ),
           -1
-        );
-      });
+        )
+      })
     } else {
-      dotsAnims.forEach((anim) => (anim.value = 0.3)); // Reset
+      dotsAnims.forEach((anim) => (anim.value = 0.3)) // Reset
     }
-  }, [dotsAnims, variant, animationDuration]);
+  }, [dotsAnims, variant, animationDuration])
 
   // Bars animation
   useEffect(() => {
@@ -214,21 +214,21 @@ export function Spinner({
             withTiming(0.3, { duration: animationDuration / 4 })
           ),
           -1
-        );
-      });
+        )
+      })
     } else {
-      barsAnims.forEach((anim) => (anim.value = 0.3)); // Reset
+      barsAnims.forEach((anim) => (anim.value = 0.3)) // Reset
     }
-  }, [barsAnims, variant, animationDuration]);
+  }, [barsAnims, variant, animationDuration])
 
   // Animated styles
   const animatedCircleStyle = useAnimatedStyle(() => ({
     transform: [{ rotate: `${rotate.value}deg` }],
-  }));
+  }))
 
   const animatedPulseStyle = useAnimatedStyle(() => ({
     transform: [{ scale: pulse.value }],
-  }));
+  }))
 
   const renderSpinner = () => {
     switch (variant) {
@@ -239,7 +239,7 @@ export function Spinner({
             color={spinnerColor}
             style={styles.spinner}
           />
-        );
+        )
 
       case 'circle':
         return (
@@ -252,7 +252,7 @@ export function Spinner({
           >
             <Loader2 size={config.iconSize} color={spinnerColor} />
           </Animated.View>
-        );
+        )
 
       case 'pulse':
         return (
@@ -267,7 +267,7 @@ export function Spinner({
               animatedPulseStyle,
             ]}
           />
-        );
+        )
 
       case 'dots':
         return (
@@ -282,7 +282,7 @@ export function Spinner({
               />
             ))}
           </View>
-        );
+        )
 
       case 'bars':
         return (
@@ -297,18 +297,18 @@ export function Spinner({
               />
             ))}
           </View>
-        );
+        )
 
       default:
-        return null;
+        return null
     }
-  };
+  }
 
   const containerStyle: ViewStyle = {
     alignItems: 'center',
     justifyContent: 'center',
     gap: config.gap,
-  };
+  }
 
   return (
     <View style={[containerStyle, style]}>
@@ -327,7 +327,7 @@ export function Spinner({
         </Text>
       )}
     </View>
-  );
+  )
 }
 
 // Loading Overlay Component
@@ -338,27 +338,27 @@ export function LoadingOverlay({
   backdropOpacity = 0.5,
   ...spinnerProps
 }: LoadingOverlayProps) {
-  const opacity = useSharedValue(0);
-  const backgroundColor = useColor('background');
-  const cardColor = useColor('card');
+  const opacity = useSharedValue(0)
+  const backgroundColor = useColor('background')
+  const cardColor = useColor('card')
 
   useEffect(() => {
     opacity.value = withTiming(visible ? 1 : 0, {
       duration: 200,
-    });
-  }, [visible, opacity]);
+    })
+  }, [visible, opacity])
 
   const animatedOverlayStyle = useAnimatedStyle(() => ({
     opacity: opacity.value,
     // Conditionally render to avoid interaction issues
     display: opacity.value === 0 ? 'none' : 'flex',
-  }));
+  }))
 
   const defaultBackdropColor =
     backdropColor ||
     `${backgroundColor}${Math.round(backdropOpacity * 255)
       .toString(16)
-      .padStart(2, '0')}`;
+      .padStart(2, '0')}`
 
   return (
     <Animated.View
@@ -373,7 +373,7 @@ export function LoadingOverlay({
         <Spinner {...spinnerProps} />
       </View>
     </Animated.View>
-  );
+  )
 }
 
 // Inline Loader Component (for buttons, etc.)
@@ -389,7 +389,7 @@ export function InlineLoader({
       color={color}
       style={styles.inlineLoader}
     />
-  );
+  )
 }
 
 // Button Spinner Component - optimized for button usage
@@ -398,7 +398,7 @@ export function ButtonSpinner({
   variant = 'default',
   color,
 }: Omit<SpinnerProps, 'label' | 'showLabel'>) {
-  const primaryForegroundColor = useColor('primaryForeground');
+  const primaryForegroundColor = useColor('primaryForeground')
 
   return (
     <Spinner
@@ -407,7 +407,7 @@ export function ButtonSpinner({
       color={color || primaryForegroundColor}
       style={styles.buttonSpinner}
     />
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -459,4 +459,4 @@ const styles = StyleSheet.create({
     minHeight: 0,
     minWidth: 0,
   },
-});
+})

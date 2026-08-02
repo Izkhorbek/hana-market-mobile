@@ -463,6 +463,7 @@
 		"cancel_session": "Cancel session",
 		"confirm_cancel_session_msg": "Cancel this session?",
 		"planned_distribution": "Planned distribution",
+	    "paused_distribution": "Paused distribution",
 		"cycle": "Cycle",
 		"session": "Session",
 		"cancel": "Cancel",
@@ -978,7 +979,7 @@
 		"period": "Period",
 		"today": "Today",
 		"next": "Next",
-		"done": "Done",
+		"done": "✓",
 		"clear": "Clear",
 		"ok": "OK",
 		"cancel": "Cancel"

@@ -1,5 +1,5 @@
-import { forwardRef } from 'react';
-import { ScrollView as RNScrollView, ScrollViewProps } from 'react-native';
+import { forwardRef } from 'react'
+import { ScrollView as RNScrollView, ScrollViewProps } from 'react-native'
 
 export const ScrollView = forwardRef<RNScrollView, ScrollViewProps>(
   ({ style, ...otherProps }, ref) => {
@@ -9,6 +9,6 @@ export const ScrollView = forwardRef<RNScrollView, ScrollViewProps>(
         style={[{ backgroundColor: 'transparent' }, style]}
         {...otherProps}
       />
-    );
+    )
   }
-);
+)

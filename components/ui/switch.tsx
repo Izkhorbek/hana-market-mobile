@@ -1,13 +1,13 @@
-import { useColor } from '@/hooks/useColor';
-import React from 'react';
+import { useColor } from '@/hooks/useColor'
+import React from 'react'
 
-import { Text } from '@/components/ui/text';
-import { View } from '@/components/ui/view';
+import { Text } from '@/components/ui/text'
+import { View } from '@/components/ui/view'
 import {
   Switch as RNSwitch,
   SwitchProps as RNSwitchProps,
   TextStyle,
-} from 'react-native';
+} from 'react-native'
 
 interface SwitchProps extends RNSwitchProps {
   label?: string;
@@ -16,9 +16,9 @@ interface SwitchProps extends RNSwitchProps {
 }
 
 export function Switch({ label, error, labelStyle, ...props }: SwitchProps) {
-  const mutedColor = useColor('muted');
-  const primary = useColor('primary');
-  const danger = useColor('red');
+  const mutedColor = useColor('muted')
+  const primary = useColor('primary')
+  const danger = useColor('red')
 
   return (
     <View >
@@ -73,5 +73,5 @@ export function Switch({ label, error, labelStyle, ...props }: SwitchProps) {
         </Text>
       )}
     </View>
-  );
+  )
 }

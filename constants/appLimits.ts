@@ -74,7 +74,7 @@ export const AppLimits = {
     MAX_LONGITUDE: 74.0,
     DEFAULT_RADIUS_KM: 5.0,
     MIN_RADIUS_KM: 0,
-    MAX_RADIUS_KM: 40,
+    MAX_RADIUS_KM: 10,
   },
 
   DefaultCoordinates: {

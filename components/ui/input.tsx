@@ -1,9 +1,9 @@
-import { Icon } from '@/components/ui/icon';
-import { Text } from '@/components/ui/text';
-import { useColor } from '@/hooks/useColor';
-import { BORDER_RADIUS, CORNERS, FONT_SIZE, HEIGHT } from '@/theme/globals';
-import type { LucideProps } from 'lucide-react-native';
-import React, { forwardRef, ReactElement, useState } from 'react';
+import { Icon } from '@/components/ui/icon'
+import { Text } from '@/components/ui/text'
+import { useColor } from '@/hooks/useColor'
+import { BORDER_RADIUS, CORNERS, FONT_SIZE, HEIGHT } from '@/theme/globals'
+import type { LucideProps } from 'lucide-react-native'
+import React, { forwardRef, ReactElement, useState } from 'react'
 import {
   Pressable,
   TextInput,
@@ -11,7 +11,7 @@ import {
   TextStyle,
   View,
   ViewStyle,
-} from 'react-native';
+} from 'react-native'
 
 export interface InputProps extends Omit<TextInputProps, 'style'> {
   label?: string;
@@ -51,25 +51,25 @@ export const Input = forwardRef<TextInput, InputProps>(
     },
     ref
   ) => {
-    const [isFocused, setIsFocused] = useState(false);
+    const [isFocused, setIsFocused] = useState(false)
 
     // Theme colors
-    const cardColor = useColor('card');
-    const textColor = useColor('text');
-    const muted = useColor('textMuted');
-    const borderColor = useColor('border');
-    const primary = useColor('primary');
-    const danger = useColor('red');
+    const cardColor = useColor('card')
+    const textColor = useColor('text')
+    const muted = useColor('textMuted')
+    const borderColor = useColor('border')
+    const primary = useColor('primary')
+    const danger = useColor('red')
 
-    const isTextarea = type === 'textarea';
+    const isTextarea = type === 'textarea'
 
     // Calculate height based on type
     const getHeight = () => {
       if (isTextarea) {
-        return rows * 20 + 32; // Approximate line height + padding
+        return rows * 20 + 32 // Approximate line height + padding
       }
-      return HEIGHT;
-    };
+      return HEIGHT
+    }
 
     // Variant styles
     const getVariantStyle = (): ViewStyle => {
@@ -80,7 +80,7 @@ export const Input = forwardRef<TextInput, InputProps>(
         minHeight: getHeight(),
         paddingHorizontal: 16,
         paddingVertical: isTextarea ? 12 : 0,
-      };
+      }
 
       switch (variant) {
         case 'outline':
@@ -89,7 +89,7 @@ export const Input = forwardRef<TextInput, InputProps>(
             borderWidth: 1,
             borderColor: error ? danger : isFocused ? primary : borderColor,
             backgroundColor: 'transparent',
-          };
+          }
         case 'filled':
         default:
           return {
@@ -97,9 +97,9 @@ export const Input = forwardRef<TextInput, InputProps>(
             borderWidth: 1,
             borderColor: error ? danger : cardColor,
             backgroundColor: disabled ? muted + '20' : cardColor,
-          };
+          }
       }
-    };
+    }
 
     const getInputStyle = (): TextStyle => ({
       flex: 1,
@@ -108,27 +108,27 @@ export const Input = forwardRef<TextInput, InputProps>(
       color: disabled ? muted : error ? danger : textColor,
       paddingVertical: 0, // Remove default padding
       textAlignVertical: isTextarea ? 'top' : 'center',
-    });
+    })
 
     const handleFocus = (e: any) => {
-      setIsFocused(true);
-      onFocus?.(e);
-    };
+      setIsFocused(true)
+      onFocus?.(e)
+    }
 
     const handleBlur = (e: any) => {
-      setIsFocused(false);
-      onBlur?.(e);
-    };
+      setIsFocused(false)
+      onBlur?.(e)
+    }
 
     // Render right component - supports both direct components and functions
     const renderRightComponent = () => {
-      if (!rightComponent) return null;
+      if (!rightComponent) return null
 
       // If it's a function, call it. Otherwise, render directly
       return typeof rightComponent === 'function'
         ? rightComponent()
-        : rightComponent;
-    };
+        : rightComponent
+    }
 
     const renderInputContent = () => (
       <View style={containerStyle}>
@@ -137,7 +137,7 @@ export const Input = forwardRef<TextInput, InputProps>(
           style={[getVariantStyle(), disabled && { opacity: 0.6 }]}
           onPress={() => {
             if (!disabled && ref && 'current' in ref && ref.current) {
-              ref.current.focus();
+              ref.current.focus()
             }
           }}
           disabled={disabled}
@@ -288,11 +288,11 @@ export const Input = forwardRef<TextInput, InputProps>(
           </Text>
         )}
       </View>
-    );
+    )
 
-    return renderInputContent();
+    return renderInputContent()
   }
-);
+)
 
 export interface GroupedInputProps {
   children: React.ReactNode;
@@ -307,18 +307,18 @@ export const GroupedInput = ({
   title,
   titleStyle,
 }: GroupedInputProps) => {
-  const border = useColor('border');
-  const background = useColor('card');
-  const danger = useColor('red');
+  const border = useColor('border')
+  const background = useColor('card')
+  const danger = useColor('red')
 
-  const childrenArray = React.Children.toArray(children);
+  const childrenArray = React.Children.toArray(children)
 
   const errors = childrenArray
     .filter(
       (child): child is ReactElement<any> =>
         React.isValidElement(child) && !!(child.props as any).error
     )
-    .map((child) => child.props.error);
+    .map((child) => child.props.error)
 
   const renderGroupedContent = () => (
     <View style={containerStyle}>
@@ -375,10 +375,10 @@ export const GroupedInput = ({
         </View>
       )}
     </View>
-  );
+  )
 
-  return renderGroupedContent();
-};
+  return renderGroupedContent()
+}
 
 export interface GroupedInputItemProps extends Omit<TextInputProps, 'style'> {
   label?: string;
@@ -413,31 +413,31 @@ export const GroupedInputItem = forwardRef<TextInput, GroupedInputItemProps>(
     },
     ref
   ) => {
-    const [isFocused, setIsFocused] = useState(false);
+    const [isFocused, setIsFocused] = useState(false)
 
-    const text = useColor('text');
-    const muted = useColor('textMuted');
-    const primary = useColor('primary');
-    const danger = useColor('red');
+    const text = useColor('text')
+    const muted = useColor('textMuted')
+    const primary = useColor('primary')
+    const danger = useColor('red')
 
-    const isTextarea = type === 'textarea';
+    const isTextarea = type === 'textarea'
 
     const handleFocus = (e: any) => {
-      setIsFocused(true);
-      onFocus?.(e);
-    };
+      setIsFocused(true)
+      onFocus?.(e)
+    }
 
     const handleBlur = (e: any) => {
-      setIsFocused(false);
-      onBlur?.(e);
-    };
+      setIsFocused(false)
+      onBlur?.(e)
+    }
 
     const renderRightComponent = () => {
-      if (!rightComponent) return null;
+      if (!rightComponent) return null
       return typeof rightComponent === 'function'
         ? rightComponent()
-        : rightComponent;
-    };
+        : rightComponent
+    }
 
     const renderItemContent = () => (
       <Pressable
@@ -600,8 +600,8 @@ export const GroupedInputItem = forwardRef<TextInput, GroupedInputItemProps>(
           )}
         </View>
       </Pressable>
-    );
+    )
 
-    return renderItemContent();
+    return renderItemContent()
   }
-);
+)

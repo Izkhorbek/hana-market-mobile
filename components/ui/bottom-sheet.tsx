@@ -1,31 +1,31 @@
-import { Text } from '@/components/ui/text';
-import { View } from '@/components/ui/view';
-import { useColor } from '@/hooks/useColor';
-import { useKeyboardHeight } from '@/hooks/useKeyboardHeight'; // Make sure this path is correct
-import { BORDER_RADIUS } from '@/theme/globals';
-import React, { useEffect } from 'react';
+import { Text } from '@/components/ui/text'
+import { View } from '@/components/ui/view'
+import { useColor } from '@/hooks/useColor'
+import { useKeyboardHeight } from '@/hooks/useKeyboardHeight' // Make sure this path is correct
+import { BORDER_RADIUS } from '@/theme/globals'
+import React, { useEffect } from 'react'
 import {
   Dimensions,
   Modal,
   ScrollView,
   TouchableWithoutFeedback,
   ViewStyle,
-} from 'react-native';
+} from 'react-native'
 import {
   Gesture,
   GestureDetector,
   GestureHandlerRootView,
-} from 'react-native-gesture-handler';
+} from 'react-native-gesture-handler'
 import Animated, {
   runOnJS,
   useAnimatedStyle,
   useSharedValue,
   withSpring,
   withTiming,
-} from 'react-native-reanimated';
+} from 'react-native-reanimated'
 
-const { height: SCREEN_HEIGHT } = Dimensions.get('window');
-const MAX_TRANSLATE_Y = -SCREEN_HEIGHT + 50;
+const { height: SCREEN_HEIGHT } = Dimensions.get('window')
+const MAX_TRANSLATE_Y = -SCREEN_HEIGHT + 50
 
 type BottomSheetContentProps = {
   children: React.ReactNode;
@@ -109,8 +109,8 @@ const BottomSheetContent = ({
         {children}
       </ScrollView>
     </Animated.View>
-  );
-};
+  )
+}
 
 type BottomSheetProps = {
   isVisible: boolean;
@@ -133,152 +133,152 @@ export function BottomSheet({
   style,
   disablePanGesture = false,
 }: BottomSheetProps) {
-  const cardColor = useColor('card');
-  const mutedColor = useColor('muted');
-  const { keyboardHeight, isKeyboardVisible } = useKeyboardHeight();
+  const cardColor = useColor('card')
+  const mutedColor = useColor('muted')
+  const { keyboardHeight, isKeyboardVisible } = useKeyboardHeight()
 
-  const translateY = useSharedValue(0);
-  const context = useSharedValue({ y: 0 });
-  const opacity = useSharedValue(0);
-  const currentSnapIndex = useSharedValue(0);
+  const translateY = useSharedValue(0)
+  const context = useSharedValue({ y: 0 })
+  const opacity = useSharedValue(0)
+  const currentSnapIndex = useSharedValue(0)
   // Shared value to hold keyboard height for use in worklets
-  const keyboardHeightSV = useSharedValue(0);
+  const keyboardHeightSV = useSharedValue(0)
 
-  const snapPointsHeights = snapPoints.map((point) => -SCREEN_HEIGHT * point);
-  const defaultHeight = snapPointsHeights[0];
+  const snapPointsHeights = snapPoints.map((point) => -SCREEN_HEIGHT * point)
+  const defaultHeight = snapPointsHeights[0]
 
-  const [modalVisible, setModalVisible] = React.useState(false);
+  const [modalVisible, setModalVisible] = React.useState(false)
 
   // Effect to handle opening and closing the bottom sheet
   useEffect(() => {
     if (isVisible) {
-      setModalVisible(true);
+      setModalVisible(true)
       translateY.value = withSpring(defaultHeight, {
         damping: 50,
         stiffness: 400,
-      });
-      opacity.value = withTiming(1, { duration: 300 });
-      currentSnapIndex.value = 0;
+      })
+      opacity.value = withTiming(1, { duration: 300 })
+      currentSnapIndex.value = 0
     } else {
-      translateY.value = withSpring(0, { damping: 50, stiffness: 400 });
+      translateY.value = withSpring(0, { damping: 50, stiffness: 400 })
       opacity.value = withTiming(0, { duration: 300 }, (finished) => {
         if (finished) {
-          runOnJS(setModalVisible)(false);
+          runOnJS(setModalVisible)(false)
         }
-      });
+      })
     }
-  }, [isVisible, defaultHeight]);
+  }, [isVisible, defaultHeight])
 
   // Function to animate the sheet to a specific destination
   const scrollTo = (destination: number) => {
-    'worklet';
-    translateY.value = withSpring(destination, { damping: 50, stiffness: 400 });
-  };
+    'worklet'
+    translateY.value = withSpring(destination, { damping: 50, stiffness: 400 })
+  }
 
   // --- START: NEW KEYBOARD HANDLING LOGIC ---
   useEffect(() => {
     // Update the shared value whenever keyboardHeight changes
-    keyboardHeightSV.value = keyboardHeight;
+    keyboardHeightSV.value = keyboardHeight
 
     // Only adjust position if the sheet is currently visible
     if (isVisible) {
-      const currentSnapHeight = snapPointsHeights[currentSnapIndex.value];
-      let destination: number;
+      const currentSnapHeight = snapPointsHeights[currentSnapIndex.value]
+      let destination: number
 
       if (isKeyboardVisible) {
         // Keyboard is open, move sheet up by keyboard height
-        destination = currentSnapHeight - keyboardHeight;
+        destination = currentSnapHeight - keyboardHeight
       } else {
         // Keyboard is closed, return to original snap point
-        destination = currentSnapHeight;
+        destination = currentSnapHeight
       }
-      scrollTo(destination);
+      scrollTo(destination)
     }
-  }, [keyboardHeight, isKeyboardVisible, isVisible]);
+  }, [keyboardHeight, isKeyboardVisible, isVisible])
   // --- END: NEW KEYBOARD HANDLING LOGIC ---
 
   const findClosestSnapPoint = (currentY: number) => {
-    'worklet';
+    'worklet'
     // Adjust the currentY by the keyboard height to find the original snap point
-    const adjustedY = currentY + keyboardHeightSV.value;
+    const adjustedY = currentY + keyboardHeightSV.value
 
-    let closest = snapPointsHeights[0];
-    let minDistance = Math.abs(adjustedY - closest);
-    let closestIndex = 0;
+    let closest = snapPointsHeights[0]
+    let minDistance = Math.abs(adjustedY - closest)
+    let closestIndex = 0
 
     for (let i = 0; i < snapPointsHeights.length; i++) {
-      const snapPoint = snapPointsHeights[i];
-      const distance = Math.abs(adjustedY - snapPoint);
+      const snapPoint = snapPointsHeights[i]
+      const distance = Math.abs(adjustedY - snapPoint)
       if (distance < minDistance) {
-        minDistance = distance;
-        closest = snapPoint;
-        closestIndex = i;
+        minDistance = distance
+        closest = snapPoint
+        closestIndex = i
       }
     }
-    currentSnapIndex.value = closestIndex;
-    return closest;
-  };
+    currentSnapIndex.value = closestIndex
+    return closest
+  }
 
   const handlePress = () => {
-    const nextIndex = (currentSnapIndex.value + 1) % snapPointsHeights.length;
-    currentSnapIndex.value = nextIndex;
-    const destination = snapPointsHeights[nextIndex] - keyboardHeightSV.value;
-    scrollTo(destination);
-  };
+    const nextIndex = (currentSnapIndex.value + 1) % snapPointsHeights.length
+    currentSnapIndex.value = nextIndex
+    const destination = snapPointsHeights[nextIndex] - keyboardHeightSV.value
+    scrollTo(destination)
+  }
 
   const animateClose = () => {
-    'worklet';
-    translateY.value = withSpring(0, { damping: 50, stiffness: 400 });
+    'worklet'
+    translateY.value = withSpring(0, { damping: 50, stiffness: 400 })
     opacity.value = withTiming(0, { duration: 300 }, (finished) => {
       if (finished) {
-        runOnJS(onClose)();
+        runOnJS(onClose)()
       }
-    });
-  };
+    })
+  }
 
   const gesture = Gesture.Pan()
     .onStart(() => {
-      context.value = { y: translateY.value };
+      context.value = { y: translateY.value }
     })
     .onUpdate((event) => {
-      const newY = context.value.y + event.translationY;
+      const newY = context.value.y + event.translationY
       if (newY <= 0 && newY >= MAX_TRANSLATE_Y) {
-        translateY.value = newY;
+        translateY.value = newY
       }
     })
     .onEnd((event) => {
-      const currentY = translateY.value;
-      const velocity = event.velocityY;
+      const currentY = translateY.value
+      const velocity = event.velocityY
 
       if (velocity > 500 && currentY > -SCREEN_HEIGHT * 0.2) {
-        animateClose();
-        return;
+        animateClose()
+        return
       }
 
       // Find the closest original snap point
-      const closestSnapPoint = findClosestSnapPoint(currentY);
+      const closestSnapPoint = findClosestSnapPoint(currentY)
       // Calculate the final destination, accounting for the keyboard height
-      const finalDestination = closestSnapPoint - keyboardHeightSV.value;
-      scrollTo(finalDestination);
-    });
+      const finalDestination = closestSnapPoint - keyboardHeightSV.value
+      scrollTo(finalDestination)
+    })
 
   const rBottomSheetStyle = useAnimatedStyle(() => {
     return {
       transform: [{ translateY: translateY.value }],
-    };
-  });
+    }
+  })
 
   const rBackdropStyle = useAnimatedStyle(() => {
     return {
       opacity: opacity.value,
-    };
-  });
+    }
+  })
 
   const handleBackdropPress = () => {
     if (enableBackdropDismiss) {
-      animateClose();
+      animateClose()
     }
-  };
+  }
 
   return (
     <Modal
@@ -324,29 +324,29 @@ export function BottomSheet({
         </Animated.View>
       </GestureHandlerRootView>
     </Modal>
-  );
+  )
 }
 
 // Hook for managing bottom sheet state
 export function useBottomSheet() {
-  const [isVisible, setIsVisible] = React.useState(false);
+  const [isVisible, setIsVisible] = React.useState(false)
 
   const open = React.useCallback(() => {
-    setIsVisible(true);
-  }, []);
+    setIsVisible(true)
+  }, [])
 
   const close = React.useCallback(() => {
-    setIsVisible(false);
-  }, []);
+    setIsVisible(false)
+  }, [])
 
   const toggle = React.useCallback(() => {
-    setIsVisible((prev) => !prev);
-  }, []);
+    setIsVisible((prev) => !prev)
+  }, [])
 
   return {
     isVisible,
     open,
     close,
     toggle,
-  };
+  }
 }

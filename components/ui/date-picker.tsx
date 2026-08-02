@@ -5,6 +5,7 @@ import { ScrollView } from '@/components/ui/scroll-view'
 import { Text } from '@/components/ui/text'
 import { View } from '@/components/ui/view'
 import { useThemeColors } from '@/hooks/use-theme-colors'
+import { useColorScheme } from '@/hooks/use-color-scheme'
 import { useTranslations } from '@/hooks/use-translation'
 import { useColor } from '@/hooks/useColor'
 import { BORDER_RADIUS, CORNERS, FONT_SIZE } from '@/theme/globals'
@@ -82,9 +83,7 @@ export function DatePicker(props: DatePickerProps) {
     minimumDate,
     maximumDate,
     timeFormat = '24',
-    variant = 'filled',
     labelStyle,
-    errorStyle,
   } = props
 
   const { t } = useTranslations()
@@ -124,9 +123,9 @@ export function DatePicker(props: DatePickerProps) {
 
   // Theme colors
   const colors = useThemeColors()
+  const colorScheme = useColorScheme()
+    
   const backgroundColor = useColor('background')
-  const cardColor = useColor('card')
-  const borderColor = useColor('border')
   const primaryColor = useColor('primary')
   const primaryForegroundColor = useColor('primaryForeground')
   const mutedColor = useColor('muted')
@@ -1128,11 +1127,11 @@ export function DatePicker(props: DatePickerProps) {
             </View>
 
             {mode === 'datetime' && viewMode === 'date' ? (
-              <Button onPress={() => setViewMode('time')} style={{ flex: 1 }}>
+              <Button onPress={() => setViewMode('time')} style={{ flex: 1 }} textStyle={{backgroundColor: primaryColor}}>
                 {t('date_picker.next')}
               </Button>
             ) : (
-              <Button onPress={handleConfirm} style={{ flex: 1 }}>
+              <Button onPress={handleConfirm} style={{ display: 'flex'}} textStyle={{color:  colors.primaryColor, fontWeight: 'bold' }}>
                 {t('date_picker.done')}
               </Button>
             )}
