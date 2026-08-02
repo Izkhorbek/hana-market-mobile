@@ -1,6 +1,6 @@
-import { useColor } from '@/hooks/useColor';
-import { BORDER_RADIUS, CORNERS, FONT_SIZE, HEIGHT } from '@/theme/globals';
-import { ChevronDown } from 'lucide-react-native';
+import { useColor } from '@/hooks/useColor'
+import { BORDER_RADIUS, CORNERS, FONT_SIZE, HEIGHT } from '@/theme/globals'
+import { Check, ChevronDown } from 'lucide-react-native'
 import React, {
   Children,
   cloneElement,
@@ -11,7 +11,7 @@ import React, {
   useEffect,
   useRef,
   useState,
-} from 'react';
+} from 'react'
 import {
   Dimensions,
   Modal,
@@ -22,10 +22,10 @@ import {
   TextStyle,
   TouchableOpacity,
   ViewStyle
-} from 'react-native';
-import ThemedScrollView from '../themed-scrollview';
-import { ThemedText } from '../themed-text';
-import { ThemedView } from '../themed-view';
+} from 'react-native'
+import ThemedScrollView from '../themed-scrollview'
+import { ThemedText } from '../themed-text'
+import { ThemedView } from '../themed-view'
 
 // --- 1. DEFINE A SHARED OPTION TYPE ---
 export interface OptionType {
@@ -35,14 +35,14 @@ export interface OptionType {
 
 // Helper to extract a simple string label from children
 const getLabelFromChildren = (children: ReactNode): string => {
-  let label = '';
+  let label = ''
   React.Children.forEach(children, (child) => {
     if (typeof child === 'string' || typeof child === 'number') {
-      label += child;
+      label += child
     }
-  });
-  return label;
-};
+  })
+  return label
+}
 
 interface ComboboxContextType {
   isOpen: boolean;
@@ -63,15 +63,15 @@ interface ComboboxContextType {
 
 const ComboboxContext = createContext<ComboboxContextType | undefined>(
   undefined
-);
+)
 
 const useCombobox = () => {
-  const context = useContext(ComboboxContext);
+  const context = useContext(ComboboxContext)
   if (!context) {
-    throw new Error('Combobox components must be used within a Combobox');
+    throw new Error('Combobox components must be used within a Combobox')
   }
-  return context;
-};
+  return context
+}
 
 interface ComboboxProps {
   children: ReactNode;
@@ -92,31 +92,31 @@ export function Combobox({
   values = [],
   onValuesChange,
 }: ComboboxProps) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filteredItemsCount, setFilteredItemsCount] = useState(0);
+  const [isOpen, setIsOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [filteredItemsCount, setFilteredItemsCount] = useState(0)
   const [triggerLayout, setTriggerLayout] = useState({
     x: 0,
     y: 0,
     width: 0,
     height: 0,
-  });
+  })
 
   const setValue = (newOption: OptionType) => {
     if (multiple) {
-      const isAlreadySelected = values.some((v) => v.value === newOption.value);
+      const isAlreadySelected = values.some((v) => v.value === newOption.value)
       const newValues = isAlreadySelected
         ? values.filter((v) => v.value !== newOption.value)
-        : [...values, newOption];
-      onValuesChange?.(newValues);
+        : [...values, newOption]
+      onValuesChange?.(newValues)
     } else {
-      onValueChange?.(newOption);
+      onValueChange?.(newOption)
     }
-  };
+  }
 
   const setValues = (newOptions: OptionType[]) => {
-    onValuesChange?.(newOptions);
-  };
+    onValuesChange?.(newOptions)
+  }
 
   return (
     <ComboboxContext.Provider
@@ -139,7 +139,7 @@ export function Combobox({
     >
       {children}
     </ComboboxContext.Provider>
-  );
+  )
 }
 
 interface ComboboxTriggerProps {
@@ -153,25 +153,25 @@ export function ComboboxTrigger({
   style,
   error = false,
 }: ComboboxTriggerProps) {
-  const { setIsOpen, setTriggerLayout, disabled, isOpen } = useCombobox();
-  const triggerRef = useRef<React.ComponentRef<typeof TouchableOpacity>>(null);
-  const cardColor = useColor('card');
-  const destructiveColor = useColor('destructive');
-  const mutedColor = useColor('textMuted');
+  const { setIsOpen, setTriggerLayout, disabled, isOpen } = useCombobox()
+  const triggerRef = useRef<React.ComponentRef<typeof TouchableOpacity>>(null)
+  const cardColor = useColor('card')
+  const destructiveColor = useColor('destructive')
+  const mutedColor = useColor('textMuted')
 
   const measureTrigger = () => {
     if (triggerRef.current) {
       triggerRef.current.measure((_x, _y, width, height, pageX, pageY) => {
-        setTriggerLayout({ x: pageX, y: pageY, width, height });
-      });
+        setTriggerLayout({ x: pageX, y: pageY, width, height })
+      })
     }
-  };
+  }
 
   const handlePress = () => {
-    if (disabled) return;
-    measureTrigger();
-    setIsOpen(true);
-  };
+    if (disabled) return
+    measureTrigger()
+    setIsOpen(true)
+  }
 
   return (
     <TouchableOpacity
@@ -200,7 +200,7 @@ export function ComboboxTrigger({
         ]}
       />
     </TouchableOpacity>
-  );
+  )
 }
 
 interface ComboboxValueProps {
@@ -212,11 +212,11 @@ export function ComboboxValue({
   placeholder = 'Select...',
   style,
 }: ComboboxValueProps) {
-  const { value, values, multiple } = useCombobox();
-  const textColor = useColor('text');
-  const mutedColor = useColor('textMuted');
+  const { value, values, multiple } = useCombobox()
+  const textColor = useColor('text')
+  const mutedColor = useColor('textMuted')
 
-  const hasValue = multiple ? values.length > 0 : !!value;
+  const hasValue = multiple ? values.length > 0 : !!value
 
   const displayText = multiple
     ? values.length === 0
@@ -224,7 +224,7 @@ export function ComboboxValue({
       : values.length === 1
         ? values[0].label
         : `${values.length} selected`
-    : value?.label || placeholder;
+    : value?.label || placeholder
 
   return (
     <ThemedText
@@ -239,7 +239,7 @@ export function ComboboxValue({
     >
       {displayText}
     </ThemedText>
-  );
+  )
 }
 
 interface ComboboxContentProps {
@@ -251,24 +251,23 @@ export function ComboboxContent({
   children,
   maxHeight = 400,
 }: ComboboxContentProps) {
-  const { isOpen, setIsOpen, setSearchQuery, triggerLayout } = useCombobox();
-  const cardColor = useColor('card');
-  const borderColor = useColor('border');
+  const { isOpen, setIsOpen, setSearchQuery } = useCombobox()
+  const cardColor = useColor('card')
+  const borderColor = useColor('border')
 
   const handleClose = () => {
-    setIsOpen(false);
-    setSearchQuery('');
-  };
-
-  const screenHeight = Dimensions.get('window').height;
-  const availableHeight =
-    screenHeight - triggerLayout.y - triggerLayout.height - 100;
-  const dropdownHeight = Math.min(maxHeight, availableHeight);
-
-  if (!isOpen) {
-    return null;
+    setIsOpen(false)
+    setSearchQuery('')
   }
 
+  const { width, height } = Dimensions.get('window')
+
+  if (!isOpen) {
+    return null
+  }
+
+  // Centered dialog — opens in the middle of the screen (never clipped by the
+  // trigger's position). Tap the backdrop to close; taps inside are absorbed.
   return (
     <Modal
       visible={isOpen}
@@ -276,25 +275,24 @@ export function ComboboxContent({
       animationType='fade'
       onRequestClose={handleClose}
     >
-      <Pressable style={styles.overlay} onPress={handleClose}>
-        <ThemedView
+      <Pressable style={styles.centerOverlay} onPress={handleClose}>
+        <Pressable
+          onPress={() => {}}
           style={[
-            styles.dropdown,
+            styles.centerCard,
             {
               backgroundColor: cardColor,
               borderColor: borderColor,
-              top: triggerLayout.y + triggerLayout.height + 6,
-              left: triggerLayout.x,
-              width: triggerLayout.width,
-              maxHeight: dropdownHeight,
+              width: Math.min(width - 40, 480),
+              maxHeight: Math.min(maxHeight, height * 0.7),
             },
           ]}
         >
           {children}
-        </ThemedView>
+        </Pressable>
       </Pressable>
     </Modal>
-  );
+  )
 }
 
 interface ComboboxInputProps {
@@ -308,10 +306,10 @@ export function ComboboxInput({
   style,
   autoFocus = true,
 }: ComboboxInputProps) {
-  const { searchQuery, setSearchQuery } = useCombobox();
-  const textColor = useColor('text');
-  const mutedColor = useColor('textMuted');
-  const borderColor = useColor('border');
+  const { searchQuery, setSearchQuery } = useCombobox()
+  const textColor = useColor('text')
+  const mutedColor = useColor('textMuted')
+  const borderColor = useColor('border')
 
   return (
     <ThemedView
@@ -330,7 +328,7 @@ export function ComboboxInput({
         autoFocus={autoFocus}
       />
     </ThemedView>
-  );
+  )
 }
 
 interface ComboboxListProps {
@@ -339,57 +337,57 @@ interface ComboboxListProps {
 }
 
 export function ComboboxList({ children, style }: ComboboxListProps) {
-  const { searchQuery, setFilteredItemsCount } = useCombobox();
+  const { searchQuery, setFilteredItemsCount } = useCombobox()
 
   const filteredChildren = Children.toArray(children).filter((child) => {
-    if (!searchQuery) return true;
+    if (!searchQuery) return true
 
     if (isValidElement(child) && child.type === ComboboxItem) {
-      const props = child.props as any;
-      const label = getLabelFromChildren(props.children);
-      const searchText = props.searchValue || label || props.value || '';
-      return searchText.toLowerCase().includes(searchQuery.toLowerCase());
+      const props = child.props as any
+      const label = getLabelFromChildren(props.children)
+      const searchText = props.searchValue || label || props.value || ''
+      return searchText.toLowerCase().includes(searchQuery.toLowerCase())
     }
 
     if (isValidElement(child) && child.type === ComboboxGroup) {
-      const groupProps = child.props as any;
-      const groupChildren = Children.toArray(groupProps.children);
+      const groupProps = child.props as any
+      const groupChildren = Children.toArray(groupProps.children)
 
       return groupChildren.some((groupChild) => {
         if (isValidElement(groupChild) && groupChild.type === ComboboxItem) {
-          const itemProps = groupChild.props as any;
-          const label = getLabelFromChildren(itemProps.children);
+          const itemProps = groupChild.props as any
+          const label = getLabelFromChildren(itemProps.children)
           const searchText =
-            itemProps.searchValue || label || itemProps.value || '';
-          return searchText.toLowerCase().includes(searchQuery.toLowerCase());
+            itemProps.searchValue || label || itemProps.value || ''
+          return searchText.toLowerCase().includes(searchQuery.toLowerCase())
         }
-        return false;
-      });
+        return false
+      })
     }
 
-    return true;
-  });
+    return true
+  })
 
   const countFilteredItems = (nodes: React.ReactNode[]): number => {
     return nodes.reduce<number>((count, node) => {
       if (isValidElement(node)) {
         if (node.type === ComboboxItem) {
-          return count + 1;
+          return count + 1
         }
         if (node.type === ComboboxGroup) {
-          const groupChildren = Children.toArray((node.props as any).children);
-          return count + countFilteredItems(groupChildren);
+          const groupChildren = Children.toArray((node.props as any).children)
+          return count + countFilteredItems(groupChildren)
         }
       }
-      return count;
-    }, 0);
-  };
+      return count
+    }, 0)
+  }
 
-  const itemCount = countFilteredItems(filteredChildren);
+  const itemCount = countFilteredItems(filteredChildren)
 
   useEffect(() => {
-    setFilteredItemsCount(itemCount);
-  }, [itemCount, setFilteredItemsCount]);
+    setFilteredItemsCount(itemCount)
+  }, [itemCount, setFilteredItemsCount])
 
   return (
     <ThemedScrollView
@@ -399,7 +397,7 @@ export function ComboboxList({ children, style }: ComboboxListProps) {
     >
       {filteredChildren}
     </ThemedScrollView>
-  );
+  )
 }
 
 interface ComboboxEmptyProps {
@@ -408,10 +406,10 @@ interface ComboboxEmptyProps {
 }
 
 export function ComboboxEmpty({ children, style }: ComboboxEmptyProps) {
-  const { searchQuery, filteredItemsCount } = useCombobox();
-  const mutedColor = useColor('textMuted');
+  const { searchQuery, filteredItemsCount } = useCombobox()
+  const mutedColor = useColor('textMuted')
 
-  if (filteredItemsCount > 0) return null;
+  if (filteredItemsCount > 0) return null
 
   return (
     <ThemedView style={[styles.emptyContainer, style]}>
@@ -423,7 +421,7 @@ export function ComboboxEmpty({ children, style }: ComboboxEmptyProps) {
         children
       )}
     </ThemedView>
-  );
+  )
 }
 
 interface ComboboxGroupProps {
@@ -432,22 +430,22 @@ interface ComboboxGroupProps {
 }
 
 export function ComboboxGroup({ children, heading }: ComboboxGroupProps) {
-  const { searchQuery } = useCombobox();
-  const mutedColor = useColor('textMuted');
+  const { searchQuery } = useCombobox()
+  const mutedColor = useColor('textMuted')
 
   const filteredChildren = Children.toArray(children).filter((child) => {
-    if (!searchQuery) return true;
+    if (!searchQuery) return true
 
     if (isValidElement(child) && child.type === ComboboxItem) {
-      const props = child.props as any;
-      const label = getLabelFromChildren(props.children);
-      const searchText = props.searchValue || label || props.value || '';
-      return searchText.toLowerCase().includes(searchQuery.toLowerCase());
+      const props = child.props as any
+      const label = getLabelFromChildren(props.children)
+      const searchText = props.searchValue || label || props.value || ''
+      return searchText.toLowerCase().includes(searchQuery.toLowerCase())
     }
-    return true;
-  });
+    return true
+  })
 
-  if (searchQuery && filteredChildren.length === 0) return null;
+  if (searchQuery && filteredChildren.length === 0) return null
 
   return (
     <ThemedView>
@@ -458,7 +456,7 @@ export function ComboboxGroup({ children, heading }: ComboboxGroupProps) {
       )}
       {filteredChildren}
     </ThemedView>
-  );
+  )
 }
 
 interface ComboboxItemProps {
@@ -467,7 +465,7 @@ interface ComboboxItemProps {
   onSelect?: (value: OptionType) => void;
   disabled?: boolean;
   searchValue?: string;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
 }
 
 export function ComboboxItem({
@@ -483,34 +481,34 @@ export function ComboboxItem({
     multiple,
     values: selectedValues,
     value: selectedValue,
-  } = useCombobox();
-  const textColor = useColor('text');
-  const primaryColor = useColor('primary');
+  } = useCombobox()
+  const textColor = useColor('text')
+  const primaryColor = useColor('primary')
 
   const isSelected = multiple
     ? selectedValues.some((v) => v.value === itemValue)
-    : selectedValue?.value === itemValue;
+    : selectedValue?.value === itemValue
 
   const handleSelect = () => {
-    if (disabled) return;
+    if (disabled) return
 
-    const label = getLabelFromChildren(children);
-    const selectedOption: OptionType = { value: itemValue, label };
+    const label = getLabelFromChildren(children)
+    const selectedOption: OptionType = { value: itemValue, label }
 
-    onSelect?.(selectedOption);
-    setValue(selectedOption);
+    onSelect?.(selectedOption)
+    setValue(selectedOption)
 
     if (!multiple) {
-      setIsOpen(false);
+      setIsOpen(false)
     }
-  };
+  }
 
   return (
     <TouchableOpacity
       style={[
         styles.option,
         {
-          backgroundColor: isSelected ? `${primaryColor}15` : 'transparent',
+          backgroundColor: isSelected ? `${primaryColor}22` : 'transparent',
           opacity: disabled ? 0.5 : 1,
         },
         style,
@@ -520,27 +518,30 @@ export function ComboboxItem({
       activeOpacity={0.7}
     >
       {typeof children === 'string' ? (
-        <ThemedText
-          style={[
-            styles.optionText,
-            {
-              color: textColor,
-              fontWeight: isSelected ? '600' : '400',
-            },
-          ]}
-        >
-          {children}
-        </ThemedText>
+        <>
+          <ThemedText
+            style={[
+              styles.optionText,
+              {
+                color: isSelected ? primaryColor : textColor,
+                fontWeight: isSelected ? '700' : '400',
+              },
+            ]}
+          >
+            {children}
+          </ThemedText>
+          {isSelected && <Check size={20} color={primaryColor} strokeWidth={2.5} />}
+        </>
       ) : (
         Children.map(children, (child) => {
           if (isValidElement(child)) {
-            return cloneElement(child, { isSelected } as any);
+            return cloneElement(child, { isSelected } as any)
           }
-          return child;
+          return child
         })
       )}
     </TouchableOpacity>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -565,23 +566,22 @@ const styles = StyleSheet.create({
   chevron: {
     marginLeft: 8,
   },
-  overlay: {
+  centerOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    backgroundColor: 'rgba(0, 0, 0, 0.45)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
   },
-  dropdown: {
-    position: 'absolute',
+  centerCard: {
     borderRadius: BORDER_RADIUS,
     borderWidth: 1,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
     overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
+    shadowRadius: 12,
+    elevation: 8,
   },
   searchContainer: {
     paddingHorizontal: 16,
@@ -615,12 +615,14 @@ const styles = StyleSheet.create({
   option: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    minHeight: 44,
+    justifyContent: 'space-between',
+    gap: 12,
+    paddingHorizontal: 18,
+    paddingVertical: 16,
+    minHeight: 54,
   },
   optionText: {
-    fontSize: FONT_SIZE,
+    fontSize: FONT_SIZE + 1,
     flex: 1,
   },
-});
+})

@@ -94,11 +94,17 @@ const FormSelect = ({
                       {t("form_elements.select.no_framework_found")}
                     </ComboboxEmpty>
                   )}
-                  {options.map((option) => (
+                  {options.map((option, i) => (
                     <ComboboxItem
                       key={option.value}
                       value={option.value}
-                      style={styles.item}
+                      style={[
+                        styles.item,
+                        {
+                          borderBottomColor: colors.borderColor,
+                          borderBottomWidth: i === options.length - 1 ? 0 : StyleSheet.hairlineWidth,
+                        },
+                      ]}
                     >
                       {option.label}
                     </ComboboxItem>
@@ -135,8 +141,8 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
   trigger: {
-    height: 52,
-    borderRadius: 12,
+    height: 56,
+    borderRadius: 14,
     borderWidth: 1,
     overflow: "hidden",
     paddingHorizontal: 16,
@@ -148,12 +154,9 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     borderRadius: 12,
   },
-  item: {
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#E0E0E0",
-  },
+  // Padding/height come from the base option style (bigger rows); only the
+  // separator is set inline (theme-aware) at the call site.
+  item: {},
   errorText: {
     fontSize: 12,
     marginTop: 4,
