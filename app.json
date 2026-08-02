@@ -2,7 +2,7 @@
   "expo": {
     "name": "Hana Market",
     "slug": "hana-market",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "orientation": "portrait",
     "icon": "./assets/images/icon-iphone.png",
     "scheme": "hana-market",
