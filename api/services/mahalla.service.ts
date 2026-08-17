@@ -1,10 +1,12 @@
 import type {
   ApiResponse,
+  DistrictDto,
   JoinMahallaRequest,
   MahallaDistributorDto,
   MahallaDto,
   MahallaListParams,
   MahallaMemberDto,
+  RegionDto,
 } from '../../types'
 import axiosInstance from '../api'
 import ENDPOINT from '../endpoints'
@@ -14,6 +16,18 @@ import ENDPOINT from '../endpoints'
  * join a mahalla, which unlocks the hyperlocal features. See ARCHITECTURE.md §2.
  */
 export const mahallaService = {
+  /** All regions for the onboarding cascade. GET /api/region */
+  getRegions: () => {
+    return axiosInstance.get<ApiResponse<RegionDto[]>>(ENDPOINT.REGION.LIST)
+  },
+
+  /** Districts of a region. GET /api/district?region_id={id} */
+  getDistricts: (regionId: number) => {
+    return axiosInstance.get<ApiResponse<DistrictDto[]>>(ENDPOINT.DISTRICT.LIST, {
+      params: { region_id: regionId },
+    })
+  },
+
   /** Search/list mahallas (onboarding selection). GET /api/mahalla */
   getList: (params: MahallaListParams) => {
     return axiosInstance.get<ApiResponse<MahallaDto[]>>(ENDPOINT.MAHALLA.LIST, { params })

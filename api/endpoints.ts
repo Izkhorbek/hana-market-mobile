@@ -112,6 +112,14 @@ const ENDPOINT = {
     LIST: 'emergency-numbers',
   },
 
+  // Territory hierarchy (region → district) — powers the onboarding cascade.
+  REGION: {
+    LIST: 'region',
+  },
+  DISTRICT: {
+    LIST: 'district',
+  },
+
   // Mahalla (neighborhood) membership — powers hyperlocal features.
   MAHALLA: {
     LIST: 'mahalla',

@@ -1,6 +1,5 @@
 import { useEmergencyNumbersQuery } from '@/api/hooks'
 import { ThemedView } from '@/components/themed-view'
-import { EMERGENCY_SECTIONS } from '@/constants/emergencyNumbers'
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
 import type { EmergencyNumberDto } from '@/types'
@@ -27,7 +26,7 @@ export default function MahallaEmergencyScreen() {
 
   // Admin-managed list from the backend; fall back to the local seed until it loads.
   const q = useEmergencyNumbersQuery()
-  const source = q.data?.data?.data?.length ? q.data.data.data : EMERGENCY_SECTIONS
+  const source = q.data?.data?.data?.length ? q.data.data.data : []
   const sections = source.map((s) => ({
     emoji: s.emoji,
     title: s.title,

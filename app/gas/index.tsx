@@ -54,9 +54,13 @@ export default function GasTrackerScreen() {
   const reset = useGasStore((s) => s.reset)
   const isManager = role === 'mahalla_admin' || role === 'mahalla_rais' || role === 'distributor'
 
+  console.log('GasTrackerScreen render', detail )
+
   // Seed mahallaId + role from the user's membership (client state isn't persisted).
   // Always refetch on entry so a re-visit never re-seeds from a stale 5m cache.
   const myMahallaQ = useMyMahallaQuery({ querySettings: { refetchOnMount: 'always' } })
+  // Only a VERIFIED member (approved by the rais) may confirm receipt (§10).
+  const isVerifiedMember = myMahallaQ.data?.data?.data?.is_verified === true
   useEffect(() => {
     if (!myMahallaQ.isSuccess) return
     const member = myMahallaQ.data?.data?.data ?? null
@@ -317,14 +321,20 @@ export default function GasTrackerScreen() {
                 {t('gas.answer_sent')}
               </Text>
             ) : session.status === 'active' ? (
-              <TouchableOpacity
-                style={[styles.btn, styles.btnFull, { backgroundColor: colors.primaryColor }]}
-                onPress={onReceived}
-                disabled={confirming}
-                activeOpacity={0.85}
-              >
-                {confirming ? <ActivityIndicator color="#fff" /> : <Text style={styles.btnText}>{t('gas.received')}</Text>}
-              </TouchableOpacity>
+              isVerifiedMember ? (
+                <TouchableOpacity
+                  style={[styles.btn, styles.btnFull, { backgroundColor: colors.primaryColor }]}
+                  onPress={onReceived}
+                  disabled={confirming}
+                  activeOpacity={0.85}
+                >
+                  {confirming ? <ActivityIndicator color="#fff" /> : <Text style={styles.btnText}>{t('gas.received')}</Text>}
+                </TouchableOpacity>
+              ) : (
+                <Text style={[styles.mineHint, { color: colors.subText }]}>
+                  {t('gas.pending_verification')}
+                </Text>
+              )
             ) : session.status === 'planned' ? (
                <Text style={[styles.mineHint, { color: colors.subText }]}>
                  {t('gas.awaiting_start')}

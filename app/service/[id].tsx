@@ -3,6 +3,7 @@ import { ThemedView } from '@/components/themed-view'
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
 import type { ApiResponse, SingleServiceDto } from '@/types'
+import { resolveImageUrl } from '@/utils/imageUrl'
 import { AxiosResponse } from 'axios'
 import { Image } from 'expo-image'
 import { router, useLocalSearchParams } from 'expo-router'
@@ -66,7 +67,9 @@ export default function ServiceDetailScreen() {
     )
   }
 
-  const image = service.images?.[0]
+  // Service image URLs are server-relative (e.g. "/service_images/x.jpg"); resolve
+  // to an absolute URL the same way products/chat do, or expo-image won't load it.
+  const image = resolveImageUrl(service.images?.[0])
 
   return (
     <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>

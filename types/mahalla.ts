@@ -6,11 +6,30 @@
 // Hierarchy: mahalla_rais (manager, controls admin roles) > mahalla_admin > distributor > resident.
 export type MahallaRole = 'resident' | 'mahalla_admin' | 'distributor' | 'mahalla_rais'
 
+// ── Territory hierarchy: region → district → mahalla (onboarding cascade) ─────
+
+/** GET /api/region → all regions (name ASC). */
+export interface RegionDto {
+  id: number
+  name: string
+}
+
+/** GET /api/district?region_id={id} → districts of one region (name ASC). */
+export interface DistrictDto {
+  id: number
+  region_id: number
+  name: string
+}
+
 export interface MahallaDto {
   id: number
   name: string
+  /** Legacy display names (still returned by the backend). */
   district: string
   region: string
+  /** Normalized FK ids. Nullable — a not-yet-normalized mahalla can be null. */
+  district_id: number | null
+  region_id: number | null
 }
 
 /** The current user's membership in a mahalla (GET /api/mahalla/my). */
@@ -28,6 +47,9 @@ export interface MahallaMemberDto {
 
 /** Query params for GET /api/mahalla (search/select during onboarding). */
 export interface MahallaListParams {
+  /** Preferred filter — the normalized district FK. */
+  district_id?: number
+  /** Legacy string filters (kept, still work). */
   region?: string
   district?: string
   search?: string

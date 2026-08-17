@@ -8,13 +8,46 @@ import {
 import { AxiosResponse } from 'axios'
 import type {
   ApiResponse,
+  DistrictDto,
   JoinMahallaRequest,
   MahallaDistributorDto,
   MahallaDto,
   MahallaListParams,
   MahallaMemberDto,
+  RegionDto,
 } from '../../types'
 import { mahallaService } from '../services'
+
+/** All regions (first step of the onboarding cascade). */
+export const useRegionsQuery = ({
+  querySettings = {},
+}: {
+  querySettings?: Omit<UseQueryOptions<AxiosResponse<ApiResponse<RegionDto[]>>>, 'queryKey' | 'queryFn'>;
+} = {}) => {
+  return useQuery({
+    queryKey: ['REGIONS'],
+    queryFn: () => mahallaService.getRegions(),
+    staleTime: 1000 * 60 * 60, // territory rarely changes
+    ...querySettings,
+  })
+}
+
+/** Districts of a region (second step). Disabled until a region is picked. */
+export const useDistrictsQuery = ({
+  regionId,
+  querySettings = {},
+}: {
+  regionId: number;
+  querySettings?: Omit<UseQueryOptions<AxiosResponse<ApiResponse<DistrictDto[]>>>, 'queryKey' | 'queryFn'>;
+}) => {
+  return useQuery({
+    queryKey: ['DISTRICTS', regionId],
+    queryFn: () => mahallaService.getDistricts(regionId),
+    enabled: !!regionId,
+    staleTime: 1000 * 60 * 60,
+    ...querySettings,
+  })
+}
 
 /** Search/list mahallas for onboarding selection. */
 export const useMahallaListQuery = ({
