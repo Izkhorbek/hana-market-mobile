@@ -10,6 +10,7 @@ export default function SettingsLayout() {
 			<Stack.Screen name='favorites' options={{ headerShown: false }} />
 			<Stack.Screen name='my-complaint' options={{ headerShown: false }} />
 			<Stack.Screen name='blocked-users' options={{ headerShown: false }} />
+			<Stack.Screen name='my-mahalla' options={{ headerShown: false }} />
 			<Stack.Screen name='my-profile' options={{ headerShown: false }} />
 			<Stack.Screen name='verification' options={{ headerShown: false }} />
 			<Stack.Screen name='settings' options={{ headerShown: false }} />

@@ -27,7 +27,8 @@ import {
 	Moon,
 	Package,
 	ShieldOff,
-	Sparkles
+	Sparkles,
+	Users
 } from 'lucide-react-native'
 import React, { useCallback, useState } from 'react'
 import { Alert, StyleSheet, Text, View } from 'react-native'
@@ -99,6 +100,8 @@ const ProfilePage = () => {
 			router.push('/(settings)/my-complaint')
 		} else if (route === 'blocked-users') {
 			router.push('/(settings)/blocked-users')
+		} else if (route === 'my-mahalla') {
+			router.push('/(settings)/my-mahalla')
 		} else if (route === 'verification') {
 			router.push('/(settings)/verification')
 		} else if (route === 'settings') {
@@ -190,6 +193,12 @@ const ProfilePage = () => {
 
 				{/* Neighborhood Section */}
 				<ProfileSection title={t('profile.neighborhood')}>
+					<ProfileMenuItem
+						icon={Users}
+						title={t('mahalla.my_mahalla_title')}
+						subtitle={t('mahalla.my_mahalla_subtitle')}
+						onPress={() => handleNavigation('my-mahalla')}
+					/>
 					<ProfileMenuItem
 						icon={MapPin}
 						title={t('profile.manage_neighborhood')}
