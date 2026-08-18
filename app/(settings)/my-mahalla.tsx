@@ -4,10 +4,11 @@ import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
 import type { MahallaRole } from '@/types'
 import { type Href, router } from 'expo-router'
-import { ArrowLeft, BadgeCheck, Clock, MapPin, Users } from 'lucide-react-native'
+import { ArrowLeft, BadgeCheck, Clock, Home, MapPin, Users } from 'lucide-react-native'
 import React from 'react'
 import {
   ActivityIndicator,
+  Alert,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -30,7 +31,21 @@ export default function MyMahallaScreen() {
   const q = useMyMahallaQuery({ querySettings: { refetchOnMount: 'always' } })
   const member = q.data?.data?.data ?? null
 
-  const goJoin = () => router.push('/mahalla/join' as Href)
+  const openJoin = () => router.push('/mahalla/join' as Href)
+
+  // Joining a DIFFERENT mahalla now MOVES the user (§9): role resets to resident
+  // and re-verification is required. Warn elevated members before they switch.
+  const goJoin = () => {
+    const elevated = !!member && member.role !== 'resident'
+    if (elevated) {
+      Alert.alert(t('mahalla.switch_warning_title'), t('mahalla.switch_warning_message'), [
+        { text: t('common.cancel'), style: 'cancel' },
+        { text: t('mahalla.change_mahalla'), style: 'destructive', onPress: openJoin },
+      ])
+      return
+    }
+    openJoin()
+  }
 
   const Header = (
     <View style={[styles.header, { borderBottomColor: colors.borderColor }]}>
@@ -127,6 +142,39 @@ export default function MyMahallaScreen() {
           </View>
         </View>
 
+        {/* Household — shown once the backend embeds it in /my. */}
+        {member.household && (
+          <View style={[styles.hhCard, { backgroundColor: colors.background, borderColor: colors.borderColor }]}>
+            <View style={styles.hhHead}>
+              <Home size={18} color={colors.primaryColor} />
+              <Text style={[styles.hhTitle, { color: colors.text }]}>
+                {t('mahalla.household_title')}
+              </Text>
+              {member.household.is_verified && (
+                <BadgeCheck size={16} color={colors.primaryColor} style={styles.hhCheck} />
+              )}
+            </View>
+            <View style={[styles.infoRow, { borderTopColor: colors.borderColor }]}>
+              <Text style={[styles.infoLabel, { color: colors.subText }]}>
+                {t('mahalla.house_number')}
+              </Text>
+              <Text style={[styles.infoValue, { color: colors.text }]}>
+                {member.household.house_number}
+              </Text>
+            </View>
+            {!!member.household.address_label && (
+              <View style={[styles.infoRow, { borderTopColor: colors.borderColor }]}>
+                <Text style={[styles.infoLabel, { color: colors.subText }]}>
+                  {t('mahalla.address')}
+                </Text>
+                <Text style={[styles.infoValue, styles.hhAddr, { color: colors.text }]} numberOfLines={2}>
+                  {member.household.address_label}
+                </Text>
+              </View>
+            )}
+          </View>
+        )}
+
         <TouchableOpacity
           style={[styles.outlineBtn, { borderColor: colors.borderColor }]}
           onPress={goJoin}
@@ -183,6 +231,17 @@ const styles = StyleSheet.create({
   infoLabel: { fontSize: 13 },
   infoValue: { fontSize: 14, fontWeight: '600' },
   statusWrap: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  hhCard: {
+    borderWidth: 1,
+    borderRadius: 16,
+    paddingHorizontal: 18,
+    paddingTop: 16,
+    paddingBottom: 4,
+  },
+  hhHead: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  hhTitle: { fontSize: 15, fontWeight: '700' },
+  hhCheck: { marginLeft: 'auto' },
+  hhAddr: { flex: 1, textAlign: 'right', marginLeft: 16 },
   outlineBtn: {
     height: 50,
     borderRadius: 14,

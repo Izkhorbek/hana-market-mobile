@@ -21,7 +21,7 @@ const DEV_API_URL_FALLBACK='http://192.168.0.111:5000/api'
 const appEnv = String(Constants.expoConfig?.extra?.appEnv ?? 'development')
 const isProductionApp = appEnv === 'production'
 const configuredApiUrl = process.env.EXPO_PUBLIC_API_URL?.trim()
-const API_URL = DEV_API_URL_FALLBACK //configuredApiUrl  || (isProductionApp ? '' : DEV_API_URL_FALLBACK)
+const API_URL = configuredApiUrl  || (isProductionApp ? '' : DEV_API_URL_FALLBACK)
 
 if (!API_URL) {
   throw new Error('Missing EXPO_PUBLIC_API_URL for production build')

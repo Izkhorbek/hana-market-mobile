@@ -32,6 +32,14 @@ export interface MahallaDto {
   region_id: number | null
 }
 
+/** The claimed household (house + address) attached to a membership. */
+export interface MahallaHouseholdDto {
+  id: number
+  house_number: string
+  address_label: string | null
+  is_verified: boolean
+}
+
 /** The current user's membership in a mahalla (GET /api/mahalla/my). */
 export interface MahallaMemberDto {
   id: number
@@ -41,6 +49,11 @@ export interface MahallaMemberDto {
   /** false = pending (awaiting the rais's verification). */
   is_verified: boolean
   household_id: number | null
+  /**
+   * The claimed household details (house number + address). Optional/nullable —
+   * present once the backend embeds it in /my; rendered defensively otherwise.
+   */
+  household?: MahallaHouseholdDto | null
   /** Convenience: the mahalla itself, so /my needs no second call. */
   mahalla: MahallaDto
 }

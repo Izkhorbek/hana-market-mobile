@@ -22,9 +22,10 @@
 | 6 | **Gas — fairness** | Automatic (queue auto-seeded on session create); no cycle to open/close | 🟢 Drop any "davr" concept from UI |
 | 7 | **Gas — warning event** | `GasCycleWarning` now = out-of-turn delivery (accountability), not force-close | 🟠 Re-label the toast; `cycle_number` is always 0 |
 | 8 | **Gas — create role** | Session create now allowed for **distributor** too (manager = admin/rais/distributor) | 🟢 Show "new session" to distributors |
-| 9 | **Mahalla membership** | Enforced **one role per (user, mahalla)**; `/my` returns a single membership | 🟢 No client change; trust `/my` role |
+| 9 | **Mahalla membership** | **One membership total per user.** Joining a *different* mahalla **moves** the user (no second membership) → role reset to `resident`, re-verification required | 🟠 Treat join-as-switch; expect role/verified to reset when switching |
 | 10 | **Gas confirm** | Requires a **verified** member; blocked on finished sessions | 🟠 Hide/disable confirm for pending members + finished sessions |
 | 11 | **Pagination** | `page_size` clamped server-side (max 200) | 🟢 Don't request unbounded pages |
+| 12 | **`/my` household** | `MahallaMemberDto` gains a nested `household` object (or `null`) | 🟠 Read `household` from `/my` instead of a second call |
 
 ---
 
@@ -129,11 +130,37 @@ GasCycleWarning { mahalla_id, cycle_number, forced_by_user_id, unserved_count, r
 `POST /api/gas/sessions` now accepts **distributor** in addition to admin/rais. Surface the
 "start a session" entry point to distributor accounts too.
 
-## 9. Mahalla — one role per (user, mahalla) 🟢
+## 9. Mahalla — one membership per user; join = switch 🟠
 
-The backend enforces `UNIQUE (mahalla_id, user_id)`. `GET /api/mahalla/my` returns exactly one
-membership with one role. If you previously worked around a user showing two roles, that's fixed —
-trust `/my`.
+A user now has **exactly one** membership. `POST /api/mahalla/join`:
+- **Same mahalla** → just re-links the household (role/verification kept).
+- **A different mahalla** → **moves** the user there (no second membership is created). The moved
+  membership is reset to **`role: "resident"`** and **`is_verified: false`** — the new mahalla's
+  rais must re-verify. The household they owned in the old mahalla is released.
+
+Frontend implications:
+- Treat "join" as a **switch**, not an additive membership. If the user was an admin/rais/distributor
+  in their old mahalla, joining a new one **demotes them to a pending resident** — reflect this in
+  any confirm dialog ("Switching mahalla will reset your role").
+- `GET /api/mahalla/my` always returns a single membership — trust its `role`/`is_verified`.
+
+## 12. `/my` — nested `household` object 🟠
+
+`GET /api/mahalla/my` (`MahallaMemberDto`) now includes the caller's claimed household inline, so
+no second call is needed:
+```ts
+MahallaHouseholdDto { id: number; house_number: string; address_label: string | null; is_verified: boolean }
+
+MahallaMemberDto {
+  id; mahalla_id; user_id; role; is_verified;
+  household_id: number | null;
+  mahalla: MahallaDto;
+  household: MahallaHouseholdDto | null;   // NEW — null when no household is claimed
+}
+```
+- `household` is `null` when `household_id` is null (no claim yet) — code defensively.
+- Only `/my` populates `household`. Other member responses (join, role updates, rais panel) still
+  return `household: null` — read household details from `/my`.
 
 ## 10. Gas confirm — verified + open-session only 🟠
 
@@ -151,7 +178,7 @@ bounded page, not an error — just don't rely on fetching everything in one cal
 
 ---
 
-## 12. Frontend checklist
+## 13. Frontend checklist
 
 - [ ] Region→district cascade using `GET /api/region` + `GET /api/district?region_id=`
 - [ ] Mahalla search filters by `district_id`; read `MahallaDto.district_id`/`region_id` (nullable)
@@ -161,4 +188,6 @@ bounded page, not an error — just don't rely on fetching everything in one cal
 - [ ] Show "new session" to **distributor** accounts
 - [ ] Gate the confirm button on **verified** membership + non-finished session
 - [ ] Update distributor list copy → "district" scope
+- [ ] Treat mahalla **join as a switch** (role/verified reset); warn before switching an elevated role
+- [ ] Read the nested **`household`** from `/my` (nullable); drop any separate household fetch
 - [ ] Emergency numbers: `GET /api/emergency-numbers` (public) — unchanged, still valid

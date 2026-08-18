@@ -506,6 +506,10 @@
     "role_mahalla_admin": "Admin",
     "role_distributor": "Tarqatuvchi",
     "role_mahalla_rais": "Rais",
+    "household_title": "Xonadon",
+    "address": "Manzil",
+    "switch_warning_title": "Mahallani o'zgartirasizmi?",
+    "switch_warning_message": "Siz bu yerda maxsus rolga egasiz. Boshqa mahallaga o'tsangiz, rolingiz oddiy yashovchiga tushadi va qayta tasdiqlash kerak bo'ladi.",
     "no_results": "Mahalla topilmadi",
     "title": "Mahalla",
     "subtitle": "Mahallangiz xizmatlari va ma'lumotlari",
@@ -551,7 +555,7 @@
     "favorites": "Sevimlilar",
     "my_complaints": "Mening shikoyatlarim",
     "neighborhood": "MAHALLA",
-    "manage_neighborhood": "Mahallani boshqarish",
+    "manage_neighborhood": "Joylashuvni boshqarish",
     "manage_neighborhood_subtitle": "Joylashuv sozlamalarini o'rnating",
     "trust_verification": "ISHONCH VA TASDIQLASH",
     "verification": "Tasdiqlash",
@@ -636,7 +640,7 @@
     "file_attachment": "📎 Fayl"
   },
   "neighborhood": {
-    "title": "Mahallani boshqarish",
+    "title": "Joylashuvni boshqarish",
     "current_neighborhood": "Joriy mahalla",
     "search_radius": "Qidiruv radiusi",
     "km": "km",
