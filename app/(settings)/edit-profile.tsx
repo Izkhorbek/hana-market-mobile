@@ -11,7 +11,6 @@ import ThemedScrollView from '@/components/themed-scrollview'
 import { AppLimits } from '@/constants/appLimits'
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
-import { useKeyboardHeight } from '@/hooks/useKeyboardHeight'
 import { useAuthStore } from '@/modules/Auth/auth-store'
 import { logger } from '@/utils/logger'
 import { useQueryClient } from '@tanstack/react-query'
@@ -23,13 +22,11 @@ import { useForm } from 'react-hook-form'
 import {
 	ActivityIndicator,
 	Alert,
-	Platform,
 	StyleSheet,
 	Text,
 	TouchableOpacity,
 	View
 } from 'react-native'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 interface EditProfileFormData {
 	username: string
@@ -44,8 +41,6 @@ const EditProfilePage = () => {
 	const colors = useThemeColors()
 	const queryClient = useQueryClient()
 	const logout = useAuthStore((s) => s.logout)
-	const { isKeyboardVisible } = useKeyboardHeight()
-	const insets = useSafeAreaInsets()
 	
 	// Displayed profile image URL (from server or just-uploaded URL)
 	const [displayImageUrl, setDisplayImageUrl] = useState<string | null>(null)

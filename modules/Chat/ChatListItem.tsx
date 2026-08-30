@@ -1,6 +1,6 @@
 import RemoteImage from '@/components/shared/RemoteImage'
 import { useColor } from '@/hooks/useColor'
-import useResponsive from '@/hooks/useResponsive'
+import { useResponsive } from '@/hooks/useResponsive'
 import React, { memo, useMemo } from 'react'
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 
@@ -25,7 +25,7 @@ const ChatListItemComponent = ({ chat, onPress }: ChatListItemProps) => {
   const textColor = useColor('text')
   const mutedTextColor = useColor('textMuted')
   const backgroundColor = useColor('background')
-  const { ms, fs, isSmallDevice, isLargeDevice } = useResponsive()
+  const { ms, fs } = useResponsive()
 
   // Responsive sizes
   const responsiveStyles = useMemo(() => ({

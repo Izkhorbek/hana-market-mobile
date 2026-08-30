@@ -4,7 +4,6 @@ import ThemedScrollView from '@/components/themed-scrollview'
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
 import { useColor } from '@/hooks/useColor'
-import { useKeyboardHeight } from '@/hooks/useKeyboardHeight'
 import type { FeedbackType } from '@/types'
 import { router } from 'expo-router'
 import { ArrowLeft, MessageSquare, Send, Star } from 'lucide-react-native'
@@ -13,14 +12,12 @@ import { Controller, useForm } from 'react-hook-form'
 import {
 	ActivityIndicator,
 	Alert,
-	Platform,
 	StyleSheet,
 	Text,
 	TextInput,
 	TouchableOpacity,
 	View,
 } from 'react-native'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 interface FeedbackFormData {
 	feedback_type: FeedbackType
@@ -76,8 +73,6 @@ const FeedbackPage: React.FC = () => {
 	const { t } = useTranslations()
 	const colors = useThemeColors()
 	const cardColor = useColor('profileCard')
-	const insets = useSafeAreaInsets()
-	const { isKeyboardVisible } = useKeyboardHeight()
 
 	const { control, handleSubmit, watch, reset } = useForm<FeedbackFormData>({
 		defaultValues: { feedback_type: undefined as any, rating: 0, message: '' },

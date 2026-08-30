@@ -5,7 +5,6 @@ import { ScrollView } from '@/components/ui/scroll-view'
 import { Text } from '@/components/ui/text'
 import { View } from '@/components/ui/view'
 import { useThemeColors } from '@/hooks/use-theme-colors'
-import { useColorScheme } from '@/hooks/use-color-scheme'
 import { useTranslations } from '@/hooks/use-translation'
 import { useColor } from '@/hooks/useColor'
 import { BORDER_RADIUS, CORNERS, FONT_SIZE } from '@/theme/globals'
@@ -123,7 +122,6 @@ export function DatePicker(props: DatePickerProps) {
 
   // Theme colors
   const colors = useThemeColors()
-  const colorScheme = useColorScheme()
     
   const backgroundColor = useColor('background')
   const primaryColor = useColor('primary')

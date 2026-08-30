@@ -413,7 +413,7 @@ export const GroupedInputItem = forwardRef<TextInput, GroupedInputItemProps>(
     },
     ref
   ) => {
-    const [isFocused, setIsFocused] = useState(false)
+    const [, setIsFocused] = useState(false)
 
     const text = useColor('text')
     const muted = useColor('textMuted')

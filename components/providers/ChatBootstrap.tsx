@@ -2,7 +2,7 @@ import { useMyChatQuery, useUnreadCountQuery } from '@/api/hooks/useChat'
 import { useSignalRConnection } from '@/api/hooks/useSignalR'
 import { useAuthStore } from '@/modules/Auth/auth-store'
 import { useChatStore } from '@/modules/Chat/chat-store'
-import React, { useEffect } from 'react'
+import { useEffect } from 'react'
 
 /**
  * Mounts inside QueryClientProvider, lives for the lifetime of the app.

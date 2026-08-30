@@ -23,7 +23,6 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import FormRow from '../FormElements/FormRow'
 import ImageUploader, { DraftImageItem } from '../FormElements/ImageUploader'
 import RadioButtonGroup, {
@@ -33,7 +32,6 @@ import RadioButtonGroup, {
 const CreateThingForm = () => {
   const { t, locale } = useTranslations()
   const colors = useThemeColors()
-  const insets = useSafeAreaInsets()
 
   const router = useRouter()
   const [isResolvingLocation, setIsResolvingLocation] = useState(false)

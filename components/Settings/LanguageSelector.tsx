@@ -6,7 +6,6 @@ import { useTranslations } from '@/hooks/use-translation'
 import { Check } from 'lucide-react-native'
 import React from 'react'
 import { StyleSheet, TouchableOpacity } from 'react-native'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 interface LanguageSelectorProps {
   isVisible: boolean;
@@ -26,8 +25,7 @@ const languages: LanguageOption[] = [
 
 export function LanguageSelector({ isVisible, onClose }: LanguageSelectorProps) {
   const colors = useThemeColors()
-  const { locale, changeLng, t } = useTranslations()
-  const insets = useSafeAreaInsets()
+  const { locale, changeLng } = useTranslations()
   const handleLanguageSelect = (languageCode: string) => {
     changeLng(languageCode)
     onClose()

@@ -19,7 +19,6 @@ import {
 	TouchableOpacity,
 	View
 } from 'react-native'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 type TabType = 'active' | 'reserved' | 'sold' | 'hidden'
 

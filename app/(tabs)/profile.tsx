@@ -11,7 +11,6 @@ import { useAuthStore } from '@/modules/Auth/auth-store'
 import ProfileHeader from '@/modules/Profile/ProfileHeader'
 import ProfileMenuItem from '@/modules/Profile/ProfileMenuItem'
 import ProfileSection from '@/modules/Profile/ProfileSection'
-import Ionicons from '@expo/vector-icons/Ionicons'
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs'
 import { router, useFocusEffect } from 'expo-router'
 import {
@@ -39,11 +38,6 @@ const ProfilePage = () => {
 	const colors = useThemeColors()
 	const backgroundColor = useColor('background')
 	const mutedTextColor = useColor('textMuted')
-	const infoCardBg = useColor('infoCardBg')
-	const infoCardBorder = useColor('infoCardBorder')
-	const infoCardText = useColor('infoCardText')
-	const cardColor = useColor('profileCard')
-	const textColor = useColor('text')
 	const insets = useSafeAreaInsets()
 	const tabBarHeight = useBottomTabBarHeight()
 	const { isDark, setMode } = useModeToggle()
@@ -52,14 +46,6 @@ const ProfilePage = () => {
 	const fetchUser = useAuthStore((s) => s.fetchUser)
 
 	const { isAuthenticated, user } = useAuthStore()
-	const timeAbbreviations = [
-		{ short: 's', label: t('profile.abbreviation_second'), example: '1s' },
-		{ short: 'm', label: t('profile.abbreviation_minute'), example: '1m' },
-		{ short: 'h', label: t('profile.abbreviation_hour'), example: '1h' },
-		{ short: 'd', label: t('profile.abbreviation_day'), example: '1d' },
-		{ short: 'mo', label: t('profile.abbreviation_month'), example: '1mo' },
-		{ short: 'yr', label: t('profile.abbreviation_year'), example: '1yr' },
-	]
 
 	useFocusEffect(
 		useCallback(() => {

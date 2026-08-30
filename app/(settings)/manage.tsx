@@ -58,7 +58,7 @@ const ManageNeighborhoodPage = () => {
 	const gpsLocationRef = useRef<LocationData | null>(null)
 
 	const [radius, setRadius] = useState(storeUser?.search_radius_km ?? AppLimits.Location.DEFAULT_RADIUS_KM)
-	const [isLoading, setIsLoading] = useState(true)
+	const [, setIsLoading] = useState(true)
 	const [isSaving, setIsSaving] = useState(false)
 
 	const mapStyle = colorScheme === 'dark' ? googleMapStyle.darkMapStyle : googleMapStyle.lightMapStyle
@@ -109,7 +109,7 @@ const ManageNeighborhoodPage = () => {
 			}
 			setStoredLocation(data)
 			return data
-		} catch (error) {
+		} catch {
 			const data: LocationData = { latitude, longitude, neighborhood: '', city: '', country: '' }
 			setStoredLocation(data)
 			return data
@@ -199,7 +199,7 @@ const ManageNeighborhoodPage = () => {
 				.join(', ')
 
 			// Save GPS location as new user location
-			const response = await useAuthStore.getState().updateLocation(
+			await useAuthStore.getState().updateLocation(
 				gpsLocation.latitude,
 				gpsLocation.longitude,
 				radius,

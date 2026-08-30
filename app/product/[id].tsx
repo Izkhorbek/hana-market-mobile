@@ -31,7 +31,7 @@ import { useRequireAuth } from '@/hooks/useRequireAuth'
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
 import { useAuthStore } from '@/modules/Auth/auth-store'
-import logger from '@/utils/logger'
+import { logger } from '@/utils/logger'
 import { router, useLocalSearchParams } from 'expo-router'
 import {
   ArrowLeft,

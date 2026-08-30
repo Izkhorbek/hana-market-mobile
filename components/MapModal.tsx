@@ -185,7 +185,7 @@ const MapModal: React.FC<MapModalProps> = ({
         })
 
         onClose()
-      } catch (error) {
+      } catch {
         Alert.alert(t('common.error'), 'Failed to get address details')
       } finally {
         setIsConfirming(false)

@@ -25,7 +25,7 @@ const buildLucideMap = () => {
         if (alias) map[alias] = file
       })
     }
-  } catch (e) {
+  } catch {
     // If lucide isn't installed yet (fresh clone), fall back to no-op map.
     // The plugin will then leave imports untouched.
   }

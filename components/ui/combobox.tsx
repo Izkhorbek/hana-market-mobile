@@ -406,7 +406,7 @@ interface ComboboxEmptyProps {
 }
 
 export function ComboboxEmpty({ children, style }: ComboboxEmptyProps) {
-  const { searchQuery, filteredItemsCount } = useCombobox()
+  const { filteredItemsCount } = useCombobox()
   const mutedColor = useColor('textMuted')
 
   if (filteredItemsCount > 0) return null
