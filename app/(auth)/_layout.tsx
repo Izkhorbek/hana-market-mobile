@@ -1,5 +1,5 @@
-import { Stack } from "expo-router";
-import React from "react";
+import { Stack } from 'expo-router'
+import React from 'react'
 
 const AuthLayout = () => {
   return (
@@ -8,7 +8,7 @@ const AuthLayout = () => {
       <Stack.Screen name="auth" />
       <Stack.Screen name="location-permission" />
     </Stack>
-  );
-};
+  )
+}
 
-export default AuthLayout;
+export default AuthLayout

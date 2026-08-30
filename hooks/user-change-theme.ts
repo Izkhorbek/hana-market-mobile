@@ -1,5 +1,5 @@
-import { useCallback } from 'react';
-import { Appearance, ColorSchemeName } from 'react-native';
+import { useCallback } from 'react'
+import { Appearance, ColorSchemeName } from 'react-native'
 
 export type ThemeMode = 'light' | 'dark' | 'system';
 
@@ -28,32 +28,32 @@ export function useChangeTheme() {
   const setTheme = useCallback((theme: ThemeMode) => {
     if (theme === 'system') {
       // Reset to system default
-      Appearance.setColorScheme(null);
+      Appearance.setColorScheme(null)
     } else {
       // Set specific color scheme
-      Appearance.setColorScheme(theme as ColorSchemeName);
+      Appearance.setColorScheme(theme as ColorSchemeName)
     }
-  }, []);
+  }, [])
 
   /**
    * Toggles between light and dark theme
    */
   const toggleTheme = useCallback(() => {
-    const currentScheme = Appearance.getColorScheme();
-    const newScheme: ColorSchemeName = currentScheme === 'dark' ? 'light' : 'dark';
-    Appearance.setColorScheme(newScheme);
-  }, []);
+    const currentScheme = Appearance.getColorScheme()
+    const newScheme: ColorSchemeName = currentScheme === 'dark' ? 'light' : 'dark'
+    Appearance.setColorScheme(newScheme)
+  }, [])
 
   /**
    * Gets the current color scheme
    */
   const getCurrentTheme = useCallback((): ColorSchemeName => {
-    return Appearance.getColorScheme();
-  }, []);
+    return Appearance.getColorScheme()
+  }, [])
 
   return {
     setTheme,
     toggleTheme,
     getCurrentTheme,
-  };
+  }
 }

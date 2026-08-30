@@ -1,6 +1,6 @@
-import { useColor } from '@/hooks/useColor';
-import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { useColor } from '@/hooks/useColor'
+import React from 'react'
+import { StyleSheet, Text, View } from 'react-native'
 
 interface ProfileSectionProps {
   title: string;
@@ -8,7 +8,7 @@ interface ProfileSectionProps {
 }
 
 const ProfileSection = ({ title, children }: ProfileSectionProps) => {
-  const mutedTextColor = useColor('textMuted');
+  const mutedTextColor = useColor('textMuted')
 
   return (
     <View style={styles.container}>
@@ -17,10 +17,10 @@ const ProfileSection = ({ title, children }: ProfileSectionProps) => {
       </Text>
       {children}
     </View>
-  );
-};
+  )
+}
 
-export default ProfileSection;
+export default ProfileSection
 
 const styles = StyleSheet.create({
   container: {
@@ -34,4 +34,4 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     paddingHorizontal: 4,
   },
-});
+})

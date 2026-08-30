@@ -1,11 +1,11 @@
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { useChangeTheme } from '@/hooks/user-change-theme';
-import { StyleSheet, TouchableOpacity } from 'react-native';
+import { ThemedText } from '@/components/themed-text'
+import { ThemedView } from '@/components/themed-view'
+import { useChangeTheme } from '@/hooks/user-change-theme'
+import { StyleSheet, TouchableOpacity } from 'react-native'
 
 
 export default function ThemeToggleExample() {
-  const { setTheme, toggleTheme } = useChangeTheme();
+  const { setTheme, toggleTheme } = useChangeTheme()
 
   return (
     <ThemedView style={styles.container}>
@@ -45,7 +45,7 @@ export default function ThemeToggleExample() {
         <ThemedText type="defaultSemiBold">System Theme</ThemedText>
       </TouchableOpacity>
     </ThemedView>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -65,4 +65,4 @@ const styles = StyleSheet.create({
     backgroundColor: '#0a7ea4',
     alignItems: 'center',
   },
-});
+})

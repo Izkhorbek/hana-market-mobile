@@ -1,16 +1,16 @@
 
-import { languageResources } from '@/constants/localization';
-import { useTranslations } from '@/hooks/use-translation';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { languageResources } from '@/constants/localization'
+import { useTranslations } from '@/hooks/use-translation'
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 
 const languages: Record<string, string> = {
   en: '🇺🇸 English',
   ru: '🇷🇺 Русский',
   uz: '🇺🇿 O\'zbekcha',
-};
+}
 
 export default function LanguageSwitcher() {
-  const { locale, changeLng } = useTranslations();
+  const { locale, changeLng } = useTranslations()
 
   return (
     <View style={styles.container}> 
@@ -39,7 +39,7 @@ export default function LanguageSwitcher() {
         ))}
       </View>
     </View>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -82,4 +82,4 @@ const styles = StyleSheet.create({
     color: '#2196F3',
     fontWeight: 'bold',
   },
-});
+})

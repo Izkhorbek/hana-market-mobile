@@ -8,8 +8,8 @@ import { UseFormReturn } from 'react-hook-form'
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import FormRow from '../FormElements/FormRow'
 import RadioButtonGroup, { RadioOption } from '../FormElements/RadioButtonGroup'
-import { EWorkCondition, EWorkSalaryType, EWorkType } from '@/constants/enums'
-import { EWorkerType } from '../../constants/enums'
+import { EWorkCondition, EWorkSalaryType, EWorkType , EWorkerType } from '@/constants/enums'
+
 
 export interface EditWorksFormValues {
     workerType: string;

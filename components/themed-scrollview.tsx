@@ -1,6 +1,6 @@
-import React from 'react';
-import { ScrollView, type ScrollViewProps } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import React from 'react'
+import { ScrollView, type ScrollViewProps } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 export type ThemedScrollViewProps = ScrollViewProps & {
   lightColor?: string;
@@ -15,7 +15,7 @@ const ThemedScrollView = ({
   contentContainerStyle,
   ...rest
 }: ThemedScrollViewProps) => {
-  const insets = useSafeAreaInsets();
+  const insets = useSafeAreaInsets()
 
   return (
     <ScrollView
@@ -25,7 +25,7 @@ const ThemedScrollView = ({
       ]}
       {...rest}
     />
-  );
-};
+  )
+}
 
 export default ThemedScrollView

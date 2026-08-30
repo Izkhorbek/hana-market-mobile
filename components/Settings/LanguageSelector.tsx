@@ -1,12 +1,12 @@
-import { BottomSheet } from '@/components/ui/bottom-sheet';
-import { Text } from '@/components/ui/text';
-import { View } from '@/components/ui/view';
-import { useThemeColors } from '@/hooks/use-theme-colors';
-import { useTranslations } from '@/hooks/use-translation';
-import { Check } from 'lucide-react-native';
-import React from 'react';
-import { StyleSheet, TouchableOpacity } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { BottomSheet } from '@/components/ui/bottom-sheet'
+import { Text } from '@/components/ui/text'
+import { View } from '@/components/ui/view'
+import { useThemeColors } from '@/hooks/use-theme-colors'
+import { useTranslations } from '@/hooks/use-translation'
+import { Check } from 'lucide-react-native'
+import React from 'react'
+import { StyleSheet, TouchableOpacity } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 interface LanguageSelectorProps {
   isVisible: boolean;
@@ -22,16 +22,16 @@ interface LanguageOption {
 const languages: LanguageOption[] = [
   { code: 'uz', name: 'Uzbek', nativeName: 'O\'zbekcha' },
   { code: 'ru', name: 'Russian', nativeName: 'Русский' },
-];
+]
 
 export function LanguageSelector({ isVisible, onClose }: LanguageSelectorProps) {
-  const colors = useThemeColors();
-  const { locale, changeLng, t } = useTranslations();
-  const insets = useSafeAreaInsets();
+  const colors = useThemeColors()
+  const { locale, changeLng, t } = useTranslations()
+  const insets = useSafeAreaInsets()
   const handleLanguageSelect = (languageCode: string) => {
-    changeLng(languageCode);
-    onClose();
-  };
+    changeLng(languageCode)
+    onClose()
+  }
 
   return (
     <BottomSheet
@@ -44,7 +44,7 @@ export function LanguageSelector({ isVisible, onClose }: LanguageSelectorProps) 
     >
       <View style={[styles.container]}>
         {languages.map((language) => {
-          const isSelected = locale === language.code;
+          const isSelected = locale === language.code
 
           return (
             <TouchableOpacity
@@ -72,11 +72,11 @@ export function LanguageSelector({ isVisible, onClose }: LanguageSelectorProps) 
                 <Check size={20} color={colors.primaryColor} strokeWidth={2.5} />
               )}
             </TouchableOpacity>
-          );
+          )
         })}
       </View>
     </BottomSheet>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -102,4 +102,4 @@ const styles = StyleSheet.create({
   nativeName: {
     fontSize: 13,
   },
-});
+})

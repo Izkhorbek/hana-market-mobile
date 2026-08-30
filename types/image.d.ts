@@ -1,10 +1,10 @@
+// Reactotron global — available in DEV only
+import Reactotron from 'reactotron-react-native'
+
 declare module '*.png' {
 	const value: any
 	export default value
 }
-
-// Reactotron global — available in DEV only
-import Reactotron from 'reactotron-react-native'
 interface Console {
 	tron: typeof Reactotron
 }

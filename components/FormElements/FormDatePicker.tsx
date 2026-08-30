@@ -1,6 +1,6 @@
-import { DatePicker, DatePickerProps } from '@/components/ui/date-picker';
-import React from 'react';
-import { Control, Controller } from 'react-hook-form';
+import { DatePicker, DatePickerProps } from '@/components/ui/date-picker'
+import React from 'react'
+import { Control, Controller } from 'react-hook-form'
 
 interface FormDatePickerProps extends Omit<DatePickerProps, 'value' | 'onChange'> {
   control?: Control<any>;
@@ -33,7 +33,7 @@ const FormDatePicker = ({
         />
       )}
     />
-  );
-};
+  )
+}
 
-export default FormDatePicker;
+export default FormDatePicker

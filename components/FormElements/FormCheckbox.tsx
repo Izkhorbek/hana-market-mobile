@@ -1,8 +1,8 @@
-import { useColor } from '@/hooks/useColor';
-import { Check } from 'lucide-react-native';
-import React from 'react';
-import { Control, Controller } from 'react-hook-form';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useColor } from '@/hooks/useColor'
+import { Check } from 'lucide-react-native'
+import React from 'react'
+import { Control, Controller } from 'react-hook-form'
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 
 interface FormCheckboxProps {
   control?: Control<any>;
@@ -17,10 +17,10 @@ const FormCheckbox = ({
   label,
   error,
 }: FormCheckboxProps) => {
-  const textColor = useColor('text');
-  const destructiveColor = useColor('destructive');
-  const borderColor = useColor('borderColor');
-  const primaryColor = useColor('primaryColor');
+  const textColor = useColor('text')
+  const destructiveColor = useColor('destructive')
+  const borderColor = useColor('borderColor')
+  const primaryColor = useColor('primaryColor')
 
   return (
     <View style={styles.container}>
@@ -52,8 +52,8 @@ const FormCheckbox = ({
         <Text style={[styles.errorText, { color: destructiveColor }]}>{error}</Text>
       )}
     </View>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -81,6 +81,6 @@ const styles = StyleSheet.create({
     marginTop: 4,
     marginLeft: 4,
   },
-});
+})
 
-export default FormCheckbox;
+export default FormCheckbox

@@ -1,4 +1,4 @@
-﻿import { useDeactivatePushTokenMutation, useRegisterPushTokenMutation } from '@/api/hooks'
+import { useDeactivatePushTokenMutation, useRegisterPushTokenMutation } from '@/api/hooks'
 import { useAuthStore } from '@/modules/Auth/auth-store'
 import { NotificationType } from '@/types'
 import { logger } from '@/utils/logger'

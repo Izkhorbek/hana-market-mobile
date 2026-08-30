@@ -1,22 +1,22 @@
-import { useColor } from '@/hooks/useColor';
-import { useResponsive } from '@/hooks/useResponsive';
-import React, { useMemo } from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity } from 'react-native';
+import { useColor } from '@/hooks/useColor'
+import { useResponsive } from '@/hooks/useResponsive'
+import React, { useMemo } from 'react'
+import { ScrollView, StyleSheet, Text, TouchableOpacity } from 'react-native'
 
 export type FilterTabType = 'all' | 'selling' | 'buying' | 'unread';
 
 interface FilterTabsProps {
   activeTab: FilterTabType;
   onTabChange: (tab: FilterTabType) => void;
-  tabs: Array<{ key: FilterTabType; label: string }>;
+  tabs: { key: FilterTabType; label: string }[];
 }
 
 const FilterTabs = ({ activeTab, onTabChange, tabs }: FilterTabsProps) => {
-  const primaryColor = useColor('primary');
-  const textColor = useColor('text');
-  const activeColor = useColor('border');
-  const mutedColor = useColor('muted');
-  const { ms, fs } = useResponsive();
+  const primaryColor = useColor('primary')
+  const textColor = useColor('text')
+  const activeColor = useColor('border')
+  const mutedColor = useColor('muted')
+  const { ms, fs } = useResponsive()
 
   const responsiveStyles = useMemo(() => ({
     container: {
@@ -33,7 +33,7 @@ const FilterTabs = ({ activeTab, onTabChange, tabs }: FilterTabsProps) => {
     tabText: {
       fontSize: fs(14),
     },
-  }), [ms, fs]);
+  }), [ms, fs])
 
   return (
     <ScrollView
@@ -42,7 +42,7 @@ const FilterTabs = ({ activeTab, onTabChange, tabs }: FilterTabsProps) => {
       contentContainerStyle={[styles.container, responsiveStyles.container]}
     >
       {tabs.map((tab) => {
-        const isActive = activeTab === tab.key;
+        const isActive = activeTab === tab.key
         return (
           <TouchableOpacity
             key={tab.key}
@@ -69,13 +69,13 @@ const FilterTabs = ({ activeTab, onTabChange, tabs }: FilterTabsProps) => {
               {tab.label}
             </Text>
           </TouchableOpacity>
-        );
+        )
       })}
     </ScrollView>
-  );
-};
+  )
+}
 
-export default FilterTabs;
+export default FilterTabs
 
 const styles = StyleSheet.create({
   container: {
@@ -92,4 +92,4 @@ const styles = StyleSheet.create({
   tabText: {
     fontSize: 14,
   },
-});
+})

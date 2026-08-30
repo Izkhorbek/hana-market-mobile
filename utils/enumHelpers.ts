@@ -13,7 +13,7 @@ export function resolveEnum<T extends Record<string, number | string>>(
   enumObj: T,
   value: string
 ): number | undefined {
-  const key = value.toUpperCase() as keyof T;
-  const resolved = enumObj[key];
-  return typeof resolved === 'number' ? resolved : undefined;
+  const key = value.toUpperCase() as keyof T
+  const resolved = enumObj[key]
+  return typeof resolved === 'number' ? resolved : undefined
 }

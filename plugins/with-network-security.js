@@ -157,7 +157,6 @@ function withNetworkSecurityIos(
   // With fewer than two valid pins we skip entirely — HTTPS + ATS still apply.
   if (validPins.length < 2) {
     if (pinSha256 || backupPinSha256) {
-      // eslint-disable-next-line no-console
       console.warn(
         '[with-network-security] iOS certificate pinning skipped: it requires ' +
           'TWO valid 44-character base64 SPKI-SHA256 pins (primary + backup). ' +

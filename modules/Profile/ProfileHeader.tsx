@@ -1,8 +1,8 @@
-import RemoteImage from '@/components/shared/RemoteImage';
-import { useColor } from '@/hooks/useColor';
-import { ChevronRight } from 'lucide-react-native';
-import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import RemoteImage from '@/components/shared/RemoteImage'
+import { useColor } from '@/hooks/useColor'
+import { ChevronRight } from 'lucide-react-native'
+import React from 'react'
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 
 interface ProfileHeaderProps {
   name: string;
@@ -13,10 +13,10 @@ interface ProfileHeaderProps {
 }
 
 const ProfileHeader = ({ name, status, temperature, profile_image, onPress }: ProfileHeaderProps) => {
-  const cardColor = useColor('profileCard');
-  const primaryColor = useColor('primary');
-  const textColor = useColor('text');
-  const mutedTextColor = useColor('textMuted');
+  const cardColor = useColor('profileCard')
+  const primaryColor = useColor('primary')
+  const textColor = useColor('text')
+  const mutedTextColor = useColor('textMuted')
 
   return (
     <TouchableOpacity
@@ -44,10 +44,10 @@ const ProfileHeader = ({ name, status, temperature, profile_image, onPress }: Pr
 
       <ChevronRight size={20} color={mutedTextColor} strokeWidth={2} />
     </TouchableOpacity>
-  );
-};
+  )
+}
 
-export default ProfileHeader;
+export default ProfileHeader
 
 const styles = StyleSheet.create({
   container: {
@@ -95,4 +95,4 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '400',
   },
-});
+})

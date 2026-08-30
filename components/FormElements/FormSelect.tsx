@@ -8,13 +8,13 @@ import {
   ComboboxTrigger,
   ComboboxValue,
   OptionType,
-} from "@/components/ui/combobox";
-import { useThemeColors } from "@/hooks/use-theme-colors";
-import { useTranslations } from "@/hooks/use-translation";
-import { useColor } from "@/hooks/useColor";
-import React from "react";
-import { Control, Controller } from "react-hook-form";
-import { Dimensions, StyleSheet, Text, View } from "react-native";
+} from '@/components/ui/combobox'
+import { useThemeColors } from '@/hooks/use-theme-colors'
+import { useTranslations } from '@/hooks/use-translation'
+import { useColor } from '@/hooks/useColor'
+import React from 'react'
+import { Control, Controller } from 'react-hook-form'
+import { Dimensions, StyleSheet, Text, View } from 'react-native'
 
 interface FormSelectProps {
   options?: OptionType[];
@@ -29,19 +29,19 @@ interface FormSelectProps {
 
 const FormSelect = ({
   options = [],
-  placeholder = "Select...",
-  inputPlaceholder = "",
+  placeholder = 'Select...',
+  inputPlaceholder = '',
   control,
-  name = "category",
+  name = 'category',
   label,
   required = false,
   rules,
 }: FormSelectProps) => {
-  const { t } = useTranslations();
-  const colors = useThemeColors();
-  const backgroundColor = useColor("background");
-  const textColor = useColor("text");
-  const destructiveColor = useColor("destructive");
+  const { t } = useTranslations()
+  const colors = useThemeColors()
+  const backgroundColor = useColor('background')
+  const textColor = useColor('text')
+  const destructiveColor = useColor('destructive')
 
   return (
     <View style={styles.container}>
@@ -50,7 +50,7 @@ const FormSelect = ({
           <Text style={[styles.label, { color: textColor }]}>{label}</Text>
           {required && (
             <Text style={[styles.asterisk, { color: destructiveColor }]}>
-              {" "}
+              {' '}
               *
             </Text>
           )}
@@ -68,7 +68,7 @@ const FormSelect = ({
                   ? (options.find((o) => o.value === field.value) ?? null)
                   : null
               }
-              onValueChange={(option) => field.onChange(option?.value ?? "")}
+              onValueChange={(option) => field.onChange(option?.value ?? '')}
             >
               <ComboboxTrigger
                 style={[
@@ -84,14 +84,14 @@ const FormSelect = ({
                   style={styles.valueText}
                 />
               </ComboboxTrigger>
-              <ComboboxContent maxHeight={Dimensions.get("window").height / 2}>
+              <ComboboxContent maxHeight={Dimensions.get('window').height / 2}>
                 {inputPlaceholder && (
                   <ComboboxInput placeholder={inputPlaceholder} />
                 )}
                 <ComboboxList style={styles.list}>
                   {options.length === 0 && (
                     <ComboboxEmpty>
-                      {t("form_elements.select.no_framework_found")}
+                      {t('form_elements.select.no_framework_found')}
                     </ComboboxEmpty>
                   )}
                   {options.map((option, i) => (
@@ -121,37 +121,37 @@ const FormSelect = ({
         )}
       />
     </View>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
   container: {
     marginVertical: 8,
   },
   labelContainer: {
-    flexDirection: "row",
+    flexDirection: 'row',
     marginBottom: 8,
   },
   label: {
     fontSize: 14,
-    fontWeight: "500",
+    fontWeight: '500',
   },
   asterisk: {
     fontSize: 14,
-    fontWeight: "500",
+    fontWeight: '500',
   },
   trigger: {
     height: 56,
     borderRadius: 14,
     borderWidth: 1,
-    overflow: "hidden",
+    overflow: 'hidden',
     paddingHorizontal: 16,
   },
   valueText: {
     fontSize: 16,
   },
   list: {
-    overflow: "hidden",
+    overflow: 'hidden',
     borderRadius: 12,
   },
   // Padding/height come from the base option style (bigger rows); only the
@@ -162,6 +162,6 @@ const styles = StyleSheet.create({
     marginTop: 4,
     marginLeft: 4,
   },
-});
+})
 
-export default FormSelect;
+export default FormSelect

@@ -1,4 +1,4 @@
-﻿import { useEditProductQuery, useUpdateProductMutation } from '@/api/hooks'
+import { useEditProductQuery, useUpdateProductMutation } from '@/api/hooks'
 import RadioButtonGroup, { RadioOption } from '@/components/FormElements/RadioButtonGroup'
 import EditCarForm from '@/components/Forms/EditCarForm'
 import EditThingForm from '@/components/Forms/EditThingForm'

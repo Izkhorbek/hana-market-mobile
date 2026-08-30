@@ -1,8 +1,8 @@
-import { useColor } from '@/hooks/useColor';
-import { ChevronRight } from 'lucide-react-native';
-import type { LucideIcon } from 'lucide-react-native';
-import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useColor } from '@/hooks/useColor'
+import { ChevronRight } from 'lucide-react-native'
+import type { LucideIcon } from 'lucide-react-native'
+import React from 'react'
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 
 interface ProfileMenuItemProps {
   icon: LucideIcon;
@@ -23,9 +23,9 @@ const ProfileMenuItem = ({
   showChevron = true,
   rightContent,
 }: ProfileMenuItemProps) => {
-  const cardColor = useColor('profileCard');
-  const textColor = useColor('text');
-  const mutedTextColor = useColor('textMuted'); 
+  const cardColor = useColor('profileCard')
+  const textColor = useColor('text')
+  const mutedTextColor = useColor('textMuted') 
 
   return (
     <TouchableOpacity
@@ -62,10 +62,10 @@ const ProfileMenuItem = ({
           )
       )}
     </TouchableOpacity>
-  );
-};
+  )
+}
 
-export default ProfileMenuItem;
+export default ProfileMenuItem
 
 const styles = StyleSheet.create({
   container: {
@@ -101,4 +101,4 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '400',
   },
-});
+})

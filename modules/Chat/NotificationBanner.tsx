@@ -1,7 +1,7 @@
-import { useColor } from '@/hooks/useColor';
-import { X } from 'lucide-react-native';
-import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useColor } from '@/hooks/useColor'
+import { X } from 'lucide-react-native'
+import React from 'react'
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 
 interface NotificationBannerProps {
   message: string;
@@ -9,8 +9,8 @@ interface NotificationBannerProps {
 }
 
 const NotificationBanner = ({ message, onClose }: NotificationBannerProps) => {
-  const bannerBgColor = useColor('notificationBannerBg');
-  const bannerTextColor = useColor('notificationBannerText');
+  const bannerBgColor = useColor('notificationBannerBg')
+  const bannerTextColor = useColor('notificationBannerText')
 
   return (
     <View style={[styles.container, { backgroundColor: bannerBgColor }]}>
@@ -21,10 +21,10 @@ const NotificationBanner = ({ message, onClose }: NotificationBannerProps) => {
         </TouchableOpacity>
       )}
     </View>
-  );
-};
+  )
+}
 
-export default NotificationBanner;
+export default NotificationBanner
 
 const styles = StyleSheet.create({
   container: {
@@ -46,4 +46,4 @@ const styles = StyleSheet.create({
     marginLeft: 12,
     padding: 4,
   },
-});
+})

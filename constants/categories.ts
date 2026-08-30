@@ -1,5 +1,5 @@
-import { Category } from '@/types';
-import { ECategoryType } from './enums';
+import { Category } from '@/types'
+import { ECategoryType } from './enums'
 
 const withImageUrl = (
   category: Omit<Category, 'image_url'>,

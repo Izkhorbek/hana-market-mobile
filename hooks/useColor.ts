@@ -1,5 +1,5 @@
-import { Colors } from '@/theme/colors';
-import { useColorScheme } from 'react-native';
+import { Colors } from '@/theme/colors'
+import { useColorScheme } from 'react-native'
 
 export function useColor(
 	colorName: keyof typeof Colors.light & keyof typeof Colors.dark,

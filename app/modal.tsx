@@ -1,12 +1,12 @@
-import LanguageSwitcher from '@/components/language-switcher';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { useTranslations } from '@/hooks/use-translation';
-import { Link } from 'expo-router';
-import { ScrollView, StyleSheet } from 'react-native';
+import LanguageSwitcher from '@/components/language-switcher'
+import { ThemedText } from '@/components/themed-text'
+import { ThemedView } from '@/components/themed-view'
+import { useTranslations } from '@/hooks/use-translation'
+import { Link } from 'expo-router'
+import { ScrollView, StyleSheet } from 'react-native'
 
 export default function ModalScreen() {
-  const { t } = useTranslations();
+  const { t } = useTranslations()
 
   return (
     <ScrollView style={styles.scrollView}>
@@ -23,7 +23,7 @@ export default function ModalScreen() {
         </Link>
       </ThemedView>
     </ScrollView>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -44,4 +44,4 @@ const styles = StyleSheet.create({
     marginTop: 24,
     paddingVertical: 15,
   },
-});
+})
