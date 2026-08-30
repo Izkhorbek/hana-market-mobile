@@ -54,8 +54,6 @@ export default function GasTrackerScreen() {
   const reset = useGasStore((s) => s.reset)
   const isManager = role === 'mahalla_admin' || role === 'mahalla_rais' || role === 'distributor'
 
-  console.log('GasTrackerScreen render', detail )
-
   // Seed mahallaId + role from the user's membership (client state isn't persisted).
   // Always refetch on entry so a re-visit never re-seeds from a stale 5m cache.
   const myMahallaQ = useMyMahallaQuery({ querySettings: { refetchOnMount: 'always' } })
