@@ -1,6 +1,7 @@
 import { HEADER_HEIGHT } from '@/constants/appLimits'
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
+import { logger } from '@/utils/logger'
 import { useRouter } from 'expo-router'
 import { ArrowLeft, Share2 } from 'lucide-react-native'
 import React from 'react'
@@ -33,7 +34,7 @@ const EditProductHeader: React.FC<EditProductHeaderProps> = ({ productTitle, onS
                 message: productTitle || t('edit_product.share_message'),
             })
         } catch (error) {
-            console.error('Error sharing:', error)
+            logger.warn(error, { code: 'PRODUCT_SHARE_FAILED', screen: 'EditProductHeader' })
         }
     }
 

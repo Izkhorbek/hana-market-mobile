@@ -7,6 +7,7 @@ import {
   TypingUser,
   useChatStore,
 } from '@/modules/Chat/chat-store'
+import { logger } from '@/utils/logger'
 
 // Stable empty array references to prevent infinite re-renders
 const EMPTY_MESSAGES: ChatMessage[] = []
@@ -86,7 +87,7 @@ export function useChatRoom(chatRoomId: number | null) {
         markAsRead(chatRoomId)
       })
       .catch((err) => {
-        console.error('[useChatRoom] join failed', err)
+        logger.warn(err, { code: 'CHAT_ROOM_JOIN_FAILED', extra: { chatRoomId } })
       })
 
     return () => {
@@ -104,7 +105,7 @@ export function useChatRoom(chatRoomId: number | null) {
     if (!chatRoomId) return
     if (connectionState !== HubConnectionState.Connected) return
     ensureJoined(chatRoomId).catch((err) => {
-      console.error('[useChatRoom] re-join after reconnect failed', err)
+      logger.warn(err, { code: 'CHAT_ROOM_REJOIN_FAILED', extra: { chatRoomId } })
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chatRoomId, connectionState])

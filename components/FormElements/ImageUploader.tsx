@@ -155,7 +155,10 @@ const ImageUploader = ({
 
     if (imageToRemove?.draft_uuid) {
       deleteDraftImage(imageToRemove.draft_uuid).catch((err) => {
-        console.warn('Failed to delete draft image:', imageToRemove.draft_uuid, err)
+        logger.warn(err, {
+          code: 'DRAFT_IMAGE_DELETE_FAILED',
+          extra: { draft_uuid: imageToRemove.draft_uuid },
+        })
       })
     }
   }

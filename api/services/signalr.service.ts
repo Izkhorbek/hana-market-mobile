@@ -204,7 +204,7 @@ class SignalRService {
     const token = getAuthToken()
 
     if (!token) {
-      console.warn('[SignalR] No auth token available, cannot connect')
+      logger.warn('No auth token available, cannot connect', { code: 'SIGNALR_NO_TOKEN' })
       this.isConnecting = false
       throw new Error('No auth token available for SignalR connection')
     }
@@ -651,13 +651,14 @@ async isUserOnline(userId: number): Promise<boolean> {
       !this.connection ||
       this.connection.state !== HubConnectionState.Connected
     ) {
-      console.warn(
-        `[SignalR] ${method}: connection not ready (state=${this.connection?.state}). Awaiting connect...`,
+      logger.warn(
+        `SignalR ${method}: connection not ready (state=${this.connection?.state}). Awaiting connect...`,
+        { code: 'SIGNALR_NOT_READY', extra: { method } },
       )
       try {
         await this.connect()
       } catch (err) {
-        console.error(`[SignalR] ${method}: connect attempt failed`, err)
+        logger.error('SIGNALR_CONNECT_FAILED', err, { extra: { method } })
         throw new Error('Not connected to SignalR hub')
       }
       if (!this.isConnected()) {
@@ -668,7 +669,7 @@ async isUserOnline(userId: number): Promise<boolean> {
     try {
       await this.connection!.invoke(method, ...args)
     } catch (error) {
-      console.error(`[SignalR] Error invoking ${method}:`, error)
+      logger.error('SIGNALR_INVOKE_FAILED', error, { extra: { method } })
       throw error
     }
   }

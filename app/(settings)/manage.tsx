@@ -3,6 +3,7 @@ import { useColorScheme } from '@/hooks/use-color-scheme'
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
 import { useAuthStore } from '@/modules/Auth/auth-store'
+import { logger } from '@/utils/logger'
 import Slider from '@react-native-community/slider'
 import * as Location from 'expo-location'
 import { router } from 'expo-router'
@@ -11,7 +12,6 @@ import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import MapView, { Circle, Marker } from 'react-native-maps'
 import { googleMapStyle } from '../../components/Maps/googleMapStyle'
-import { logger } from '@sentry/react-native'
 
 interface LocationData {
 	latitude: number
@@ -158,7 +158,7 @@ const ManageNeighborhoodPage = () => {
 
 
 		} catch (error) {
-			logger.error('Error getting current GPS location:', { extra: { error } })
+			logger.error('GPS_LOCATION_FAILED', error, { screen: 'NeighborhoodManage' })
 			setGpsLocation(fallback ?? null)
 		}
 	}
@@ -210,7 +210,7 @@ const ManageNeighborhoodPage = () => {
 				{ text: 'OK', onPress: () => router.back() },
 			])
 		} catch (error) {
-			console.error('Error saving location:', error)
+			logger.error('NEIGHBORHOOD_SAVE_FAILED', error, { screen: 'NeighborhoodManage' })
 			Alert.alert(t('neighborhood.error'), t('neighborhood.save_error'))
 		} finally {
 			setIsSaving(false)
@@ -260,7 +260,7 @@ const ManageNeighborhoodPage = () => {
 				longitudeDelta: calculateDelta(radius),
 			})
 		} catch (error) {
-			console.error('Error getting current location:', error)
+			logger.warn(error, { code: 'LOCATION_FETCH_FAILED', screen: 'NeighborhoodManage' })
 			Alert.alert(t('neighborhood.error'), t('neighborhood.location_error'))
 		}
 	}

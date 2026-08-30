@@ -13,6 +13,7 @@ import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
 import { useKeyboardHeight } from '@/hooks/useKeyboardHeight'
 import { useAuthStore } from '@/modules/Auth/auth-store'
+import { logger } from '@/utils/logger'
 import { useQueryClient } from '@tanstack/react-query'
 import * as ImagePicker from 'expo-image-picker'
 import { router } from 'expo-router'
@@ -149,7 +150,7 @@ const EditProfilePage = () => {
 					return
 				}
 			} catch (error) {
-				console.error('Error validating image size:', error)
+				logger.warn(error, { code: 'PROFILE_IMAGE_SIZE_CHECK_FAILED', screen: 'EditProfile' })
 			}
 
 			// Show local preview immediately

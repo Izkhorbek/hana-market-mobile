@@ -570,7 +570,6 @@ export const useChatStore = create<ChatState>((set, get) => ({
         },
       }))
     } catch (error) {
-      console.error('[ChatStore] Failed to send message:', error)
       logger.error('CHAT_SEND_MESSAGE_FAILED', error)
       // Mark message as failed
       set((state) => ({
@@ -619,7 +618,6 @@ export const useChatStore = create<ChatState>((set, get) => ({
         },
       }))
     } catch (error) {
-      console.error('[ChatStore] Failed to send image:', error)
       logger.error('CHAT_SEND_IMAGE_FAILED', error)
       set((state) => ({
         messages: {
@@ -693,7 +691,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
     try {
       await signalRService.startTyping(chatRoomId)
     } catch (error) {
-      console.error('[ChatStore] Failed to start typing:', error)
+      logger.warn(error, { code: 'CHAT_TYPING_START_FAILED' })
     }
   },
 
@@ -701,7 +699,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
     try {
       await signalRService.stopTyping(chatRoomId)
     } catch (error) {
-      console.error('[ChatStore] Failed to stop typing:', error)
+      logger.warn(error, { code: 'CHAT_TYPING_STOP_FAILED' })
     }
   },
 
@@ -794,10 +792,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       await signalRService.markMessagesAsRead(chatRoomId)
     } catch (error) {
       // Server-side rejection is non-fatal for the UX — we still flip locally.
-      console.warn(
-        '[ChatStore] markMessagesAsRead hub call failed (ignored):',
-        error,
-      )
+      logger.warn(error, { code: 'CHAT_MARK_READ_FAILED' })
     }
 
     // Locally flip ONLY incoming messages to is_read=true. Never touch our
@@ -825,7 +820,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       queryClient.invalidateQueries({ queryKey: ['MY_CHATS'] })
     } catch (e) {
       // queryClient is a singleton; failures here are non-fatal.
-      console.warn('[ChatStore] invalidateQueries failed:', e)
+      logger.warn(e, { code: 'CHAT_INVALIDATE_FAILED' })
     }
   },
 
@@ -1065,7 +1060,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       queryClient.invalidateQueries({ queryKey: ['MY_CHATS'] })
       queryClient.invalidateQueries({ queryKey: ['UNREAD_COUNT'] })
     } catch (e) {
-      console.warn('[ChatStore] invalidate on ChatRoomCreated failed:', e)
+      logger.warn(e, { code: 'CHAT_INVALIDATE_ROOM_CREATED_FAILED' })
     }
   },
 
@@ -1106,7 +1101,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       })
       queryClient.invalidateQueries({ queryKey: ['MY_CHATS'] })
     } catch (e) {
-      console.warn('[ChatStore] invalidate on MessageDeleted failed:', e)
+      logger.warn(e, { code: 'CHAT_INVALIDATE_MESSAGE_DELETED_FAILED' })
     }
   },
 
@@ -1145,7 +1140,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       })
       queryClient.removeQueries({ queryKey: ['MY_CHAT', chat_room_id] })
     } catch (e) {
-      console.warn('[ChatStore] invalidate on ChatRoomDeleted failed:', e)
+      logger.warn(e, { code: 'CHAT_INVALIDATE_ROOM_DELETED_FAILED' })
     }
   },
 
@@ -1204,7 +1199,10 @@ export const useChatStore = create<ChatState>((set, get) => ({
       signalRService.onError((error) => {
         // Server-side errors are not fatal client-side. Use warn so React Native's
         // LogBox doesn't surface them as a blocking "Console Error" overlay.
-        console.warn('[ChatStore] SignalR Error:', error?.code, error?.message)
+        logger.warn(error?.message ?? 'SignalR hub error', {
+          code: 'CHAT_SIGNALR_ERROR',
+          extra: { hub_code: error?.code },
+        })
       }),
     )
 

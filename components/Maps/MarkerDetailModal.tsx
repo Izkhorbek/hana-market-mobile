@@ -44,7 +44,6 @@ export function MarkerDetailModal({ marker, isVisible, onClose }: MarkerDetailMo
           lng: location.coords.longitude,
         })
       } catch (error) {
-        console.error('Error getting user location:', error)
         logger.warn(error, { code: 'LOCATION_FETCH_FAILED', screen: 'MarkerDetailModal' })
       } finally {
         setIsLoadingLocation(false)
@@ -123,7 +122,6 @@ export function MarkerDetailModal({ marker, isVisible, onClose }: MarkerDetailMo
         t('navigation.error_opening_maps') || 'Could not open maps application.',
         [{ text: 'OK' }],
       )
-      console.error('Error opening maps:', error)
       logger.warn(error, { code: 'OPEN_MAPS_FAILED', screen: 'MarkerDetailModal' })
     }
   }, [userLocation, marker, t])

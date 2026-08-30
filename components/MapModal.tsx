@@ -76,7 +76,6 @@ const MapModal: React.FC<MapModalProps> = ({
       const { status } = await Location.requestForegroundPermissionsAsync()
       return status === 'granted'
     } catch (error) {
-      console.error('Error requesting location permission:', error)
       logger.warn(error, { code: 'LOCATION_PERMISSION_FAILED', screen: 'MapModal' })
       return false
     }
@@ -115,7 +114,6 @@ const MapModal: React.FC<MapModalProps> = ({
 
       Alert.alert(t('map.location_selected'))
     } catch (error) {
-      console.error('Error getting location:', error)
       logger.warn(error, { code: 'LOCATION_FETCH_FAILED', screen: 'MapModal' })
       Alert.alert(
         t('common.error'),
@@ -145,7 +143,6 @@ const MapModal: React.FC<MapModalProps> = ({
         return formattedAddress
       }
     } catch (error) {
-      console.error('Reverse Geocoding Error:', error)
       logger.warn(error, { code: 'REVERSE_GEOCODE_FAILED', screen: 'MapModal' })
     }
     return ''
