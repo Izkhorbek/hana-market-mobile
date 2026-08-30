@@ -74,7 +74,6 @@ const VerificationPage: React.FC = () => {
 
 	const handleStartVerification = () => {
 		// Disabled - under development
-		console.log('Verification feature is under development')
 	}
 
 	const handleMaybeLater = () => {

@@ -166,7 +166,6 @@ const SettingsPage: React.FC = () => {
 	const updatePrivacy = (key: keyof PrivacySettings, value: boolean) => {
 		setPrivacy(prev => ({ ...prev, [key]: value }))
 		// TODO: Save to backend/storage
-		console.log(`Privacy setting ${key} changed to:`, value)
 	}
 
 	// Account handlers
@@ -177,17 +176,14 @@ const SettingsPage: React.FC = () => {
 
 	const handleBlockedUsers = () => {
 		// TODO: Navigate to blocked users page
-		console.log('Navigate to blocked users')
 	}
 
 	const handleLanguage = () => {
 		// TODO: Open language selector
-		console.log('Open language selector')
 	}
 
 	const handleAccountManagement = () => {
 		// TODO: Navigate to account management
-		console.log('Navigate to account management')
 	}
 
 	const getLanguageName = (code: string): string => {

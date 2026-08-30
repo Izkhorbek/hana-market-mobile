@@ -117,7 +117,6 @@ const ProfilePage = () => {
 		} else if (route === 'terms') {
 			router.push('/(settings)/terms')
 		} else {
-			console.log('Navigate to:', route)
 			// TODO: Add navigation logic for other routes
 		}
 	}

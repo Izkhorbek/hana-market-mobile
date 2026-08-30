@@ -255,7 +255,6 @@ class SignalRService {
       this.isIntentionalDisconnect = true
       try {
         await this.connection.stop()
-        console.log('[SignalR] Disconnected')
       } catch (error) {
         logger.warn(error, { code: 'SIGNALR_DISCONNECT_FAILED' })
       }
