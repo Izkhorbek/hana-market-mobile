@@ -300,25 +300,27 @@ export function BottomSheet({
 
           {disablePanGesture ? (
             <BottomSheetContent
-              children={children}
               title={title}
               style={style}
               rBottomSheetStyle={rBottomSheetStyle}
               cardColor={cardColor}
               mutedColor={mutedColor}
               onHandlePress={() => runOnJS(handlePress)()}
-            />
+            >
+              {children}
+            </BottomSheetContent>
           ) : (
             <GestureDetector gesture={gesture}>
               <BottomSheetContent
-                children={children}
                 title={title}
                 style={style}
                 rBottomSheetStyle={rBottomSheetStyle}
                 cardColor={cardColor}
                 mutedColor={mutedColor}
                 onHandlePress={() => runOnJS(handlePress)()}
-              />
+              >
+                {children}
+              </BottomSheetContent>
             </GestureDetector>
           )}
         </Animated.View>

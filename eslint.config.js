@@ -12,6 +12,21 @@ export default defineConfig([
     },
   },
 
+  // ── Node-side files (build config, config plugins, CLI scripts) ────────────
+  // These run in Node/CommonJS, never in the app bundle, so declare its globals.
+  {
+    files: ['*.config.js', 'plugins/**/*.js', 'scripts/**/*.js'],
+    languageOptions: {
+      globals: {
+        __dirname: 'readonly',
+        __filename: 'readonly',
+        module: 'writable',
+        require: 'readonly',
+        process: 'readonly',
+      },
+    },
+  },
+
   // ── Architecture boundary enforcement (see ARCHITECTURE.md §1, §9) ──────────
   // Turns the Dependency Rule into a build error. Needs the TS path resolver so
   // that `@/...` alias imports resolve to real files before zone matching.
