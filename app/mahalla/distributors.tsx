@@ -148,6 +148,13 @@ export default function MahallaDistributorsScreen() {
         renderItem={renderItem}
         contentContainerStyle={styles.list}
         showsVerticalScrollIndicator={false}
+        ListHeaderComponent={
+          distributors.length > 0 ? (
+            <Text style={[styles.scopeNote, { color: colors.subText }]}>
+              {t('mahalla.distributors_scope_note')}
+            </Text>
+          ) : null
+        }
         ListEmptyComponent={
           distQ.isFetching || myMahallaQ.isFetching ? (
             <ActivityIndicator style={styles.loader} color={colors.primaryColor} />
@@ -177,6 +184,7 @@ const styles = StyleSheet.create({
   headerBtn: { width: 40, height: 40, justifyContent: 'center', alignItems: 'center' },
   headerTitle: { fontSize: 17, fontWeight: '600', letterSpacing: -0.2 },
   list: { padding: 16, gap: 14, flexGrow: 1 },
+  scopeNote: { fontSize: 13, lineHeight: 18 },
   card: {
     borderWidth: 1,
     borderRadius: 16,

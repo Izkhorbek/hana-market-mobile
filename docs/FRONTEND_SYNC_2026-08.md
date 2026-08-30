@@ -180,14 +180,22 @@ bounded page, not an error — just don't rely on fetching everything in one cal
 
 ## 13. Frontend checklist
 
-- [ ] Region→district cascade using `GET /api/region` + `GET /api/district?region_id=`
-- [ ] Mahalla search filters by `district_id`; read `MahallaDto.district_id`/`region_id` (nullable)
-- [ ] Remove ALL gas **cycle** UI/types/calls (`/api/gas/cycles/*`, `GasCycleDto`, `GasCycleStatus`)
-- [ ] Add session **cancel**; handle `cancelled` status; `/active` excludes cancelled/completed
-- [ ] Re-label the `GasCycleWarning` toast as "order broken"; ignore `cycle_number`
-- [ ] Show "new session" to **distributor** accounts
-- [ ] Gate the confirm button on **verified** membership + non-finished session
-- [ ] Update distributor list copy → "district" scope
-- [ ] Treat mahalla **join as a switch** (role/verified reset); warn before switching an elevated role
-- [ ] Read the nested **`household`** from `/my` (nullable); drop any separate household fetch
-- [ ] Emergency numbers: `GET /api/emergency-numbers` (public) — unchanged, still valid
+> **Status: all items landed on `develop`** (commits `ca0f526`, `6a432b5`, `96b319e` + the
+> distributor copy pass). Verified against the code, not just the commit messages.
+
+- [x] Region→district cascade using `GET /api/region` + `GET /api/district?region_id=` — `app/mahalla/join.tsx` (3-step wizard)
+- [x] Mahalla search filters by `district_id`; read `MahallaDto.district_id`/`region_id` (nullable)
+- [x] Remove ALL gas **cycle** UI/types/calls — only the `GasCycleWarning` *event* remains (kept on purpose, §7)
+- [x] Add session **cancel** (`app/gas/manage.tsx`); `cancelled` status handled in history + labels
+- [x] Re-label the `GasCycleWarning` toast as "order broken" (`gas.cycle_warning_*`); `cycle_number` never rendered
+- [x] Show "new session" to **distributor** accounts — `isManager` in `app/gas/index.tsx`
+- [x] Gate the confirm button on **verified** membership + non-finished session (`isVerifiedMember` + `status === 'active'`)
+- [x] Update distributor list copy → "district" scope (`distributors_subtitle`, `no_distributors`, new `distributors_scope_note`)
+- [x] Treat mahalla **join as a switch** — elevated roles get a reset warning before `/mahalla/join`
+- [x] Read the nested **`household`** from `/my` (nullable) — rendered in `app/(settings)/my-mahalla.tsx`
+- [x] Emergency numbers: `GET /api/emergency-numbers` (public) — unchanged, still valid
+
+### Still open (backend / out of this sync)
+
+- Mahallas are seeded for **Toshkent shahri** and **Farg'ona** only — other districts return an
+  empty picker; that is expected data state, not a client bug.
