@@ -10,7 +10,7 @@ import type { ApiResponse, Category, PaginatedResponse } from '@/types'
 import { AxiosResponse } from 'axios'
 import { router, useLocalSearchParams } from 'expo-router'
 import { ArrowLeft, Search } from 'lucide-react-native'
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import {
     ActivityIndicator,
     FlatList,
@@ -61,7 +61,7 @@ const SearchPage: React.FC = () => {
     const userLng = user?.longitude ?? guestLongitude ?? DEFAULT_LNG
 
     const { data: categoriesRes } = useCategoriesQuery()
-    const categories = categoriesRes?.data?.data ?? []
+    const categories = useMemo(() => categoriesRes?.data?.data ?? [], [categoriesRes])
 
     useEffect(() => {
         const timeout = setTimeout(() => {
@@ -114,11 +114,14 @@ const SearchPage: React.FC = () => {
     // cards request) once results resolve. Fire-and-forget; does not block render.
     useProductImagePrefetch(products.map((p) => p.main_image_url))
 
-    const getCategoryName = (category: Category) => (locale === 'ru' ? category.name_ru : category.name_uz)
+    const getCategoryName = useCallback(
+        (category: Category) => (locale === 'ru' ? category.name_ru : category.name_uz),
+        [locale],
+    )
 
     const categoryChips = useMemo(
         () => categories.map((item) => ({ id: item.id, name: getCategoryName(item) })),
-        [categories, locale],
+        [categories, getCategoryName],
     )
 
     const renderCategoryChip = ({ item }: { item: { id: number; name: string } }) => {

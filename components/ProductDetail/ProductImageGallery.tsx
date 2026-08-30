@@ -1,6 +1,6 @@
 import RemoteImage from '@/components/shared/RemoteImage'
 import { AppLimits } from '@/constants/appLimits'
-import React, { useCallback, useRef, useState } from 'react'
+import React, { useCallback, useMemo, useRef, useState } from 'react'
 import { FlatList, Pressable, StyleSheet, Text, useWindowDimensions, View, ViewToken } from 'react-native'
 
 // Hero images request a resized variant from the backend (`?w/q`) instead of the
@@ -35,16 +35,19 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
   const [activeIndex, setActiveIndex] = useState(0)
 
   // Build deduped URL list: mainImage first, then extras up to 5 total
-  const urls: string[] = []
-  if (mainImage) urls.push(mainImage)
+  const urls: string[] = useMemo(() => {
+    const list: string[] = []
+    if (mainImage) list.push(mainImage)
 
-  for (const img of images) {
-    if (urls.length >= 5) break
-    if (img.image_url && img.image_url !== mainImage) urls.push(img.image_url)
-  }
+    for (const img of images) {
+      if (list.length >= 5) break
+      if (img.image_url && img.image_url !== mainImage) list.push(img.image_url)
+    }
 
-  // Ensure at least one placeholder so the gallery always renders
-  if (urls.length === 0) urls.push('')
+    // Ensure at least one placeholder so the gallery always renders
+    if (list.length === 0) list.push('')
+    return list
+  }, [mainImage, images])
 
   const viewabilityConfig = useRef({ viewAreaCoveragePercentThreshold: 50 })
 

@@ -241,7 +241,7 @@ const ProductDetailPage: React.FC = () => {
     ? t('home.free')
     : (product?.price ?? '')
   const productMainImage = product?.main_image_url ?? null
-  const productImages = product?.images ?? []
+  const productImages = useMemo(() => product?.images ?? [], [product?.images])
   const productDesc = product?.description ?? ''
   const productMoljal = product?.moljal ?? ''
   const productLat = product?.latitude ?? 41.309

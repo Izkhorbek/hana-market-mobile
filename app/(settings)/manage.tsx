@@ -78,8 +78,11 @@ const ManageNeighborhoodPage = () => {
 		gpsLocationRef.current = gpsLocation
 	}, [gpsLocation])
 
+	// Run once on mount: initializeLocations() is declared below and re-created
+	// every render, so it must stay out of the dependency array.
 	useEffect(() => {
 		initializeLocations()
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [])
 
 	const initializeLocations = async () => {

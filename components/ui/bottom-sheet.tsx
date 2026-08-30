@@ -167,7 +167,7 @@ export function BottomSheet({
         }
       })
     }
-  }, [isVisible, defaultHeight])
+  }, [isVisible, defaultHeight, translateY, opacity, currentSnapIndex])
 
   // Function to animate the sheet to a specific destination
   const scrollTo = (destination: number) => {
@@ -194,7 +194,11 @@ export function BottomSheet({
       }
       scrollTo(destination)
     }
-  }, [keyboardHeight, isKeyboardVisible, isVisible])
+    // `scrollTo` and `snapPointsHeights` are re-created every render, and
+    // `currentSnapIndex.value` must not be read during render — keep the effect
+    // keyed on the keyboard/visibility inputs only.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [keyboardHeight, isKeyboardVisible, isVisible, keyboardHeightSV])
   // --- END: NEW KEYBOARD HANDLING LOGIC ---
 
   const findClosestSnapPoint = (currentY: number) => {

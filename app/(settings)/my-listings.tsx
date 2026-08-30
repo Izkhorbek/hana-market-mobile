@@ -64,7 +64,10 @@ const MyListingsPage = () => {
 	})
 
 	// Get products array from response
-	const allProducts = myProductsResponse?.data?.data || []
+	const allProducts = useMemo(
+		() => myProductsResponse?.data?.data ?? [],
+		[myProductsResponse],
+	)
 
 	// Filter products by status based on active tab
 	const filteredProducts = useMemo(() => {

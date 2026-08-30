@@ -123,7 +123,10 @@ const ChatPage = () => {
   // first fetch avoids an empty flash on cold open; once fetched, the store is
   // authoritative — so deleting the last chat shows the empty state instead of
   // resurrecting the just-deleted row from the still-stale query cache.
-  const displayChats = isFetched ? chatList : (chatListResponse?.data?.data?.chats ?? [])
+  const displayChats = useMemo(
+    () => (isFetched ? chatList : (chatListResponse?.data?.data?.chats ?? [])),
+    [isFetched, chatList, chatListResponse],
+  )
 
   // Filter chats based on active tab
   const filteredChats = useMemo(() => {

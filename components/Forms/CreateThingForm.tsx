@@ -88,7 +88,7 @@ const CreateThingForm = () => {
     if (sellingMethod === 'free') {
       form.clearErrors('price')
     }
-  }, [sellingMethod])
+  }, [sellingMethod, form])
 
   const { mutate: createProduct, isPending: isCreating } =
     useCreateProductMutation({

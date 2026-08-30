@@ -43,7 +43,10 @@ export function Progress({
     if (!isDragging.value) {
       progressWidth.value = withTiming(clampedValue, { duration: 300 })
     }
-  }, [clampedValue])
+    // `isDragging.value` is intentionally not a dependency: reading a shared
+    // value during render is exactly what Reanimated warns about.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [clampedValue, progressWidth])
 
   const updateValue = (newValue: number) => {
     const clamped = Math.max(0, Math.min(100, newValue))

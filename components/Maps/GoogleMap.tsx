@@ -144,8 +144,11 @@ const GoogleMap = ({
     onMarkerPressRef.current?.(marker)
   }, [])
 
+  // Run once on mount: initializeLocation() is declared below and re-created
+  // every render, so it must stay out of the dependency array.
   useEffect(() => {
     initializeLocation()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const initializeLocation = async () => {

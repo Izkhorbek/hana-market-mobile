@@ -26,9 +26,9 @@ export const useProfileQuery = ({
  * Hook to update user profile
  */
 export const useUpdateProfileMutation = (
-  options?: UseMutationOptions<AxiosResponse<ApiResponse<{}>>, Error, UpdateProfileRequest>
+  options?: UseMutationOptions<AxiosResponse<ApiResponse<object>>, Error, UpdateProfileRequest>
 ) => {
-  return useMutation<AxiosResponse<ApiResponse<{}>>, Error, UpdateProfileRequest>({
+  return useMutation<AxiosResponse<ApiResponse<object>>, Error, UpdateProfileRequest>({
     mutationFn: (data) => userService.updateProfile(data),
     ...options,
   })
@@ -98,9 +98,9 @@ export const useLikedProductsQuery = ({
  * Hook to delete account
  */
 export const useDeleteAccountMutation = (
-  options?: UseMutationOptions<AxiosResponse<ApiResponse<{}>>, Error, void>
+  options?: UseMutationOptions<AxiosResponse<ApiResponse<object>>, Error, void>
 ) => {
-  return useMutation<AxiosResponse<ApiResponse<{}>>, Error, void>({
+  return useMutation<AxiosResponse<ApiResponse<object>>, Error, void>({
     mutationFn: () => userService.deleteAccount(),
     ...options,
   })

@@ -15,12 +15,12 @@ import { authService } from '../services'
  */
 export const useRequestOtpMutation = (
   options?: UseMutationOptions<
-    AxiosResponse<ApiResponse<{}>>,
+    AxiosResponse<ApiResponse<object>>,
     Error,
     RequestOtpRequest
   >,
 ) => {
-  return useMutation<AxiosResponse<ApiResponse<{}>>, Error, RequestOtpRequest>({
+  return useMutation<AxiosResponse<ApiResponse<object>>, Error, RequestOtpRequest>({
     mutationKey: ['request-otp'],
     mutationFn: (data) => authService.requestOtp(data),
     ...options,
@@ -56,13 +56,13 @@ export const useVerifyOtpMutation = (
  */
 export const useRefreshTokenMutation = (
   options?: UseMutationOptions<
-    AxiosResponse<ApiResponse<{}>>,
+    AxiosResponse<ApiResponse<object>>,
     Error,
     RefreshTokenRequest
   >,
 ) => {
   return useMutation<
-    AxiosResponse<ApiResponse<{}>>,
+    AxiosResponse<ApiResponse<object>>,
     Error,
     RefreshTokenRequest
   >({

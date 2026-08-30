@@ -80,7 +80,7 @@ const CustomAlert: React.FC<CustomAlertProps> = ({
             scaleAnim.setValue(0.88)
             opacityAnim.setValue(0)
         }
-    }, [visible])
+    }, [visible, scaleAnim, opacityAnim])
 
     const defaultPrimaryText = primaryButtonText ?? t('common.ok')
 

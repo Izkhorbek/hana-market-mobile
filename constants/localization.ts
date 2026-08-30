@@ -1,3 +1,6 @@
+// `i18next.use()` / `i18next.changeLanguage()` are the documented calls on the
+// default instance; the rule only sees that i18next also exports those names.
+/* eslint-disable import/no-named-as-default-member */
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import i18next from 'i18next'
 import { initReactI18next } from 'react-i18next'
