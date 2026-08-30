@@ -60,8 +60,6 @@ export function VersionCheckBootstrap() {
         })
         if (cancelled) return
 
-        console.log('Version check request', getAppVersion(), build, getAppPlatform(), i18n.language, res.data?.data)
-        console.log('Version check response', res.data?.data)
         const data = res.data?.data
         if (!data) return
 
