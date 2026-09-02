@@ -43,6 +43,8 @@
 		"skip": "Skip for now"
 	},
 	"map": {
+		"disabled_title": "The map is off for now",
+		"disabled_note": "Browsing listings on the map is temporarily disabled. Keep using the list.",
 		"title": "Map",
 		"select_location": "Select Location",
 		"view_location": "View Location",

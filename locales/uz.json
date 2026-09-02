@@ -43,6 +43,8 @@
     "skip": "Keyinroq"
   },
   "map": {
+    "disabled_title": "Xarita vaqtincha yopiq",
+    "disabled_note": "E'lonlarni xaritada ko'rish hozircha o'chirib qo'yilgan. Ro'yxat orqali izlashda davom eting.",
     "title": "Xarita",
     "select_location": "Joylashuvni tanlash",
     "view_location": "Joylashuvni ko'rish",

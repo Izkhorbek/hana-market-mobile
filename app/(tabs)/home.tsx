@@ -4,6 +4,7 @@ import ProductsList from '@/components/Lists/ProductsList'
 import ComplaintModal from '@/components/shared/ComplaintModal'
 import { ThemedView } from '@/components/themed-view'
 import { AppLimits } from '@/constants/appLimits'
+import { Features } from '@/constants/features'
 import { useRequireAuth } from '@/hooks/useRequireAuth'
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
@@ -141,17 +142,19 @@ export default function HomeScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* ── Map toggle (Bozor → xarita) ─────────────────────────────────── */}
-      <View style={[styles.mapFabContainer, { bottom: insets.bottom }]}>
-        <TouchableOpacity
-          style={[styles.mapFab, { backgroundColor: colors.background, borderColor: colors.borderColor }]}
-          onPress={() => router.push('/map')}
-          activeOpacity={0.85}
-        >
-          <Map size={20} color={colors.text} />
-          <Text style={[styles.mapFabText, { color: colors.text }]}>{t('tabs.map')}</Text>
-        </TouchableOpacity>
-      </View>
+      {/* ── Map toggle (Bozor → xarita) — parked, see Features.PRODUCT_MAP ── */}
+      {Features.PRODUCT_MAP && (
+        <View style={[styles.mapFabContainer, { bottom: insets.bottom }]}>
+          <TouchableOpacity
+            style={[styles.mapFab, { backgroundColor: colors.background, borderColor: colors.borderColor }]}
+            onPress={() => router.push('/map')}
+            activeOpacity={0.85}
+          >
+            <Map size={20} color={colors.text} />
+            <Text style={[styles.mapFabText, { color: colors.text }]}>{t('tabs.map')}</Text>
+          </TouchableOpacity>
+        </View>
+      )}
 
       {/* ── Create Post Bottom Sheet ───────────────────────────────────── */}
       <Modal

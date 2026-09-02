@@ -3,13 +3,15 @@ import GoogleMap, { MarkerData } from '@/components/Maps/GoogleMap'
 import { MarkerDetailModal } from '@/components/Maps/MarkerDetailModal'
 import MapPageHeader from '@/components/headers/MapPageHeader'
 import { AppLimits } from '@/constants/appLimits'
+import { Features } from '@/constants/features'
+import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
 import { useAuthStore } from '@/modules/Auth/auth-store'
 import type { ProductMapMarkerDto } from '@/types'
 import { resolveSizedImageUrl } from '@/utils/imageUrl'
 import { useLocalSearchParams } from 'expo-router'
 import React, { useMemo, useState } from 'react'
-import { ActivityIndicator, StyleSheet, View } from 'react-native'
+import { ActivityIndicator, StyleSheet, Text, View } from 'react-native'
 
 // The map uses the dedicated lightweight endpoint GET /api/product/map-markers
 // (NOT /api/product/all). It's a single capped request (NOT list pagination) of
@@ -26,6 +28,7 @@ const MapPage = () => {
   }>()
 
   const {t} = useTranslations()
+  const colors = useThemeColors()
   
   const [selectedMarker, setSelectedMarker] = useState<MarkerData | null>(null)
   const [isModalVisible, setIsModalVisible] = useState(false)
@@ -48,6 +51,7 @@ const MapPage = () => {
   // Sends the user's saved search radius when set (axios drops the param when
   // undefined, letting the backend apply its own default); status=active keeps
   // sold/reserved listings off the map.
+  // Skipped entirely while the map is parked (Features.PRODUCT_MAP).
   const { data, isLoading } = useProductMapMarkersQuery({
     params: {
       user_lat: userLat,
@@ -56,6 +60,7 @@ const MapPage = () => {
       status: AppLimits.ProductStatus.active,
       limit: AppLimits.MAP.MARKER_LIMIT,
     },
+    querySettings: { enabled: Features.PRODUCT_MAP },
   })
 
   // Create highlighted marker from URL params
@@ -115,6 +120,24 @@ const MapPage = () => {
     setSelectedMarker(null)
   }
 
+  // Parked: the route stays registered (deep links and the back stack keep
+  // working) but shows a notice instead of the product map.
+  if (!Features.PRODUCT_MAP) {
+    return (
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
+        <MapPageHeader />
+        <View style={styles.disabledBox}>
+          <Text style={[styles.disabledTitle, { color: colors.text }]}>
+            {t('map.disabled_title')}
+          </Text>
+          <Text style={[styles.disabledText, { color: colors.subText }]}>
+            {t('map.disabled_note')}
+          </Text>
+        </View>
+      </View>
+    )
+  }
+
   return (
     <View style={styles.container}>
       <MapPageHeader />
@@ -169,5 +192,22 @@ const styles = StyleSheet.create({
     right: 0,
     zIndex: 10,
     alignItems: 'center',
+  },
+  disabledBox: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 32,
+    gap: 8,
+  },
+  disabledTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  disabledText: {
+    fontSize: 13,
+    lineHeight: 18,
+    textAlign: 'center',
   },
 })
