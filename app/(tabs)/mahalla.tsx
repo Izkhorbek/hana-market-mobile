@@ -32,18 +32,9 @@ export default function MahallaScreen() {
   // const comingSoon = () =>
   //   Alert.alert(t('mahalla.coming_soon'), t('mahalla.coming_soon_message'))
 
+  // Order on screen: Xizmatlar → Gaz & Kommunal → Tarqatuvchilar → Shoshilinch.
   const items: HubItem[] = [
     {
-      key: 'gas',
-      titleKey: 'mahalla.gas_title',
-      subtitleKey: 'mahalla.gas_subtitle',
-      Icon: Flame,
-      iconBg: '#FDECE4',
-      iconColor: '#E8663A',
-      onPress: () => router.push('/gas' as Href),
-      testing: true,
-    },
-     {
       key: 'services',
       titleKey: 'mahalla.services_title',
       subtitleKey: 'mahalla.services_subtitle',
@@ -55,13 +46,14 @@ export default function MahallaScreen() {
       onPress: () => router.push('/service' as Href),
     },
     {
-      key: 'emergency',
-      titleKey: 'mahalla.emergency_title',
-      subtitleKey: 'mahalla.emergency_subtitle',
-      Icon: Siren,
-      iconBg: '#FDE7E7',
-      iconColor: '#DC2626',
-      onPress: () => router.push('/mahalla/emergency' as Href),
+      key: 'gas',
+      titleKey: 'mahalla.gas_title',
+      subtitleKey: 'mahalla.gas_subtitle',
+      Icon: Flame,
+      iconBg: '#FDECE4',
+      iconColor: '#E8663A',
+      onPress: () => router.push('/gas' as Href),
+      testing: true,
     },
     {
       key: 'distributors',
@@ -71,6 +63,15 @@ export default function MahallaScreen() {
       iconBg: '#E7F0FB',
       iconColor: '#3B82C4',
       onPress: () => router.push('/mahalla/distributors' as Href),
+    },
+    {
+      key: 'emergency',
+      titleKey: 'mahalla.emergency_title',
+      subtitleKey: 'mahalla.emergency_subtitle',
+      Icon: Siren,
+      iconBg: '#FDE7E7',
+      iconColor: '#DC2626',
+      onPress: () => router.push('/mahalla/emergency' as Href),
     },
     // {
     //   key: 'announcements',
