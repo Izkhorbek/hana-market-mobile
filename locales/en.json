@@ -422,6 +422,7 @@
 	},
 	"gas": {
 		"title": "Gas queue",
+		"testing_notice": "This section is in testing — data may be incomplete or change.",
 		"no_mahalla": "You are not linked to a mahalla yet",
 		"no_session": "No active gas distribution today",
 		"now_distributing": "Distributing now",
@@ -542,6 +543,7 @@
 		"lostfound_title": "Lost / Free",
 		"lostfound_subtitle": "Found items, giveaways",
 		"coming_soon": "Coming soon",
+		"testing": "TEST",
 		"coming_soon_message": "This section will be available soon."
 	},
 	"profile": {

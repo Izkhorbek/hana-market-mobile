@@ -21,6 +21,8 @@ type HubItem = {
   iconColor: string
   onPress: () => void
   comingSoon?: boolean
+  /** Shipped but still under test — surfaced as a TEST badge. */
+  testing?: boolean
 }
 
 export default function MahallaScreen() {
@@ -39,6 +41,7 @@ export default function MahallaScreen() {
       iconBg: '#FDECE4',
       iconColor: '#E8663A',
       onPress: () => router.push('/gas' as Href),
+      testing: true,
     },
      {
       key: 'services',
@@ -119,6 +122,13 @@ export default function MahallaScreen() {
                       </Text>
                     </View>
                   )}
+                  {item.testing && (
+                    <View style={[styles.badge, styles.testBadge]}>
+                      <Text style={[styles.badgeText, styles.testBadgeText]}>
+                        {t('mahalla.testing')}
+                      </Text>
+                    </View>
+                  )}
                 </View>
                 <Text style={[styles.cardSubtitle, { color: colors.subText }]}>
                   {t(item.subtitleKey)}
@@ -195,5 +205,12 @@ const styles = StyleSheet.create({
   badgeText: {
     fontSize: 10,
     fontWeight: '600',
+  },
+  testBadge: {
+    backgroundColor: '#FEF3C7',
+  },
+  testBadgeText: {
+    color: '#B45309',
+    letterSpacing: 0.4,
   },
 })

@@ -20,6 +20,11 @@ interface ProductImageGalleryProps {
   images?: GalleryImage[]
   /** Called when an image is pressed, with index and all image URLs */
   onImagePress?: (index: number, urls: string[]) => void
+  /**
+   * Distance from the bottom for the dots + counter. Defaults to the parallax
+   * hero offset; pass 10 when the gallery sits in a plain fixed-height box.
+   */
+  overlayBottom?: number
 }
 
 /**
@@ -30,6 +35,7 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
   mainImage,
   images = [],
   onImagePress,
+  overlayBottom = AppLimits.PARALLAX_EXTRA + 10,
 }) => {
   const { width } = useWindowDimensions()
   const [activeIndex, setActiveIndex] = useState(0)
@@ -117,7 +123,7 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
 
       {/* Dot indicator — only shown when there are multiple images */}
       {urls.length > 1 && (
-        <View style={styles.dots} pointerEvents='none'>
+        <View style={[styles.dots, { bottom: overlayBottom }]} pointerEvents='none'>
           {urls.map((_, i) => (
             <View
               key={i}
@@ -132,7 +138,7 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
 
       {/* Image counter badge */}
       {urls.length > 1 && (
-        <View style={styles.counter} pointerEvents='none'>
+        <View style={[styles.counter, { bottom: overlayBottom }]} pointerEvents='none'>
           <Text style={styles.counterText}>{activeIndex + 1} / {urls.length}</Text>
         </View>
       )}
@@ -155,7 +161,6 @@ const styles = StyleSheet.create({
   },
   dots: {
     position: 'absolute',
-    bottom: AppLimits.PARALLAX_EXTRA + 10,
     left: 0,
     right: 0,
     zIndex: 10,
@@ -180,7 +185,6 @@ const styles = StyleSheet.create({
   },
   counter: {
     position: 'absolute',
-    bottom: AppLimits.PARALLAX_EXTRA + 10,
     right: 14,
     zIndex: 10,
     backgroundColor: 'rgba(0,0,0,0.45)',

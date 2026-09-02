@@ -1,4 +1,5 @@
 import { useInfiniteServicesQuery } from '@/api/hooks'
+import ServiceCard from '@/components/shared/Cards/ServiceCard'
 import { AppLimits } from '@/constants/appLimits'
 import { EServiceCategory } from '@/constants/enums'
 import { ThemedView } from '@/components/themed-view'
@@ -8,7 +9,7 @@ import { useAuthStore } from '@/modules/Auth/auth-store'
 import type { ApiResponse, PaginatedResponse, ServiceListItemDto } from '@/types'
 import { AxiosResponse } from 'axios'
 import { type Href, router } from 'expo-router'
-import { ArrowLeft, Phone, Plus, Wrench } from 'lucide-react-native'
+import { ArrowLeft, Plus } from 'lucide-react-native'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
 import {
   ActivityIndicator,
@@ -100,43 +101,20 @@ export default function ServiceListScreen() {
 
   const renderItem = useCallback(
     ({ item }: { item: ServiceListItemDto }) => (
-      <TouchableOpacity
-        style={[styles.card, { backgroundColor: colors.background, borderColor: colors.borderColor }]}
-        activeOpacity={0.7}
+      <ServiceCard
+        title={item.title ?? ''}
+        category_name={item.category_name ?? ''}
+        main_image_url={item.main_image_url ?? ''}
+        price={item.price ?? ''}
+        price_type_name={item.price_type_name ?? undefined}
+        moljal={item.moljal ?? ''}
+        distance={item.distance ?? ''}
+        created_ago={item.created_ago ?? ''}
         onPress={() => router.push(`/service/${item.id}` as Href)}
-      >
-        <View style={[styles.iconBubble, { backgroundColor: colors.tabIconBackground }]}>
-          <Wrench size={22} color={colors.tabIconSelected} strokeWidth={1.8} />
-        </View>
-        <View style={styles.cardBody}>
-          <Text style={[styles.cardTitle, { color: colors.text }]} numberOfLines={1}>
-            {item.title ?? ''}
-          </Text>
-          {!!item.category_name && (
-            <Text style={[styles.cardCategory, { color: colors.subText }]} numberOfLines={1}>
-              {item.category_name}
-            </Text>
-          )}
-          <View style={styles.metaRow}>
-            <Text style={[styles.price, { color: colors.primaryColor }]}>
-              {item.price ?? t('service.negotiable')}
-            </Text>
-            {!!item.distance && (
-              <Text style={[styles.meta, { color: colors.subText }]}> · {item.distance}</Text>
-            )}
-          </View>
-        </View>
-        <TouchableOpacity
-          style={[styles.callBtn, { backgroundColor: colors.primaryColor }]}
-          onPress={() => handleCall(item.phone_number)}
-          hitSlop={8}
-          activeOpacity={0.85}
-        >
-          <Phone size={16} color="#fff" />
-        </TouchableOpacity>
-      </TouchableOpacity>
+        onCallPress={() => handleCall(item.phone_number)}
+      />
     ),
-    [colors, handleCall, t],
+    [handleCall],
   )
 
   const keyExtractor = useCallback((item: ServiceListItemDto) => item.id.toString(), [])
@@ -267,56 +245,8 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   list: {
-    padding: 16,
-    gap: 10,
+    paddingBottom: 16,
     flexGrow: 1,
-  },
-  card: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    borderWidth: 1,
-    borderRadius: 16,
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-  },
-  iconBubble: {
-    width: 46,
-    height: 46,
-    borderRadius: 13,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  cardBody: {
-    flex: 1,
-    gap: 2,
-  },
-  cardTitle: {
-    fontSize: 15,
-    fontWeight: '600',
-    letterSpacing: -0.2,
-  },
-  cardCategory: {
-    fontSize: 12,
-  },
-  metaRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 2,
-  },
-  price: {
-    fontSize: 13,
-    fontWeight: '600',
-  },
-  meta: {
-    fontSize: 12,
-  },
-  callBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   loader: {
     paddingVertical: 24,

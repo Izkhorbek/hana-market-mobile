@@ -425,6 +425,7 @@
   },
   "gas": {
     "title": "Gaz navbati",
+    "testing_notice": "Bu bo'lim test jarayonida — ma'lumotlar to'liq bo'lmasligi yoki o'zgarishi mumkin.",
     "no_mahalla": "Siz hali mahallaga bog'lanmagansiz",
     "no_session": "Bugun faol gaz tarqatish yo'q",
     "now_distributing": "Hozir tarqatilmoqda",
@@ -545,6 +546,7 @@
     "lostfound_title": "Yo'qolgan / Tekin",
     "lostfound_subtitle": "Topilgan narsalar, bepul bering",
     "coming_soon": "Tez orada",
+    "testing": "TEST",
     "coming_soon_message": "Bu bo'lim tez orada ishga tushadi."
   },
   "profile": {

@@ -13,7 +13,7 @@ import { useGasStore } from '@/modules/Gas/gas-store'
 import type { GasHouseholdRow, GasHouseholdStatus } from '@/types'
 import { parseApiError } from '@/utils/apiError'
 import { type Href, router } from 'expo-router'
-import { ArrowLeft, SlidersHorizontal } from 'lucide-react-native'
+import { ArrowLeft, FlaskConical, SlidersHorizontal } from 'lucide-react-native'
 import React, { useCallback, useEffect, useState } from 'react'
 import {
   ActivityIndicator,
@@ -163,23 +163,31 @@ export default function GasTrackerScreen() {
       return `${d}-${months[m - 1] ?? m}, ${y}`
     }
 
+  // The whole gas section is still under test — say so on every branch of the
+  // screen, so a resident never mistakes a gap in the data for a real outage.
   const Header = (
-    <View style={[styles.header, { borderBottomColor: colors.borderColor }]}>
-      <TouchableOpacity onPress={() => router.back()} hitSlop={10} style={styles.headerBtn}>
-        <ArrowLeft size={22} color={colors.text} />
-      </TouchableOpacity>
-      <Text style={[styles.headerTitle, { color: colors.text }]}>{t('gas.title')}</Text>
-      {isManager ? (
-        <TouchableOpacity
-          onPress={() => router.push('/gas/manage' as Href)}
-          hitSlop={10}
-          style={styles.headerBtn}
-        >
-          <SlidersHorizontal size={20} color={colors.primaryColor} />
+    <View>
+      <View style={[styles.header, { borderBottomColor: colors.borderColor }]}>
+        <TouchableOpacity onPress={() => router.back()} hitSlop={10} style={styles.headerBtn}>
+          <ArrowLeft size={22} color={colors.text} />
         </TouchableOpacity>
-      ) : (
-        <View style={styles.headerBtn} />
-      )}
+        <Text style={[styles.headerTitle, { color: colors.text }]}>{t('gas.title')}</Text>
+        {isManager ? (
+          <TouchableOpacity
+            onPress={() => router.push('/gas/manage' as Href)}
+            hitSlop={10}
+            style={styles.headerBtn}
+          >
+            <SlidersHorizontal size={20} color={colors.primaryColor} />
+          </TouchableOpacity>
+        ) : (
+          <View style={styles.headerBtn} />
+        )}
+      </View>
+      <View style={styles.testNotice}>
+        <FlaskConical size={14} color="#B45309" strokeWidth={2} />
+        <Text style={styles.testNoticeText}>{t('gas.testing_notice')}</Text>
+      </View>
     </View>
   )
 
@@ -395,6 +403,21 @@ const styles = StyleSheet.create({
   emptyText: { fontSize: 14, textAlign: 'center' },
   ctaBtn: { paddingHorizontal: 24, paddingVertical: 12, borderRadius: 12 },
   ctaBtnText: { color: '#fff', fontSize: 14, fontWeight: '600' },
+  testNotice: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#FEF3C7',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+  },
+  testNoticeText: {
+    flex: 1,
+    color: '#B45309',
+    fontSize: 12,
+    lineHeight: 16,
+    fontWeight: '500',
+  },
   warnBanner: {
     flexDirection: 'row',
     alignItems: 'flex-start',

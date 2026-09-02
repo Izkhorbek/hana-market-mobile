@@ -1,11 +1,10 @@
 import { useServiceQuery } from '@/api/hooks'
+import ProductImageGallery from '@/components/ProductDetail/ProductImageGallery'
 import { ThemedView } from '@/components/themed-view'
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
 import type { ApiResponse, SingleServiceDto } from '@/types'
-import { resolveImageUrl } from '@/utils/imageUrl'
 import { AxiosResponse } from 'axios'
-import { Image } from 'expo-image'
 import { router, useLocalSearchParams } from 'expo-router'
 import { ArrowLeft, Clock, MapPin, Phone, Wrench } from 'lucide-react-native'
 import React from 'react'
@@ -67,17 +66,24 @@ export default function ServiceDetailScreen() {
     )
   }
 
-  // Service image URLs are server-relative (e.g. "/service_images/x.jpg"); resolve
-  // to an absolute URL the same way products/chat do, or expo-image won't load it.
-  const image = resolveImageUrl(service.images?.[0])
+  // RemoteImage inside the gallery resolves the server-relative paths
+  // (e.g. "/service_images/x.jpg") to absolute URLs, same as the product feed.
+  const galleryImages = (service.images ?? []).slice(1).map((image_url) => ({ image_url }))
+  const hasImages = (service.images?.length ?? 0) > 0
 
   return (
     <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
       {Header}
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        {image ? (
-          <Image source={{ uri: image }} style={styles.image} contentFit="cover" transition={150} />
+        {hasImages ? (
+          <View style={styles.gallery}>
+            <ProductImageGallery
+              mainImage={service.images[0]}
+              images={galleryImages}
+              overlayBottom={10}
+            />
+          </View>
         ) : (
           <View style={[styles.imagePlaceholder, { backgroundColor: colors.tabIconBackground }]}>
             <Wrench size={40} color={colors.tabIconSelected} strokeWidth={1.5} />
@@ -173,16 +179,16 @@ const styles = StyleSheet.create({
     padding: 16,
     paddingBottom: 24,
   },
-  image: {
-    width: '100%',
-    height: 220,
-    borderRadius: 16,
+  gallery: {
+    height: 260,
+    marginHorizontal: -16,
+    marginTop: -16,
     marginBottom: 16,
   },
   imagePlaceholder: {
-    width: '100%',
     height: 160,
-    borderRadius: 16,
+    marginHorizontal: -16,
+    marginTop: -16,
     marginBottom: 16,
     justifyContent: 'center',
     alignItems: 'center',
