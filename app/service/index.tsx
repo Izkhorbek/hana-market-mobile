@@ -2,6 +2,7 @@ import { useInfiniteServicesQuery } from '@/api/hooks'
 import ServiceCard from '@/components/shared/Cards/ServiceCard'
 import { AppLimits } from '@/constants/appLimits'
 import { EServiceCategory } from '@/constants/enums'
+import { ALL_SERVICES_VISUAL, getServiceCategoryVisual } from '@/constants/serviceCategories'
 import { ThemedView } from '@/components/themed-view'
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
@@ -103,6 +104,7 @@ export default function ServiceListScreen() {
     ({ item }: { item: ServiceListItemDto }) => (
       <ServiceCard
         title={item.title ?? ''}
+        category={item.category}
         category_name={item.category_name ?? ''}
         main_image_url={item.main_image_url ?? ''}
         price={item.price ?? ''}
@@ -166,6 +168,8 @@ export default function ServiceListScreen() {
         >
           {CATEGORY_CHIPS.map((c) => {
             const active = selectedCategory === c.value
+            const visual = c.value == null ? ALL_SERVICES_VISUAL : getServiceCategoryVisual(c.value)
+            const { Icon } = visual
             return (
               <TouchableOpacity
                 key={c.labelKey}
@@ -178,6 +182,7 @@ export default function ServiceListScreen() {
                 onPress={() => setSelectedCategory(c.value)}
                 activeOpacity={0.8}
               >
+                <Icon size={15} color={active ? '#fff' : visual.color} strokeWidth={2} />
                 <Text style={[styles.chipText, { color: active ? '#fff' : colors.text }]}>
                   {t(c.labelKey)}
                 </Text>
@@ -235,7 +240,10 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   chip: {
-    paddingHorizontal: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
     paddingVertical: 7,
     borderRadius: 999,
     borderWidth: 1,

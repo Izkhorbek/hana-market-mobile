@@ -1,12 +1,13 @@
 import { useServiceQuery } from '@/api/hooks'
 import ProductImageGallery from '@/components/ProductDetail/ProductImageGallery'
+import { getServiceCategoryVisual } from '@/constants/serviceCategories'
 import { ThemedView } from '@/components/themed-view'
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
 import type { ApiResponse, SingleServiceDto } from '@/types'
 import { AxiosResponse } from 'axios'
 import { router, useLocalSearchParams } from 'expo-router'
-import { ArrowLeft, Clock, MapPin, Phone, Wrench } from 'lucide-react-native'
+import { ArrowLeft, Clock, MapPin, Phone } from 'lucide-react-native'
 import React from 'react'
 import {
   ActivityIndicator,
@@ -71,6 +72,10 @@ export default function ServiceDetailScreen() {
   const galleryImages = (service.images ?? []).slice(1).map((image_url) => ({ image_url }))
   const hasImages = (service.images?.length ?? 0) > 0
 
+  // No photo → the category's own icon carries the header instead.
+  const visual = getServiceCategoryVisual(service.category)
+  const { Icon: CategoryIcon } = visual
+
   return (
     <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
       {Header}
@@ -85,8 +90,8 @@ export default function ServiceDetailScreen() {
             />
           </View>
         ) : (
-          <View style={[styles.imagePlaceholder, { backgroundColor: colors.tabIconBackground }]}>
-            <Wrench size={40} color={colors.tabIconSelected} strokeWidth={1.5} />
+          <View style={[styles.imagePlaceholder, { backgroundColor: visual.bg }]}>
+            <CategoryIcon size={48} color={visual.color} strokeWidth={1.5} />
           </View>
         )}
 
@@ -94,8 +99,9 @@ export default function ServiceDetailScreen() {
 
         <View style={styles.chipRow}>
           {!!service.category_name && (
-            <View style={[styles.chip, { backgroundColor: colors.tabIconBackground }]}>
-              <Text style={[styles.chipText, { color: colors.tabIconSelected }]}>
+            <View style={[styles.chip, { backgroundColor: visual.bg }]}>
+              <CategoryIcon size={14} color={visual.color} strokeWidth={2} />
+              <Text style={[styles.chipText, { color: visual.color }]}>
                 {service.category_name}
               </Text>
             </View>
@@ -206,6 +212,9 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
   },
   chip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 999,

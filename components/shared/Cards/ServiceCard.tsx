@@ -1,4 +1,6 @@
 import RemoteImage from '@/components/shared/RemoteImage'
+import type { EServiceCategory } from '@/constants/enums'
+import { getServiceCategoryVisual } from '@/constants/serviceCategories'
 import { Colors } from '@/constants/theme'
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
@@ -10,6 +12,7 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 
 interface ServiceCardProps {
 	title: string
+	category?: EServiceCategory
 	category_name: string
 	main_image_url: string
 	price: string
@@ -24,6 +27,7 @@ interface ServiceCardProps {
 /** One service row in the service feed — same layout as the product card. */
 const ServiceCardComponent: React.FC<ServiceCardProps> = ({
 	title,
+	category,
 	category_name,
 	main_image_url,
 	price,
@@ -36,6 +40,8 @@ const ServiceCardComponent: React.FC<ServiceCardProps> = ({
 }) => {
 	const colors = useThemeColors()
 	const { t } = useTranslations()
+	const visual = getServiceCategoryVisual(category)
+	const { Icon: CategoryIcon } = visual
 
 	return (
 		<TouchableOpacity
@@ -43,16 +49,23 @@ const ServiceCardComponent: React.FC<ServiceCardProps> = ({
 			activeOpacity={0.8}
 			onPress={onPress}
 		>
-			{/* Service image — squared off on purpose, no corner radius */}
-			<RemoteImage
-				src={main_image_url}
-				style={styles.image}
-				resizeMode='cover'
-				cachePolicy='disk'
-				requestedWidth={260}
-				requestedHeight={260}
-				requestedQuality={65}
-			/>
+			{/* Service image — squared off on purpose, no corner radius. With no
+			    photo the category's own icon stands in, so the row still reads. */}
+			{main_image_url ? (
+				<RemoteImage
+					src={main_image_url}
+					style={styles.image}
+					resizeMode='cover'
+					cachePolicy='disk'
+					requestedWidth={260}
+					requestedHeight={260}
+					requestedQuality={65}
+				/>
+			) : (
+				<View style={[styles.image, styles.categoryTile, { backgroundColor: visual.bg }]}>
+					<CategoryIcon size={44} color={visual.color} strokeWidth={1.6} />
+				</View>
+			)}
 
 			<View style={styles.content}>
 				<View>
@@ -61,9 +74,12 @@ const ServiceCardComponent: React.FC<ServiceCardProps> = ({
 					</Text>
 
 					{!!category_name && (
-						<Text style={[styles.category, { color: colors.subText }]} numberOfLines={1}>
-							{category_name}
-						</Text>
+						<View style={styles.categoryRow}>
+							<CategoryIcon size={13} color={visual.color} strokeWidth={2} />
+							<Text style={[styles.category, { color: colors.subText }]} numberOfLines={1}>
+								{category_name}
+							</Text>
+						</View>
 					)}
 
 					{/* Distance and time row */}
@@ -131,6 +147,10 @@ const styles = StyleSheet.create({
 		width: 130,
 		height: 130,
 	},
+	categoryTile: {
+		alignItems: 'center',
+		justifyContent: 'center',
+	},
 	content: {
 		flex: 1,
 		paddingLeft: 12,
@@ -141,9 +161,15 @@ const styles = StyleSheet.create({
 		fontSize: 18,
 		lineHeight: 23,
 	},
-	category: {
-		fontSize: 13,
+	categoryRow: {
+		flexDirection: 'row',
+		alignItems: 'center',
+		gap: 5,
 		marginTop: 4,
+	},
+	category: {
+		flex: 1,
+		fontSize: 13,
 	},
 	infoRow: {
 		flexDirection: 'row',
