@@ -16,6 +16,7 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
+  useWindowDimensions,
   View,
 } from 'react-native'
 
@@ -23,6 +24,9 @@ export default function ServiceDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>()
   const colors = useThemeColors()
   const { t } = useTranslations()
+  // The hero runs edge to edge; its height follows the screen width (4:3).
+  const { width } = useWindowDimensions()
+  const heroHeight = Math.round(width * 0.75)
 
   const numericId = Number(id)
   const { data, isLoading, isError } = useServiceQuery({ id: numericId })
@@ -82,7 +86,7 @@ export default function ServiceDetailScreen() {
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         {hasImages ? (
-          <View style={styles.gallery}>
+          <View style={{ width, height: heroHeight }}>
             <ProductImageGallery
               mainImage={service.images[0]}
               images={galleryImages}
@@ -90,54 +94,61 @@ export default function ServiceDetailScreen() {
             />
           </View>
         ) : (
-          <View style={[styles.imagePlaceholder, { backgroundColor: visual.bg }]}>
-            <CategoryIcon size={48} color={visual.color} strokeWidth={1.5} />
+          <View
+            style={[
+              styles.imagePlaceholder,
+              { width, height: Math.round(heroHeight * 0.6), backgroundColor: visual.bg },
+            ]}
+          >
+            <CategoryIcon size={56} color={visual.color} strokeWidth={1.5} />
           </View>
         )}
 
-        <Text style={[styles.title, { color: colors.text }]}>{service.title}</Text>
+        <View style={styles.body}>
+          <Text style={[styles.title, { color: colors.text }]}>{service.title}</Text>
 
-        <View style={styles.chipRow}>
-          {!!service.category_name && (
-            <View style={[styles.chip, { backgroundColor: visual.bg }]}>
-              <CategoryIcon size={14} color={visual.color} strokeWidth={2} />
-              <Text style={[styles.chipText, { color: visual.color }]}>
-                {service.category_name}
-              </Text>
-            </View>
-          )}
-          <Text style={[styles.price, { color: colors.primaryColor }]}>
-            {service.price ?? t('service.negotiable')}
-            {!!service.price_type_name && (
-              <Text style={[styles.priceType, { color: colors.subText }]}>
-                {' '}
-                · {service.price_type_name}
-              </Text>
+          <View style={styles.chipRow}>
+            {!!service.category_name && (
+              <View style={[styles.chip, { backgroundColor: visual.bg }]}>
+                <CategoryIcon size={14} color={visual.color} strokeWidth={2} />
+                <Text style={[styles.chipText, { color: visual.color }]}>
+                  {service.category_name}
+                </Text>
+              </View>
             )}
-          </Text>
-        </View>
+            <Text style={[styles.price, { color: colors.primaryColor }]}>
+              {service.price ?? t('service.negotiable')}
+              {!!service.price_type_name && (
+                <Text style={[styles.priceType, { color: colors.subText }]}>
+                  {' '}
+                  · {service.price_type_name}
+                </Text>
+              )}
+            </Text>
+          </View>
 
-        <View style={styles.metaList}>
-          {!!service.distance && (
-            <View style={styles.metaItem}>
-              <MapPin size={16} color={colors.subText} />
-              <Text style={[styles.metaText, { color: colors.subText }]}>
-                {service.distance}
-                {!!service.moljal && ` · ${service.moljal}`}
-              </Text>
-            </View>
-          )}
-          {!!service.availability && (
-            <View style={styles.metaItem}>
-              <Clock size={16} color={colors.subText} />
-              <Text style={[styles.metaText, { color: colors.subText }]}>{service.availability}</Text>
-            </View>
+          <View style={styles.metaList}>
+            {!!service.distance && (
+              <View style={styles.metaItem}>
+                <MapPin size={16} color={colors.subText} />
+                <Text style={[styles.metaText, { color: colors.subText }]}>
+                  {service.distance}
+                  {!!service.moljal && ` · ${service.moljal}`}
+                </Text>
+              </View>
+            )}
+            {!!service.availability && (
+              <View style={styles.metaItem}>
+                <Clock size={16} color={colors.subText} />
+                <Text style={[styles.metaText, { color: colors.subText }]}>{service.availability}</Text>
+              </View>
+            )}
+          </View>
+
+          {!!service.description && (
+            <Text style={[styles.description, { color: colors.text }]}>{service.description}</Text>
           )}
         </View>
-
-        {!!service.description && (
-          <Text style={[styles.description, { color: colors.text }]}>{service.description}</Text>
-        )}
       </ScrollView>
 
       {/* Fixed bottom Call button */}
@@ -182,20 +193,13 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   content: {
-    padding: 16,
     paddingBottom: 24,
   },
-  gallery: {
-    height: 260,
-    marginHorizontal: -16,
-    marginTop: -16,
-    marginBottom: 16,
+  body: {
+    paddingHorizontal: 16,
+    paddingTop: 16,
   },
   imagePlaceholder: {
-    height: 160,
-    marginHorizontal: -16,
-    marginTop: -16,
-    marginBottom: 16,
     justifyContent: 'center',
     alignItems: 'center',
   },
