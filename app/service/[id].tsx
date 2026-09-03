@@ -24,9 +24,9 @@ export default function ServiceDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>()
   const colors = useThemeColors()
   const { t } = useTranslations()
-  // The hero runs edge to edge; its height follows the screen width (4:3).
+  // The hero runs edge to edge and is square, like the product detail hero.
   const { width } = useWindowDimensions()
-  const heroHeight = Math.round(width * 0.75)
+  const heroHeight = width
 
   const numericId = Number(id)
   const { data, isLoading, isError } = useServiceQuery({ id: numericId })
