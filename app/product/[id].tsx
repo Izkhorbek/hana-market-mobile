@@ -422,8 +422,10 @@ const ProductDetailPage: React.FC = () => {
   const productSellerId = product?.user_id ?? 0
   const isMyProduct = !!currentUserId && productSellerId === currentUserId
   const productSellerUserName = product?.seller?.username ?? 'unknown'
-  // The LISTING's place: landmark, then its own address, then its mahalla.
-  // Never seller.address_name — that is the seller's home, not the listing's.
+  // Two different places, kept apart on purpose (sync §16):
+  //  - the seller card shows the SELLER's own address,
+  //  - the meeting-location section shows the LISTING's place.
+  const productSellerLocation = product?.seller?.address_name ?? ''
   const productPlaceLabel =
     productMoljal || product?.address_name || product?.mahalla_name || ''
   const productSellerProfileImage = product?.seller?.profile_image_url ?? null
@@ -962,7 +964,7 @@ const ProductDetailPage: React.FC = () => {
                   {productSellerUserName}
                 </Text>
                 <Text style={[styles.sellerMeta, { color: colors.textMuted }]}>
-                  {productPlaceLabel}
+                  {productSellerLocation}
                 </Text>
               </View>
             </View>
@@ -1094,10 +1096,10 @@ const ProductDetailPage: React.FC = () => {
                 ]}
               >
                 {t('product_detail.meeting_location')}{' '}
-                {productMoljal ? `- ${productMoljal}` : ''}
+                {productPlaceLabel ? `- ${productPlaceLabel}` : ''}
               </Text>
               <LocationMapPreview
-                title={productMoljal || t('product_detail.meeting_location')}
+                title={productPlaceLabel || t('product_detail.meeting_location')}
                 subtitle={t('product_detail.tap_to_view_map')}
                 latitude={productLat}
                 longitude={productLng}

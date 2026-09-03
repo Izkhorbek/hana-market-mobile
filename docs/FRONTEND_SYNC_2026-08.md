@@ -401,8 +401,9 @@ drops to test mode** — a frontend-only change, `/api/gas/*` is untouched and s
 - [x] `types/service.ts`: add `address_name`, `location_source`, `mahalla_id`, `mahalla_name`, `scope`, `applied_scope`
 - [x] Service detail: render the address row from `address_name`/`moljal`, not from `distance` (which is always null there)
 - [x] Product detail: read `address_name` for the listing address — `app/product/[id].tsx`
-      builds `productPlaceLabel` (moljal → address_name → mahalla_name); the seller's own
-      address is no longer shown as the listing's place
+      builds `productPlaceLabel` (moljal → address_name → mahalla_name) and labels the
+      meeting-location section with it; the seller card keeps `seller.address_name`, which is
+      the seller's own place
 - [x] Show `mahalla_name` as the place label where available, with the distance as fallback —
       product + service cards, both feeds, search, seller products, both detail screens
 
