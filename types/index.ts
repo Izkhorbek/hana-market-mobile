@@ -521,7 +521,23 @@ export interface PaginatedResponse<T> {
   current_page: number;
   page_size: number;
   total_records: number;
+  /**
+   * Which feed the server actually served. Present on `/product/all` and
+   * `/service/all`; it can differ from the `scope` you asked for, because the
+   * default silently falls back to `radius` for a caller with no mahalla —
+   * label the feed from this, never from the request.
+   */
+  applied_scope?: FeedScope;
 }
+
+/** Feed selector: distance from the caller, or the caller's own mahalla. */
+export type FeedScope = 'radius' | 'mahalla';
+
+/**
+ * Where a listing's / service's coordinates came from. Diagnostic ("is this
+ * address the owner's own?") — do not branch UI on it yet.
+ */
+export type LocationSource = 'profile' | 'custom' | 'legacy';
 
 export interface ProductListItemDto {
   id: number;
@@ -532,6 +548,11 @@ export interface ProductListItemDto {
   distance?: string | null;
   created_ago: string | null;
   is_liked?: boolean;
+  /**
+   * The seller's MFY. Null unless the seller has a membership AND the listing
+   * is profile-sourced — fall back to `distance` as the place label.
+   */
+  mahalla_name?: string | null;
 }
 
 export type MyProductStatus = 'active' | 'sold' | 'hidden';
@@ -590,6 +611,15 @@ export interface SingleProductResponseDto {
   views_count: number;
   likes_count: number;
   is_liked: boolean;
+
+  /**
+   * The LISTING's own address — not `seller.address_name`, which is the
+   * seller's. Null on listings created before the location model landed.
+   */
+  address_name?: string | null;
+  location_source?: LocationSource | null;
+  mahalla_id?: number | null;
+  mahalla_name?: string | null;
 
   images: string[];
 

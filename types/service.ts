@@ -9,7 +9,7 @@ import type {
   EServiceCategory,
   EServicePriceType,
 } from '@/constants/enums'
-import type { User } from './index'
+import type { FeedScope, LocationSource, User } from './index'
 
 export type ServiceStatus = 'active' | 'hidden'
 
@@ -61,6 +61,8 @@ export interface ServiceListItemDto {
   main_image_url: string | null
   distance: string | null
   moljal: string | null
+  /** The provider's MFY. Null unless profile-sourced with a membership. */
+  mahalla_name?: string | null
   created_ago: string | null
 }
 
@@ -84,6 +86,15 @@ export interface SingleServiceDto {
   availability: string | null
   status: ServiceStatus
   images: string[]
+  /**
+   * The SERVICE's own address — not `provider.address_name`, which is the
+   * provider's. Null on services created before the location model landed.
+   */
+  address_name?: string | null
+  location_source?: LocationSource | null
+  mahalla_id?: number | null
+  mahalla_name?: string | null
+  /** Always null on this endpoint — the detail contract has no caller position. */
   distance: string | null
   created_ago: string | null
   created_at: string
@@ -98,4 +109,10 @@ export interface ServiceListParams {
   category?: EServiceCategory
   search_query?: string
   radius_km?: number
+  /**
+   * Radius (default) or the caller's own mahalla. An explicit `mahalla` is a
+   * 400 for a guest or a member-less user — read `applied_scope` off the
+   * response to label the feed.
+   */
+  scope?: FeedScope
 }

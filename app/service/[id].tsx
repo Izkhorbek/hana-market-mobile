@@ -80,6 +80,12 @@ export default function ServiceDetailScreen() {
   const visual = getServiceCategoryVisual(service.category)
   const { Icon: CategoryIcon } = visual
 
+  // The place row used to be gated on `distance`, which this endpoint always
+  // sends as null — so the landmark never rendered. Key it off the address
+  // instead: landmark first, then the service's own address_name (NOT
+  // provider.address_name, which is the provider's).
+  const placeLabel = service.moljal || service.address_name || ''
+
   return (
     <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
       {Header}
@@ -130,12 +136,12 @@ export default function ServiceDetailScreen() {
           </View>
 
           <View style={styles.metaList}>
-            {!!service.distance && (
+            {!!placeLabel && (
               <View style={styles.metaItem}>
                 <MapPin size={16} color={colors.subText} />
                 <Text style={[styles.metaText, { color: colors.subText }]}>
-                  {service.distance}
-                  {!!service.moljal && ` · ${service.moljal}`}
+                  {placeLabel}
+                  {!!service.distance && ` · ${service.distance}`}
                 </Text>
               </View>
             )}
