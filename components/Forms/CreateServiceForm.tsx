@@ -12,6 +12,9 @@ import { useTranslations } from '@/hooks/use-translation'
 import { useColor } from '@/hooks/useColor'
 import { isMissingProfileAddressError, parseApiError } from '@/utils/apiError'
 import { resolveEnum } from '@/utils/enumHelpers'
+import PostLocationPicker, {
+  type PickedLocation,
+} from '@/components/FormElements/PostLocationPicker'
 import { useRouter } from 'expo-router'
 import React, { useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
@@ -40,6 +43,8 @@ const CreateServiceForm = () => {
   const mutedTextColor = useColor('textMuted')
 
   const router = useRouter()
+  // null = post under the profile address; set = an explicit place on the map.
+  const [customLocation, setCustomLocation] = useState<PickedLocation | null>(null)
   const [successVisible, setSuccessVisible] = useState(false)
   const isSubmittingRef = useRef(false)
   // Guards against setState after unmount if the user leaves mid-create-request.
@@ -171,9 +176,13 @@ const CreateServiceForm = () => {
 
       formData.append('availability', data.availability || '')
 
-      // No coordinates on purpose: the backend then pins this to the owner's
-      // saved profile address and tags it with their mahalla (sync §14/§20).
-      // Sending the device position would mark it 'custom' and untagged.
+      // Coordinates travel only when the user picked a place on the map. Without
+      // them the backend pins this to the owner's saved profile address and tags
+      // its mahalla (sync §14/§20); with them it is recorded as 'custom'.
+      if (customLocation) {
+        formData.append('latitude', customLocation.latitude.toString())
+        formData.append('longitude', customLocation.longitude.toString())
+      }
       formData.append('moljal', data.landmark || '')
 
       // Images (draft uuids from the shared product draft-upload endpoint)
@@ -377,6 +386,10 @@ const CreateServiceForm = () => {
                 rules={{ required: t('service.errors.landmark') }}
               />
             </View>
+          </FormRow>
+
+          <FormRow>
+            <PostLocationPicker value={customLocation} onChange={setCustomLocation} />
           </FormRow>
         </View>
       </View>

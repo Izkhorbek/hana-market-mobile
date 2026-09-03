@@ -412,6 +412,10 @@ drops to test mode** — a frontend-only change, `/api/gas/*` is untouched and s
       `latitude`/`longitude`, so a post inherits the owner's profile address and its mahalla
 - [x] The "no saved profile address" 400 routes to the address screen —
       `isMissingProfileAddressError()` in `utils/apiError.ts`, handled in all four forms
+- [x] "Pick a different place" step — `components/FormElements/PostLocationPicker.tsx` sits under
+      the landmark field in all four create forms. Untouched it sends nothing (profile address,
+      mahalla tagged); picking a place on the map sends the coordinates and the post is recorded
+      as `location_source: 'custom'`, which is exactly what that flag is for.
 - [x] Onboarding guard fixed: `app/(auth)/auth.tsx` tests `!latitude || !longitude`, so a user
       who denied location at sign-up is prompted again instead of staying at (0, 0)
 
@@ -422,9 +426,6 @@ drops to test mode** — a frontend-only change, `/api/gas/*` is untouched and s
       every listing and service created before today is `location_source: 'custom'` and carries
       no mahalla, so the feed would be near-empty until people re-post under the new create flow.
       The types (`scope`, `applied_scope`) are in place for when it is worth turning on.
-- [ ] No "pick a different place for this post" step. The create forms now always use the
-      profile address; sending explicit coordinates (`location_source: 'custom'`) is what that
-      step would be for, and it needs a UX decision before it is built.
 
 ### Still open (backend / out of this sync)
 

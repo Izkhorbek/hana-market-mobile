@@ -184,6 +184,12 @@
     "profile": "Профиль"
   },
   "post": {
+    "location_title": "Местоположение",
+    "location_profile": "Адрес профиля",
+    "location_custom": "Место, выбранное на карте",
+    "location_no_profile": "Адрес ещё не сохранён",
+    "location_pick": "Выбрать на карте",
+    "location_change": "Выбрать другое место",
     "no_address_title": "Адрес не сохранён",
     "no_address_message": "Объявление привязывается к адресу вашего профиля. Сначала сохраните адрес.",
     "no_address_action": "Указать адрес",

@@ -184,6 +184,12 @@
 		"profile": "Profile"
 	},
 	"post": {
+		"location_title": "Location",
+		"location_profile": "My profile address",
+		"location_custom": "Picked on the map",
+		"location_no_profile": "No address saved yet",
+		"location_pick": "Pick on the map",
+		"location_change": "Pick a different place",
 		"no_address_title": "No saved address",
 		"no_address_message": "Your post is pinned to your profile address. Save an address first.",
 		"no_address_action": "Set my address",

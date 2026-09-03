@@ -14,6 +14,9 @@ import { useTranslations } from '@/hooks/use-translation'
 import { useColor } from '@/hooks/useColor'
 import { isMissingProfileAddressError, parseApiError } from '@/utils/apiError'
 import { resolveEnum } from '@/utils/enumHelpers'
+import PostLocationPicker, {
+  type PickedLocation,
+} from '@/components/FormElements/PostLocationPicker'
 import { useRouter } from 'expo-router'
 import React, { useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
@@ -42,6 +45,8 @@ const CreateCarForm = () => {
   const mutedTextColor = useColor('textMuted')
 
   const router = useRouter()
+  // null = post under the profile address; set = an explicit place on the map.
+  const [customLocation, setCustomLocation] = useState<PickedLocation | null>(null)
   const [successVisible, setSuccessVisible] = useState(false)
   const [createdProductId, setCreatedProductId] = useState<number | null>(null)
   const isSubmittingRef = useRef(false)
@@ -188,9 +193,13 @@ const CreateCarForm = () => {
     formData.append('is_negotiable', data.negotiable.toString())
     formData.append('is_free', 'false')
 
-    // No coordinates on purpose: the backend then pins this to the owner's
-    // saved profile address and tags it with their mahalla (sync §14/§20).
-    // Sending the device position would mark it 'custom' and untagged.
+    // Coordinates travel only when the user picked a place on the map. Without
+    // them the backend pins this to the owner's saved profile address and tags
+    // its mahalla (sync §14/§20); with them it is recorded as 'custom'.
+    if (customLocation) {
+      formData.append('latitude', customLocation.latitude.toString())
+      formData.append('longitude', customLocation.longitude.toString())
+    }
     formData.append('moljal', data.landmark || '')
 
     // Add images
@@ -461,6 +470,10 @@ const CreateCarForm = () => {
                 }}
               />
             </View>
+          </FormRow>
+
+          <FormRow>
+            <PostLocationPicker value={customLocation} onChange={setCustomLocation} />
           </FormRow>
         </View>
 

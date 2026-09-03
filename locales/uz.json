@@ -184,6 +184,12 @@
     "profile": "Sahifa"
   },
   "post": {
+    "location_title": "Joylashuv",
+    "location_profile": "Profil manzilim",
+    "location_custom": "Xaritada tanlangan joy",
+    "location_no_profile": "Manzil hali saqlanmagan",
+    "location_pick": "Xaritadan tanlash",
+    "location_change": "Boshqa joyni tanlash",
     "no_address_title": "Manzilingiz saqlanmagan",
     "no_address_message": "E'lon profilingizdagi manzilga bog'lanadi. Avval manzilingizni saqlang.",
     "no_address_action": "Manzilni kiritish",
