@@ -33,6 +33,7 @@ interface ProductItem {
     price: string | null
     status: string | null
     distance: string | null
+    mahalla_name: string | null
     view_count?: number | null
     views_count?: number | null
     likes_count: number | null
@@ -254,6 +255,7 @@ const SearchPage: React.FC = () => {
                         title={item.title ?? ''}
                         description={item.description ?? ''}
                         distance={item.distance ?? ''}
+                        mahalla_name={item.mahalla_name}
                         status={item.status ?? ''}
                         main_image_url={item.main_image_url ?? ''}
                         created_ago={item.created_ago ?? ''}

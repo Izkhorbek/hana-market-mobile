@@ -18,6 +18,8 @@ interface ServiceCardProps {
 	price: string
 	price_type_name?: string
 	moljal: string
+	/** Provider's MFY — preferred over the raw distance when present. */
+	mahalla_name?: string | null
 	distance: string
 	created_ago: string
 	onPress?: () => void
@@ -33,6 +35,7 @@ const ServiceCardComponent: React.FC<ServiceCardProps> = ({
 	price,
 	price_type_name,
 	moljal,
+	mahalla_name,
 	distance,
 	created_ago,
 	onPress,
@@ -84,10 +87,12 @@ const ServiceCardComponent: React.FC<ServiceCardProps> = ({
 
 					{/* Distance and time row */}
 					<View style={styles.infoRow}>
-						{!!distance && (
+						{!!(mahalla_name || distance) && (
 							<View style={styles.infoItem}>
 								<MaterialIcons name='location-on' size={14} color={colors.subText} />
-								<Text style={[styles.infoText, { color: colors.subText }]}>{distance}</Text>
+								<Text style={[styles.infoText, { color: colors.subText }]}>
+									{mahalla_name || distance}
+								</Text>
 							</View>
 						)}
 						{!!created_ago && (

@@ -141,7 +141,8 @@ export default function ServiceDetailScreen() {
                 <MapPin size={16} color={colors.subText} />
                 <Text style={[styles.metaText, { color: colors.subText }]}>
                   {placeLabel}
-                  {!!service.distance && ` · ${service.distance}`}
+                  {!!(service.mahalla_name || service.distance) &&
+                    ` · ${service.mahalla_name || service.distance}`}
                 </Text>
               </View>
             )}

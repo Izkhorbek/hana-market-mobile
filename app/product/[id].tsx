@@ -422,7 +422,10 @@ const ProductDetailPage: React.FC = () => {
   const productSellerId = product?.user_id ?? 0
   const isMyProduct = !!currentUserId && productSellerId === currentUserId
   const productSellerUserName = product?.seller?.username ?? 'unknown'
-  const productSellerLocation = product?.seller?.address_name ?? 'unknown'
+  // The LISTING's place: landmark, then its own address, then its mahalla.
+  // Never seller.address_name — that is the seller's home, not the listing's.
+  const productPlaceLabel =
+    productMoljal || product?.address_name || product?.mahalla_name || ''
   const productSellerProfileImage = product?.seller?.profile_image_url ?? null
 
   // ── Seller products ──────────────────────────────────────────────────────
@@ -959,7 +962,7 @@ const ProductDetailPage: React.FC = () => {
                   {productSellerUserName}
                 </Text>
                 <Text style={[styles.sellerMeta, { color: colors.textMuted }]}>
-                  {productMoljal ? productMoljal : productSellerLocation}
+                  {productPlaceLabel}
                 </Text>
               </View>
             </View>

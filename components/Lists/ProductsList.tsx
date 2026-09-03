@@ -48,6 +48,7 @@ interface ProductItem {
   //------
 
   distance: string | null
+  mahalla_name: string | null
   view_count: number
   likes_count: number
   created_ago: string | null
@@ -201,6 +202,7 @@ const ProductsList: React.FC<ProductsListProps> = ({ selectedFilter, onFilterCha
       title={item.title ?? ''}
       description={item.description ?? ''}
       distance={item.distance ?? ''}
+      mahalla_name={item.mahalla_name}
       status={item.status ?? ''}
       main_image_url={item.main_image_url ?? ''}
       created_ago={item.created_ago ?? ''}

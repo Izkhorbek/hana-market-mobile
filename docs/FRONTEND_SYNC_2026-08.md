@@ -400,6 +400,11 @@ drops to test mode** — a frontend-only change, `/api/gas/*` is untouched and s
 - [x] Mahalla hub: Service first, Gaz & Kommunal marked as test (frontend-only) — `app/(tabs)/mahalla.tsx`
 - [x] `types/service.ts`: add `address_name`, `location_source`, `mahalla_id`, `mahalla_name`, `scope`, `applied_scope`
 - [x] Service detail: render the address row from `address_name`/`moljal`, not from `distance` (which is always null there)
+- [x] Product detail: read `address_name` for the listing address — `app/product/[id].tsx`
+      builds `productPlaceLabel` (moljal → address_name → mahalla_name); the seller's own
+      address is no longer shown as the listing's place
+- [x] Show `mahalla_name` as the place label where available, with the distance as fallback —
+      product + service cards, both feeds, search, seller products, both detail screens
 
 **Open**
 
@@ -407,12 +412,8 @@ drops to test mode** — a frontend-only change, `/api/gas/*` is untouched and s
       — `CreateThingForm.tsx:175`, `CreateCarForm.tsx:194`, `CreateWorksForm.tsx:258` still append them
 - [ ] Fix the onboarding guard: `app/(auth)/auth.tsx:310` and `:341` test `latitude == null`, but the
       API returns `0` — a user who denied location is never re-prompted
-- [ ] Product detail: read `address_name` for the listing address; keep `seller.address_name` on the
-      seller card only — `app/product/[id].tsx:962` still falls back to `productSellerLocation`
 - [ ] Service create: stop sending device GPS (`CreateServiceForm.tsx:177-178`); route the new
       "no saved profile address" 400 to the address screen
-- [ ] Show `mahalla_name` as the place label where available, with the distance as fallback
-      — the field is not read anywhere yet
 - [ ] Optional: a "mening mahallam" feed toggle via `scope=mahalla`, handling the two 400 cases
 
 ### Still open (backend / out of this sync)

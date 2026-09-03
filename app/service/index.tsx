@@ -110,6 +110,7 @@ export default function ServiceListScreen() {
         price={item.price ?? ''}
         price_type_name={item.price_type_name ?? undefined}
         moljal={item.moljal ?? ''}
+        mahalla_name={item.mahalla_name}
         distance={item.distance ?? ''}
         created_ago={item.created_ago ?? ''}
         onPress={() => router.push(`/service/${item.id}` as Href)}

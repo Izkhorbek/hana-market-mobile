@@ -13,6 +13,8 @@ interface ProductCardProps {
 	title: string
 	description: string
 	moljal: string
+	/** Seller's MFY — preferred over the raw distance when present. */
+	mahalla_name?: string | null
 	main_image_url: string
 	is_free?: boolean
 	price: string | number
@@ -31,6 +33,7 @@ const ProductCardComponent: React.FC<ProductCardProps> = ({
 	description,
 	main_image_url,
 	distance,
+	mahalla_name,
 	created_ago,
 	moljal,
 	price,
@@ -79,7 +82,9 @@ const ProductCardComponent: React.FC<ProductCardProps> = ({
 					<View style={styles.infoRow}>
 						<View style={styles.infoItem}>
 							<MaterialIcons name='location-on' size={14} color={colors.subText} />
-							<Text style={[styles.infoText, { color: colors.subText }]}>{distance}</Text>
+							<Text style={[styles.infoText, { color: colors.subText }]}>
+								{mahalla_name || distance}
+							</Text>
 						</View>
 						<View style={styles.infoItem}>
 							<Ionicons name='time-outline' size={14} color={colors.subText} />
