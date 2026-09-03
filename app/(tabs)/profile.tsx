@@ -11,7 +11,7 @@ import { useAuthStore } from '@/modules/Auth/auth-store'
 import ProfileHeader from '@/modules/Profile/ProfileHeader'
 import ProfileMenuItem from '@/modules/Profile/ProfileMenuItem'
 import ProfileSection from '@/modules/Profile/ProfileSection'
-import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs'
+import { useBottomTabBarHeight } from 'expo-router/tabs'
 import { router, useFocusEffect } from 'expo-router'
 import {
 	FileText,
