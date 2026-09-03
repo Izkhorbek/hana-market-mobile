@@ -12,12 +12,8 @@ import {
 } from '@/constants/enums'
 import { useTranslations } from '@/hooks/use-translation'
 import { useColor } from '@/hooks/useColor'
-import { parseApiError } from '@/utils/apiError'
+import { isMissingProfileAddressError, parseApiError } from '@/utils/apiError'
 import { resolveEnum } from '@/utils/enumHelpers'
-import {
-  getCurrentLocationSafe,
-  showLocationErrorAlert,
-} from '@/utils/location'
 import { useRouter } from 'expo-router'
 import React, { useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
@@ -46,7 +42,6 @@ const CreateCarForm = () => {
   const mutedTextColor = useColor('textMuted')
 
   const router = useRouter()
-  const [isResolvingLocation, setIsResolvingLocation] = useState(false)
   const [successVisible, setSuccessVisible] = useState(false)
   const [createdProductId, setCreatedProductId] = useState<number | null>(null)
   const isSubmittingRef = useRef(false)
@@ -108,6 +103,19 @@ const CreateCarForm = () => {
       setSuccessVisible(true)
     },
     onError: (error: any) => {
+      // Nothing is posted with the device position any more, so a user with no
+      // saved address has nowhere to pin this — send them to set one instead of
+      // showing the backend sentence raw (sync §14/§20).
+      if (isMissingProfileAddressError(error)) {
+        Alert.alert(t('post.no_address_title'), t('post.no_address_message'), [
+          { text: t('common.cancel'), style: 'cancel' },
+          {
+            text: t('post.no_address_action'),
+            onPress: () => router.push('/(settings)/manage'),
+          },
+        ])
+        return
+      }
       const message = parseApiError(error, t('post.error_creating_product'))
       Alert.alert(t('post.error'), message)
     },
@@ -128,16 +136,6 @@ const CreateCarForm = () => {
     isSubmittingRef.current = true
 
     try {
-    // ── Resolve current location automatically ──
-    setIsResolvingLocation(true)
-    const locationResult = await getCurrentLocationSafe()
-    setIsResolvingLocation(false)
-
-    if (!locationResult.ok) {
-      showLocationErrorAlert(locationResult, t)
-      return
-    }
-    const coords = locationResult.coords
 
     // ── Enum resolution ──
     const fuelTypeValue = resolveEnum(ECarFuelType, data.fuelType)
@@ -190,9 +188,9 @@ const CreateCarForm = () => {
     formData.append('is_negotiable', data.negotiable.toString())
     formData.append('is_free', 'false')
 
-    // Add location (auto-resolved on Post)
-    formData.append('latitude', coords.latitude.toString())
-    formData.append('longitude', coords.longitude.toString())
+    // No coordinates on purpose: the backend then pins this to the owner's
+    // saved profile address and tags it with their mahalla (sync §14/§20).
+    // Sending the device position would mark it 'custom' and untagged.
     formData.append('moljal', data.landmark || '')
 
     // Add images
@@ -209,7 +207,6 @@ const CreateCarForm = () => {
     // Submit the form data
    createProduct(formData)
   } finally {
-    setIsResolvingLocation(false)
     isSubmittingRef.current = false
   }
 }, onInvalid)
@@ -501,17 +498,17 @@ const CreateCarForm = () => {
             styles.postButton,
             {
               backgroundColor:
-                isPending || isResolvingLocation
+                isPending
                   ? primaryColor + '80'
                   : primaryColor,
-              opacity: isPending || isResolvingLocation ? 0.7 : 1,
+              opacity: isPending ? 0.7 : 1,
             },
           ]}
           onPress={handleSubmit}
-          disabled={isPending || isResolvingLocation}
+          disabled={isPending}
           activeOpacity={0.8}
         >
-          {isPending || isResolvingLocation ? (
+          {isPending ? (
             <ActivityIndicator color="#fff" />
           ) : (
             <Text style={styles.postButtonText}>{t('car.post_car')}</Text>

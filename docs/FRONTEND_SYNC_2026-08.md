@@ -407,15 +407,24 @@ drops to test mode** — a frontend-only change, `/api/gas/*` is untouched and s
 - [x] Show `mahalla_name` as the place label where available, with the distance as fallback —
       product + service cards, both feeds, search, seller products, both detail screens
 
+- [x] Product + Service create: no form sends the device position any more — all four
+      (`CreateThingForm`, `CreateCarForm`, `CreateWorksForm`, `CreateServiceForm`) omit
+      `latitude`/`longitude`, so a post inherits the owner's profile address and its mahalla
+- [x] The "no saved profile address" 400 routes to the address screen —
+      `isMissingProfileAddressError()` in `utils/apiError.ts`, handled in all four forms
+- [x] Onboarding guard fixed: `app/(auth)/auth.tsx` tests `!latitude || !longitude`, so a user
+      who denied location at sign-up is prompted again instead of staying at (0, 0)
+
 **Open**
 
-- [ ] Product create: stop sending device GPS by default; omit coords to use the profile address
-      — `CreateThingForm.tsx:175`, `CreateCarForm.tsx:194`, `CreateWorksForm.tsx:258` still append them
-- [ ] Fix the onboarding guard: `app/(auth)/auth.tsx:310` and `:341` test `latitude == null`, but the
-      API returns `0` — a user who denied location is never re-prompted
-- [ ] Service create: stop sending device GPS (`CreateServiceForm.tsx:177-178`); route the new
-      "no saved profile address" 400 to the address screen
-- [ ] Optional: a "mening mahallam" feed toggle via `scope=mahalla`, handling the two 400 cases
+- [ ] Optional: a "mening mahallam" feed toggle via `scope=mahalla`, handling the two 400 cases.
+      **Deliberately not built yet** — §1.5 of the handoff says to wait, and it is still right:
+      every listing and service created before today is `location_source: 'custom'` and carries
+      no mahalla, so the feed would be near-empty until people re-post under the new create flow.
+      The types (`scope`, `applied_scope`) are in place for when it is worth turning on.
+- [ ] No "pick a different place for this post" step. The create forms now always use the
+      profile address; sending explicit coordinates (`location_source: 'custom'`) is what that
+      step would be for, and it needs a UX decision before it is built.
 
 ### Still open (backend / out of this sync)
 

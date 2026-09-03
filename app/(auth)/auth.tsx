@@ -305,10 +305,9 @@ const AuthPage = () => {
         setTimeout(() => usernameInputRef.current?.focus(), 200)
         return
       }
-      if (
-        loggedInUser &&
-        (loggedInUser.latitude == null || loggedInUser.longitude == null)
-      ) {
+      // The column is NOT NULL DEFAULT 0, so a user who denied location comes
+      // back as (0, 0) — never null. Testing for null left them stuck there.
+      if (loggedInUser && (!loggedInUser.latitude || !loggedInUser.longitude)) {
         setShowLocationAlert(true)
         return
       }
@@ -336,10 +335,9 @@ const AuthPage = () => {
       await updateProfile({ username })
       setIsLoading(false)
       const loggedInUser = useAuthStore.getState().user
-      if (
-        loggedInUser &&
-        (loggedInUser.latitude == null || loggedInUser.longitude == null)
-      ) {
+      // The column is NOT NULL DEFAULT 0, so a user who denied location comes
+      // back as (0, 0) — never null. Testing for null left them stuck there.
+      if (loggedInUser && (!loggedInUser.latitude || !loggedInUser.longitude)) {
         setShowLocationAlert(true)
         return
       }

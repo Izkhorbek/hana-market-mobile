@@ -84,3 +84,20 @@ export function parseApiError(error: any, fallback: string): string {
 
   return fallback
 }
+
+/**
+ * True for the backend's "you have no saved profile address" rejection.
+ *
+ * Since the location model landed, a create call that omits `latitude` /
+ * `longitude` inherits the owner's saved profile address — and 400s with
+ * "No saved profile address. Set your address first, or send the …
+ * coordinates." when there is none. The caller should route to the address
+ * screen rather than showing that sentence raw.
+ */
+export function isMissingProfileAddressError(error: any): boolean {
+  if (error?.response?.status !== 400) return false
+  const data = error.response.data
+  const haystack =
+    typeof data === 'string' ? data : JSON.stringify(data ?? '')
+  return /no saved profile address/i.test(haystack)
+}

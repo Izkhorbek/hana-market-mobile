@@ -184,6 +184,9 @@
 		"profile": "Profile"
 	},
 	"post": {
+		"no_address_title": "No saved address",
+		"no_address_message": "Your post is pinned to your profile address. Save an address first.",
+		"no_address_action": "Set my address",
 		"create_ad": "Create Ad",
 		"post": "Post",
 		"select_type": "Select ad Type",
