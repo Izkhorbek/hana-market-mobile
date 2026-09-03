@@ -91,6 +91,8 @@ export default function ServiceDetailScreen() {
               mainImage={service.images[0]}
               images={galleryImages}
               overlayBottom={10}
+              resizeMode='contain'
+              slideBackgroundColor={colors.profileBackground}
             />
           </View>
         ) : (

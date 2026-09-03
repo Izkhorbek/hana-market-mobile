@@ -190,6 +190,7 @@ const ZoomableImage: React.FC<ZoomableImageProps> = ({ uri, width, height }) => 
                     src={uri}
                     style={[styles.zoomImage, { width: displayWidth, height: displayHeight }]}
                     transition={200}
+                    resizeMode="contain"
                 />
             </Animated.View>
         </GestureDetector>
