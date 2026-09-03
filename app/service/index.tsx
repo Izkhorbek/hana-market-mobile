@@ -1,4 +1,5 @@
 import { useInfiniteServicesQuery } from '@/api/hooks'
+import FeedScopeToggle from '@/components/Lists/FeedScopeToggle'
 import ServiceCard from '@/components/shared/Cards/ServiceCard'
 import { AppLimits } from '@/constants/appLimits'
 import { EServiceCategory } from '@/constants/enums'
@@ -7,13 +8,14 @@ import { ThemedView } from '@/components/themed-view'
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
 import { useAuthStore } from '@/modules/Auth/auth-store'
-import type { ApiResponse, PaginatedResponse, ServiceListItemDto } from '@/types'
+import type { ApiResponse, FeedScope, PaginatedResponse, ServiceListItemDto } from '@/types'
 import { AxiosResponse } from 'axios'
 import { type Href, router } from 'expo-router'
 import { ArrowLeft, Plus } from 'lucide-react-native'
-import React, { useCallback, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   ActivityIndicator,
+  Alert,
   FlatList,
   Linking,
   ScrollView,
@@ -42,6 +44,8 @@ export default function ServiceListScreen() {
   const colors = useThemeColors()
   const { t } = useTranslations()
   const [selectedCategory, setSelectedCategory] = useState<EServiceCategory | undefined>(undefined)
+  // Omitted for 'radius', so the default request stays exactly as it was.
+  const [scope, setScope] = useState<FeedScope>('radius')
 
   const user = useAuthStore((s) => s.user)
   const isHydrated = useAuthStore((s) => s.isHydrated)
@@ -62,6 +66,8 @@ export default function ServiceListScreen() {
     hasNextPage,
     isFetchingNextPage,
     isFetching,
+    isError,
+    error,
     refetch,
   } = useInfiniteServicesQuery({
     params: {
@@ -69,6 +75,7 @@ export default function ServiceListScreen() {
       user_long: userLng,
       page_size: AppLimits.Pagination.DEFAULT_PAGE_SIZE,
       category: selectedCategory,
+      scope: scope === 'mahalla' ? 'mahalla' : undefined,
     },
     querySettings: { enabled: isHydrated && (isAuthenticated || isGuest) },
   })
@@ -85,6 +92,24 @@ export default function ServiceListScreen() {
   )
 
   const isInitialLoading = isFetching && services.length === 0
+
+  // Label the toggle from what the server served, not from the request.
+  const appliedScope: FeedScope = data?.pages?.[0]?.data?.data?.applied_scope ?? scope
+
+  // An explicit scope=mahalla 400s for a guest or a member-less user: fall
+  // back to the radius feed and offer the join flow.
+  useEffect(() => {
+    if (scope !== 'mahalla' || !isError) return
+    if ((error as { response?: { status?: number } })?.response?.status !== 400) return
+    setScope('radius')
+    Alert.alert(t('home.scope_no_mahalla_title'), t('home.scope_no_mahalla_message'), [
+      { text: t('common.cancel'), style: 'cancel' },
+      {
+        text: t('home.scope_no_mahalla_action'),
+        onPress: () => router.push('/mahalla/join' as Href),
+      },
+    ])
+  }, [scope, isError, error, t])
 
   const handleCall = useCallback((phone: string | null) => {
     if (phone) Linking.openURL(`tel:${phone}`)
@@ -160,6 +185,13 @@ export default function ServiceListScreen() {
         </TouchableOpacity>
       </View>
 
+      {/* Guests have no mahalla, so the toggle would only ever 400 for them. */}
+      {isAuthenticated && (
+        <View style={styles.scopeWrap}>
+          <FeedScopeToggle value={appliedScope} onChange={setScope} />
+        </View>
+      )}
+
       {/* Category filter chips */}
       <View style={styles.chipsWrap}>
         <ScrollView
@@ -232,6 +264,9 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: '600',
     letterSpacing: -0.2,
+  },
+  scopeWrap: {
+    paddingTop: 10,
   },
   chipsWrap: {
     paddingVertical: 10,

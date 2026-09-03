@@ -8,12 +8,13 @@ import { useRequireAuth } from '@/hooks/useRequireAuth'
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
 import { useAuthStore } from '@/modules/Auth/auth-store'
-import { ApiResponse, PaginatedResponse } from '@/types'
+import { ApiResponse, FeedScope, PaginatedResponse } from '@/types'
 import { AxiosResponse } from 'axios'
 import { router } from 'expo-router'
-import React, { useCallback, useMemo, useRef } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   ActivityIndicator,
+  Alert,
   FlatList,
   StyleSheet,
   Text,
@@ -21,6 +22,7 @@ import {
   View,
 } from 'react-native'
 import ProductCard from '../shared/Cards/ProductCard'
+import FeedScopeToggle from './FeedScopeToggle'
 import FilterButtons from './FilterButtons'
 import { AppLimits } from '@/constants/appLimits'
 
@@ -88,6 +90,9 @@ const ProductsList: React.FC<ProductsListProps> = ({ selectedFilter, onFilterCha
   const userLat = effectiveLat ?? AppLimits.DefaultCoordinates.TASHKENT_LATITUDE
   const userLng = effectiveLng ?? AppLimits.DefaultCoordinates.TASHKENT_LONGITUDE
   const productType = FILTER_TO_PRODUCT_TYPE[selectedFilter]
+  // Which feed to ask for. Omitted for 'radius' so the default request is
+  // byte-for-byte what it always was.
+  const [scope, setScope] = useState<FeedScope>('radius')
 
   const {
     data,
@@ -104,6 +109,7 @@ const ProductsList: React.FC<ProductsListProps> = ({ selectedFilter, onFilterCha
       user_long: userLng,
       page_size: AppLimits.Pagination.DEFAULT_PAGE_SIZE,
       product_type: productType,
+      scope: scope === 'mahalla' ? 'mahalla' : undefined,
     },
     // Never fetch before the keychain-derived session is known. Running before
     // hydration races a not-yet-injected auth token → guaranteed 401. Guests
@@ -125,13 +131,37 @@ const ProductsList: React.FC<ProductsListProps> = ({ selectedFilter, onFilterCha
 
   const isInitialLoading = isFetching && products.length === 0
 
+  // Label the toggle from what the server served, not from what we asked for.
+  const appliedScope: FeedScope =
+    data?.pages?.[0]?.data?.data?.applied_scope ?? scope
+
+  // An explicit scope=mahalla is a 400 for a guest or a user with no
+  // membership. Fall back to the radius feed and offer the join flow rather
+  // than turning the whole screen into an error state.
+  useEffect(() => {
+    if (scope !== 'mahalla' || !isError) return
+    if ((error as { response?: { status?: number } })?.response?.status !== 400) return
+    setScope('radius')
+    Alert.alert(t('home.scope_no_mahalla_title'), t('home.scope_no_mahalla_message'), [
+      { text: t('common.cancel'), style: 'cancel' },
+      {
+        text: t('home.scope_no_mahalla_action'),
+        onPress: () => router.push('/mahalla/join'),
+      },
+    ])
+  }, [scope, isError, error, t])
+
   // Warm the first-viewport card thumbnails (same `?w=260&h=260&q=65` URLs the
   // cards request) once the query resolves. Fire-and-forget; does not block render.
   useProductImagePrefetch(products.map((p) => p.main_image_url))
 
   // ── Sub-components ──────────────────────────────────────────────────────
   const ListHeader = (
-    <FilterButtons selectedFilter={selectedFilter} onFilterChange={onFilterChange} />
+    <>
+      <FilterButtons selectedFilter={selectedFilter} onFilterChange={onFilterChange} />
+      {/* Guests have no mahalla, so the toggle would only ever 400 for them. */}
+      {isAuthenticated && <FeedScopeToggle value={appliedScope} onChange={setScope} />}
+    </>
   )
 
   // ── Contextual empty state ──────────────────────────────────────────────

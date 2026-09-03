@@ -58,6 +58,11 @@
     "enable_location": "Iltimos, sozlamalar orqali joylashuvni yoqing"
   },
   "home": {
+    "scope_nearby": "Yaqin atrofda",
+    "scope_mahalla": "Mahallamda",
+    "scope_no_mahalla_title": "Siz mahallaga bog'lanmagansiz",
+    "scope_no_mahalla_message": "Mahalla e'lonlarini ko'rish uchun avval mahallangizni tanlang.",
+    "scope_no_mahalla_action": "Mahallani tanlash",
     "address_not_set": "Manzil...",
     "retry_set_address": "Manzilni... qayta sozlab ko'ring",
     "create": "Joylash",

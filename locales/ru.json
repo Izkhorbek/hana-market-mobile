@@ -58,6 +58,11 @@
     "enable_location": "Пожалуйста, включите геолокацию в настройках"
   },
   "home": {
+    "scope_nearby": "Поблизости",
+    "scope_mahalla": "Моя махалля",
+    "scope_no_mahalla_title": "Вы не привязаны к махалле",
+    "scope_no_mahalla_message": "Чтобы видеть объявления махалли, сначала выберите свою махаллю.",
+    "scope_no_mahalla_action": "Выбрать махаллю",
     "address_not_set": "Адрес...",
     "retry_set_address": "Адрес... попробуйте снова",
     "create": "Почта",

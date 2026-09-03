@@ -58,6 +58,11 @@
 		"enable_location": "Please enable location services in Settings"
 	},
 	"home": {
+		"scope_nearby": "Nearby",
+		"scope_mahalla": "My mahalla",
+		"scope_no_mahalla_title": "You are not in a mahalla yet",
+		"scope_no_mahalla_message": "Pick your mahalla first to see its listings.",
+		"scope_no_mahalla_action": "Pick a mahalla",
 		"address_not_set": "Address...",
 		"retry_set_address": "Address... try setting it again",
 		"create": "Post",

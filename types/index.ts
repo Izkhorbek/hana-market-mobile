@@ -462,6 +462,12 @@ export interface ProductListParams {
   max_price?: number;   // Maximum price filter (in UZS or USD, depending on currency_type)
   is_free?: boolean;    // Filter for free products
   sort_by?: EProductSortBy; // Sorting option
+  /**
+   * Radius (default) or the caller's own mahalla. An explicit `mahalla` is a
+   * 400 for a guest or a member-less user — read `applied_scope` off the
+   * response to label the feed.
+   */
+  scope?: FeedScope;
 }
 
 /**

@@ -419,13 +419,18 @@ drops to test mode** — a frontend-only change, `/api/gas/*` is untouched and s
 - [x] Onboarding guard fixed: `app/(auth)/auth.tsx` tests `!latitude || !longitude`, so a user
       who denied location at sign-up is prompted again instead of staying at (0, 0)
 
+- [x] "Mening mahallam" feed toggle via `scope=mahalla` —
+      `components/Lists/FeedScopeToggle.tsx`, on the home feed and the service feed. It is shown
+      to signed-in users only (a guest's explicit `scope=mahalla` is always a 400), the pill is
+      labelled from `applied_scope` rather than from the request, `radius` sends no `scope` at
+      all so the default request is unchanged, and the 400 for a member-less user flips the
+      toggle back and offers the join flow instead of an error screen.
+
 **Open**
 
-- [ ] Optional: a "mening mahallam" feed toggle via `scope=mahalla`, handling the two 400 cases.
-      **Deliberately not built yet** — §1.5 of the handoff says to wait, and it is still right:
-      every listing and service created before today is `location_source: 'custom'` and carries
-      no mahalla, so the feed would be near-empty until people re-post under the new create flow.
-      The types (`scope`, `applied_scope`) are in place for when it is worth turning on.
+Nothing from this sync. One caveat for the mahalla feed: it stays thin until people post under
+the new create flow — everything created before it is `location_source: 'custom'` and carries no
+mahalla, and nothing backfills that.
 
 ### Still open (backend / out of this sync)
 
