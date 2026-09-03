@@ -1,4 +1,5 @@
 import { useColorScheme } from '@/hooks/use-color-scheme'
+import { ABSOLUTE_FILL } from '@/constants/styles'
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { MapPin } from 'lucide-react-native'
 import React from 'react'
@@ -80,10 +81,10 @@ const styles = StyleSheet.create({
 		overflow: 'hidden',
 	},
 	map: {
-		...StyleSheet.absoluteFillObject,
+		...ABSOLUTE_FILL,
 	},
 	overlay: {
-		...StyleSheet.absoluteFillObject,
+		...ABSOLUTE_FILL,
 		justifyContent: 'flex-end',
 		padding: 8,
 	},

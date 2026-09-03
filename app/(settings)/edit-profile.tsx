@@ -9,6 +9,7 @@ import KeyboardAvoidWrapper from '@/components/shared/KeyboardAvoidWrapper'
 import RemoteImage from '@/components/shared/RemoteImage'
 import ThemedScrollView from '@/components/themed-scrollview'
 import { AppLimits } from '@/constants/appLimits'
+import { ABSOLUTE_FILL } from '@/constants/styles'
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
 import { useAuthStore } from '@/modules/Auth/auth-store'
@@ -478,7 +479,7 @@ const styles = StyleSheet.create({
 		alignItems: 'center',
 	},
 	imageOverlay: {
-		...StyleSheet.absoluteFillObject,
+		...ABSOLUTE_FILL,
 		borderRadius: 50,
 		backgroundColor: 'rgba(0,0,0,0.4)',
 		justifyContent: 'center',

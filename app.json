@@ -7,7 +7,6 @@
     "icon": "./assets/images/icon-iphone.png",
     "scheme": "hana-market",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.hanamarket.app"
@@ -16,16 +15,11 @@
       "translucent": false,
       "backgroundColor": "#E6F4FE"
     },
-    "androidNavigationBar": {
-      "enforceContrast": true
-    },
-    "jsEngine": "hermes",
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "backgroundColor": "#FFFFFF"
       },
-      "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "package": "com.hanamarket.app",
       "versionCode": 1
@@ -36,6 +30,12 @@
     },
     "plugins": [
       "expo-router",
+      [
+        "expo-navigation-bar",
+        {
+          "enforceContrast": true
+        }
+      ],
       [
         "expo-notifications",
         {

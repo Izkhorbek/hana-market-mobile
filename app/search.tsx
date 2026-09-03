@@ -1,4 +1,5 @@
 import { useCategoriesQuery, useInfiniteProductsQuery } from '@/api/hooks'
+import { ABSOLUTE_FILL } from '@/constants/styles'
 import ProductCard from '@/components/shared/Cards/ProductCard'
 import MarketplaceEmptyState, { type EmptyReason } from '@/components/shared/MarketplaceEmptyState'
 import { HEADER_HEIGHT } from '@/constants/appLimits'
@@ -371,7 +372,7 @@ const styles = StyleSheet.create({
         paddingBottom: 16,
     },
     loadingOverlay: {
-        ...StyleSheet.absoluteFillObject,
+        ...ABSOLUTE_FILL,
         alignItems: 'center',
         justifyContent: 'center',
     },

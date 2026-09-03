@@ -1,4 +1,5 @@
 import { useThemeColors } from '@/hooks/use-theme-colors'
+import { ABSOLUTE_FILL } from '@/constants/styles'
 import { useTranslations } from '@/hooks/use-translation'
 import { Colors } from '@/theme/colors'
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
@@ -168,7 +169,7 @@ const styles = StyleSheet.create({
 		// For true grayscale, you'd need a native module or process the image
 	},
 	soldOverlay: {
-		...StyleSheet.absoluteFillObject,
+		...ABSOLUTE_FILL,
 		backgroundColor: 'rgba(0, 0, 0, 0.5)',
 		justifyContent: 'center',
 		alignItems: 'center',

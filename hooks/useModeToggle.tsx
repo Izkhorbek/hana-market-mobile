@@ -33,7 +33,8 @@ export function useModeToggle(): UseModeToggleReturn {
   const setMode = (newMode: Mode) => {
     setModeState(newMode)
     if (newMode === 'system') {
-      Appearance.setColorScheme(null) // Reset to system default
+      // Reset to system default — RN 0.86 spells that 'unspecified'.
+      Appearance.setColorScheme('unspecified')
     } else {
       Appearance.setColorScheme(newMode)
     }

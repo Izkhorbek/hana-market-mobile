@@ -27,8 +27,8 @@ export function useChangeTheme() {
    */
   const setTheme = useCallback((theme: ThemeMode) => {
     if (theme === 'system') {
-      // Reset to system default
-      Appearance.setColorScheme(null)
+      // Reset to system default — RN 0.86 spells that 'unspecified'.
+      Appearance.setColorScheme('unspecified')
     } else {
       // Set specific color scheme
       Appearance.setColorScheme(theme as ColorSchemeName)
@@ -48,7 +48,7 @@ export function useChangeTheme() {
    * Gets the current color scheme
    */
   const getCurrentTheme = useCallback((): ColorSchemeName => {
-    return Appearance.getColorScheme()
+    return Appearance.getColorScheme() ?? 'unspecified'
   }, [])
 
   return {

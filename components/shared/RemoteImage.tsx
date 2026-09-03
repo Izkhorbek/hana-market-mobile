@@ -98,7 +98,7 @@ const RemoteImage: React.FC<RemoteImageProps> = ({
   return (
     <View style={[styles.wrapper, containerStyle, style as ViewStyle]}>
       {showLoader && loading && (
-        <View style={[StyleSheet.absoluteFillObject, styles.loaderBox, { backgroundColor: placeholderColor }]}>
+        <View style={[StyleSheet.absoluteFill, styles.loaderBox, { backgroundColor: placeholderColor }]}>
           <ActivityIndicator size='large' color={colors.primaryColor} />
         </View>
       )}

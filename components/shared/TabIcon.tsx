@@ -1,4 +1,5 @@
 import { Colors } from '@/constants/theme'
+import type { ColorValue } from 'react-native'
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import type { LucideIcon } from 'lucide-react-native'
 import React from 'react'
@@ -7,7 +8,7 @@ import { ThemedText } from '../themed-text'
 import { ThemedView } from '../themed-view'
 
 
-const TabIcon = ({ Icon, focused, title, color, badgeCount }: { Icon: LucideIcon, focused: boolean, title: string, color: string, badgeCount?: number }) => {
+const TabIcon = ({ Icon, focused, title, color, badgeCount }: { Icon: LucideIcon, focused: boolean, title: string, color: ColorValue, badgeCount?: number }) => {
   const colors = useThemeColors()
   const showBadge = typeof badgeCount === 'number' && badgeCount > 0
   const badgeText = showBadge ? (badgeCount! > 99 ? '99+' : String(badgeCount)) : ''
