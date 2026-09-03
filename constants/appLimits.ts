@@ -1,4 +1,4 @@
-import { Platform, StatusBar } from 'react-native'
+import { Dimensions, Platform, StatusBar } from 'react-native'
 
 // Platform-aware layout constants
 export const HEADER_HEIGHT = Platform.OS === 'ios' ? 45 : 50
@@ -7,6 +7,18 @@ export const HEADER_HEIGHT = Platform.OS === 'ios' ? 45 : 50
 const STATUS_BAR_HEIGHT =
   StatusBar.currentHeight ?? (Platform.OS === 'ios' ? 44 : 0)
 const STICKY_HEADER_HEIGHT = STATUS_BAR_HEIGHT + 32
+
+// ── Product detail hero ─────────────────────────────────────────────────────
+// The hero is a square window on the photo, so it scales with the device
+// instead of being a fixed 300 / 400. The app is portrait-locked, so reading
+// the width once at startup is enough.
+const WINDOW_WIDTH = Dimensions.get('window').width
+const HERO_HEIGHT = Math.round(WINDOW_WIDTH)
+// Image moves up at 30% of scroll speed.
+const PARALLAX_FACTOR = 0.3
+// The parallax container extends this far below the clip area so the travel
+// never reveals empty space — it must stay >= HERO_HEIGHT * PARALLAX_FACTOR.
+const PARALLAX_EXTRA = Math.ceil(HERO_HEIGHT * PARALLAX_FACTOR) + 8
 
 export type MessageTypeString = 'text' | 'image' | 'file';
 
@@ -38,12 +50,15 @@ export  const UZBEK_MOBILE_PHONE_REGEX = /^(20|33|50|70|77|80|87|88|90|91|92|93|
 export const AppLimits = {
   STATUS_BAR_HEIGHT: STATUS_BAR_HEIGHT,
   STICKY_HEADER_HEIGHT: STICKY_HEADER_HEIGHT,
-  HERO_HEIGHT: Platform.OS === 'ios' ? 400 : 300,
+  HERO_HEIGHT: HERO_HEIGHT,
   // Extra px the image container extends below the clip area for parallax travel
-  PARALLAX_EXTRA: 100,
-  // Image moves up at 30% of scroll speed (PARALLAX_EXTRA must be >= HERO_HEIGHT * PARALLAX_FACTOR)
-  PARALLAX_FACTOR: 0.3,
-  STICKY_THRESHOLD: Platform.OS === 'ios' ? 400 : 300 - STICKY_HEADER_HEIGHT,
+  PARALLAX_EXTRA: PARALLAX_EXTRA,
+  PARALLAX_FACTOR: PARALLAX_FACTOR,
+  // Scroll offset at which the sticky header takes over. iOS hands over at the
+  // end of the hero, Android one header earlier — the platform feel each had
+  // before the hero became width-based.
+  STICKY_THRESHOLD:
+    Platform.OS === 'ios' ? HERO_HEIGHT : HERO_HEIGHT - STICKY_HEADER_HEIGHT,
 
   Image: {
     MAX_FILE_SIZE_BYTES: 5 * 1024 * 1024, // 5MB
