@@ -25,6 +25,20 @@ interface ProductImageGalleryProps {
    * hero offset; pass 10 when the gallery sits in a plain fixed-height box.
    */
   overlayBottom?: number
+  /**
+   * How a photo fills its slide. 'cover' crops to fill (default); 'contain'
+   * shows the whole photo and letterboxes it against `slideBackgroundColor`.
+   */
+  resizeMode?: 'cover' | 'contain'
+  /** Backdrop behind a slide — only visible with resizeMode 'contain'. */
+  slideBackgroundColor?: string
+  /**
+   * Bottom inset for the photo inside its slide. The parallax hero makes this
+   * container taller than the part you actually see, so pass the overshoot to
+   * keep a 'contain' photo centred in the *visible* area (the backdrop still
+   * paints the full slide, so the parallax reveals no gap).
+   */
+  slidePaddingBottom?: number
 }
 
 /**
@@ -36,6 +50,9 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
   images = [],
   onImagePress,
   overlayBottom = AppLimits.PARALLAX_EXTRA + 10,
+  resizeMode = 'cover',
+  slideBackgroundColor,
+  slidePaddingBottom = 0,
 }) => {
   const { width } = useWindowDimensions()
   const [activeIndex, setActiveIndex] = useState(0)
@@ -74,20 +91,23 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
   const renderItem = useCallback(
     ({ item, index }: { item: string; index: number }) => (
       <Pressable
-        style={[styles.slide, { width }]}
+        style={[
+          styles.slide,
+          { width, backgroundColor: slideBackgroundColor, paddingBottom: slidePaddingBottom },
+        ]}
         onPress={() => handleImagePress(index)}
         disabled={!onImagePress}
       >
         <RemoteImage
           src={item || null}
           style={styles.image}
-          resizeMode='cover'
+          resizeMode={resizeMode}
           requestedWidth={HERO_IMAGE_WIDTH}
           requestedQuality={HERO_IMAGE_QUALITY}
         />
       </Pressable>
     ),
-    [width, handleImagePress, onImagePress],
+    [width, handleImagePress, onImagePress, resizeMode, slideBackgroundColor, slidePaddingBottom],
   )
 
   const keyExtractor = useCallback((_: string, idx: number) => String(idx), [])

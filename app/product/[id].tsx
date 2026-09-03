@@ -883,6 +883,9 @@ const ProductDetailPage: React.FC = () => {
               mainImage={null}
               images={imagesGalleryImages}
               onImagePress={handleImagePress}
+              resizeMode='contain'
+              slideBackgroundColor={colors.profileBackground}
+              slidePaddingBottom={AppLimits.PARALLAX_EXTRA}
             />
           </Animated.View>
           <Animated.View style={[styles.heroTopRow, headerButtonsStyle]}>
