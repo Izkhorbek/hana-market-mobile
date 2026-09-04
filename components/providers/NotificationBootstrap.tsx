@@ -2,15 +2,29 @@ import { useDeactivatePushTokenMutation, useRegisterPushTokenMutation } from '@/
 import { useAuthStore } from '@/modules/Auth/auth-store'
 import { NotificationType } from '@/types'
 import { logger } from '@/utils/logger'
+import Constants, { ExecutionEnvironment } from 'expo-constants'
 import * as Device from 'expo-device'
-import * as Notifications from 'expo-notifications'
+import type * as NotificationsModule from 'expo-notifications'
 import { router } from 'expo-router'
 import { useEffect, useRef } from 'react'
 import { Platform } from 'react-native'
 
+// ─── Expo Go guard ───────────────────────────────────────────────────────────
+// Expo Go dropped Android remote push in SDK 53, and expo-notifications throws
+// while it is being IMPORTED there — which took `app/_layout.tsx` down with it
+// and left expo-router with an undefined route module. Load it lazily so Expo
+// Go can still boot the UI; a development build (expo-dev-client, which this
+// project already depends on) gets the real thing.
+const isExpoGo = Constants.executionEnvironment === ExecutionEnvironment.StoreClient
+
+const Notifications: typeof NotificationsModule | null = isExpoGo
+  ? null
+  : // eslint-disable-next-line @typescript-eslint/no-require-imports
+    require('expo-notifications')
+
 // ─── Foreground display behaviour ────────────────────────────────────────────
 // Show alert + sound + badge even while the app is foregrounded.
-Notifications.setNotificationHandler({
+Notifications?.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
     shouldShowBanner: true,
@@ -79,11 +93,12 @@ export function NotificationBootstrap() {
   const { mutateAsync: deactivatePushToken } = useDeactivatePushTokenMutation()
 
   const deviceTokenRef = useRef<string | null>(null)
-  const foregroundListenerRef = useRef<Notifications.EventSubscription | null>(null)
-  const tapListenerRef = useRef<Notifications.EventSubscription | null>(null)
+  const foregroundListenerRef = useRef<NotificationsModule.EventSubscription | null>(null)
+  const tapListenerRef = useRef<NotificationsModule.EventSubscription | null>(null)
 
   // ── Cold-start: app was killed and opened via notification tap ─────────────
   useEffect(() => {
+    if (!Notifications) return
     Notifications.getLastNotificationResponseAsync()
       .then((response) => {
         if (!response) return
@@ -96,6 +111,8 @@ export function NotificationBootstrap() {
 
   // ── Auth-scoped lifecycle ──────────────────────────────────────────────────
   useEffect(() => {
+    if (!Notifications) return
+
     if (!isAuthenticated) {
       // Deactivate push token so backend stops sending after logout.
       if (deviceTokenRef.current) {
@@ -112,6 +129,8 @@ export function NotificationBootstrap() {
 
     let cancelled = false
 
+    const notifications = Notifications
+
     async function setup() {
       try {
         // Push notifications require a physical device.
@@ -123,10 +142,10 @@ export function NotificationBootstrap() {
         }
 
         // ── Permission ─────────────────────────────────────────────────────
-        const { status: existing } = await Notifications.getPermissionsAsync()
+        const { status: existing } = await notifications.getPermissionsAsync()
         let finalStatus = existing
         if (existing !== 'granted') {
-          const { status } = await Notifications.requestPermissionsAsync()
+          const { status } = await notifications.requestPermissionsAsync()
           finalStatus = status
         }
         if (finalStatus !== 'granted') {
@@ -138,9 +157,9 @@ export function NotificationBootstrap() {
 
         // ── Android notification channel ───────────────────────────────────
         if (Platform.OS === 'android') {
-          await Notifications.setNotificationChannelAsync('default', {
+          await notifications.setNotificationChannelAsync('default', {
             name: 'Default',
-            importance: Notifications.AndroidImportance.MAX,
+            importance: notifications.AndroidImportance.MAX,
             vibrationPattern: [0, 250, 250, 250],
             lightColor: '#02A348',
             sound: 'default',
@@ -150,7 +169,7 @@ export function NotificationBootstrap() {
         // ── Native device token ────────────────────────────────────────────
         // Returns FCM token on Android, APNS token on iOS.
         // The backend sends push notifications directly via FCM/APNS.
-        const tokenResult = await Notifications.getDevicePushTokenAsync()
+        const tokenResult = await notifications.getDevicePushTokenAsync()
         const deviceToken: string = tokenResult.data
 
         if (!deviceToken || cancelled) return

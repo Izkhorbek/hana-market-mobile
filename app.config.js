@@ -58,6 +58,15 @@ module.exports = ({ config }) => {
     apiHost = ''
     apiProtocol = ''
   }
+  // Android release signing. Build-time only (never EXPO_PUBLIC_*): the
+  // plugin writes them into the generated android/gradle.properties, which is
+  // gitignored. Keep the keystore itself outside android/ — `prebuild --clean`
+  // deletes that folder.
+  const androidReleaseStoreFile = process.env.ANDROID_RELEASE_STORE_FILE ?? ''
+  const androidReleaseKeyAlias = process.env.ANDROID_RELEASE_KEY_ALIAS ?? ''
+  const androidReleaseStorePassword = process.env.ANDROID_RELEASE_STORE_PASSWORD ?? ''
+  const androidReleaseKeyPassword = process.env.ANDROID_RELEASE_KEY_PASSWORD ?? ''
+
   const apiPinSha256 = process.env.API_PIN_SHA256 ?? ''
   const apiBackupPinSha256 = process.env.API_BACKUP_PIN_SHA256 ?? ''
 
@@ -173,6 +182,15 @@ module.exports = ({ config }) => {
           // Allow plain HTTP to RFC1918 / localhost in non-prod builds so the
           // app can still reach a dev backend.
           allowDevCleartext: !isProduction,
+        },
+      ],
+      [
+        './plugins/with-release-signing',
+        {
+          storeFile: androidReleaseStoreFile,
+          keyAlias: androidReleaseKeyAlias,
+          storePassword: androidReleaseStorePassword,
+          keyPassword: androidReleaseKeyPassword,
         },
       ],
     ],

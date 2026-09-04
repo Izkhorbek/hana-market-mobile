@@ -2,7 +2,7 @@ import {
   DarkTheme,
   DefaultTheme,
   ThemeProvider as RNThemeProvider,
-} from '@react-navigation/native'
+} from 'expo-router'
 import 'react-native-reanimated'
 
 import { Colors } from '@/theme/colors'

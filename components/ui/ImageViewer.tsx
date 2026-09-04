@@ -1,4 +1,5 @@
 import { useResponsive } from '@/hooks/useResponsive'
+import { ABSOLUTE_FILL } from '@/constants/styles'
 import { useSafeAreaEdgeInsets } from '@/hooks/useSafeAreaEdgeInsets'
 import { X } from 'lucide-react-native'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -190,7 +191,7 @@ const ZoomableImage: React.FC<ZoomableImageProps> = ({ uri, width, height }) => 
                     src={uri}
                     style={[styles.zoomImage, { width: displayWidth, height: displayHeight }]}
                     transition={200}
-                    resizeMode="contain"
+                    resizeMode="cover"
                 />
             </Animated.View>
         </GestureDetector>
@@ -463,7 +464,7 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     background: {
-        ...StyleSheet.absoluteFillObject,
+        ...ABSOLUTE_FILL,
         backgroundColor: '#000',
     },
     header: {

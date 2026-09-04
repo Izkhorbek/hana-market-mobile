@@ -1,4 +1,5 @@
 import { Text } from '@/components/ui/text'
+import { ABSOLUTE_FILL } from '@/constants/styles'
 import { useColor } from '@/hooks/useColor'
 import { BORDER_RADIUS, CORNERS, FONT_SIZE } from '@/theme/globals'
 import { Loader2 } from 'lucide-react-native'
@@ -444,7 +445,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   overlay: {
-    ...StyleSheet.absoluteFillObject,
+    ...ABSOLUTE_FILL,
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 9999,

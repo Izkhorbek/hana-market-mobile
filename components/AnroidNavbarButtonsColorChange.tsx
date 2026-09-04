@@ -2,14 +2,14 @@ import * as NavigationBar from 'expo-navigation-bar'
 import { useEffect } from 'react'
 import { useColorScheme } from 'react-native'
 
+/** Keeps the Android navigation bar readable against the active theme. */
 export function useThemeNavigationBar() {
-  const colorScheme = useColorScheme() // yoki sizning custom theme hook'ingiz
+  const colorScheme = useColorScheme()
 
   useEffect(() => {
-    if (colorScheme === 'dark') {
-      NavigationBar.setButtonStyleAsync('light') // oq ikonkalar (to'q fon)
-    } else {
-      NavigationBar.setButtonStyleAsync('dark')  // qora ikonkalar (och fon)
-    }
+    // SDK 57 replaced setButtonStyleAsync() with setStyle(), and the naming
+    // flipped: the style describes the BAR, not its buttons. A dark bar is the
+    // one with light (white) icons, which is what a dark theme wants.
+    NavigationBar.setStyle(colorScheme === 'dark' ? 'dark' : 'light')
   }, [colorScheme])
 }

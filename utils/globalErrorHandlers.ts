@@ -15,7 +15,7 @@ export const installGlobalErrorHandlers = () => {
   installed = true
 
   // ── Uncaught JS errors (React Native + Hermes) ───────────────────────────
-  const ErrorUtils: any = (global as any).ErrorUtils
+  const ErrorUtils: any = (globalThis as any).ErrorUtils
   if (ErrorUtils?.setGlobalHandler) {
     const previous = ErrorUtils.getGlobalHandler?.()
     ErrorUtils.setGlobalHandler((error: Error, isFatal?: boolean) => {
