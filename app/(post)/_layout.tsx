@@ -1,7 +1,6 @@
 import CreateHeader from '@/components/headers/CreateHeader'
 import { useColorScheme } from '@/hooks/use-color-scheme'
-import { DarkTheme, DefaultTheme, ThemeProvider } from 'expo-router'
-import { Stack } from 'expo-router'
+import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router'
 import React from 'react'
 import { StatusBar } from 'react-native'
 
