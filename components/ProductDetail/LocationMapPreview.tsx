@@ -38,7 +38,9 @@ const LocationMapPreview: React.FC<LocationMapPreviewProps> = ({
 			style={[styles.container, { borderColor: colors.borderColor }]}
 			onPress={onPress}
 		>
+			{/* Remount on a theme change — see the note in Maps/GoogleMap.tsx. */}
 			<MapView
+				key={colorScheme === 'dark' ? 'dark' : 'light'}
 				provider={PROVIDER_GOOGLE}
 				style={styles.map}
 				region={{

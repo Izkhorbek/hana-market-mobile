@@ -289,7 +289,9 @@ const ManageNeighborhoodPage = () => {
 
 			{/* Map */}
 			<View style={styles.mapContainer}>
+				{/* Remount on a theme change — see the note in Maps/GoogleMap.tsx. */}
 				<MapView
+					key={colorScheme === 'dark' ? 'dark' : 'light'}
 					ref={mapRef}
 					provider='google'
 					style={styles.map}
