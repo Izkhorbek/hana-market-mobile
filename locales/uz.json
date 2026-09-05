@@ -931,7 +931,14 @@
     "delete_confirm_title": "Xizmatni o'chirasizmi?",
     "delete_confirm_message": "Bu amalni ortga qaytarib bo'lmaydi.",
     "delete_success": "Xizmat o'chirildi",
-    "delete_error": "Xizmatni o'chirib bo'lmadi"
+    "delete_error": "Xizmatni o'chirib bo'lmadi",
+    "actions_title": "Xizmat bilan nima qilamiz?",
+    "edit": "Tahrirlash",
+    "edit_title": "Xizmatni tahrirlash",
+    "save": "Saqlash",
+    "update_success": "O'zgarishlar saqlandi",
+    "update_error": "O'zgarishlarni saqlab bo'lmadi",
+    "edit_note": "Rasm va joylashuvni tahrirlab bo'lmaydi — ularni o'zgartirish uchun xizmatni o'chirib, qaytadan joylang."
   },
   "edit_profile": {
     "title": "Profilni tahrirlash",

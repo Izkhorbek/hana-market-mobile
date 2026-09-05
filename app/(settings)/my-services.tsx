@@ -52,6 +52,21 @@ const MyServicesPage = () => {
 	const handleMenuPress = (service: ServiceListItemDto) => {
 		if (deletingId) return
 
+		Alert.alert(t('my_services.actions_title'), service.title ?? '', [
+			{ text: t('common.cancel'), style: 'cancel' },
+			{
+				text: t('my_services.edit'),
+				onPress: () => router.push(`/(post)/edit-service/${service.id}` as Href),
+			},
+			{
+				text: t('my_services.delete'),
+				style: 'destructive',
+				onPress: () => confirmDelete(service),
+			},
+		])
+	}
+
+	const confirmDelete = (service: ServiceListItemDto) => {
 		Alert.alert(t('my_services.delete_confirm_title'), t('my_services.delete_confirm_message'), [
 			{ text: t('common.cancel'), style: 'cancel' },
 			{

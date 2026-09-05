@@ -923,8 +923,15 @@
 		"delete_confirm_title": "Delete this service?",
 		"delete_confirm_message": "This cannot be undone.",
 		"delete_success": "Service deleted",
-		"delete_error": "Could not delete the service"
-	},
+		"delete_error": "Could not delete the service",
+		"actions_title": "What would you like to do?",
+		"edit": "Edit",
+		"edit_title": "Edit service",
+		"save": "Save",
+		"update_success": "Changes saved",
+		"update_error": "Could not save the changes",
+		"edit_note": "Photos and the location cannot be edited — delete the service and post it again to change them."
+},
 	"edit_profile": {
 		"title": "Edit Profile",
 		"profile_photo": "Profile Photo",
