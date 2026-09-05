@@ -230,10 +230,7 @@ const MapModal: React.FC<MapModalProps> = ({
 
         {/* Map */}
         <View style={styles.mapContainer}>
-          {/* Keyed on the scheme so the native map is recreated and the style
-              reapplied — see the note in Maps/GoogleMap.tsx. */}
           <MapView
-            key={colorScheme === 'dark' ? 'dark' : 'light'}
             ref={mapRef}
             provider={PROVIDER_GOOGLE}
             style={styles.map}

@@ -169,12 +169,7 @@ const GoogleMap = ({
 
   return (
     <View style={[styles.container, { height: height as any }]}>
-      {/* Remount on a theme change. react-native-maps applies customMapStyle
-          when the native map is created and never clears one it already has
-          (MapView.java: `if (map != null && customMapStyleString != null)`),
-          so switching back to light left the dark style painted on. */}
       <MapView
-        key={colorScheme === 'dark' ? 'dark' : 'light'}
         mapType="standard"
         ref={mapRef}
         provider={'google'}
