@@ -436,6 +436,7 @@ mahalla, and nothing backfills that.
 
 - Mahallas are seeded for **Toshkent shahri** and **Farg'ona** only — other districts return an
   empty picker; that is expected data state, not a client bug.
-- No service or listing created by the current app carries a mahalla: everything it posts is
-  `location_source: 'custom'` until the create forms stop sending coordinates. The mahalla-scoped
-  feed (§18, §20) stays off until then.
+- Nothing created **before** the create-form change carries a mahalla: it is all
+  `location_source: 'custom'`, and no backfill exists. Posts made since then inherit the owner's
+  profile address and are tagged, so the mahalla-scoped feed (§18, §20) fills up as people post —
+  it is on, but thin until they do.
