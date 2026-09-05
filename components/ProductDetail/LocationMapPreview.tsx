@@ -1,3 +1,4 @@
+import { googleMapStyle } from '@/components/Maps/googleMapStyle'
 import { useColorScheme } from '@/hooks/use-color-scheme'
 import { ABSOLUTE_FILL } from '@/constants/styles'
 import { useThemeColors } from '@/hooks/use-theme-colors'
@@ -14,14 +15,6 @@ interface LocationMapPreviewProps {
 	onPress?: () => void
 }
 
-const DARK_MAP_STYLE = [
-	{ elementType: 'geometry', stylers: [{ color: '#242f3e' }] },
-	{ elementType: 'labels.text.stroke', stylers: [{ color: '#242f3e' }] },
-	{ elementType: 'labels.text.fill', stylers: [{ color: '#746855' }] },
-	{ featureType: 'water', elementType: 'geometry', stylers: [{ color: '#17263c' }] },
-	{ featureType: 'road', elementType: 'geometry', stylers: [{ color: '#38414e' }] },
-	{ featureType: 'road.highway', elementType: 'geometry', stylers: [{ color: '#746855' }] },
-]
 
 const LocationMapPreview: React.FC<LocationMapPreviewProps> = ({
 	title,
@@ -54,7 +47,11 @@ const LocationMapPreview: React.FC<LocationMapPreviewProps> = ({
 				rotateEnabled={false}
 				pitchEnabled={false}
 				toolbarEnabled={false}
-				customMapStyle={colorScheme === 'dark' ? DARK_MAP_STYLE : []}
+				customMapStyle={
+					colorScheme === 'dark'
+						? googleMapStyle.darkMapStyle
+						: googleMapStyle.lightMapStyle
+				}
 				pointerEvents='none'
 			>
 				<Marker coordinate={{ latitude, longitude }} title={title} pinColor={colors.primaryColor} />

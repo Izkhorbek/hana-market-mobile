@@ -1,3 +1,4 @@
+import { googleMapStyle } from '@/components/Maps/googleMapStyle'
 import { useColorScheme } from '@/hooks/use-color-scheme'
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { logger } from '@/utils/logger'
@@ -8,85 +9,6 @@ import { Alert, StyleSheet, TouchableOpacity, View } from 'react-native'
 import MapView, { Region } from 'react-native-maps'
 import ProductMapMarker from './ProductMapMarker'
 
-// Dark mode map style
-const darkMapStyle = [
-  { elementType: 'geometry', stylers: [{ color: '#242f3e' }] },
-  { elementType: 'labels.text.stroke', stylers: [{ color: '#242f3e' }] },
-  { elementType: 'labels.text.fill', stylers: [{ color: '#746855' }] },
-  {
-    featureType: 'administrative.locality',
-    elementType: 'labels.text.fill',
-    stylers: [{ color: '#d59563' }],
-  },
-  // Hide all POIs (business icons, landmarks, etc.)
-  {
-    featureType: 'poi',
-    stylers: [{ visibility: 'off' }],
-  },
-  {
-    featureType: 'poi.park',
-    elementType: 'geometry',
-    stylers: [{ visibility: 'on' }, { color: '#263c3f' }],
-  },
-  {
-    featureType: 'road',
-    elementType: 'geometry',
-    stylers: [{ color: '#38414e' }],
-  },
-  {
-    featureType: 'road',
-    elementType: 'geometry.stroke',
-    stylers: [{ color: '#212a37' }],
-  },
-  {
-    featureType: 'road',
-    elementType: 'labels.text.fill',
-    stylers: [{ color: '#9ca5b3' }],
-  },
-  {
-    featureType: 'road.highway',
-    elementType: 'geometry',
-    stylers: [{ color: '#746855' }],
-  },
-  {
-    featureType: 'road.highway',
-    elementType: 'geometry.stroke',
-    stylers: [{ color: '#1f2835' }],
-  },
-  {
-    featureType: 'road.highway',
-    elementType: 'labels.text.fill',
-    stylers: [{ color: '#f3d19c' }],
-  },
-  {
-    featureType: 'transit',
-    elementType: 'geometry',
-    stylers: [{ color: '#2f3948' }],
-  },
-  {
-    featureType: 'transit.station',
-    elementType: 'labels.text.fill',
-    stylers: [{ color: '#d59563' }],
-  },
-  {
-    featureType: 'water',
-    elementType: 'geometry',
-    stylers: [{ color: '#17263c' }],
-  },
-  {
-    featureType: 'water',
-    elementType: 'labels.text.fill',
-    stylers: [{ color: '#515c6d' }],
-  },
-  {
-    featureType: 'water',
-    elementType: 'labels.text.stroke',
-    stylers: [{ color: '#17263c' }],
-  },
-]
-
-// Light mode map style (standard Google Maps)
-const lightMapStyle: any[] = []
 
 export interface MarkerData {
   id: string | number;
@@ -131,7 +53,10 @@ const GoogleMap = ({
   const colors = useThemeColors()
   const colorScheme = useColorScheme()
 
-  const mapStyle = colorScheme === 'dark' ? darkMapStyle : lightMapStyle
+  // The browse map hides business POIs so they don't compete with the
+  // listing markers; every other map uses the plain dark palette.
+  const mapStyle =
+    colorScheme === 'dark' ? googleMapStyle.darkMapStyleNoPoi : googleMapStyle.lightMapStyle
 
   // Stable marker-press handler: read the latest `onMarkerPress` via a ref so
   // its identity never changes. This keeps the memoized ProductMapMarker from

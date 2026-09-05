@@ -82,4 +82,22 @@ export const googleMapStyle = {
             stylers: [{ color: '#17263c' }],
         },
     ],
+    /**
+     * Dark, with business POIs hidden and parks kept.
+     *
+     * The browse map draws its own listing markers, and Google's POI icons
+     * compete with them. Google applies style rules in order, so these two
+     * simply override the POI rules above.
+     */
+    get darkMapStyleNoPoi() {
+        return [
+            ...this.darkMapStyle,
+            { featureType: 'poi', stylers: [{ visibility: 'off' }] },
+            {
+                featureType: 'poi.park',
+                elementType: 'geometry',
+                stylers: [{ visibility: 'on' }, { color: '#263c3f' }],
+            },
+        ]
+    },
 }
