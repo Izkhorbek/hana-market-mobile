@@ -571,6 +571,8 @@
     "my_activity": "MENING FAOLIYATIM",
     "listings": "E'lonlar",
     "listings_subtitle": "Faol · Sotilgan · Yashirin",
+    "services": "Mening xizmatlarim",
+    "services_subtitle": "Joylagan xizmatlaringiz",
     "favorites": "Sevimlilar",
     "my_complaints": "Mening shikoyatlarim",
     "neighborhood": "MAHALLA",
@@ -921,6 +923,15 @@
       "mark_sold": "Sotilgan deb belgilash",
       "mark_active": "Faol deb belgilash"
     }
+  },
+  "my_services": {
+    "title": "Mening xizmatlarim",
+    "empty_state": "Siz hali xizmat joylamagansiz",
+    "delete": "O'chirish",
+    "delete_confirm_title": "Xizmatni o'chirasizmi?",
+    "delete_confirm_message": "Bu amalni ortga qaytarib bo'lmaydi.",
+    "delete_success": "Xizmat o'chirildi",
+    "delete_error": "Xizmatni o'chirib bo'lmadi"
   },
   "edit_profile": {
     "title": "Profilni tahrirlash",

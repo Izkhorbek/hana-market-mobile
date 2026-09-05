@@ -7,6 +7,7 @@ export default function SettingsLayout() {
 			<Stack.Screen name='manage' options={{ headerShown: false }} />
 			<Stack.Screen name='edit-profile' options={{ headerShown: false }} />
 			<Stack.Screen name='my-listings' options={{ headerShown: false }} />
+			<Stack.Screen name='my-services' options={{ headerShown: false }} />
 			<Stack.Screen name='favorites' options={{ headerShown: false }} />
 			<Stack.Screen name='my-complaint' options={{ headerShown: false }} />
 			<Stack.Screen name='blocked-users' options={{ headerShown: false }} />

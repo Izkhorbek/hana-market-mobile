@@ -25,6 +25,7 @@ import {
 	MessageSquare,
 	Moon,
 	Package,
+	Wrench,
 	ShieldOff,
 	Sparkles,
 	Users
@@ -80,6 +81,8 @@ const ProfilePage = () => {
 			router.push('/(settings)/my-profile')
 		} else if (route === 'listings') {
 			router.push('/(settings)/my-listings')
+		} else if (route === 'services') {
+			router.push('/(settings)/my-services')
 		} else if (route === 'favorites') {
 			router.push('/(settings)/favorites')
 		} else if (route === 'my-complaints') {
@@ -158,6 +161,12 @@ const ProfilePage = () => {
 						title={t('profile.listings')}
 						subtitle={t('profile.listings_subtitle')}
 						onPress={() => handleNavigation('listings')}
+					/>
+					<ProfileMenuItem
+						icon={Wrench}
+						title={t('profile.services')}
+						subtitle={t('profile.services_subtitle')}
+						onPress={() => handleNavigation('services')}
 					/>
 					<ProfileMenuItem
 						icon={Heart}

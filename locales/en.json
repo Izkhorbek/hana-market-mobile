@@ -568,6 +568,8 @@
 		"my_activity": "MY ACTIVITY",
 		"listings": "Listings",
 		"listings_subtitle": "Active · Sold · Hidden",
+		"services": "My services",
+		"services_subtitle": "The services you posted",
 		"favorites": "Favorites",
 		"my_complaints": "My Reports",
 		"neighborhood": "NEIGHBORHOOD",
@@ -913,6 +915,15 @@
 			"mark_sold": "Mark as Sold",
 			"mark_active": "Mark as Active"
 		}
+	},
+	"my_services": {
+		"title": "My services",
+		"empty_state": "You have not posted a service yet",
+		"delete": "Delete",
+		"delete_confirm_title": "Delete this service?",
+		"delete_confirm_message": "This cannot be undone.",
+		"delete_success": "Service deleted",
+		"delete_error": "Could not delete the service"
 	},
 	"edit_profile": {
 		"title": "Edit Profile",

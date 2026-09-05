@@ -569,6 +569,8 @@
     "my_activity": "МОЯ АКТИВНОСТЬ",
     "listings": "Объявления",
     "listings_subtitle": "Активные · Проданные · Скрытые",
+    "services": "Мои услуги",
+    "services_subtitle": "Размещённые вами услуги",
     "favorites": "Избранное",
     "my_complaints": "Мои жалобы",
     "neighborhood": "РАЙОН",
@@ -913,6 +915,15 @@
       "mark_sold": "Отметить как проданное",
       "mark_active": "Отметить как активное"
     }
+  },
+  "my_services": {
+    "title": "Мои услуги",
+    "empty_state": "Вы ещё не разместили услугу",
+    "delete": "Удалить",
+    "delete_confirm_title": "Удалить услугу?",
+    "delete_confirm_message": "Это действие нельзя отменить.",
+    "delete_success": "Услуга удалена",
+    "delete_error": "Не удалось удалить услугу"
   },
   "edit_profile": {
     "title": "Редактировать профиль",
