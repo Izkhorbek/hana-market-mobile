@@ -192,35 +192,6 @@ const ProfilePage = () => {
 					/>
 				</ProfileSection>
 
-				{/* Trust & Verification Section
-				<ProfileSection title={t('profile.trust_verification')}>
-					<ProfileMenuItem
-						icon={ShieldCheck}
-						title={t('profile.verification')}
-						subtitle={t('profile.verification_subtitle')}
-						onPress={() => handleNavigation('verification')}
-					/>
-				</ProfileSection> */}
-
-				{/* Settings Section */}
-				{/* <ProfileSection title={t('profile.settings_section')}>
-					<ProfileMenuItem
-						icon={Settings}
-						title={t('profile.settings')}
-						onPress={() => handleNavigation('settings')}
-					/>
-					<ProfileMenuItem
-						icon={MessageCircle}
-						title={t('profile.chats')}
-						onPress={() => handleNavigation('chats')}
-					/>
-					<ProfileMenuItem
-						icon={Bell}
-						title={t('profile.notifications')}
-						onPress={() => handleNavigation('notifications')}
-					/>
-				</ProfileSection> */}
-
 				{/* Appearance Section */}
 				<ProfileSection title={t('profile.appearance')}>
 					<ProfileMenuItem
