@@ -1,3 +1,5 @@
+import { googleMapStyle } from '@/components/Maps/googleMapStyle'
+import { useColorScheme } from '@/hooks/use-color-scheme'
 import { useTranslations } from '@/hooks/use-translation'
 import { useColor } from '@/hooks/useColor'
 import { logger } from '@/utils/logger'
@@ -44,6 +46,7 @@ const MapModal: React.FC<MapModalProps> = ({
   const primaryColor = useColor('primaryColor')
   const textColor = useColor('text')
   const backgroundColor = useColor('background')
+  const colorScheme = useColorScheme()
   const mapRef = useRef<MapView>(null)
 
   const [selectedLocation, setSelectedLocation] = useState({
@@ -227,10 +230,18 @@ const MapModal: React.FC<MapModalProps> = ({
 
         {/* Map */}
         <View style={styles.mapContainer}>
+          {/* Keyed on the scheme so the native map is recreated and the style
+              reapplied — see the note in Maps/GoogleMap.tsx. */}
           <MapView
+            key={colorScheme === 'dark' ? 'dark' : 'light'}
             ref={mapRef}
             provider={PROVIDER_GOOGLE}
             style={styles.map}
+            customMapStyle={
+              colorScheme === 'dark'
+                ? googleMapStyle.darkMapStyle
+                : googleMapStyle.lightMapStyle
+            }
             initialRegion={{
               latitude: selectedLocation.latitude,
               longitude: selectedLocation.longitude,
