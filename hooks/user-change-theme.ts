@@ -1,55 +1,34 @@
+import { useColorScheme } from '@/hooks/use-color-scheme'
+import { type ThemeMode, useThemeStore } from '@/modules/Theme/theme-store'
 import { useCallback } from 'react'
-import { Appearance, ColorSchemeName } from 'react-native'
 
-export type ThemeMode = 'light' | 'dark' | 'system';
+export type { ThemeMode }
 
 /**
- * Hook for changing the app's color scheme/theme
- * 
+ * Imperative wrapper around the colour-mode store.
+ *
  * @example
  * ```tsx
- * const { setTheme, currentTheme } = useChangeTheme();
- * 
- * // Set light theme
- * setTheme('light');
- * 
- * // Set dark theme
- * setTheme('dark');
- * 
- * // Follow system theme
- * setTheme('system');
+ * const { setTheme, getCurrentTheme } = useChangeTheme();
+ * setTheme('dark');    // force dark
+ * setTheme('system');  // follow the device
  * ```
  */
 export function useChangeTheme() {
-  /**
-   * Sets the color scheme for the entire app
-   * @param theme - The theme to set ('light', 'dark', or 'system')
-   */
-  const setTheme = useCallback((theme: ThemeMode) => {
-    if (theme === 'system') {
-      // Reset to system default — RN 0.86 spells that 'unspecified'.
-      Appearance.setColorScheme('unspecified')
-    } else {
-      // Set specific color scheme
-      Appearance.setColorScheme(theme as ColorSchemeName)
-    }
-  }, [])
+  const setMode = useThemeStore((s) => s.setMode)
+  const colorScheme = useColorScheme()
 
-  /**
-   * Toggles between light and dark theme
-   */
-  const toggleTheme = useCallback(() => {
-    const currentScheme = Appearance.getColorScheme()
-    const newScheme: ColorSchemeName = currentScheme === 'dark' ? 'light' : 'dark'
-    Appearance.setColorScheme(newScheme)
-  }, [])
+  /** Sets the colour mode ('light', 'dark' or 'system'). */
+  const setTheme = useCallback((theme: ThemeMode) => setMode(theme), [setMode])
 
-  /**
-   * Gets the current color scheme
-   */
-  const getCurrentTheme = useCallback((): ColorSchemeName => {
-    return Appearance.getColorScheme() ?? 'unspecified'
-  }, [])
+  /** Flips between light and dark, dropping out of 'system'. */
+  const toggleTheme = useCallback(
+    () => setMode(colorScheme === 'dark' ? 'light' : 'dark'),
+    [colorScheme, setMode],
+  )
+
+  /** The resolved scheme, after 'system' is applied. */
+  const getCurrentTheme = useCallback((): 'light' | 'dark' => colorScheme, [colorScheme])
 
   return {
     setTheme,

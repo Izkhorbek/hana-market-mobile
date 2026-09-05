@@ -6,7 +6,7 @@ import {
 import 'react-native-reanimated'
 
 import { Colors } from '@/theme/colors'
-import { useColorScheme } from 'react-native'
+import { useColorScheme } from '@/hooks/use-color-scheme'
 
 type Props = {
   children: React.ReactNode;

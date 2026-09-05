@@ -1,6 +1,6 @@
 import * as NavigationBar from 'expo-navigation-bar'
 import { useEffect } from 'react'
-import { useColorScheme } from 'react-native'
+import { useColorScheme } from '@/hooks/use-color-scheme'
 
 /** Keeps the Android navigation bar readable against the active theme. */
 export function useThemeNavigationBar() {

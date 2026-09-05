@@ -1,50 +1,34 @@
-import { useState } from 'react'
-import { Appearance, ColorSchemeName, useColorScheme } from 'react-native'
-
-type Mode = 'light' | 'dark' | 'system';
+import { useColorScheme } from '@/hooks/use-color-scheme'
+import { type ThemeMode, useThemeStore } from '@/modules/Theme/theme-store'
 
 interface UseModeToggleReturn {
-  isDark: boolean;
-  mode: Mode;
-  setMode: (mode: Mode) => void;
-  currentMode: ColorSchemeName;
-  toggleMode: () => void;
+  /** Whether the resolved theme is dark right now. */
+  isDark: boolean
+  /** The user's choice, which may be 'system'. */
+  mode: ThemeMode
+  setMode: (mode: ThemeMode) => void
+  /** The resolved scheme, after 'system' is applied. */
+  currentMode: 'light' | 'dark'
+  /** light → dark → system → light. */
+  toggleMode: () => void
 }
 
+/**
+ * The colour-mode control. Reads and writes `modules/Theme/theme-store`, which
+ * is shared and persisted — the mode no longer lives in component state, so two
+ * screens can't disagree about it and it survives a restart.
+ */
 export function useModeToggle(): UseModeToggleReturn {
-  const [mode, setModeState] = useState<Mode>('system')
+  const mode = useThemeStore((s) => s.mode)
+  const setMode = useThemeStore((s) => s.setMode)
+  const cycleMode = useThemeStore((s) => s.cycleMode)
   const colorScheme = useColorScheme()
-  const isDark = colorScheme === 'dark'
-
-  const toggleMode = () => {
-    switch (mode) {
-      case 'light':
-        setMode('dark')
-        break
-      case 'dark':
-        setMode('system')
-        break
-      case 'system':
-        setMode('light')
-        break
-    }
-  }
-
-  const setMode = (newMode: Mode) => {
-    setModeState(newMode)
-    if (newMode === 'system') {
-      // Reset to system default — RN 0.86 spells that 'unspecified'.
-      Appearance.setColorScheme('unspecified')
-    } else {
-      Appearance.setColorScheme(newMode)
-    }
-  }
 
   return {
-    isDark,
+    isDark: colorScheme === 'dark',
     mode,
     setMode,
     currentMode: colorScheme,
-    toggleMode,
+    toggleMode: cycleMode,
   }
 }
