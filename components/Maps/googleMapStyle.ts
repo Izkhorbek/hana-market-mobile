@@ -82,22 +82,22 @@ export const googleMapStyle = {
             stylers: [{ color: '#17263c' }],
         },
     ],
-    /**
-     * Dark, with business POIs hidden and parks kept.
-     *
-     * The browse map draws its own listing markers, and Google's POI icons
-     * compete with them. Google applies style rules in order, so these two
-     * simply override the POI rules above.
-     */
-    get darkMapStyleNoPoi() {
-        return [
-            ...this.darkMapStyle,
-            { featureType: 'poi', stylers: [{ visibility: 'off' }] },
-            {
-                featureType: 'poi.park',
-                elementType: 'geometry',
-                stylers: [{ visibility: 'on' }, { color: '#263c3f' }],
-            },
-        ]
-    },
 }
+
+/**
+ * Dark, with business POIs hidden and parks kept.
+ *
+ * The browse map draws its own listing markers, and Google's POI icons compete
+ * with them. Google applies style rules in order, so these two simply override
+ * the POI rules above. A plain array (not a getter) so every read is the same
+ * value — the map style is a native prop and must not change identity per render.
+ */
+export const darkMapStyleNoPoi = [
+    ...googleMapStyle.darkMapStyle,
+    { featureType: 'poi', stylers: [{ visibility: 'off' }] },
+    {
+        featureType: 'poi.park',
+        elementType: 'geometry',
+        stylers: [{ visibility: 'on' }, { color: '#263c3f' }],
+    },
+]

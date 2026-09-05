@@ -1,4 +1,4 @@
-import { googleMapStyle } from '@/components/Maps/googleMapStyle'
+import { darkMapStyleNoPoi, googleMapStyle } from '@/components/Maps/googleMapStyle'
 import { useColorScheme } from '@/hooks/use-color-scheme'
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { logger } from '@/utils/logger'
@@ -56,7 +56,7 @@ const GoogleMap = ({
   // The browse map hides business POIs so they don't compete with the
   // listing markers; every other map uses the plain dark palette.
   const mapStyle =
-    colorScheme === 'dark' ? googleMapStyle.darkMapStyleNoPoi : googleMapStyle.lightMapStyle
+    colorScheme === 'dark' ? darkMapStyleNoPoi : googleMapStyle.lightMapStyle
 
   // Stable marker-press handler: read the latest `onMarkerPress` via a ref so
   // its identity never changes. This keeps the memoized ProductMapMarker from
