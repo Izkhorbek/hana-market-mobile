@@ -930,7 +930,15 @@
 		"save": "Save",
 		"update_success": "Changes saved",
 		"update_error": "Could not save the changes",
-		"edit_note": "Photos and the location cannot be edited — delete the service and post it again to change them."
+		"edit_note": "Photos and the location cannot be edited — delete the service and post it again to change them.",
+		"tab_active": "Active",
+		"tab_hidden": "Hidden",
+		"empty_hidden": "No hidden services",
+		"hide": "Hide",
+		"unhide": "Show again",
+		"hide_success": "Service hidden",
+		"unhide_success": "Service is visible again",
+		"status_error": "Could not change the status"
 },
 	"edit_profile": {
 		"title": "Edit Profile",

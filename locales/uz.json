@@ -938,7 +938,15 @@
     "save": "Saqlash",
     "update_success": "O'zgarishlar saqlandi",
     "update_error": "O'zgarishlarni saqlab bo'lmadi",
-    "edit_note": "Rasm va joylashuvni tahrirlab bo'lmaydi — ularni o'zgartirish uchun xizmatni o'chirib, qaytadan joylang."
+    "edit_note": "Rasm va joylashuvni tahrirlab bo'lmaydi — ularni o'zgartirish uchun xizmatni o'chirib, qaytadan joylang.",
+    "tab_active": "Faol",
+    "tab_hidden": "Yashirin",
+    "empty_hidden": "Yashirilgan xizmat yo'q",
+    "hide": "Yashirish",
+    "unhide": "Qayta ko'rsatish",
+    "hide_success": "Xizmat yashirildi",
+    "unhide_success": "Xizmat qayta ko'rsatildi",
+    "status_error": "Holatni o'zgartirib bo'lmadi"
   },
   "edit_profile": {
     "title": "Profilni tahrirlash",

@@ -32,15 +32,10 @@ const enumToFormValue = (enumObj: object, value: number | undefined): string => 
   return name ? name.toLowerCase() : ''
 }
 
-/**
- * The detail response formats `price` for display ("150 000 so'm"), and there is
- * no service equivalent of `GET /product/{id}/edit` that returns the raw amount.
- * Pulling the digits back out is the only way to pre-fill the field; a value we
- * cannot read leaves it empty, and an untouched empty field is simply not sent.
- */
-const parseDisplayPrice = (price: string | null | undefined): string => {
-  const digits = (price ?? '').replace(/\D/g, '')
-  return digits.length > 0 ? digits : ''
+/** The raw amount for the price field — null on both currencies means negotiable. */
+const priceToFormValue = (service: SingleServiceDto): string => {
+  const amount = service.price_uzs ?? service.price_usd
+  return amount == null ? '' : String(amount)
 }
 
 /**
@@ -89,7 +84,7 @@ const EditServiceForm: React.FC<EditServiceFormProps> = ({ service }) => {
       title: service.title ?? '',
       description: service.description ?? '',
       priceType: enumToFormValue(EServicePriceType, service.price_type) || 'negotiable',
-      priceAmount: parseDisplayPrice(service.price),
+      priceAmount: priceToFormValue(service),
       currency: service.currency_type === ECurrencyType.USD ? 'USD' : 'UZS',
       // The backend stores E.164; the input works in the local 9-digit form.
       phone: (service.phone_number ?? '').replace(/\D/g, '').replace(/^998/, ''),
@@ -152,8 +147,7 @@ const EditServiceForm: React.FC<EditServiceFormProps> = ({ service }) => {
         moljal: data.landmark || '',
       }
 
-      // Price only travels when there is one to send — "negotiable" has none,
-      // and an amount we could not pre-fill is left for the provider to retype.
+      // Price only travels when there is one to send — "negotiable" has none.
       if (!isNegotiable && data.priceAmount) {
         payload.currency_type = currencyValue
         const amount = Number(data.priceAmount)

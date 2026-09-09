@@ -63,6 +63,8 @@ export interface ServiceListItemDto {
   moljal: string | null
   /** The provider's MFY. Null unless profile-sourced with a membership. */
   mahalla_name?: string | null
+  /** Real on /my; always 'active' on /all, which filters hidden rows out. */
+  status: ServiceStatus
   created_ago: string | null
 }
 
@@ -79,6 +81,9 @@ export interface SingleServiceDto {
   price_type: EServicePriceType
   price_type_name: string | null
   currency_type: ECurrencyType
+  /** Raw amount behind the formatted `price`. Both null when negotiable. */
+  price_uzs: number | null
+  price_usd: number | null
   phone_number: string | null
   latitude: number | null
   longitude: number | null
