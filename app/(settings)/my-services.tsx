@@ -1,8 +1,10 @@
 import { useDeleteServiceMutation, useMyServicesQuery, useUpdateServiceMutation } from '@/api/hooks'
+import ActionSheet, { type ActionSheetOption } from '@/components/shared/ActionSheet'
 import MyServiceCard from '@/components/shared/Cards/MyServiceCard'
 import { useThemeColors } from '@/hooks/use-theme-colors'
 import { useTranslations } from '@/hooks/use-translation'
 import type { ServiceListItemDto, ServiceStatus } from '@/types'
+import { parseApiError } from '@/utils/apiError'
 import { type Href, router } from 'expo-router'
 import { ArrowLeft, Plus } from 'lucide-react-native'
 import React, { useMemo, useState } from 'react'
@@ -35,6 +37,7 @@ const MyServicesPage = () => {
 	const [activeTab, setActiveTab] = useState<ServiceStatus>('active')
 	const [deletingId, setDeletingId] = useState<number | null>(null)
 	const [statusChangingId, setStatusChangingId] = useState<number | null>(null)
+	const [menuService, setMenuService] = useState<ServiceListItemDto | null>(null)
 
 	const { data, isLoading, refetch, isRefetching } = useMyServicesQuery({
 		querySettings: { refetchOnMount: 'always' },
@@ -60,8 +63,10 @@ const MyServicesPage = () => {
 				hidden ? t('my_services.hide_success') : t('my_services.unhide_success'),
 			)
 		},
-		onError: () => {
-			Alert.alert(t('edit_profile.error'), t('my_services.status_error'))
+		onError: (error) => {
+			// Surface what the server said — a status-only PUT is a narrow call,
+			// and a generic string would hide why it was refused.
+			Alert.alert(t('edit_profile.error'), parseApiError(error, t('my_services.status_error')))
 		},
 		onSettled: () => setStatusChangingId(null),
 	})
@@ -91,25 +96,31 @@ const MyServicesPage = () => {
 
 	const handleMenuPress = (service: ServiceListItemDto) => {
 		if (busy) return
+		setMenuService(service)
+	}
 
+	/**
+	 * Edit / hide / delete, in a sheet rather than an Alert: Android's native
+	 * alert renders at most three buttons and silently drops the rest, which
+	 * cost this menu its Delete entry.
+	 */
+	const buildMenuOptions = (service: ServiceListItemDto): ActionSheetOption[] => {
 		const isHidden = service.status === 'hidden'
-
-		Alert.alert(t('my_services.actions_title'), service.title ?? '', [
-			{ text: t('common.cancel'), style: 'cancel' },
+		return [
 			{
-				text: t('my_services.edit'),
+				label: t('my_services.edit'),
 				onPress: () => router.push(`/(post)/edit-service/${service.id}` as Href),
 			},
 			{
-				text: isHidden ? t('my_services.unhide') : t('my_services.hide'),
+				label: isHidden ? t('my_services.unhide') : t('my_services.hide'),
 				onPress: () => setStatus(service, isHidden ? 'active' : 'hidden'),
 			},
 			{
-				text: t('my_services.delete'),
-				style: 'destructive',
+				label: t('my_services.delete'),
+				destructive: true,
 				onPress: () => confirmDelete(service),
 			},
-		])
+		]
 	}
 
 	const confirmDelete = (service: ServiceListItemDto) => {
@@ -227,6 +238,14 @@ const MyServicesPage = () => {
 						colors={[colors.primaryColor]}
 					/>
 				}
+			/>
+
+			<ActionSheet
+				visible={menuService !== null}
+				onClose={() => setMenuService(null)}
+				title={menuService?.title ?? ''}
+				options={menuService ? buildMenuOptions(menuService) : []}
+				cancelLabel={t('common.cancel')}
 			/>
 		</View>
 	)
