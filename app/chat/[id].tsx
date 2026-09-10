@@ -27,6 +27,7 @@ import {
   ChatMessageDto,
   ChatMessagesResponse,
   DisplayMessage,
+  HubCallError,
 } from '@/types'
 import i18n from '@/constants/localization'
 import { chatUnavailableMessage, isChatBlockedStatus } from '@/utils/chatAvailability'
@@ -495,7 +496,7 @@ const MessageInput: React.FC<{
         value={value}
         onChangeText={handleChangeText}
         multiline
-        maxLength={1000}
+        maxLength={AppLimits.Chat.MAX_MESSAGE_LENGTH}
         editable={!isSending}
       />
       <Animated.View style={{ transform: [{ scale: sendScale }] }}>
@@ -1074,6 +1075,25 @@ const ChatRoomPage: React.FC = () => {
     )
   }, [chatRoomId, deletingMessageId, deleteChatMessage, t])
 
+  /** Names why a send was refused, preferring the hub's code over its English text. */
+  const describeSendError = useCallback(
+    (error: unknown): string => {
+      switch ((error as HubCallError)?.hubCode) {
+        case 'too_long':
+          return t('chat_room.send_error_too_long', {
+            max: AppLimits.Chat.MAX_MESSAGE_LENGTH,
+          })
+        case 'blocked':
+          return t('chat_room.send_error_blocked')
+        case 'product_unavailable':
+          return t('chat_room.send_error_product_unavailable')
+        default:
+          return t('chat_room.send_error')
+      }
+    },
+    [t],
+  )
+
   const handleSend = useCallback(async () => {
     if (!inputText.trim() || sendInFlightRef.current) return
 
@@ -1084,11 +1104,21 @@ const ChatRoomPage: React.FC = () => {
       setInputText('')
       // The autoScroll effect (keyed on the latest message) will pull us to
       // the bottom as soon as the new message lands in mergedMessages.
+    } catch (error) {
+      // The hub throws HubException on a refused send, so this now rejects.
+      // chat-store has already marked the bubble failed and rethrown; without
+      // this catch the rejection would surface as an unhandled promise. The
+      // input keeps its text so the message can be fixed and sent again.
+      setSnackbar({
+        visible: true,
+        message: describeSendError(error),
+        isError: true,
+      })
     } finally {
       sendInFlightRef.current = false
       setIsSending(false)
     }
-  }, [inputText, send])
+  }, [inputText, send, describeSendError])
 
   const handleQuickReply = useCallback((reply: string) => {
     setInputText(reply)

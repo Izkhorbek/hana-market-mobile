@@ -290,6 +290,19 @@ export interface ChatUserInfoDto {
   last_seen_at: string | null | Date;
 }
 
+/**
+ * A rejected hub call, carrying the `code` of the Error event that explains it.
+ *
+ * The hub reports a refused send twice: an `Error` event holding the
+ * machine-readable code ('too_long' | 'empty' | 'blocked' |
+ * 'product_unavailable' | 'server_error'), then a HubException whose text is
+ * that same string — a HubException can only carry a string, so the code
+ * cannot ride along on it.
+ */
+export interface HubCallError extends Error {
+  hubCode?: string;
+}
+
 export interface ChatRoomDto {
   id: number;
   buyer: ChatUserInfoDto;

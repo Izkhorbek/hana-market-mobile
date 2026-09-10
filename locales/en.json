@@ -1017,7 +1017,11 @@
 		"date_unknown": "Unknown",
 		"unknown_user": "Unknown",
 		"chat_fallback": "Chat",
-		"product_fallback": "Product"
+		"product_fallback": "Product",
+		"send_error": "Message not sent. Try again.",
+		"send_error_too_long": "A message cannot exceed {{max}} characters",
+		"send_error_blocked": "You cannot message this user",
+		"send_error_product_unavailable": "This listing is no longer available"
 	},
 	"date_picker": {
 		"months": ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],

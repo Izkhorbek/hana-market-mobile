@@ -1025,7 +1025,11 @@
     "date_unknown": "Noma'lum",
     "unknown_user": "Noma'lum",
     "chat_fallback": "Chat",
-    "product_fallback": "Mahsulot"
+    "product_fallback": "Mahsulot",
+    "send_error": "Xabar yuborilmadi. Qayta urinib ko'ring.",
+    "send_error_too_long": "Xabar {{max}} belgidan oshmasligi kerak",
+    "send_error_blocked": "Bu foydalanuvchiga xabar yozolmaysiz",
+    "send_error_product_unavailable": "Bu e'lon endi mavjud emas"
   },
   "date_picker": {
     "months": [

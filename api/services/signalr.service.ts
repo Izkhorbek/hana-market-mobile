@@ -5,7 +5,7 @@ import {
   LogLevel,
 } from '@microsoft/signalr'
 import { MessageTypeString } from '../../constants/appLimits'
-import { ChatRoomDto } from '../../types'
+import { ChatRoomDto, HubCallError } from '../../types'
 import type {
   GasCycleWarningEvent,
   GasHouseholdStatusChangedEvent,
@@ -85,6 +85,9 @@ export interface SignalRError {
   code?: string;
 }
 
+/** How long an Error event stays eligible to explain a rejection (ms). */
+const HUB_ERROR_PAIRING_WINDOW_MS = 5000
+
 // New chat room created (e.g. another user opened a chat with us).
 // Backend may send either the bare ChatRoomDto or a wrapped { chat_room }
 // shape — we accept both via a union and normalize in the store.
@@ -160,6 +163,8 @@ class SignalRService {
   private messagesReadListeners: EventCallback<MessagesReadPayload>[] = []
   private userTypingListeners: EventCallback<UserTypingPayload>[] = []
   private errorListeners: EventCallback<SignalRError>[] = []
+  /** The most recent Error event, kept to explain the rejection that follows it. */
+  private lastServerError: { message: string; code?: string; at: number } | null = null
   private connectionStateListeners: EventCallback<HubConnectionState>[] = []
   private chatRoomCreatedListeners: EventCallback<ChatRoomCreatedPayload>[] = []
   private messageDeletedListeners: EventCallback<MessageDeletedPayload>[] = []
@@ -309,7 +314,32 @@ class SignalRService {
       type,
       attachmentUrl,
     }
-    await this.invokeMethod(HubMethods.SendMessage, request)
+    try {
+      await this.invokeMethod(HubMethods.SendMessage, request)
+    } catch (error) {
+      throw this.withHubCode(error)
+    }
+  }
+
+  /**
+   * Pairs a rejection with the Error event that preceded it, to recover its code.
+   *
+   * Both halves come from the same hub call over the same connection — the event
+   * first, then the completion — and the hub builds them from one string, so
+   * matching on that string ties them together. Anything that does not match is
+   * returned untouched.
+   */
+  private withHubCode(error: unknown): unknown {
+    const recent = this.lastServerError
+    if (!recent?.message) return error
+    if (Date.now() - recent.at > HUB_ERROR_PAIRING_WINDOW_MS) return error
+
+    // The client may prefix the HubException text, so test containment.
+    const message = (error as Error)?.message
+    if (!message || !message.includes(recent.message)) return error
+
+    ;(error as HubCallError).hubCode = recent.code
+    return error
   }
 
   /**
@@ -577,6 +607,11 @@ async isUserOnline(userId: number): Promise<boolean> {
       logger.error('SIGNALR_SERVER_ERROR', error?.message ?? 'SignalR server error', {
         extra: { error },
       })
+      this.lastServerError = {
+        message: error?.message ?? '',
+        code: error?.code,
+        at: Date.now(),
+      }
       this.errorListeners.forEach((cb) => cb(error))
     })
 

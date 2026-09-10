@@ -1017,7 +1017,11 @@
     "date_unknown": "Неизвестно",
     "unknown_user": "Неизвестно",
     "chat_fallback": "Чат",
-    "product_fallback": "Товар"
+    "product_fallback": "Товар",
+    "send_error": "Сообщение не отправлено. Попробуйте ещё раз.",
+    "send_error_too_long": "Сообщение не должно превышать {{max}} символов",
+    "send_error_blocked": "Вы не можете писать этому пользователю",
+    "send_error_product_unavailable": "Это объявление больше недоступно"
   },
   "date_picker": {
     "months": [
