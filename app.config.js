@@ -112,9 +112,13 @@ module.exports = ({ config }) => {
     ])
   }
 
-  // Inject Google Maps keys from env. Without these, react-native-maps shows a
-  // blank tile grid on release builds. Falling back to empty string lets
-  // local "no map needed" workflows still build.
+  // Google Maps keys are passed to react-native-maps' own config plugin (see
+  // `plugins` below), NOT via `ios.config.googleMapsApiKey` /
+  // `android.config.googleMaps`. Those legacy fields are read by Expo's
+  // built-in plugin, which still writes `pod 'react-native-google-maps'` —
+  // a podspec react-native-maps dropped in 1.23; the Google SDK then never
+  // links on iOS and the map renders blank. Falling back to empty string
+  // lets local "no map needed" workflows still build (Apple Maps only).
   const android = {
     ...(json.android ?? {}),
     permissions: [
@@ -124,19 +128,10 @@ module.exports = ({ config }) => {
       'READ_MEDIA_IMAGES',
       'INTERNET',
     ],
-    config: {
-      ...(json.android?.config ?? {}),
-      ...(googleMapsKeyAndroid
-        ? { googleMaps: { apiKey: googleMapsKeyAndroid } }
-        : {}),
-    },
   }
 
   const ios = {
     ...(json.ios ?? {}),
-    ...(googleMapsKeyIos
-      ? { config: { ...(json.ios?.config ?? {}), googleMapsApiKey: googleMapsKeyIos } }
-      : {}),
     infoPlist: {
       ...(json.ios?.infoPlist ?? {}),
       // App Store reviewers REQUIRE a usage string for every permission the
@@ -171,6 +166,15 @@ module.exports = ({ config }) => {
     android,
     plugins: [
       ...(json.plugins ?? []),
+      // react-native-maps ≥1.23 ships its own plugin: adds
+      // `pod 'react-native-maps/Google'`, GMSApiKey and the AppDelegate init.
+      [
+        'react-native-maps',
+        {
+          iosGoogleMapsApiKey: googleMapsKeyIos,
+          androidGoogleMapsApiKey: googleMapsKeyAndroid,
+        },
+      ],
       ...sentryPlugin,
       [
         './plugins/with-network-security',
