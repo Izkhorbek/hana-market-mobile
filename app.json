@@ -13,7 +13,7 @@
       "bundleIdentifier": "com.hanamarket.app"
     },
     "android": {
-      "googleServicesFile": "./app-settings/google-services.json",
+      "googleServicesFile": "./credentials/google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "backgroundColor": "#FFFFFF"

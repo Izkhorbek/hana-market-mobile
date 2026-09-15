@@ -15,7 +15,12 @@
  *   - android-icon-background.png     512x512   Solid brand background colour (existing colour kept)
  *   - favicon.png                      48x48    Web favicon
  *
- * Usage:  node scripts/generate-app-icons.js
+ * Usage:  npx -p sharp node scripts/generate-app-icons.js
+ *
+ * `sharp` is deliberately NOT in devDependencies: it is a native addon, and
+ * on the EAS macOS builder it finds a Homebrew libvips, tries to compile from
+ * source and breaks `npm ci`. The app itself never needs it — only this
+ * one-off script does — so `npx -p sharp` fetches it on demand.
  */
 
 const path = require('path')

@@ -52,7 +52,7 @@
   "submit": {
     "production": {
       "android": {
-        "serviceAccountKeyPath": "./google-services.json",
+        "serviceAccountKeyPath": "./credentials/google-services.json",
         "track": "internal",
         "releaseStatus": "draft",
         "changesNotSentForReview": false

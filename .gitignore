@@ -60,8 +60,8 @@ store/screenshots/
 ios/sentry.properties
 
 .env.local
-app-settings/google-services.json
-app-settings/sentry.properties
+credentials/google-services.json
+credentials/sentry.properties
 
 # Release keystores — never commit these
 /credentials

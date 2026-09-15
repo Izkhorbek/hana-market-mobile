@@ -1,5 +1,6 @@
 import { HubConnectionState } from '@microsoft/signalr'
 import { useCallback, useEffect, useMemo, useRef } from 'react'
+import { AppState } from 'react-native'
 
 import { useAuthStore } from '@/modules/Auth/auth-store'
 import {
@@ -35,6 +36,28 @@ export function useSignalRConnection() {
       // Don't disconnect on unmount if still authenticated
     }
   }, [isAuthenticated, connect, disconnect])
+
+  // Foreground reconnect. SignalR's automatic reconnect gives up after its
+  // last retry (0+2+5+10+30s ≈ 47s) and fires `onclose` → Disconnected. A
+  // socket that died while the app sat in the background therefore stays dead
+  // until something invokes the hub (a send / a room join). Reconnect
+  // explicitly when the app returns to the foreground. Gated on Disconnected
+  // + !isConnecting so we never race an in-flight connect or an automatic
+  // reconnect with a second HubConnection.
+  useEffect(() => {
+    if (!isAuthenticated) return
+
+    const subscription = AppState.addEventListener('change', (nextState) => {
+      if (nextState !== 'active') return
+      const { connectionState, isConnecting } = useChatStore.getState()
+      if (isConnecting || connectionState !== HubConnectionState.Disconnected) return
+      logger.info('[SignalR] App foregrounded while disconnected — reconnecting')
+      // store.connect() swallows its own failure (CHAT_CONNECT_FAILED).
+      void connect()
+    })
+
+    return () => subscription.remove()
+  }, [isAuthenticated, connect])
 
   return {
     connectionState,
